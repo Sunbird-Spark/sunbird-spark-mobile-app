@@ -6,16 +6,19 @@ A mobile application built with Ionic React framework for educational purposes.
 
 - **React**: 19.2.1
 - **TypeScript**: 5.9.3
-- **Ionic React**: 8.5.5
-- **Vite**: 5.4.11
+- **Ionic React**: 8.7.16
+- **Vite**: 7.3.1
 - **Capacitor**: 7.4.4
 - **React Router**: 5.3.4
-- **Jest**: 30.2.0
+- **Vitest**: 4.0.16
 - **Testing Library**: 16.3.1
+- **i18next**: 25.7.4
+- **react-i18next**: 16.5.2
+- **Tailwind CSS**: 4.1.18
 
 ## 📋 Prerequisites
 
-- Node.js 18.x or 20.x (LTS versions)
+- **Node.js 22.x** (required for Vite 7)
 - npm 10.x
 - Git
 
@@ -60,12 +63,22 @@ npm test
 
 ### Watch mode
 ```bash
-npm run test:watch
+npm test
+```
+
+### Run tests once
+```bash
+npm run test:run
 ```
 
 ### Coverage report
 ```bash
 npm run test:coverage
+```
+
+### Test UI
+```bash
+npm run test:ui
 ```
 
 Test coverage threshold is set to 70% for statements, branches, functions, and lines.
@@ -111,10 +124,21 @@ npx cap open ios
 
 ```
 src/
+├── components/         # Reusable components
+│   ├── LanguageSwitcher.tsx
+│   └── LanguageSwitcher.test.tsx
 ├── pages/              # Page components
 │   ├── Home.tsx
 │   ├── Dashboard.tsx
 │   └── Profile.tsx
+├── config/             # App configuration
+│   └── i18n.ts         # Internationalization setup
+├── locales/            # Translation files
+│   ├── en.json         # English translations
+│   └── hi.json         # Hindi translations
+├── hooks/              # Custom React hooks
+├── services/           # API and business logic
+├── types/              # TypeScript type definitions
 ├── theme/              # Ionic theme variables
 │   └── variables.css
 ├── App.tsx             # Main app component with routing
@@ -126,6 +150,19 @@ src/
     └── pr-checks.yml   # PR validation workflow
 
 ```
+
+## 🌐 Internationalization
+
+The app supports multiple languages using i18next:
+
+- **English** (en) - Default language
+- **Hindi** (hi)
+
+Users can switch languages via the language dropdown in the app header. To add more languages:
+
+1. Create a new translation file in `src/locales/` (e.g., `es.json`)
+2. Add translations following the existing structure
+3. Import and register in `src/config/i18n.ts`
 
 ## 🔄 CI/CD
 
@@ -161,8 +198,9 @@ The project includes automated checks on pull requests:
 | `npm run dev` | Start development server |
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
-| `npm test` | Run tests |
-| `npm run test:watch` | Run tests in watch mode |
+| `npm test` | Run tests in watch mode |
+| `npm run test:run` | Run tests once |
+| `npm run test:ui` | Open Vitest UI |
 | `npm run test:coverage` | Generate coverage report |
 | `npm run type-check` | Type check without emitting |
 | `npm run lint` | Check code quality |
@@ -171,11 +209,13 @@ The project includes automated checks on pull requests:
 ## 🔧 Configuration
 
 - **Vite**: [vite.config.ts](vite.config.ts)
-- **TypeScript**: [tsconfig.json](tsconfig.json)
-- **Jest**: [jest.config.js](jest.config.js)
+- **TypeScript**: [tsconfig.json](tsconfig.json), [tsconfig.app.json](tsconfig.app.json)
+- **Vitest**: [vitest.config.ts](vitest.config.ts)
 - **ESLint**: [eslint.config.js](eslint.config.js)
 - **PostCSS**: [postcss.config.js](postcss.config.js)
+- **Tailwind CSS**: [tailwind.config.ts](tailwind.config.ts)
 - **Capacitor**: [capacitor.config.ts](capacitor.config.ts)
+- **i18n**: [src/config/i18n.ts](src/config/i18n.ts)
 
 ## 📄 License
 
