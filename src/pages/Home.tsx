@@ -9,43 +9,50 @@ import {
   IonCardTitle,
   IonCardContent,
   IonButton,
+  IonButtons,
 } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
+import LanguageSwitcher from '../components/LanguageSwitcher';
 import './Home.css';
 
 const Home: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Sunbird - Home</IonTitle>
+          <IonTitle>{t('home.title')}</IonTitle>
+          <IonButtons slot="end">
+            <LanguageSwitcher />
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">Home</IonTitle>
+            <IonTitle size="large">{t('common.home')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <div className="ion-padding">
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle>Welcome to Sunbird Education</IonCardTitle>
+              <IonCardTitle>{t('home.welcome')}</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              Your educational management companion app powered by Ionic React.
+              {t('home.description')}
             </IonCardContent>
           </IonCard>
 
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle>Quick Actions</IonCardTitle>
+              <IonCardTitle>{t('home.quickActions')}</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <IonButton expand="block" color="primary">
-                View Students
+                {t('home.viewStudents')}
               </IonButton>
               <IonButton expand="block" color="secondary" className="ion-margin-top">
-                Track Progress
+                {t('home.trackProgress')}
               </IonButton>
             </IonCardContent>
           </IonCard>

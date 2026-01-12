@@ -13,7 +13,9 @@
     "test:coverage": "jest --coverage",
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext ts,tsx",
-    "lint:fix": "eslint src --ext ts,tsx --fix"
+    "lint:fix": "eslint src --ext ts,tsx --fix",
+    "snyk": "snyk code test",
+    "snyk-auth": "snyk auth"
   },
   "keywords": [],
   "author": "",
@@ -27,11 +29,14 @@
     "@ionic/react-router": "^8.7.16",
     "capacitor-plugin-safe-area": "^5.0.0",
     "history": "^4.10.1",
+    "i18next": "^25.7.4",
     "ionicons": "^7.4.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-i18next": "^16.5.2",
     "react-router": "^5.3.4",
-    "react-router-dom": "^5.3.4"
+    "react-router-dom": "^5.3.4",
+    "snyk": "^1.1301.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.2",

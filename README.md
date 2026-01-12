@@ -2,9 +2,6 @@
 
 A mobile application built with Ionic React framework for educational purposes.
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sunbirded-mobile-app&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sunbirded-mobile-app)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=sunbirded-mobile-app&metric=coverage)](https://sonarcloud.io/summary/new_code?id=sunbirded-mobile-app)
-
 ## 🚀 Tech Stack
 
 - **React**: 19.2.1
