@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 // Mock Ionic components
@@ -8,7 +8,11 @@ vi.mock('@ionic/react', () => ({
   IonIcon: ({ icon }: any) => <span data-testid="ion-icon" data-icon={icon} />,
   IonLabel: ({ children }: any) => <span data-testid="ion-label">{children}</span>,
   IonRouterOutlet: ({ children }: any) => <div data-testid="ion-router-outlet">{children}</div>,
-  IonTabBar: ({ children, slot }: any) => <div data-testid="ion-tab-bar" data-slot={slot}>{children}</div>,
+  IonTabBar: ({ children, slot }: any) => (
+    <div data-testid="ion-tab-bar" data-slot={slot}>
+      {children}
+    </div>
+  ),
   IonTabButton: ({ children, tab, href }: any) => (
     <button data-testid={`tab-button-${tab}`} data-href={href}>
       {children}
@@ -26,13 +30,9 @@ vi.mock('@ionic/react-router', () => ({
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
   Route: ({ path, component: Component }: any) => (
-    <div data-testid={`route-${path}`}>
-      {Component && <Component />}
-    </div>
+    <div data-testid={`route-${path}`}>{Component && <Component />}</div>
   ),
-  Redirect: ({ from, to, exact }: any) => (
-    <div data-testid={`redirect-${to}`}>Redirect</div>
-  ),
+  Redirect: ({ from, to, exact }: any) => <div data-testid={`redirect-${to}`}>Redirect</div>,
 }));
 
 // Mock ionicons
@@ -71,24 +71,24 @@ vi.mock('./theme/variables.css', () => ({}));
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);
-    expect(screen.getByTestId('ion-app'))
+    expect(screen.getByTestId('ion-app'));
   });
 
   it('renders IonReactRouter', () => {
     render(<App />);
-    expect(screen.getByTestId('ion-react-router'))
+    expect(screen.getByTestId('ion-react-router'));
   });
 
   it('renders IonTabs', () => {
     render(<App />);
-    expect(screen.getByTestId('ion-tabs'))
+    expect(screen.getByTestId('ion-tabs'));
   });
 
   it('renders all tab buttons', () => {
     render(<App />);
-    expect(screen.getByTestId('tab-button-home'))
-    expect(screen.getByTestId('tab-button-dashboard'))
-    expect(screen.getByTestId('tab-button-profile'))
+    expect(screen.getByTestId('tab-button-home'));
+    expect(screen.getByTestId('tab-button-dashboard'));
+    expect(screen.getByTestId('tab-button-profile'));
   });
 
   it('renders tab labels', () => {
@@ -99,16 +99,16 @@ describe('App', () => {
 
   it('tab buttons have correct hrefs', () => {
     render(<App />);
-    expect(screen.getByTestId('tab-button-home'))
-    expect(screen.getByTestId('tab-button-dashboard'))
-    expect(screen.getByTestId('tab-button-profile'))
+    expect(screen.getByTestId('tab-button-home'));
+    expect(screen.getByTestId('tab-button-dashboard'));
+    expect(screen.getByTestId('tab-button-profile'));
   });
 
   it('renders routes', () => {
     render(<App />);
-    expect(screen.getByTestId('route-/home'))
-    expect(screen.getByTestId('route-/dashboard'))
-    expect(screen.getByTestId('route-/profile'))
-    expect(screen.getByTestId('route-/'))
+    expect(screen.getByTestId('route-/home'));
+    expect(screen.getByTestId('route-/dashboard'));
+    expect(screen.getByTestId('route-/profile'));
+    expect(screen.getByTestId('route-/'));
   });
 });

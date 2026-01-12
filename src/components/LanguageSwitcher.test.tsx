@@ -1,123 +1,128 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
-import LanguageSwitcher from './LanguageSwitcher';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { useTranslation } from 'react-i18next';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import LanguageSwitcher from './LanguageSwitcher';
 
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
-    IonSelect: ({ children, onIonChange, value, interface: interfaceType, placeholder, color }: any) => (
-        <select
-            data-testid="language-select"
-            onChange={(e) => onIonChange({ detail: { value: e.target.value } })}
-            value={value}
-            data-interface={interfaceType}
-            data-placeholder={placeholder}
-            data-color={color}
-        >
-            {children}
-        </select>
-    ),
-    IonSelectOption: ({ children, value }: any) => (
-        <option value={value}>{children}</option>
-    ),
+  IonSelect: ({
+    children,
+    onIonChange,
+    value,
+    interface: interfaceType,
+    placeholder,
+    color,
+  }: any) => (
+    <select
+      data-testid="language-select"
+      onChange={(e) => onIonChange({ detail: { value: e.target.value } })}
+      value={value}
+      data-interface={interfaceType}
+      data-placeholder={placeholder}
+      data-color={color}
+    >
+      {children}
+    </select>
+  ),
+  IonSelectOption: ({ children, value }: any) => <option value={value}>{children}</option>,
 }));
 
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
-    useTranslation: vi.fn(),
+  useTranslation: vi.fn(),
 }));
 
 describe('LanguageSwitcher', () => {
-    const mockChangeLanguage = vi.fn();
+  const mockChangeLanguage = vi.fn();
 
-    beforeEach(() => {
-        vi.clearAllMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('renders with English as current language', () => {
+    (useTranslation as any).mockReturnValue({
+      i18n: {
+        language: 'en',
+        changeLanguage: mockChangeLanguage,
+      },
     });
 
-    it('renders with English as current language', () => {
-        (useTranslation as any).mockReturnValue({
-            i18n: {
-                language: 'en',
-                changeLanguage: mockChangeLanguage,
-            },
-        });
+    render(<LanguageSwitcher />);
 
-        render(<LanguageSwitcher />);
+    const select = screen.getByTestId('language-select');
+    expect(select);
+    expect(select);
+  });
 
-        const select = screen.getByTestId('language-select');
-        expect(select)
-        expect(select)
+  it('renders with Hindi as current language', () => {
+    (useTranslation as any).mockReturnValue({
+      i18n: {
+        language: 'hi',
+        changeLanguage: mockChangeLanguage,
+      },
     });
 
-    it('renders with Hindi as current language', () => {
-        (useTranslation as any).mockReturnValue({
-            i18n: {
-                language: 'hi',
-                changeLanguage: mockChangeLanguage,
-            },
-        });
+    render(<LanguageSwitcher />);
 
-        render(<LanguageSwitcher />);
+    const select = screen.getByTestId('language-select');
+    expect(select);
+  });
 
-        const select = screen.getByTestId('language-select');
-        expect(select)
+  it('displays all available languages', () => {
+    (useTranslation as any).mockReturnValue({
+      i18n: {
+        language: 'en',
+        changeLanguage: mockChangeLanguage,
+      },
     });
 
-    it('displays all available languages', () => {
-        (useTranslation as any).mockReturnValue({
-            i18n: {
-                language: 'en',
-                changeLanguage: mockChangeLanguage,
-            },
-        });
+    render(<LanguageSwitcher />);
 
-        render(<LanguageSwitcher />);
+    expect(screen.getByText('English'));
+    expect(screen.getByText('हिन्दी'));
+  });
 
-        expect(screen.getByText('English'))
-        expect(screen.getByText('हिन्दी'))
+  it('changes language when option is selected', () => {
+    (useTranslation as any).mockReturnValue({
+      i18n: {
+        language: 'en',
+        changeLanguage: mockChangeLanguage,
+      },
     });
 
-    it('changes language when option is selected', () => {
-        (useTranslation as any).mockReturnValue({
-            i18n: {
-                language: 'en',
-                changeLanguage: mockChangeLanguage,
-            },
-        });
+    render(<LanguageSwitcher />);
 
-        render(<LanguageSwitcher />);
+    const select = screen.getByTestId('language-select');
+    fireEvent.change(select, { target: { value: 'hi' } });
 
-        const select = screen.getByTestId('language-select');
-        fireEvent.change(select, { target: { value: 'hi' } });
+    expect(mockChangeLanguage).toHaveBeenCalledWith('hi');
+  });
 
-        expect(mockChangeLanguage).toHaveBeenCalledWith('hi');
+  it('applies custom color prop', () => {
+    (useTranslation as any).mockReturnValue({
+      i18n: {
+        language: 'en',
+        changeLanguage: mockChangeLanguage,
+      },
     });
 
-    it('applies custom color prop', () => {
-        (useTranslation as any).mockReturnValue({
-            i18n: {
-                language: 'en',
-                changeLanguage: mockChangeLanguage,
-            },
-        });
+    render(<LanguageSwitcher color="secondary" />);
 
-        render(<LanguageSwitcher color="secondary" />);
+    const select = screen.getByTestId('language-select');
+    expect(select);
+  });
 
-        const select = screen.getByTestId('language-select');
-        expect(select)
+  it('applies custom interface prop', () => {
+    (useTranslation as any).mockReturnValue({
+      i18n: {
+        language: 'en',
+        changeLanguage: mockChangeLanguage,
+      },
     });
 
-    it('applies custom interface prop', () => {
-        (useTranslation as any).mockReturnValue({
-            i18n: {
-                language: 'en',
-                changeLanguage: mockChangeLanguage,
-            },
-        });
+    render(<LanguageSwitcher interface="action-sheet" />);
 
-        render(<LanguageSwitcher interface="action-sheet" />);
-
-        const select = screen.getByTestId('language-select');
-        expect(select)
-    });
+    const select = screen.getByTestId('language-select');
+    expect(select);
+  });
 });

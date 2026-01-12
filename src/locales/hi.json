@@ -1,50 +1,50 @@
 {
-    "common": {
-        "home": "होम",
-        "dashboard": "डैशबोर्ड",
-        "profile": "प्रोफ़ाइल",
-        "loading": "लोड हो रहा है...",
-        "error": "त्रुटि",
-        "success": "सफलता"
-    },
-    "home": {
-        "title": "सनबर्ड - होम",
-        "welcome": "सनबर्ड शिक्षा में आपका स्वागत है",
-        "description": "आयोनिक रिएक्ट द्वारा संचालित आपका शैक्षिक प्रबंधन साथी ऐप।",
-        "quickActions": "त्वरित कार्य",
-        "viewStudents": "छात्रों को देखें",
-        "trackProgress": "प्रगति ट्रैक करें"
-    },
-    "dashboard": {
-        "title": "सनबर्ड - डैशबोर्ड",
-        "welcome": "डैशबोर्ड अवलोकन",
-        "description": "अपनी शैक्षिक गतिविधियों और प्रदर्शन की निगरानी करें।",
-        "statistics": "सांख्यिकी",
-        "totalStudents": "कुल छात्र",
-        "studentsEnrolled": "छात्र नामांकित",
-        "activeSessions": "सक्रिय सत्र",
-        "ongoingSessions": "चल रहे सत्र",
-        "completionRate": "पूर्णता दर",
-        "averageCompletion": "औसत पूर्णता",
-        "activeStudents": "सक्रिय छात्र",
-        "completedCourses": "पूर्ण किए गए पाठ्यक्रम",
-        "viewDetails": "विवरण देखें",
-        "viewReports": "रिपोर्ट देखें"
-    },
-    "profile": {
-        "title": "सनबर्ड - प्रोफ़ाइल",
-        "welcome": "उपयोगकर्ता प्रोफ़ाइल",
-        "description": "अपनी खाता सेटिंग्स और प्राथमिकताओं को प्रबंधित करें।",
-        "teacherName": "शिक्षक का नाम",
-        "accountSettings": "खाता सेटिंग्स",
-        "role": "भूमिका",
-        "primaryTeacher": "प्राथमिक शिक्षक",
-        "school": "स्कूल",
-        "demoSchool": "डेमो स्कूल",
-        "memberSince": "सदस्य बने",
-        "january2025": "जनवरी 2025",
-        "logout": "लॉग आउट",
-        "editProfile": "प्रोफ़ाइल संपादित करें",
-        "changePassword": "पासवर्ड बदलें"
-    }
+  "common": {
+    "home": "होम",
+    "dashboard": "डैशबोर्ड",
+    "profile": "प्रोफ़ाइल",
+    "loading": "लोड हो रहा है...",
+    "error": "त्रुटि",
+    "success": "सफलता"
+  },
+  "home": {
+    "title": "सनबर्ड - होम",
+    "welcome": "सनबर्ड शिक्षा में आपका स्वागत है",
+    "description": "आयोनिक रिएक्ट द्वारा संचालित आपका शैक्षिक प्रबंधन साथी ऐप।",
+    "quickActions": "त्वरित कार्य",
+    "viewStudents": "छात्रों को देखें",
+    "trackProgress": "प्रगति ट्रैक करें"
+  },
+  "dashboard": {
+    "title": "सनबर्ड - डैशबोर्ड",
+    "welcome": "डैशबोर्ड अवलोकन",
+    "description": "अपनी शैक्षिक गतिविधियों और प्रदर्शन की निगरानी करें।",
+    "statistics": "सांख्यिकी",
+    "totalStudents": "कुल छात्र",
+    "studentsEnrolled": "छात्र नामांकित",
+    "activeSessions": "सक्रिय सत्र",
+    "ongoingSessions": "चल रहे सत्र",
+    "completionRate": "पूर्णता दर",
+    "averageCompletion": "औसत पूर्णता",
+    "activeStudents": "सक्रिय छात्र",
+    "completedCourses": "पूर्ण किए गए पाठ्यक्रम",
+    "viewDetails": "विवरण देखें",
+    "viewReports": "रिपोर्ट देखें"
+  },
+  "profile": {
+    "title": "सनबर्ड - प्रोफ़ाइल",
+    "welcome": "उपयोगकर्ता प्रोफ़ाइल",
+    "description": "अपनी खाता सेटिंग्स और प्राथमिकताओं को प्रबंधित करें।",
+    "teacherName": "शिक्षक का नाम",
+    "accountSettings": "खाता सेटिंग्स",
+    "role": "भूमिका",
+    "primaryTeacher": "प्राथमिक शिक्षक",
+    "school": "स्कूल",
+    "demoSchool": "डेमो स्कूल",
+    "memberSince": "सदस्य बने",
+    "january2025": "जनवरी 2025",
+    "logout": "लॉग आउट",
+    "editProfile": "प्रोफ़ाइल संपादित करें",
+    "changePassword": "पासवर्ड बदलें"
+  }
 }

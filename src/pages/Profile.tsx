@@ -1,19 +1,19 @@
 import {
-  IonContent,
-  IonHeader,
-  IonPage,
-  IonTitle,
-  IonToolbar,
+  IonAvatar,
+  IonButton,
+  IonButtons,
   IonCard,
+  IonCardContent,
   IonCardHeader,
   IonCardTitle,
-  IonCardContent,
-  IonAvatar,
+  IonContent,
+  IonHeader,
   IonItem,
   IonLabel,
   IonList,
-  IonButton,
-  IonButtons,
+  IonPage,
+  IonTitle,
+  IonToolbar,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';

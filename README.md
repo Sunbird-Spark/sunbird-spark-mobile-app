@@ -25,6 +25,7 @@ A mobile application built with Ionic React framework for educational purposes.
 ## 🛠️ Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-org/sunbird-mobile-app.git
    cd sunbird-mobile-app
@@ -57,26 +58,31 @@ npm run preview
 ## 🧪 Testing
 
 ### Run all tests
+
 ```bash
 npm test
 ```
 
 ### Watch mode
+
 ```bash
 npm test
 ```
 
 ### Run tests once
+
 ```bash
 npm run test:run
 ```
 
 ### Coverage report
+
 ```bash
 npm run test:coverage
 ```
 
 ### Test UI
+
 ```bash
 npm run test:ui
 ```
@@ -175,6 +181,7 @@ The project includes automated checks on pull requests:
 ## 🤝 Contributing
 
 1. Create a new branch from `develop`
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -185,6 +192,7 @@ The project includes automated checks on pull requests:
    - Code coverage meets threshold
 
 3. Commit your changes following conventional commits:
+
    ```bash
    git commit -m "feat: add new feature"
    ```
@@ -193,18 +201,18 @@ The project includes automated checks on pull requests:
 
 ## 📝 Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm test` | Run tests in watch mode |
-| `npm run test:run` | Run tests once |
-| `npm run test:ui` | Open Vitest UI |
-| `npm run test:coverage` | Generate coverage report |
-| `npm run type-check` | Type check without emitting |
-| `npm run lint` | Check code quality |
-| `npm run lint:fix` | Fix linting issues |
+| Script                  | Description                 |
+| ----------------------- | --------------------------- |
+| `npm run dev`           | Start development server    |
+| `npm run build`         | Build for production        |
+| `npm run preview`       | Preview production build    |
+| `npm test`              | Run tests in watch mode     |
+| `npm run test:run`      | Run tests once              |
+| `npm run test:ui`       | Open Vitest UI              |
+| `npm run test:coverage` | Generate coverage report    |
+| `npm run type-check`    | Type check without emitting |
+| `npm run lint`          | Check code quality          |
+| `npm run lint:fix`      | Fix linting issues          |
 
 ## 🔧 Configuration
 

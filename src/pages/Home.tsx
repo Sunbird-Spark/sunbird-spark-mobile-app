@@ -1,15 +1,15 @@
 import {
+  IonButton,
+  IonButtons,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
   IonContent,
   IonHeader,
   IonPage,
   IonTitle,
   IonToolbar,
-  IonCard,
-  IonCardHeader,
-  IonCardTitle,
-  IonCardContent,
-  IonButton,
-  IonButtons,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import LanguageSwitcher from '../components/LanguageSwitcher';
@@ -38,9 +38,7 @@ const Home: React.FC = () => {
             <IonCardHeader>
               <IonCardTitle>{t('home.welcome')}</IonCardTitle>
             </IonCardHeader>
-            <IonCardContent>
-              {t('home.description')}
-            </IonCardContent>
+            <IonCardContent>{t('home.description')}</IonCardContent>
           </IonCard>
 
           <IonCard>

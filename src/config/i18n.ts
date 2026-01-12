@@ -4,26 +4,24 @@ import en from '../locales/en.json';
 import hi from '../locales/hi.json';
 
 const resources = {
-    en: {
-        translation: en,
-    },
-    hi: {
-        translation: hi,
-    },
+  en: {
+    translation: en,
+  },
+  hi: {
+    translation: hi,
+  },
 };
 
-i18n
-    .use(initReactI18next)
-    .init({
-        resources,
-        lng: 'en', // default language
-        fallbackLng: 'en',
-        interpolation: {
-            escapeValue: false, // React already escapes values
-        },
-        react: {
-            useSuspense: false,
-        },
-    });
+i18n.use(initReactI18next).init({
+  resources,
+  lng: 'en', // default language
+  fallbackLng: 'en',
+  interpolation: {
+    escapeValue: false, // React already escapes values
+  },
+  react: {
+    useSuspense: false,
+  },
+});
 
 export default i18n;

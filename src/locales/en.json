@@ -1,50 +1,50 @@
 {
-    "common": {
-        "home": "Home",
-        "dashboard": "Dashboard",
-        "profile": "Profile",
-        "loading": "Loading...",
-        "error": "Error",
-        "success": "Success"
-    },
-    "home": {
-        "title": "Sunbird - Home",
-        "welcome": "Welcome to Sunbird Education",
-        "description": "Your educational management companion app powered by Ionic React.",
-        "quickActions": "Quick Actions",
-        "viewStudents": "View Students",
-        "trackProgress": "Track Progress"
-    },
-    "dashboard": {
-        "title": "Sunbird - Dashboard",
-        "welcome": "Dashboard Overview",
-        "description": "Monitor your educational activities and performance.",
-        "statistics": "Statistics",
-        "totalStudents": "Total Students",
-        "studentsEnrolled": "students enrolled",
-        "activeSessions": "Active Sessions",
-        "ongoingSessions": "ongoing sessions",
-        "completionRate": "Completion Rate",
-        "averageCompletion": "average completion",
-        "activeStudents": "Active Students",
-        "completedCourses": "Completed Courses",
-        "viewDetails": "View Details",
-        "viewReports": "View Reports"
-    },
-    "profile": {
-        "title": "Sunbird - Profile",
-        "welcome": "User Profile",
-        "description": "Manage your account settings and preferences.",
-        "teacherName": "Teacher Name",
-        "accountSettings": "Account Settings",
-        "role": "Role",
-        "primaryTeacher": "Primary Teacher",
-        "school": "School",
-        "demoSchool": "Demo School",
-        "memberSince": "Member Since",
-        "january2025": "January 2025",
-        "logout": "Logout",
-        "editProfile": "Edit Profile",
-        "changePassword": "Change Password"
-    }
+  "common": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "profile": "Profile",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success"
+  },
+  "home": {
+    "title": "Sunbird - Home",
+    "welcome": "Welcome to Sunbird Education",
+    "description": "Your educational management companion app powered by Ionic React.",
+    "quickActions": "Quick Actions",
+    "viewStudents": "View Students",
+    "trackProgress": "Track Progress"
+  },
+  "dashboard": {
+    "title": "Sunbird - Dashboard",
+    "welcome": "Dashboard Overview",
+    "description": "Monitor your educational activities and performance.",
+    "statistics": "Statistics",
+    "totalStudents": "Total Students",
+    "studentsEnrolled": "students enrolled",
+    "activeSessions": "Active Sessions",
+    "ongoingSessions": "ongoing sessions",
+    "completionRate": "Completion Rate",
+    "averageCompletion": "average completion",
+    "activeStudents": "Active Students",
+    "completedCourses": "Completed Courses",
+    "viewDetails": "View Details",
+    "viewReports": "View Reports"
+  },
+  "profile": {
+    "title": "Sunbird - Profile",
+    "welcome": "User Profile",
+    "description": "Manage your account settings and preferences.",
+    "teacherName": "Teacher Name",
+    "accountSettings": "Account Settings",
+    "role": "Role",
+    "primaryTeacher": "Primary Teacher",
+    "school": "School",
+    "demoSchool": "Demo School",
+    "memberSince": "Member Since",
+    "january2025": "January 2025",
+    "logout": "Logout",
+    "editProfile": "Edit Profile",
+    "changePassword": "Change Password"
+  }
 }
