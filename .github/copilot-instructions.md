@@ -15,6 +15,71 @@
 - **Icons**: Ionicons 7.4.0
 - **Code Quality**: ESLint, Prettier 3.7.4
 
+## Code Formatting Standards
+
+### Prettier Configuration
+
+All generated code MUST follow the project's Prettier configuration:
+
+```json
+{
+  "semi": true,
+  "trailingComma": "all",
+  "singleQuote": true,
+  "printWidth": 100,
+  "tabWidth": 2,
+  "useTabs": false,
+  "jsxSingleQuote": false,
+  "bracketSpacing": true,
+  "arrowParens": "always",
+  "endOfLine": "auto",
+  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-tailwindcss"]
+}
+```
+
+**Key formatting rules:**
+- ✅ Use **single quotes** for strings (except JSX attributes)
+- ✅ Use **double quotes** in JSX attributes
+- ✅ Always include **semicolons**
+- ✅ Add **trailing commas** in arrays, objects, function parameters
+- ✅ **2 spaces** for indentation (no tabs)
+- ✅ **100 character** line width limit
+- ✅ Always use **parentheses around arrow function parameters**
+- ✅ Include **spaces inside object braces**: `{ foo: 'bar' }`
+- ✅ **Imports auto-organized** by prettier-plugin-organize-imports
+- ✅ **Tailwind classes auto-sorted** by prettier-plugin-tailwindcss
+
+### Formatting Examples
+
+```typescript
+// ✅ CORRECT: Single quotes, trailing commas, semicolons
+import { IonButton } from '@ionic/react';
+
+const user = {
+  name: 'John',
+  email: 'john@example.com',
+};
+
+const greet = (name: string): string => {
+  return `Hello, ${name}`;
+};
+
+// ✅ CORRECT: JSX uses double quotes
+<IonButton color="primary" onClick={() => handleClick('value')}>
+  Click Me
+</IonButton>
+
+// ❌ INCORRECT: Missing trailing commas, no semicolons
+const user = {
+  name: "John",
+  email: "john@example.com"
+}
+```
+
+**Before committing code:**
+- Run `npm run format` to check formatting
+- Run `npm run format:write` to auto-fix formatting issues
+
 ## Language Guidelines
 
 ### TypeScript Requirements
@@ -338,10 +403,13 @@ npx cap run ios          # Run on iOS device/simulator
 
 ### ESLint & Prettier
 
+- **Generate code** that conforms to Prettier configuration automatically
 - **Run ESLint** before commits
 - **Format with Prettier** for consistency
 - **Fix lint errors** not warnings as minimum
 - **Use consistent imports** - alphabetize when possible
+- **Verify formatting** with `npm run format` before committing
+- **Auto-fix formatting** with `npm run format:write` if needed
 
 ### Git Commit Guidelines
 
