@@ -35,7 +35,7 @@ const Home: React.FC = () => {
               Your educational management companion app powered by Ionic React.
             </IonCardContent>
           </IonCard>
-          
+
           <IonCard>
             <IonCardHeader>
               <IonCardTitle>Quick Actions</IonCardTitle>

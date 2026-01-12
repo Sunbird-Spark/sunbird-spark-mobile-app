@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import Home from './Home';
 
 // Mock Ionic components
@@ -29,7 +30,7 @@ describe('Home Component', () => {
   });
 
   it('renders the page title', () => {
-    expect(screen.getByText('Sahayak - Home')).toBeInTheDocument();
+    expect(screen.getByText('Sunbird - Home')).toBeInTheDocument();
   });
 
   it('renders the condensed header title', () => {
@@ -37,7 +38,7 @@ describe('Home Component', () => {
   });
 
   it('renders welcome card with title', () => {
-    expect(screen.getByText('Welcome to Sahayak')).toBeInTheDocument();
+    expect(screen.getByText('Welcome to Sunbird Education')).toBeInTheDocument();
   });
 
   it('renders welcome message', () => {
