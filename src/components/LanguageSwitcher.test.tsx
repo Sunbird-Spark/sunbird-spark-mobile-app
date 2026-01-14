@@ -50,8 +50,9 @@ describe('LanguageSwitcher', () => {
     render(<LanguageSwitcher />);
 
     const select = screen.getByTestId('language-select');
-    expect(select);
-    expect(select);
+    expect(select).toBeDefined();
+    expect((select as HTMLSelectElement).value).toBe('en');
+    expect(select.getAttribute('data-color')).toBe('primary');
   });
 
   it('renders with Hindi as current language', () => {
@@ -65,7 +66,8 @@ describe('LanguageSwitcher', () => {
     render(<LanguageSwitcher />);
 
     const select = screen.getByTestId('language-select');
-    expect(select);
+    expect(select).toBeDefined();
+    expect((select as HTMLSelectElement).value).toBe('hi');
   });
 
   it('displays all available languages', () => {
@@ -109,7 +111,8 @@ describe('LanguageSwitcher', () => {
     render(<LanguageSwitcher color="secondary" />);
 
     const select = screen.getByTestId('language-select');
-    expect(select);
+    expect(select).toBeDefined();
+    expect(select.getAttribute('data-color')).toBe('secondary');
   });
 
   it('applies custom interface prop', () => {
@@ -123,6 +126,7 @@ describe('LanguageSwitcher', () => {
     render(<LanguageSwitcher interface="action-sheet" />);
 
     const select = screen.getByTestId('language-select');
-    expect(select);
+    expect(select).toBeDefined();
+    expect(select.getAttribute('data-interface')).toBe('action-sheet');
   });
 });

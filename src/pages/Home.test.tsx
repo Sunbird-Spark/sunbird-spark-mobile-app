@@ -106,22 +106,25 @@ describe('Home Component', () => {
     render(<Home />);
     const buttons = screen.getAllByTestId('ion-button');
     const viewStudentsButton = buttons.find((btn) => btn.textContent === 'home.viewStudents');
-    expect(viewStudentsButton);
-    expect(viewStudentsButton);
+    expect(viewStudentsButton).toBeDefined();
+    expect(viewStudentsButton?.getAttribute('data-color')).toBe('primary');
+    expect(viewStudentsButton?.getAttribute('data-expand')).toBe('block');
   });
 
   it('Track Progress button has correct props', () => {
     render(<Home />);
     const buttons = screen.getAllByTestId('ion-button');
     const trackProgressButton = buttons.find((btn) => btn.textContent === 'home.trackProgress');
-    expect(trackProgressButton);
-    expect(trackProgressButton);
-    expect(trackProgressButton);
+    expect(trackProgressButton).toBeDefined();
+    expect(trackProgressButton?.getAttribute('data-color')).toBe('secondary');
+    expect(trackProgressButton?.getAttribute('data-expand')).toBe('block');
+    expect(trackProgressButton?.className).toContain('ion-margin-top');
   });
 
   it('renders fullscreen content', () => {
     render(<Home />);
     const content = screen.getByTestId('ion-content');
-    expect(content);
+    expect(content).toBeDefined();
+    expect(content.getAttribute('data-fullscreen')).toBe('true');
   });
 });
