@@ -1,8 +1,8 @@
-# Sahayak Mobile App - Coding Instructions
+# SunbirdEd Mobile App - Coding Instructions
 
 ## Project Overview
 
-**Sahayak** is a hybrid mobile application built with Ionic Framework and Capacitor, enabling cross-platform deployment (Android/iOS) from a single React codebase.
+**SunbirdEd Mobile App** is a hybrid mobile application built with Ionic Framework and Capacitor, enabling cross-platform deployment (Android/iOS) from a single React codebase.
 
 ## Technology Stack
 
