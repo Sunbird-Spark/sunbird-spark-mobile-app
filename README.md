@@ -27,7 +27,7 @@ A mobile application built with Ionic React framework for educational purposes.
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-org/sunbird-mobile-app.git
+   git clone https://github.com/<your-org>/sunbird-mobile-app.git
    cd sunbird-mobile-app
    ```
 
