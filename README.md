@@ -176,7 +176,6 @@ The project includes automated checks on pull requests:
 
 - **Lint Check**: Validates code style and quality
 - **Test Suite**: Runs all tests with coverage
-- **SonarCloud**: Code quality and security analysis
 
 ## 🤝 Contributing
 
