@@ -9,7 +9,7 @@
 - **Framework**: Ionic React 8.7.16, React 19.2.1
 - **Language**: TypeScript 5.9.3
 - **Build Tools**: Vite 7.3.1, Capacitor 7.4.4
-- **Testing**: Jest 30.2.0, React Testing Library 16.3.1
+- **Testing**: Vitest 4.0.16, React Testing Library 16.3.1
 - **Styling**: Ionic CSS Components + Tailwind CSS 4.1.18
 - **Routing**: Ionic React Router (based on React Router 5.3.4)
 - **Icons**: Ionicons 7.4.0
