@@ -29,8 +29,8 @@ vi.mock('@ionic/react-router', () => ({
 
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
-  Route: ({ path, component: Component }: any) => (
-    <div data-testid={`route-${path}`}>{Component && <Component />}</div>
+  Route: ({ path, component: Component, children }: any) => (
+    <div data-testid={`route-${path}`}>{children ?? (Component && <Component />)}</div>
   ),
   Redirect: ({ from, to, exact }: any) => <div data-testid={`redirect-${to}`}>Redirect</div>,
 }));
