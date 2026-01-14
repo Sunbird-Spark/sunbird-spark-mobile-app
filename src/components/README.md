@@ -1,6 +1,6 @@
 # Components
 
-Reusable UI components for the Sunbird mobile app.
+Reusable UI components for the SunbirdEd mobile app.
 
 ## Available Components
 
