@@ -347,7 +347,8 @@ describe('MyComponent', () => {
 
 ```bash
 npm run test              # Run all tests
-npm run test:watch        # Watch mode
+npm run test:ui           # Run tests with the UI runner
+npm run test:run          # Run tests (e.g., in watch or CLI mode)
 npm run test:coverage     # Generate coverage report
 ```
 
