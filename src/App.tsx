@@ -61,15 +61,15 @@ const App: React.FC = () => {
           <IonTabBar slot="bottom">
             <IonTabButton tab="home" href="/home">
               <IonIcon aria-hidden="true" icon={home} />
-              <IonLabel>{t('common.home')}</IonLabel>
+              <IonLabel>{t('home')}</IonLabel>
             </IonTabButton>
             <IonTabButton tab="dashboard" href="/dashboard">
               <IonIcon aria-hidden="true" icon={statsChart} />
-              <IonLabel>{t('common.dashboard')}</IonLabel>
+              <IonLabel>{t('dashboard')}</IonLabel>
             </IonTabButton>
             <IonTabButton tab="profile" href="/profile">
               <IonIcon aria-hidden="true" icon={person} />
-              <IonLabel>{t('common.profile')}</IonLabel>
+              <IonLabel>{t('profile')}</IonLabel>
             </IonTabButton>
           </IonTabBar>
         </IonTabs>

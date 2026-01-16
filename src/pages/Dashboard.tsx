@@ -22,7 +22,7 @@ const Dashboard: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('dashboard.title')}</IonTitle>
+          <IonTitle>{t('dashboardTitle')}</IonTitle>
           <IonButtons slot="end">
             <LanguageSwitcher />
           </IonButtons>
@@ -31,33 +31,33 @@ const Dashboard: React.FC = () => {
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">{t('common.dashboard')}</IonTitle>
+            <IonTitle size="large">{t('dashboard')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <div className="ion-padding">
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle>{t('dashboard.welcome')}</IonCardTitle>
+              <IonCardTitle>{t('dashboardOverview')}</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
-              <p>{t('dashboard.description')}</p>
+              <p>{t('dashboardDescription')}</p>
               <IonList>
                 <IonItem>
                   <IonLabel>
-                    <h2>{t('dashboard.totalStudents')}</h2>
-                    <p>125 {t('dashboard.studentsEnrolled')}</p>
+                    <h2>{t('totalStudents')}</h2>
+                    <p>125 {t('studentsEnrolled')}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem>
                   <IonLabel>
-                    <h2>{t('dashboard.activeSessions')}</h2>
-                    <p>12 {t('dashboard.ongoingSessions')}</p>
+                    <h2>{t('activeSessions')}</h2>
+                    <p>12 {t('ongoingSessions')}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem>
                   <IonLabel>
-                    <h2>{t('dashboard.completionRate')}</h2>
-                    <p>87% {t('dashboard.averageCompletion')}</p>
+                    <h2>{t('completionRate')}</h2>
+                    <p>87% {t('averageCompletion')}</p>
                   </IonLabel>
                 </IonItem>
               </IonList>

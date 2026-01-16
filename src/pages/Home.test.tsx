@@ -64,12 +64,12 @@ describe('Home Component', () => {
 
   it('renders the page title', () => {
     render(<Home />);
-    expect(screen.getByText('home.title'));
+    expect(screen.getByText('homeTitle'));
   });
 
   it('renders the condensed header title', () => {
     render(<Home />);
-    expect(screen.getByText('common.home'));
+    expect(screen.getByText('home'));
   });
 
   it('renders language switcher', () => {
@@ -79,33 +79,33 @@ describe('Home Component', () => {
 
   it('renders welcome card with title', () => {
     render(<Home />);
-    expect(screen.getByText('home.welcome'));
+    expect(screen.getByText('welcomeToSunbird'));
   });
 
   it('renders welcome message', () => {
     render(<Home />);
-    expect(screen.getByText('home.description'));
+    expect(screen.getByText('homeDescription'));
   });
 
   it('renders Quick Actions card', () => {
     render(<Home />);
-    expect(screen.getByText('home.quickActions'));
+    expect(screen.getByText('quickActions'));
   });
 
   it('renders View Students button', () => {
     render(<Home />);
-    expect(screen.getByText('home.viewStudents'));
+    expect(screen.getByText('viewStudents'));
   });
 
   it('renders Track Progress button', () => {
     render(<Home />);
-    expect(screen.getByText('home.trackProgress'));
+    expect(screen.getByText('trackProgress'));
   });
 
   it('View Students button has correct props', () => {
     render(<Home />);
     const buttons = screen.getAllByTestId('ion-button');
-    const viewStudentsButton = buttons.find((btn) => btn.textContent === 'home.viewStudents');
+    const viewStudentsButton = buttons.find((btn) => btn.textContent === 'viewStudents');
     expect(viewStudentsButton).toBeDefined();
     expect(viewStudentsButton?.getAttribute('data-color')).toBe('primary');
     expect(viewStudentsButton?.getAttribute('data-expand')).toBe('block');
@@ -114,7 +114,7 @@ describe('Home Component', () => {
   it('Track Progress button has correct props', () => {
     render(<Home />);
     const buttons = screen.getAllByTestId('ion-button');
-    const trackProgressButton = buttons.find((btn) => btn.textContent === 'home.trackProgress');
+    const trackProgressButton = buttons.find((btn) => btn.textContent === 'trackProgress');
     expect(trackProgressButton).toBeDefined();
     expect(trackProgressButton?.getAttribute('data-color')).toBe('secondary');
     expect(trackProgressButton?.getAttribute('data-expand')).toBe('block');

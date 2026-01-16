@@ -63,12 +63,12 @@ describe('Dashboard Component', () => {
 
   it('renders the page title', () => {
     render(<Dashboard />);
-    expect(screen.getByText('dashboard.title'));
+    expect(screen.getByText('dashboardTitle'));
   });
 
   it('renders the condensed header title', () => {
     render(<Dashboard />);
-    expect(screen.getByText('common.dashboard'));
+    expect(screen.getByText('dashboard'));
   });
 
   it('renders language switcher', () => {
@@ -78,12 +78,12 @@ describe('Dashboard Component', () => {
 
   it('renders welcome card', () => {
     render(<Dashboard />);
-    expect(screen.getByText('dashboard.welcome'));
+    expect(screen.getByText('dashboardOverview'));
   });
 
   it('renders description', () => {
     render(<Dashboard />);
-    expect(screen.getByText('dashboard.description'));
+    expect(screen.getByText('dashboardDescription'));
   });
 
   it('renders statistics list', () => {
@@ -93,22 +93,22 @@ describe('Dashboard Component', () => {
 
   it('renders Total Students stat', () => {
     render(<Dashboard />);
-    expect(screen.getByText('dashboard.totalStudents'));
+    expect(screen.getByText('totalStudents'));
     expect(screen.getByText(/125/));
   });
 
   it('renders Active Sessions stat', () => {
     render(<Dashboard />);
-    expect(screen.getByText('dashboard.activeSessions'));
+    expect(screen.getByText('activeSessions'));
     const sessionText = screen.getByText((content, element) => {
-      return element?.textContent === '12 dashboard.ongoingSessions';
+      return element?.textContent === '12 ongoingSessions';
     });
     expect(sessionText);
   });
 
   it('renders Completion Rate stat', () => {
     render(<Dashboard />);
-    expect(screen.getByText('dashboard.completionRate'));
+    expect(screen.getByText('completionRate'));
     expect(screen.getByText(/87%/));
   });
 

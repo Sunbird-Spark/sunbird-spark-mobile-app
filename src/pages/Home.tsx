@@ -21,7 +21,7 @@ const Home: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('home.title')}</IonTitle>
+          <IonTitle>{t('homeTitle')}</IonTitle>
           <IonButtons slot="end">
             <LanguageSwitcher />
           </IonButtons>
@@ -30,27 +30,27 @@ const Home: React.FC = () => {
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">{t('common.home')}</IonTitle>
+            <IonTitle size="large">{t('home')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <div className="ion-padding">
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle>{t('home.welcome')}</IonCardTitle>
+              <IonCardTitle>{t('welcomeToSunbird')}</IonCardTitle>
             </IonCardHeader>
-            <IonCardContent>{t('home.description')}</IonCardContent>
+            <IonCardContent>{t('homeDescription')}</IonCardContent>
           </IonCard>
 
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle>{t('home.quickActions')}</IonCardTitle>
+              <IonCardTitle>{t('quickActions')}</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <IonButton expand="block" color="primary">
-                {t('home.viewStudents')}
+                {t('viewStudents')}
               </IonButton>
               <IonButton expand="block" color="secondary" className="ion-margin-top">
-                {t('home.trackProgress')}
+                {t('trackProgress')}
               </IonButton>
             </IonCardContent>
           </IonCard>

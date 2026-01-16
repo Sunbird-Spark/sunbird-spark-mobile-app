@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>{t('profile.title')}</IonTitle>
+          <IonTitle>{t('profileTitle')}</IonTitle>
           <IonButtons slot="end">
             <LanguageSwitcher />
           </IonButtons>
@@ -33,7 +33,7 @@ const Profile: React.FC = () => {
       <IonContent fullscreen>
         <IonHeader collapse="condense">
           <IonToolbar>
-            <IonTitle size="large">{t('common.profile')}</IonTitle>
+            <IonTitle size="large">{t('profile')}</IonTitle>
           </IonToolbar>
         </IonHeader>
         <div className="ion-padding">
@@ -42,33 +42,33 @@ const Profile: React.FC = () => {
               <IonAvatar style={{ width: '100px', height: '100px', margin: '0 auto' }}>
                 <img alt="Profile" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
               </IonAvatar>
-              <h2>{t('profile.teacherName')}</h2>
-              <p>teacher@sahayak.com</p>
+              <h2>{t('teacherName')}</h2>
+              <p>teacher@gmail.com</p>
             </IonCardContent>
           </IonCard>
 
           <IonCard>
             <IonCardHeader>
-              <IonCardTitle>{t('profile.accountSettings')}</IonCardTitle>
+              <IonCardTitle>{t('accountSettings')}</IonCardTitle>
             </IonCardHeader>
             <IonCardContent>
               <IonList>
                 <IonItem>
                   <IonLabel>
-                    <h3>{t('profile.role')}</h3>
-                    <p>{t('profile.primaryTeacher')}</p>
+                    <h3>{t('role')}</h3>
+                    <p>{t('primaryTeacher')}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem>
                   <IonLabel>
-                    <h3>{t('profile.school')}</h3>
-                    <p>{t('profile.demoSchool')}</p>
+                    <h3>{t('school')}</h3>
+                    <p>{t('demoSchool')}</p>
                   </IonLabel>
                 </IonItem>
                 <IonItem>
                   <IonLabel>
-                    <h3>{t('profile.memberSince')}</h3>
-                    <p>{t('profile.january2025')}</p>
+                    <h3>{t('memberSince')}</h3>
+                    <p>{t('january2025')}</p>
                   </IonLabel>
                 </IonItem>
               </IonList>
@@ -76,7 +76,7 @@ const Profile: React.FC = () => {
           </IonCard>
 
           <IonButton expand="block" color="danger">
-            {t('profile.logout')}
+            {t('logout')}
           </IonButton>
         </div>
       </IonContent>

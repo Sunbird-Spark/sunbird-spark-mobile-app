@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'org.ekstep.axl.companion.app',
-  appName: 'Sahayak',
+  appId: 'sunbirded-mobile-app',
+  appName: 'SunbirdEd Mobile App',
   webDir: 'dist',
   plugins: {
     CapacitorHttp: {

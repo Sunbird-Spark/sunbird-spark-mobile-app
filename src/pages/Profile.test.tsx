@@ -77,12 +77,12 @@ describe('Profile Component', () => {
 
   it('renders the page title', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.title'));
+    expect(screen.getByText('profileTitle'));
   });
 
   it('renders the condensed header title', () => {
     render(<Profile />);
-    expect(screen.getByText('common.profile'));
+    expect(screen.getByText('profile'));
   });
 
   it('renders language switcher', () => {
@@ -98,46 +98,46 @@ describe('Profile Component', () => {
 
   it('renders teacher name', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.teacherName'));
+    expect(screen.getByText('teacherName'));
   });
 
   it('renders email', () => {
     render(<Profile />);
-    expect(screen.getByText('teacher@sahayak.com'));
+    expect(screen.getByText('teacher@gmail.com'));
   });
 
   it('renders account settings card', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.accountSettings'));
+    expect(screen.getByText('accountSettings'));
   });
 
   it('renders role information', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.role'));
-    expect(screen.getByText('profile.primaryTeacher'));
+    expect(screen.getByText('role'));
+    expect(screen.getByText('primaryTeacher'));
   });
 
   it('renders school information', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.school'));
-    expect(screen.getByText('profile.demoSchool'));
+    expect(screen.getByText('school'));
+    expect(screen.getByText('demoSchool'));
   });
 
   it('renders member since information', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.memberSince'));
-    expect(screen.getByText('profile.january2025'));
+    expect(screen.getByText('memberSince'));
+    expect(screen.getByText('january2025'));
   });
 
   it('renders logout button', () => {
     render(<Profile />);
-    expect(screen.getByText('profile.logout'));
+    expect(screen.getByText('logout'));
   });
 
   it('logout button has danger color', () => {
     render(<Profile />);
     const buttons = screen.getAllByTestId('ion-button');
-    const logoutButton = buttons.find((btn) => btn.textContent === 'profile.logout');
+    const logoutButton = buttons.find((btn) => btn.textContent === 'logout');
     expect(logoutButton);
     expect(logoutButton);
   });
