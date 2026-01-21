@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import {
   IonApp,
   IonIcon,
@@ -15,6 +16,8 @@ import { Redirect, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Profile from './pages/Profile';
+
+import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -40,6 +43,24 @@ setupIonicReact();
 
 const App: React.FC = () => {
   const { t } = useTranslation();
+
+const googleClientId = import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID;
+
+useEffect(() => {
+  (async () => {
+    try {
+      if (googleClientId) {
+        await socialLoginService.initGoogle(googleClientId);
+      } else {
+        console.warn('Missing VITE_GOOGLE_WEB_CLIENT_ID');
+      }
+    } catch (e) {
+      console.log('Google init failed', e);
+    }
+  })();
+}, [googleClientId]);
+
+
   return (
     <IonApp>
       <IonReactRouter>
@@ -58,15 +79,18 @@ const App: React.FC = () => {
               <Redirect to="/home" />
             </Route>
           </IonRouterOutlet>
+
           <IonTabBar slot="bottom">
             <IonTabButton tab="home" href="/home">
               <IonIcon aria-hidden="true" icon={home} />
               <IonLabel>{t('home')}</IonLabel>
             </IonTabButton>
+
             <IonTabButton tab="dashboard" href="/dashboard">
               <IonIcon aria-hidden="true" icon={statsChart} />
               <IonLabel>{t('dashboard')}</IonLabel>
             </IonTabButton>
+
             <IonTabButton tab="profile" href="/profile">
               <IonIcon aria-hidden="true" icon={person} />
               <IonLabel>{t('profile')}</IonLabel>
