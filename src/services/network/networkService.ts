@@ -57,21 +57,6 @@ class NetworkService {
   }
 
   /**
-   * refresh()
-   * - force fetch current status from plugin
-   * - updates cache
-   */
-  async refresh(): Promise<NetworkState> {
-    const status = await Network.getStatus();
-    this.state = {
-      connected: status.connected,
-      connectionType: status.connectionType,
-    };
-    this.notify();
-    return this.state;
-  }
-
-  /**
    * subscribe()
    * - lets provider/controllers listen for changes
    * - returns unsubscribe()

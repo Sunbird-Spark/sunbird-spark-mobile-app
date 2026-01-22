@@ -8,7 +8,6 @@ import { networkService, type NetworkState } from '../services/network/networkSe
 type NetworkContextValue = {
   status: NetworkState;          // full network status
   isOffline: boolean;            // derived boolean
-  refreshStatus: () => Promise<void>; // force refresh
 };
 
 /**
@@ -53,9 +52,6 @@ export const NetworkProvider: React.FC<{ children: React.ReactNode }> = ({ child
     return {
       status,
       isOffline: !status.connected,
-      refreshStatus: async () => {
-        await networkService.refresh();
-      },
     };
   }, [status]);
 

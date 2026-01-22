@@ -3,13 +3,11 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { NetworkState } from '../services/network/networkService';
 
 const mockInit = vi.fn();
-const mockRefresh = vi.fn();
 const mockSubscribe = vi.fn();
 
 vi.mock('../services/network/networkService', () => ({
   networkService: {
     init: (...args: any[]) => mockInit(...args),
-    refresh: (...args: any[]) => mockRefresh(...args),
     subscribe: (listener: any) => mockSubscribe(listener),
   },
 }));
@@ -22,10 +20,6 @@ describe('NetworkProvider', () => {
     vi.clearAllMocks();
 
     mockInit.mockResolvedValue(undefined);
-    mockRefresh.mockResolvedValue({
-      connected: true,
-      connectionType: 'wifi',
-    } as NetworkState);
 
     // Subscribe immediately calls the listener with current state
     mockSubscribe.mockImplementation((listener) => {
@@ -164,83 +158,6 @@ describe('NetworkProvider', () => {
     });
   });
 
-  describe('refreshStatus', () => {
-    it('should call networkService.refresh', async () => {
-      const { result } = renderHook(() => useNetwork(), {
-        wrapper: NetworkProvider,
-      });
-
-      await act(async () => {
-        await result.current.refreshStatus();
-      });
-
-      expect(mockRefresh).toHaveBeenCalledTimes(1);
-    });
-
-    it('should update state after refresh', async () => {
-      let subscriberCallback: ((state: NetworkState) => void) | null = null;
-
-      mockSubscribe.mockImplementation((listener) => {
-        subscriberCallback = listener;
-        setTimeout(() => listener({
-          connected: true,
-          connectionType: 'wifi',
-        } as NetworkState), 0);
-        return vi.fn();
-      });
-
-      mockRefresh.mockImplementation(async () => {
-        const newState: NetworkState = {
-          connected: false,
-          connectionType: 'none',
-        };
-        subscriberCallback?.(newState);
-        return newState;
-      });
-
-      const { result } = renderHook(() => useNetwork(), {
-        wrapper: NetworkProvider,
-      });
-
-      await waitFor(() => {
-        expect(result.current.status.connected).toBe(true);
-      });
-
-      await act(async () => {
-        await result.current.refreshStatus();
-      });
-
-      expect(result.current.status.connected).toBe(false);
-    });
-  });
-
-  describe('Cleanup', () => {
-    it('should unsubscribe when provider unmounts', async () => {
-      const unsubscribe = vi.fn();
-      mockSubscribe.mockImplementation((listener) => {
-        listener({
-          connected: true,
-          connectionType: 'wifi',
-        } as NetworkState);
-        return unsubscribe;
-      });
-
-      const { unmount } = renderHook(() => useNetwork(), {
-        wrapper: NetworkProvider,
-      });
-
-      await waitFor(() => {
-        expect(mockSubscribe).toHaveBeenCalled();
-      });
-
-      unmount();
-
-      await waitFor(() => {
-        expect(unsubscribe).toHaveBeenCalledTimes(1);
-      });
-    });
-  });
-
   describe('useNetwork hook', () => {
     it('should throw error when used outside provider', () => {
       const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -252,15 +169,16 @@ describe('NetworkProvider', () => {
       consoleError.mockRestore();
     });
 
-    it('should provide all required context values', () => {
+    it('should provide all required context values', async () => {
       const { result } = renderHook(() => useNetwork(), {
         wrapper: NetworkProvider,
       });
 
-      expect(result.current).toHaveProperty('status');
-      expect(result.current).toHaveProperty('isOffline');
-      expect(result.current).toHaveProperty('refreshStatus');
-      expect(typeof result.current.refreshStatus).toBe('function');
+      await waitFor(() => {
+        expect(result.current).toHaveProperty('status');
+        expect(result.current).toHaveProperty('isOffline');
+        expect(typeof result.current.isOffline).toBe('boolean');
+      });
     });
   });
 

@@ -130,40 +130,6 @@ describe('NetworkService', () => {
     });
   });
 
-  describe('refresh', () => {
-    it('should fetch and update current network status', async () => {
-      mockGetStatus.mockResolvedValueOnce({
-        connected: false,
-        connectionType: 'none',
-      } as ConnectionStatus);
-
-      const result = await networkService.refresh();
-
-      expect(mockGetStatus).toHaveBeenCalledTimes(1);
-      expect(result).toEqual({
-        connected: false,
-        connectionType: 'none',
-      });
-    });
-
-    it('should notify subscribers on refresh', async () => {
-      const listener = vi.fn();
-      networkService.subscribe(listener);
-
-      mockGetStatus.mockResolvedValueOnce({
-        connected: true,
-        connectionType: 'cellular',
-      } as ConnectionStatus);
-
-      await networkService.refresh();
-
-      expect(listener).toHaveBeenCalledWith({
-        connected: true,
-        connectionType: 'cellular',
-      });
-    });
-  });
-
   describe('subscribe', () => {
     it('should add listener and return unsubscribe function', () => {
       const listener = vi.fn();
@@ -192,12 +158,20 @@ describe('NetworkService', () => {
       networkService.subscribe(listener1);
       networkService.subscribe(listener2);
 
-      mockGetStatus.mockResolvedValueOnce({
+      // Trigger a network change
+      let statusChangeCallback: ((status: ConnectionStatus) => void) | null = null;
+
+      mockAddListener.mockImplementationOnce((event, callback) => {
+        statusChangeCallback = callback;
+        return Promise.resolve(mockHandle);
+      });
+
+      await networkService.init();
+
+      statusChangeCallback?.({
         connected: false,
         connectionType: 'none',
       } as ConnectionStatus);
-
-      await networkService.refresh();
 
       expect(listener1).toHaveBeenCalledWith({
         connected: false,
@@ -216,12 +190,20 @@ describe('NetworkService', () => {
       listener.mockClear();
       unsubscribe();
 
-      mockGetStatus.mockResolvedValueOnce({
+      // Trigger a network change to verify listener is not called
+      let statusChangeCallback: ((status: ConnectionStatus) => void) | null = null;
+
+      mockAddListener.mockImplementationOnce((event, callback) => {
+        statusChangeCallback = callback;
+        return Promise.resolve(mockHandle);
+      });
+
+      await networkService.init();
+
+      statusChangeCallback?.({
         connected: false,
         connectionType: 'none',
       } as ConnectionStatus);
-
-      await networkService.refresh();
 
       expect(listener).not.toHaveBeenCalled();
     });
@@ -278,19 +260,6 @@ describe('NetworkService', () => {
         connectionType: 'none',
       });
 
-      mockGetStatus.mockResolvedValueOnce({
-        connected: true,
-        connectionType: 'wifi',
-      } as ConnectionStatus);
-
-      await networkService.refresh();
-      
-      // Verify refreshed state
-      expect(listener).toHaveBeenCalledWith({
-        connected: true,
-        connectionType: 'wifi',
-      });
-
       await networkService.stop();
       expect(mockRemove).toHaveBeenCalled();
     });
@@ -307,16 +276,26 @@ describe('NetworkService', () => {
       unsub1();
       unsub2();
 
-      mockGetStatus.mockResolvedValueOnce({
+      // Trigger a network change
+      let statusChangeCallback: ((status: ConnectionStatus) => void) | null = null;
+
+      mockAddListener.mockImplementationOnce((event, callback) => {
+        statusChangeCallback = callback;
+        return Promise.resolve(mockHandle);
+      });
+
+      await networkService.init();
+
+      statusChangeCallback?.({
         connected: false,
         connectionType: 'none',
       } as ConnectionStatus);
 
-      await networkService.refresh();
-
+      // listener1 and listener2: only initial subscribe call
+      // listener3: initial subscribe + init notify + change notify = 3 calls
       expect(listener1).toHaveBeenCalledTimes(1);
       expect(listener2).toHaveBeenCalledTimes(1);
-      expect(listener3).toHaveBeenCalledTimes(2);
+      expect(listener3).toHaveBeenCalledTimes(3);
     });
   });
 });
