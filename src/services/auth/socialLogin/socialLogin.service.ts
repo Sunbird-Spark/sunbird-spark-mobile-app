@@ -1,4 +1,14 @@
-import { SocialLogin } from '@capgo/capacitor-social-login';
+import {
+  SocialLogin,
+  type GoogleLoginResponse,
+  type GoogleLoginResponseOnline,
+  type GoogleLoginResponseOffline,
+} from '@capgo/capacitor-social-login';
+
+// Extended type that includes serverAuthCode from the library's response
+interface GoogleLoginResponseExtended extends GoogleLoginResponseOnline {
+  serverAuthCode?: string;
+}
 
 export type GoogleLoginResult = {
   accessToken?: string;
@@ -14,47 +24,92 @@ export type GoogleLoginResult = {
 
 class SocialLoginService {
   private initialized = false;
+  private initializationPromise: Promise<void> | null = null;
 
   async initGoogle(webClientId: string) {
     if (this.initialized) return;
 
-    await SocialLogin.initialize({
-      google: {
-        webClientId,
-      },
-    });
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
 
-    this.initialized = true;
+    this.initializationPromise = (async () => {
+      try {
+        await SocialLogin.initialize({
+          google: {
+            webClientId,
+          },
+        });
+        this.initialized = true;
+      } catch (e) {
+        // if init fails, allow retry next time
+        this.initializationPromise = null;
+        this.initialized = false;
+        throw e;
+      }
+    })();
+
+    return this.initializationPromise;
+  }
+
+  private async ensureInitialized() {
+    if (!this.initialized) {
+      throw new Error(
+        'SocialLoginService not initialized. Call initGoogle(webClientId) before login.'
+      );
+    }
+  }
+
+  private mapGoogleResponse(
+    response: GoogleLoginResponse
+  ): GoogleLoginResult {
+    // Handle offline mode response
+    if (response.responseType === 'offline') {
+      const offlineResponse = response as GoogleLoginResponseOffline;
+      return {
+        serverAuthCode: offlineResponse.serverAuthCode,
+      };
+    }
+
+    // Handle online mode response
+    const onlineResponse = response as GoogleLoginResponseExtended;
+    return {
+      accessToken: onlineResponse.accessToken?.token,
+      idToken: onlineResponse.idToken ?? undefined,
+      email: onlineResponse.profile.email ?? undefined,
+      displayName: onlineResponse.profile.name ?? undefined,
+      familyName: onlineResponse.profile.familyName ?? undefined,
+      givenName: onlineResponse.profile.givenName ?? undefined,
+      imageUrl: onlineResponse.profile.imageUrl ?? undefined,
+      userId: onlineResponse.profile.id ?? undefined,
+      serverAuthCode: onlineResponse.serverAuthCode,
+    };
   }
 
   async loginWithGoogle(): Promise<GoogleLoginResult> {
-    const res = await SocialLogin.login({ provider: 'google' });
+    await this.ensureInitialized();
 
-    return {
-      accessToken: res.accessToken,
-      idToken: res.idToken,
-      email: res.email,
-      userId: res.userId,
-      serverAuthCode: (res as any).serverAuthCode,
-    };
+    const res = await SocialLogin.login({ provider: 'google', options: {} });
+    return this.mapGoogleResponse(res.result);
   }
 
-  async trySilentGoogleLogin(): Promise<GoogleLoginResult> {
-    const res = await SocialLogin.login({
-      provider: 'google',
-      options: { silent: true },
-    });
+  async trySilentGoogleLogin(): Promise<GoogleLoginResult | null> {
+    await this.ensureInitialized();
 
-    return {
-      accessToken: res.accessToken,
-      idToken: res.idToken,
-      email: res.email,
-      userId: res.userId,
-      serverAuthCode: (res as any).serverAuthCode,
-    };
+    try {
+      const res = await SocialLogin.login({
+        provider: 'google',
+        options: {},
+      });
+
+      return this.mapGoogleResponse(res.result);
+    } catch {
+      return null;
+    }
   }
 
   async logoutGoogle() {
+    await this.ensureInitialized();
     await SocialLogin.logout({ provider: 'google' });
   }
 }

@@ -2,7 +2,7 @@ import { socialLoginService } from '../services/auth/socialLogin/socialLogin.ser
 import { NativeGoogleSessionProvider } from '../services/auth/socialLogin/googleSessionProvider';
 import { loginNavigationHandlerService } from '../services/auth/loginNavigationHandler.service';
 
-export function useGoogleSignIn() {
+export function useGoogleSignin() {
   const signInWithGoogle = async (skipNavigation?: any) => {
     // 1) Google login (native UI)
     const result = await socialLoginService.loginWithGoogle();

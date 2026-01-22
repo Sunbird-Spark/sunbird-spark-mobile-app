@@ -21,6 +21,7 @@ describe('SocialLoginService', () => {
     vi.clearAllMocks();
     // Reset the initialized state by creating a new instance
     (socialLoginService as any).initialized = false;
+    (socialLoginService as any).initializationPromise = null;
   });
 
   describe('initGoogle', () => {
@@ -40,6 +41,7 @@ describe('SocialLoginService', () => {
     it('should not initialize twice if already initialized', async () => {
       const webClientId = 'test-web-client-id.apps.googleusercontent.com';
 
+      mockInitialize.mockResolvedValue(undefined);
       await socialLoginService.initGoogle(webClientId);
       await socialLoginService.initGoogle(webClientId);
 
@@ -55,16 +57,51 @@ describe('SocialLoginService', () => {
         'Initialization failed',
       );
     });
+
+    it('should handle concurrent initialization attempts', async () => {
+      const webClientId = 'test-web-client-id.apps.googleusercontent.com';
+      
+      mockInitialize.mockImplementation(() => 
+        new Promise(resolve => setTimeout(() => resolve(undefined), 50))
+      );
+
+      // Start multiple initialization attempts concurrently
+      const promises = [
+        socialLoginService.initGoogle(webClientId),
+        socialLoginService.initGoogle(webClientId),
+        socialLoginService.initGoogle(webClientId),
+      ];
+
+      await Promise.all(promises);
+
+      // Should only initialize once despite concurrent calls
+      expect(mockInitialize).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('loginWithGoogle', () => {
-    it('should successfully login and return user data', async () => {
+    beforeEach(async () => {
+      // Initialize the service before login tests
+      mockInitialize.mockResolvedValueOnce(undefined);
+      await socialLoginService.initGoogle('test-client-id');
+    });
+
+    it('should successfully login and return user data (online mode)', async () => {
       const mockResponse = {
-        accessToken: 'mock-access-token',
-        idToken: 'mock-id-token',
-        email: 'test@example.com',
-        userId: 'user-123',
-        serverAuthCode: 'server-auth-code-123',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'mock-access-token' },
+          idToken: 'mock-id-token',
+          profile: {
+            email: 'test@example.com',
+            familyName: 'Doe',
+            givenName: 'John',
+            id: 'user-123',
+            name: 'John Doe',
+            imageUrl: 'https://example.com/photo.jpg',
+          },
+        },
       };
 
       mockLogin.mockResolvedValueOnce(mockResponse);
@@ -72,20 +109,54 @@ describe('SocialLoginService', () => {
       const result = await socialLoginService.loginWithGoogle();
 
       expect(mockLogin).toHaveBeenCalledTimes(1);
-      expect(mockLogin).toHaveBeenCalledWith({ provider: 'google' });
+      expect(mockLogin).toHaveBeenCalledWith({ provider: 'google', options: {} });
       expect(result).toEqual({
         accessToken: 'mock-access-token',
         idToken: 'mock-id-token',
         email: 'test@example.com',
+        displayName: 'John Doe',
+        familyName: 'Doe',
+        givenName: 'John',
+        imageUrl: 'https://example.com/photo.jpg',
         userId: 'user-123',
+        serverAuthCode: undefined,
+      });
+    });
+
+    it('should handle offline mode response', async () => {
+      const mockResponse = {
+        provider: 'google' as const,
+        result: {
+          responseType: 'offline' as const,
+          serverAuthCode: 'server-auth-code-123',
+        },
+      };
+
+      mockLogin.mockResolvedValueOnce(mockResponse);
+
+      const result = await socialLoginService.loginWithGoogle();
+
+      expect(result).toEqual({
         serverAuthCode: 'server-auth-code-123',
       });
     });
 
-    it('should handle partial response data', async () => {
+    it('should handle partial response data with null values', async () => {
       const mockResponse = {
-        accessToken: 'mock-access-token',
-        email: 'test@example.com',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'mock-access-token' },
+          idToken: null,
+          profile: {
+            email: 'test@example.com',
+            familyName: null,
+            givenName: null,
+            id: null,
+            name: null,
+            imageUrl: null,
+          },
+        },
       };
 
       mockLogin.mockResolvedValueOnce(mockResponse);
@@ -96,6 +167,10 @@ describe('SocialLoginService', () => {
         accessToken: 'mock-access-token',
         idToken: undefined,
         email: 'test@example.com',
+        displayName: undefined,
+        familyName: undefined,
+        givenName: undefined,
+        imageUrl: undefined,
         userId: undefined,
         serverAuthCode: undefined,
       });
@@ -117,13 +192,28 @@ describe('SocialLoginService', () => {
   });
 
   describe('trySilentGoogleLogin', () => {
+    beforeEach(async () => {
+      // Initialize the service before login tests
+      mockInitialize.mockResolvedValueOnce(undefined);
+      await socialLoginService.initGoogle('test-client-id');
+    });
+
     it('should successfully perform silent login', async () => {
       const mockResponse = {
-        accessToken: 'silent-access-token',
-        idToken: 'silent-id-token',
-        email: 'silent@example.com',
-        userId: 'user-456',
-        serverAuthCode: 'silent-server-auth-code',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'silent-access-token' },
+          idToken: 'silent-id-token',
+          profile: {
+            email: 'silent@example.com',
+            familyName: 'Smith',
+            givenName: 'Jane',
+            id: 'user-456',
+            name: 'Jane Smith',
+            imageUrl: 'https://example.com/jane.jpg',
+          },
+        },
       };
 
       mockLogin.mockResolvedValueOnce(mockResponse);
@@ -133,14 +223,18 @@ describe('SocialLoginService', () => {
       expect(mockLogin).toHaveBeenCalledTimes(1);
       expect(mockLogin).toHaveBeenCalledWith({
         provider: 'google',
-        options: { silent: true },
+        options: {},
       });
       expect(result).toEqual({
         accessToken: 'silent-access-token',
         idToken: 'silent-id-token',
         email: 'silent@example.com',
+        displayName: 'Jane Smith',
+        familyName: 'Smith',
+        givenName: 'Jane',
+        imageUrl: 'https://example.com/jane.jpg',
         userId: 'user-456',
-        serverAuthCode: 'silent-server-auth-code',
+        serverAuthCode: undefined,
       });
     });
 
@@ -148,24 +242,36 @@ describe('SocialLoginService', () => {
       const error = new Error('Silent login failed');
       mockLogin.mockRejectedValueOnce(error);
 
-      await expect(socialLoginService.trySilentGoogleLogin()).rejects.toThrow(
-        'Silent login failed',
-      );
+      const result = await socialLoginService.trySilentGoogleLogin();
+
+      expect(result).toBeNull();
     });
 
     it('should handle expired credentials during silent login', async () => {
       const error = new Error('Credentials expired');
       mockLogin.mockRejectedValueOnce(error);
 
-      await expect(socialLoginService.trySilentGoogleLogin()).rejects.toThrow(
-        'Credentials expired',
-      );
+      const result = await socialLoginService.trySilentGoogleLogin();
+
+      expect(result).toBeNull();
     });
 
     it('should return partial data on silent login', async () => {
       const mockResponse = {
-        idToken: 'silent-id-token',
-        userId: 'user-789',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: null,
+          idToken: 'silent-id-token',
+          profile: {
+            email: null,
+            familyName: null,
+            givenName: null,
+            id: 'user-789',
+            name: null,
+            imageUrl: null,
+          },
+        },
       };
 
       mockLogin.mockResolvedValueOnce(mockResponse);
@@ -176,6 +282,10 @@ describe('SocialLoginService', () => {
         accessToken: undefined,
         idToken: 'silent-id-token',
         email: undefined,
+        displayName: undefined,
+        familyName: undefined,
+        givenName: undefined,
+        imageUrl: undefined,
         userId: 'user-789',
         serverAuthCode: undefined,
       });
@@ -183,6 +293,12 @@ describe('SocialLoginService', () => {
   });
 
   describe('logoutGoogle', () => {
+    beforeEach(async () => {
+      // Initialize the service before logout tests
+      mockInitialize.mockResolvedValueOnce(undefined);
+      await socialLoginService.initGoogle('test-client-id');
+    });
+
     it('should successfully logout from Google', async () => {
       mockLogout.mockResolvedValueOnce(undefined);
 
@@ -212,11 +328,20 @@ describe('SocialLoginService', () => {
     it('should handle full login flow', async () => {
       const webClientId = 'test-client-id.apps.googleusercontent.com';
       const mockLoginResponse = {
-        accessToken: 'access-token',
-        idToken: 'id-token',
-        email: 'user@example.com',
-        userId: 'user-123',
-        serverAuthCode: 'auth-code',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'access-token' },
+          idToken: 'id-token',
+          profile: {
+            email: 'user@example.com',
+            familyName: 'Doe',
+            givenName: 'John',
+            id: 'user-123',
+            name: 'John Doe',
+            imageUrl: null,
+          },
+        },
       };
 
       mockInitialize.mockResolvedValueOnce(undefined);
@@ -232,14 +357,27 @@ describe('SocialLoginService', () => {
 
     it('should handle login and logout flow', async () => {
       const mockLoginResponse = {
-        accessToken: 'access-token',
-        email: 'user@example.com',
-        userId: 'user-123',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'access-token' },
+          idToken: null,
+          profile: {
+            email: 'user@example.com',
+            familyName: null,
+            givenName: null,
+            id: 'user-123',
+            name: null,
+            imageUrl: null,
+          },
+        },
       };
 
+      mockInitialize.mockResolvedValueOnce(undefined);
       mockLogin.mockResolvedValueOnce(mockLoginResponse);
       mockLogout.mockResolvedValueOnce(undefined);
 
+      await socialLoginService.initGoogle('test-client-id');
       await socialLoginService.loginWithGoogle();
       await socialLoginService.logoutGoogle();
 
@@ -249,36 +387,76 @@ describe('SocialLoginService', () => {
 
     it('should handle silent login after regular login', async () => {
       const regularLoginResponse = {
-        accessToken: 'regular-token',
-        email: 'user@example.com',
-        userId: 'user-123',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'regular-token' },
+          idToken: null,
+          profile: {
+            email: 'user@example.com',
+            familyName: null,
+            givenName: null,
+            id: 'user-123',
+            name: null,
+            imageUrl: null,
+          },
+        },
       };
 
       const silentLoginResponse = {
-        accessToken: 'silent-token',
-        email: 'user@example.com',
-        userId: 'user-123',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: 'silent-token' },
+          idToken: null,
+          profile: {
+            email: 'user@example.com',
+            familyName: null,
+            givenName: null,
+            id: 'user-123',
+            name: null,
+            imageUrl: null,
+          },
+        },
       };
 
+      mockInitialize.mockResolvedValueOnce(undefined);
       mockLogin
         .mockResolvedValueOnce(regularLoginResponse)
         .mockResolvedValueOnce(silentLoginResponse);
 
+      await socialLoginService.initGoogle('test-client-id');
       await socialLoginService.loginWithGoogle();
       const silentResult = await socialLoginService.trySilentGoogleLogin();
 
       expect(mockLogin).toHaveBeenCalledTimes(2);
-      expect(silentResult.accessToken).toBe('silent-token');
+      expect(silentResult?.accessToken).toBe('silent-token');
     });
   });
 
   describe('Edge cases', () => {
+    beforeEach(async () => {
+      // Initialize the service before edge case tests
+      mockInitialize.mockResolvedValueOnce(undefined);
+      await socialLoginService.initGoogle('test-client-id');
+    });
+
     it('should handle empty string values in response', async () => {
       const mockResponse = {
-        accessToken: '',
-        idToken: '',
-        email: '',
-        userId: '',
+        provider: 'google' as const,
+        result: {
+          responseType: 'online' as const,
+          accessToken: { token: '' },
+          idToken: '',
+          profile: {
+            email: '',
+            familyName: '',
+            givenName: '',
+            id: '',
+            name: '',
+            imageUrl: '',
+          },
+        },
       };
 
       mockLogin.mockResolvedValueOnce(mockResponse);
@@ -289,22 +467,22 @@ describe('SocialLoginService', () => {
       expect(result.email).toBe('');
     });
 
-    it('should handle response with extra properties', async () => {
+    it('should handle offline mode with serverAuthCode', async () => {
       const mockResponse = {
-        accessToken: 'token',
-        email: 'user@example.com',
-        extraProp1: 'extra1',
-        extraProp2: 'extra2',
-        serverAuthCode: 'auth-code',
+        provider: 'google' as const,
+        result: {
+          responseType: 'offline' as const,
+          serverAuthCode: 'auth-code-xyz',
+        },
       };
 
       mockLogin.mockResolvedValueOnce(mockResponse);
 
       const result = await socialLoginService.loginWithGoogle();
 
-      expect(result).toHaveProperty('accessToken');
-      expect(result).toHaveProperty('email');
-      expect(result).toHaveProperty('serverAuthCode');
+      expect(result).toEqual({
+        serverAuthCode: 'auth-code-xyz',
+      });
     });
   });
 });

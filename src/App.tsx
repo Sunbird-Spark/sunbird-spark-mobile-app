@@ -55,10 +55,10 @@ useEffect(() => {
         console.warn('Missing VITE_GOOGLE_WEB_CLIENT_ID');
       }
     } catch (e) {
-      console.log('Google init failed', e);
+      console.error('Google init failed', e);
     }
   })();
-}, [googleClientId]);
+}, []);
 
 
   return (
