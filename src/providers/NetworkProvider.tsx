@@ -25,16 +25,21 @@ const NetworkContext = createContext<NetworkContextValue | undefined>(undefined)
  * - provides state to app via context
  */
 export const NetworkProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [status, setStatus] = useState<NetworkState>(() => networkService.getSnapshot());
+  // Start with a default state, will be updated immediately by subscription
+  const [status, setStatus] = useState<NetworkState>({
+    connected: true,
+    connectionType: 'unknown',
+  });
 
   useEffect(() => {
     let unsubscribe: (() => void) | undefined;
 
     (async () => {
-      // 1) starts listening (safe to call multiple times)
-      await networkService.start();
+      // 1) initialize listening (safe to call multiple times)
+      await networkService.init();
 
       // 2) provider subscribes so React state updates on changes
+      // subscribe() immediately calls setStatus with current state
       unsubscribe = networkService.subscribe(setStatus);
     })();
 

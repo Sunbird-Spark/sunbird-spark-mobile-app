@@ -10,8 +10,7 @@ const root = createRoot(container!);
 root.render(
   <React.StrictMode>
     <NetworkProvider>
-        <App />
+      <App />
     </NetworkProvider>
-  
   </React.StrictMode>,
 );

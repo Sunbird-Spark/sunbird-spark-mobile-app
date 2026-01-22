@@ -41,21 +41,25 @@ describe('NetworkService', () => {
     mockAddListener.mockResolvedValue(mockHandle);
   });
 
-  describe('start', () => {
+  describe('init', () => {
     it('should initialize and get initial network status', async () => {
-      await networkService.start();
+      await networkService.init();
 
       expect(mockGetStatus).toHaveBeenCalledTimes(1);
       expect(mockAddListener).toHaveBeenCalledWith('networkStatusChange', expect.any(Function));
-      expect(networkService.getSnapshot()).toEqual({
+      
+      // Verify state is updated by subscribing
+      const listener = vi.fn();
+      networkService.subscribe(listener);
+      expect(listener).toHaveBeenCalledWith({
         connected: true,
         connectionType: 'wifi',
       });
     });
 
-    it('should not initialize twice if already started', async () => {
-      await networkService.start();
-      await networkService.start();
+    it('should not initialize twice if already initialized', async () => {
+      await networkService.init();
+      await networkService.init();
 
       expect(mockGetStatus).toHaveBeenCalledTimes(1);
       expect(mockAddListener).toHaveBeenCalledTimes(1);
@@ -67,9 +71,12 @@ describe('NetworkService', () => {
         connectionType: 'none',
       } as ConnectionStatus);
 
-      await networkService.start();
+      await networkService.init();
 
-      expect(networkService.getSnapshot()).toEqual({
+      // Verify state by subscribing
+      const listener = vi.fn();
+      networkService.subscribe(listener);
+      expect(listener).toHaveBeenCalledWith({
         connected: false,
         connectionType: 'none',
       });
@@ -83,14 +90,17 @@ describe('NetworkService', () => {
         return Promise.resolve(mockHandle);
       });
 
-      await networkService.start();
+      await networkService.init();
 
       statusChangeCallback?.({
         connected: false,
         connectionType: 'none',
       } as ConnectionStatus);
 
-      expect(networkService.getSnapshot()).toEqual({
+      // Verify state by subscribing
+      const listener = vi.fn();
+      networkService.subscribe(listener);
+      expect(listener).toHaveBeenCalledWith({
         connected: false,
         connectionType: 'none',
       });
@@ -105,7 +115,7 @@ describe('NetworkService', () => {
       });
 
       const listener = vi.fn();
-      await networkService.start();
+      await networkService.init();
       networkService.subscribe(listener);
 
       statusChangeCallback?.({
@@ -117,31 +127,6 @@ describe('NetworkService', () => {
         connected: false,
         connectionType: 'none',
       });
-    });
-  });
-
-  describe('getSnapshot', () => {
-    it('should return default state before initialization', () => {
-      expect(networkService.getSnapshot()).toEqual({
-        connected: true,
-        connectionType: 'unknown',
-      });
-    });
-
-    it('should return current state after initialization', async () => {
-      await networkService.start();
-
-      expect(networkService.getSnapshot()).toEqual({
-        connected: true,
-        connectionType: 'wifi',
-      });
-    });
-
-    it('should return synchronously without async calls', () => {
-      const snapshot = networkService.getSnapshot();
-
-      expect(snapshot).toBeDefined();
-      expect(mockGetStatus).not.toHaveBeenCalled();
     });
   });
 
@@ -244,7 +229,7 @@ describe('NetworkService', () => {
 
   describe('stop', () => {
     it('should remove listener and reset state', async () => {
-      await networkService.start();
+      await networkService.init();
       await networkService.stop();
 
       expect(mockRemove).toHaveBeenCalledTimes(1);
@@ -252,10 +237,10 @@ describe('NetworkService', () => {
     });
 
     it('should allow restart after stop', async () => {
-      await networkService.start();
+      await networkService.init();
       await networkService.stop();
 
-      await networkService.start();
+      await networkService.init();
 
       expect(mockGetStatus).toHaveBeenCalledTimes(2);
       expect(mockAddListener).toHaveBeenCalledTimes(2);
@@ -273,17 +258,25 @@ describe('NetworkService', () => {
 
       const listener = vi.fn();
 
-      await networkService.start();
+      await networkService.init();
       networkService.subscribe(listener);
 
-      expect(networkService.getSnapshot().connected).toBe(true);
+      // Verify initial state
+      expect(listener).toHaveBeenCalledWith({
+        connected: true,
+        connectionType: 'wifi',
+      });
 
       statusChangeCallback?.({
         connected: false,
         connectionType: 'none',
       } as ConnectionStatus);
 
-      expect(networkService.getSnapshot().connected).toBe(false);
+      // Verify updated state
+      expect(listener).toHaveBeenCalledWith({
+        connected: false,
+        connectionType: 'none',
+      });
 
       mockGetStatus.mockResolvedValueOnce({
         connected: true,
@@ -291,7 +284,12 @@ describe('NetworkService', () => {
       } as ConnectionStatus);
 
       await networkService.refresh();
-      expect(networkService.getSnapshot().connected).toBe(true);
+      
+      // Verify refreshed state
+      expect(listener).toHaveBeenCalledWith({
+        connected: true,
+        connectionType: 'wifi',
+      });
 
       await networkService.stop();
       expect(mockRemove).toHaveBeenCalled();

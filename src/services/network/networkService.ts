@@ -28,12 +28,12 @@ class NetworkService {
   private listeners = new Set<NetworkListener>();
 
   /**
-   * start()
+   * init()
    * - gets initial status
    * - attaches listener exactly ONCE
    */
-  async start(): Promise<void> {
-    // If already started, do nothing.
+  async init(): Promise<void> {
+    // If already initialized, do nothing.
     if (this.initialized) return;
 
     // 1) Initial state
@@ -54,14 +54,6 @@ class NetworkService {
     });
 
     this.initialized = true;
-  }
-
-  /**
-   * getSnapshot()
-   * - synchronous read of cached state
-   */
-  getSnapshot(): NetworkState {
-    return this.state;
   }
 
   /**
