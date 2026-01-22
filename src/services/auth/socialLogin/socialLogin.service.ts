@@ -4,6 +4,7 @@ import {
   type GoogleLoginResponseOnline,
   type GoogleLoginResponseOffline,
 } from '@capgo/capacitor-social-login';
+import { systemSettingsService, SystemSettingsIds } from '../../systemSettings/systemSettings.service';
 
 // Extended type that includes serverAuthCode from the library's response
 interface GoogleLoginResponseExtended extends GoogleLoginResponseOnline {
@@ -26,7 +27,7 @@ class SocialLoginService {
   private initialized = false;
   private initializationPromise: Promise<void> | null = null;
 
-  async initGoogle(webClientId: string) {
+  async initGoogle(webClientId?: string) {
     if (this.initialized) return;
 
     if (this.initializationPromise) {
@@ -35,9 +36,18 @@ class SocialLoginService {
 
     this.initializationPromise = (async () => {
       try {
+        // Fetch client ID from API if not provided
+        let clientId = webClientId;
+        if (!clientId) {
+          const setting = await systemSettingsService.getSystemSettings({
+            id: SystemSettingsIds.GOOGLE_CLIENT_ID,
+          });
+          clientId = setting.value;
+        }
+
         await SocialLogin.initialize({
           google: {
-            webClientId,
+            webClientId: clientId,
           },
         });
         this.initialized = true;

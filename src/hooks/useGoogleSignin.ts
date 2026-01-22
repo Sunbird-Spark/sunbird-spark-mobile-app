@@ -4,13 +4,16 @@ import { loginNavigationHandlerService } from '../services/auth/loginNavigationH
 
 export function useGoogleSignin() {
   const signInWithGoogle = async (skipNavigation?: any) => {
-    // 1) Google login (native UI)
+    // 1) Initialize Google login with client ID from API
+    await socialLoginService.initGoogle();
+
+    // 2) Google login (native UI)
     const result = await socialLoginService.loginWithGoogle();
 
-    // 2) Convert result → session provider
+    // 3) Convert result → session provider
     const nativeGoogleProvider = new NativeGoogleSessionProvider(() => result);
 
-    // 3) Complete Sunbird backend login
+    // 4) Complete Sunbird backend login
     await loginNavigationHandlerService.setSession(nativeGoogleProvider, skipNavigation, 'GOOGLE');
   };
 
