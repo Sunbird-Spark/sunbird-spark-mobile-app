@@ -9,6 +9,8 @@ export default defineConfig({
     environment: 'happy-dom',
     setupFiles: './src/setupTests.ts',
     css: true,
+    pool: 'threads',
+    singleThread: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
