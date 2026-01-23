@@ -1,231 +1,208 @@
-# How to Use the Google Sign-In Hook
+# Google Sign-In Service Layer
 
-## Basic Usage
+## Overview
 
-The `useGoogleSignin` hook provides a simple way to add Google Sign-In to any component.
+This is a **base service layer** for Google Sign-In using Capacitor Social Login. It's a simple wrapper around Capacitor methods with no additional abstractions.
 
-### Example 1: Simple Button
+## Service API
+
+### Initialize
 
 ```typescript
-import { IonButton } from '@ionic/react';
-import { useGoogleSignin } from '../hooks/useGoogleSignin';
+import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
 
-function MyComponent() {
-  const { signInWithGoogle } = useGoogleSignin();
+// Initialize with your Google Web Client ID
+await socialLoginService.initGoogle('YOUR_CLIENT_ID.apps.googleusercontent.com');
+```
 
-  return (
-    <IonButton onClick={() => signInWithGoogle()}>
-      Sign in with Google
-    </IonButton>
-  );
+### Login
+
+```typescript
+// Show native Google Sign-In UI
+const result = await socialLoginService.loginWithGoogle();
+
+console.log('User email:', result.email);
+console.log('ID Token:', result.idToken);
+console.log('Access Token:', result.accessToken);
+```
+
+### Silent Login
+
+```typescript
+// Try to sign in without showing UI (if user previously logged in)
+const result = await socialLoginService.trySilentGoogleLogin();
+
+if (result) {
+  console.log('Auto signed in:', result.email);
+} else {
+  console.log('Silent login failed, show login button');
 }
 ```
 
-### Example 2: With Loading State
+### Logout
 
 ```typescript
-import { useState } from 'react';
-import { IonButton, IonSpinner } from '@ionic/react';
-import { useGoogleSignin } from '../hooks/useGoogleSignin';
+// Sign out from Google
+await socialLoginService.logoutGoogle();
+```
 
-function MyComponent() {
-  const { signInWithGoogle } = useGoogleSignin();
-  const [isLoading, setIsLoading] = useState(false);
+## Complete Example
 
-  const handleSignIn = async () => {
-    try {
-      setIsLoading(true);
-      await signInWithGoogle();
-      // Success! User is now signed in
-    } catch (error) {
-      console.error('Sign-in failed:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+```typescript
+import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
 
-  return (
-    <IonButton onClick={handleSignIn} disabled={isLoading}>
-      {isLoading ? <IonSpinner /> : 'Sign in with Google'}
-    </IonButton>
-  );
+async function handleGoogleLogin() {
+  try {
+    // Step 1: Initialize
+    await socialLoginService.initGoogle('YOUR_CLIENT_ID.apps.googleusercontent.com');
+    
+    // Step 2: Login
+    const result = await socialLoginService.loginWithGoogle();
+    
+    // Step 3: Handle the result
+    console.log('Login successful!');
+    console.log('Email:', result.email);
+    console.log('Name:', result.displayName);
+    console.log('ID Token:', result.idToken);
+    
+    // TODO: Send result.idToken to your backend for verification
+    // await yourBackendAPI.authenticate(result.idToken);
+    
+  } catch (error) {
+    console.error('Login failed:', error);
+  }
+}
+
+async function handleGoogleLogout() {
+  try {
+    await socialLoginService.logoutGoogle();
+    console.log('Logged out successfully');
+  } catch (error) {
+    console.error('Logout failed:', error);
+  }
 }
 ```
 
-### Example 3: With Error Handling
+## Response Structure
 
 ```typescript
-import { useState } from 'react';
-import { IonButton, IonText } from '@ionic/react';
-import { useGoogleSignin } from '../hooks/useGoogleSignin';
-
-function MyComponent() {
-  const { signInWithGoogle } = useGoogleSignin();
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSignIn = async () => {
-    try {
-      setError(null);
-      await signInWithGoogle();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Sign-in failed');
-    }
-  };
-
-  return (
-    <div>
-      {error && <IonText color="danger">{error}</IonText>}
-      <IonButton onClick={handleSignIn}>
-        Sign in with Google
-      </IonButton>
-    </div>
-  );
-}
-```
-
-### Example 4: With Navigation
-
-```typescript
-import { useState } from 'react';
-import { useHistory } from 'react-router-dom';
-import { IonButton } from '@ionic/react';
-import { useGoogleSignin } from '../hooks/useGoogleSignin';
-
-function LoginPage() {
-  const history = useHistory();
-  const { signInWithGoogle } = useGoogleSignin();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSignIn = async () => {
-    try {
-      setIsLoading(true);
-      await signInWithGoogle();
-      
-      // Navigate to home after successful sign-in
-      history.push('/home');
-    } catch (error) {
-      console.error('Sign-in failed:', error);
-      // Stay on login page
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <IonButton onClick={handleSignIn} disabled={isLoading}>
-      Sign in with Google
-    </IonButton>
-  );
-}
-```
-
-### Example 5: Complete Login Page
-
-See `src/pages/Login.tsx` for a full example with:
-- Loading state
-- Error handling
-- Navigation after success
-- Proper UI/UX
-
-## What Happens When You Call `signInWithGoogle()`?
-
-1. **Fetches Google Client ID** from Sunbird API
-   - Calls: `GET /api/data/v1/system/settings/get/googleClientId`
-   
-2. **Initializes Google Sign-In** with the fetched client ID
-   - Uses `@capgo/capacitor-social-login` plugin
-   
-3. **Shows Google native sign-in UI**
-   - User selects Google account
-   - User grants permissions
-   
-4. **Returns user data**
-   - idToken, accessToken, email, profile info
-   
-5. **Creates session with Sunbird backend**
-   - Calls your backend authentication endpoint
-   - Stores session token
-
-## Adding to Existing Components
-
-### Add to Home Page
-
-```typescript
-// src/pages/Home.tsx
-import { useGoogleSignin } from '../hooks/useGoogleSignin';
-
-const Home: React.FC = () => {
-  const { signInWithGoogle } = useGoogleSignin();
-
-  return (
-    <IonPage>
-      {/* ... existing code ... */}
-      <IonButton onClick={() => signInWithGoogle()}>
-        Sign in with Google
-      </IonButton>
-    </IonPage>
-  );
+type GoogleLoginResult = {
+  accessToken?: string;        // Google access token
+  idToken?: string;            // JWT ID token (use this for backend verification)
+  email?: string;              // User's email
+  displayName?: string;        // User's full name
+  familyName?: string;         // Last name
+  givenName?: string;          // First name
+  imageUrl?: string;           // Profile picture URL
+  userId?: string;             // Google user ID
+  serverAuthCode?: string;     // Server auth code (offline mode)
 };
 ```
 
-### Add to Profile Page
+## Getting Your Google Client ID
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable **Google Sign-In API**
+4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+5. Select **Web application** as the application type
+6. Copy the **Client ID** (format: `xxxxx.apps.googleusercontent.com`)
+
+## Error Handling
 
 ```typescript
-// src/pages/Profile.tsx
-import { useGoogleSignin } from '../hooks/useGoogleSignin';
-
-const Profile: React.FC = () => {
-  const { signInWithGoogle } = useGoogleSignin();
-
-  return (
-    <IonPage>
-      {/* ... existing code ... */}
-      <IonButton onClick={() => signInWithGoogle()}>
-        Link Google Account
-      </IonButton>
-    </IonPage>
-  );
-};
+try {
+  await socialLoginService.initGoogle('YOUR_CLIENT_ID');
+  const result = await socialLoginService.loginWithGoogle();
+  // Handle success
+} catch (error) {
+  if (error.message.includes('cancelled')) {
+    console.log('User cancelled login');
+  } else if (error.message.includes('network')) {
+    console.log('Network error');
+  } else {
+    console.log('Login failed:', error);
+  }
+}
 ```
 
-## Advanced: Skip Navigation
+Common errors:
+- **User cancellation** - User closes the sign-in dialog
+- **Network error** - No internet connection
+- **Invalid client ID** - Wrong or missing client ID
+- **Not initialized** - Called login before initialization
 
-If you want to handle navigation yourself:
+## Silent Login Pattern
 
 ```typescript
-const { signInWithGoogle } = useGoogleSignin();
-
-// Pass skipNavigation parameter
-await signInWithGoogle({ skipNavigation: true });
-
-// Handle your own navigation
-history.push('/custom-page');
+async function autoSignIn() {
+  try {
+    // Initialize first
+    await socialLoginService.initGoogle('YOUR_CLIENT_ID');
+    
+    // Try silent login
+    const result = await socialLoginService.trySilentGoogleLogin();
+    
+    if (result) {
+      // User is already signed in
+      console.log('Welcome back,', result.displayName);
+      return result;
+    } else {
+      // Show login button
+      console.log('Please sign in');
+      return null;
+    }
+  } catch (error) {
+    console.error('Auto sign-in failed:', error);
+    return null;
+  }
+}
 ```
-
-## Error Scenarios
-
-The hook may throw errors in these cases:
-
-1. **Network error** - Can't reach API
-2. **API error** - System settings not found
-3. **User cancellation** - User closes Google sign-in dialog
-4. **Permission denied** - User denies Google permissions
-5. **Backend error** - Session creation fails
-
-Always wrap in try-catch to handle these gracefully!
 
 ## Testing
 
-You can test the sign-in flow:
+```bash
+# Run tests
+npm test -- src/services/auth/socialLogin/socialLogin.service.test.ts --run
+
+# All 22 tests should pass ✓
+```
+
+## Testing on Device
 
 ```bash
-# Run the app
-npm run dev
-
-# Or build for Android
+# Build for Android
 npm run build
 npx cap sync android
 npx cap open android
+
+# Build for iOS
+npm run build
+npx cap sync ios
+npx cap open ios
 ```
 
-Make sure your backend API is accessible from the device/emulator.
+Note: Google Sign-In works best on actual devices or emulators, not in the browser.
+
+## What's Included
+
+✅ Service layer with Capacitor wrapper
+✅ Initialization with client ID
+✅ Native Google Sign-In UI
+✅ Silent login capability
+✅ Logout functionality
+✅ Online/offline mode support
+✅ Comprehensive test coverage (22 tests)
+
+## What's NOT Included (Future)
+
+These will be added later:
+
+- ❌ React hooks for component integration
+- ❌ Backend API integration
+- ❌ System settings service (dynamic client ID)
+- ❌ Session management
+- ❌ Profile refresh
+- ❌ Navigation handling
+
+For now, you get the raw service layer. Integration layers can be added when needed!

@@ -77,6 +77,18 @@ describe('SocialLoginService', () => {
       // Should only initialize once despite concurrent calls
       expect(mockInitialize).toHaveBeenCalledTimes(1);
     });
+
+    it('should require webClientId parameter', async () => {
+      const webClientId = 'required-client-id.apps.googleusercontent.com';
+
+      await socialLoginService.initGoogle(webClientId);
+
+      expect(mockInitialize).toHaveBeenCalledWith({
+        google: {
+          webClientId: 'required-client-id.apps.googleusercontent.com',
+        },
+      });
+    });
   });
 
   describe('loginWithGoogle', () => {
