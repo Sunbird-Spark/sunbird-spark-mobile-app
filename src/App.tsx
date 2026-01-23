@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   IonApp,
   IonIcon,
@@ -41,7 +40,6 @@ setupIonicReact();
 
 const App: React.FC = () => {
   const { t } = useTranslation();
-
   return (
     <IonApp>
       <IonReactRouter>
@@ -60,18 +58,15 @@ const App: React.FC = () => {
               <Redirect to="/home" />
             </Route>
           </IonRouterOutlet>
-
           <IonTabBar slot="bottom">
             <IonTabButton tab="home" href="/home">
               <IonIcon aria-hidden="true" icon={home} />
               <IonLabel>{t('home')}</IonLabel>
             </IonTabButton>
-
             <IonTabButton tab="dashboard" href="/dashboard">
               <IonIcon aria-hidden="true" icon={statsChart} />
               <IonLabel>{t('dashboard')}</IonLabel>
             </IonTabButton>
-
             <IonTabButton tab="profile" href="/profile">
               <IonIcon aria-hidden="true" icon={person} />
               <IonLabel>{t('profile')}</IonLabel>
