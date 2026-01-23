@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'sunbirded-mobile-app',
-  appName: 'SunbirdEd Mobile App',
+  appId: 'org.sunbird.app',
+  appName: 'sunbird-mobile-app',
   webDir: 'dist',
   plugins: {
     CapacitorHttp: {
