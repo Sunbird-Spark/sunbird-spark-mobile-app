@@ -37,6 +37,14 @@
   "memberSince": "Member Since",
   "january2025": "January 2025",
   "logout": "Logout",
+  "login": "Log In",
   "editProfile": "Edit Profile",
-  "changePassword": "Change Password"
+  "changePassword": "Change Password",
+  "welcome": "Welcome",
+  "welcomeBack": "Welcome back",
+  "continueLearning": "Continue Learning",
+  "viewAll": "View All",
+  "featuredCourses": "Featured Courses",
+  "browseCourses": "Browse Courses",
+  "complete": "Complete"
 }
