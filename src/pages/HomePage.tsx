@@ -13,7 +13,7 @@ import { chevronForward, chevronBack } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
-import { PublicWelcomeHeader } from '../components//home/PublicWelcomeHeader';
+import { PublicWelcomeHeader } from '../components/home/PublicWelcomeHeader';
 import { WelcomeHeader } from '../components/home/WelcomeHeader';
 import CourseCard from '../components/courses/CourseCard';
 import QuickActions from '../components/home/QuickActions';
