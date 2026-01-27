@@ -50,7 +50,7 @@ const HomePage: React.FC = () => {
           {isAuthenticated && inProgressCourses.length > 0 && (
             <div className="ion-margin-bottom">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 16px' }}>
-                <h2>{t('continueLeaning')}</h2>
+                <h2>{t('continueLearning')}</h2>
                 <IonButton fill="clear" size="small" onClick={() => history.push('/courses')}>
                   {t('viewAll')}
                   <IonIcon slot="end" icon={ChevronIcon} />
