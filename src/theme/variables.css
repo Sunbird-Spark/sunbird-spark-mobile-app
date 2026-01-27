@@ -49,12 +49,12 @@
   --ion-color-danger-tint: #ed576b;
 
   /** dark **/
-  --ion-color-dark: #222428;
+  /* --ion-color-dark: #222428;
   --ion-color-dark-rgb: 34, 36, 40;
   --ion-color-dark-contrast: #ffffff;
   --ion-color-dark-contrast-rgb: 255, 255, 255;
   --ion-color-dark-shade: #1e2023;
-  --ion-color-dark-tint: #383a3e;
+  --ion-color-dark-tint: #383a3e; */
 
   /** medium **/
   --ion-color-medium: #92949c;
@@ -73,6 +73,8 @@
   --ion-color-light-tint: #f5f6f9;
 }
 
+/* DARK MODE - COMMENTED OUT FOR NOW */
+/*
 @media (prefers-color-scheme: dark) {
   body {
     --ion-color-primary: #428cff;
@@ -209,3 +211,4 @@
     --ion-card-background: #1e1e1e;
   }
 }
+*/
