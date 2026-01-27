@@ -73,7 +73,7 @@ vi.mock('react-i18next', () => ({
         quickActions: 'Quick Actions',
         viewStudents: 'View Students',
         trackProgress: 'Track Progress',
-        continueLeaning: 'Continue Learning',
+        continueLearning: 'Continue Learning',
         viewAll: 'View All',
         featuredCourses: 'Featured Courses',
         browseCourses: 'Browse Courses',
