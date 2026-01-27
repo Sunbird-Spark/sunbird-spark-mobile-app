@@ -106,13 +106,8 @@ describe('LanguageContext', () => {
     fireEvent.click(screen.getByTestId('change-lang-btn'));
     expect(mockChangeLanguage).toHaveBeenCalledWith('hi');
     
-    // Simulate another language change
-    const changeToEnglish = () => {
-      const { changeLanguage } = useLanguage();
-      changeLanguage('en');
-    };
-    
-    // This would be called in a real scenario
-    expect(mockChangeLanguage).toHaveBeenCalledTimes(1);
+    // Test multiple calls by clicking again
+    fireEvent.click(screen.getByTestId('change-lang-btn'));
+    expect(mockChangeLanguage).toHaveBeenCalledTimes(2);
   });
 });
