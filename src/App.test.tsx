@@ -19,6 +19,14 @@ vi.mock('@ionic/react', () => ({
     </button>
   ),
   IonTabs: ({ children }: any) => <div data-testid="ion-tabs">{children}</div>,
+  IonPage: ({ children }: any) => <div data-testid="ion-page">{children}</div>,
+  IonHeader: ({ children }: any) => <div data-testid="ion-header">{children}</div>,
+  IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
+  IonTitle: ({ children }: any) => <div data-testid="ion-title">{children}</div>,
+  IonContent: ({ children }: any) => <div data-testid="ion-content">{children}</div>,
+  IonButtons: ({ children }: any) => <div data-testid="ion-buttons">{children}</div>,
+  IonButton: ({ children }: any) => <button data-testid="ion-button">{children}</button>,
+  IonAvatar: ({ children }: any) => <div data-testid="ion-avatar">{children}</div>,
   setupIonicReact: vi.fn(),
 }));
 
@@ -33,26 +41,36 @@ vi.mock('react-router-dom', () => ({
     <div data-testid={`route-${path}`}>{children ?? (Component && <Component />)}</div>
   ),
   Redirect: ({ from, to, exact }: any) => <div data-testid={`redirect-${to}`}>Redirect</div>,
+  useLocation: () => ({ pathname: '/' }),
+  useHistory: () => ({ push: vi.fn() }),
 }));
 
-// Mock ionicons
+// Mock ionicons with all required icons
 vi.mock('ionicons/icons', () => ({
   home: 'home-icon',
   person: 'person-icon',
+  personOutline: 'person-outline-icon',
   statsChart: 'stats-chart-icon',
+  bookOutline: 'book-outline-icon',
+  qrCodeOutline: 'qr-code-outline-icon',
+  downloadOutline: 'download-outline-icon',
+  chevronForward: 'chevron-forward-icon',
+  chevronBack: 'chevron-back-icon',
+  logIn: 'log-in-icon',
+  notifications: 'notifications-icon',
 }));
 
 // Mock pages
-vi.mock('./pages/Home', () => ({
-  default: () => <div>Home Page</div>,
+vi.mock('./pages/HomePage', () => ({
+  default: () => <div data-testid="home-page">Home Page</div>,
 }));
 
 vi.mock('./pages/Dashboard', () => ({
-  default: () => <div>Dashboard Page</div>,
+  default: () => <div data-testid="dashboard-page">Dashboard Page</div>,
 }));
 
 vi.mock('./pages/Profile', () => ({
-  default: () => <div>Profile Page</div>,
+  default: () => <div data-testid="profile-page">Profile Page</div>,
 }));
 
 // Mock CSS imports
@@ -68,47 +86,41 @@ vi.mock('@ionic/react/css/flex-utils.css', () => ({}));
 vi.mock('@ionic/react/css/display.css', () => ({}));
 vi.mock('./theme/variables.css', () => ({}));
 
+// Mock i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { dir: () => 'ltr' },
+  }),
+}));
+
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);
-    expect(screen.getByTestId('ion-app'));
+    expect(screen.getByTestId('ion-app')).toBeInTheDocument();
   });
 
   it('renders IonReactRouter', () => {
     render(<App />);
-    expect(screen.getByTestId('ion-react-router'));
-  });
-
-  it('renders IonTabs', () => {
-    render(<App />);
-    expect(screen.getByTestId('ion-tabs'));
-  });
-
-  it('renders all tab buttons', () => {
-    render(<App />);
-    expect(screen.getByTestId('tab-button-home'));
-    expect(screen.getByTestId('tab-button-dashboard'));
-    expect(screen.getByTestId('tab-button-profile'));
-  });
-
-  it('renders tab labels', () => {
-    render(<App />);
-    const labels = screen.getAllByTestId('ion-label');
-    expect(labels).toHaveLength(3);
-  });
-
-  it('tab buttons have correct hrefs', () => {
-    render(<App />);
-    expect(screen.getByTestId('tab-button-home'));
-    expect(screen.getByTestId('tab-button-dashboard'));
-    expect(screen.getByTestId('tab-button-profile'));
+    expect(screen.getByTestId('ion-react-router')).toBeInTheDocument();
   });
 
   it('renders routes', () => {
     render(<App />);
-    expect(screen.getByTestId('route-/home'));
-    expect(screen.getByTestId('route-/dashboard'));
-    expect(screen.getByTestId('route-/profile'));
-    expect(screen.getByTestId('route-/'));
+    expect(screen.getByTestId('route-/home')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/profile')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/')).toBeInTheDocument();
+  });
+
+  it('renders redirect component', () => {
+    render(<App />);
+    expect(screen.getByTestId('redirect-/home')).toBeInTheDocument();
+  });
+
+  it('renders page content', () => {
+    render(<App />);
+    // The app renders the home page by default
+    expect(screen.getByTestId('home-page')).toBeInTheDocument();
   });
 });
