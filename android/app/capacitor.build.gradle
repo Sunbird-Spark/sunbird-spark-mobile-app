@@ -22,6 +22,7 @@ dependencies {
     implementation project(':capgo-capacitor-downloader')
     implementation project(':capgo-capacitor-social-login')
     implementation project(':capa-zip')
+    implementation project(':capacitor-read-native-setting')
 
 }
 
