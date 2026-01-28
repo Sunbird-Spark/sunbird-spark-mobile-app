@@ -50,5 +50,9 @@
 	{
 		"pkg": "capa-zip",
 		"classpath": "com.getcursor.plugins.zip.ZipPlugin"
+	},
+	{
+		"pkg": "capacitor-read-native-setting",
+		"classpath": "com.ingageco.readnativesetting.CapacitorReadNativeSetting"
 	}
 ]
