@@ -21,7 +21,11 @@ import { deviceService } from '../services/device';
 // Initialize the service (usually done once in your app)
 await deviceService.init();
 
-// Get device ID only
+// Get hashed device ID (recommended for privacy)
+const hashedDeviceId = await deviceService.getHashedDeviceId();
+console.log('Hashed Device ID:', hashedDeviceId);
+
+// Get raw device ID only (native platforms only)
 const deviceId = await deviceService.getDeviceIdOnly();
 console.log('Device ID:', deviceId);
 
@@ -113,6 +117,12 @@ Returns the current device state. Initializes if not already done.
 #### `getDeviceIdOnly(): Promise<string>`
 Convenience method to get just the device ID. Returns 'unknown' for non-native platforms.
 
+#### `getHashedDeviceId(): Promise<string>`
+Returns SHA1 hash of device ID for privacy protection. For web platforms, generates and persists a consistent device ID.
+
+#### `clearWebDeviceId(): Promise<void>`
+Clears the persisted web device ID (web platform only). Next call to getHashedDeviceId() will generate a new ID.
+
 #### `subscribe(listener: (state: DeviceState) => void): () => void`
 Subscribe to device state changes. Returns unsubscribe function.
 
@@ -133,10 +143,11 @@ Returns the current platform name.
 - All device information is available and accurate
 
 ### Web Platform
-- Shows warning that service is designed for native platforms only
+- Shows info message that service is running on web platform with fallback values
 - Limited functionality - only basic platform detection
-- Device ID will be empty string
+- Device ID generates and persists a consistent web-specific identifier
 - Most device information will be 'unknown'
+- Hashed device ID provides consistent identification across sessions
 
 ## Error Handling
 
