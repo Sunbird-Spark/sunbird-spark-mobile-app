@@ -203,4 +203,4 @@ This service is specifically designed for mobile applications:
 - **No localStorage dependencies** - relies purely on native device APIs
 - **Native platform checks** - warns when used on non-native platforms  
 - **Mobile-optimized caching** - efficient for mobile performance
-- **Real device IDs** - uses actual device identifiers, not generated ones
+- **Real device IDs on native** - uses actual native device identifiers; web platforms use generated IDs 
