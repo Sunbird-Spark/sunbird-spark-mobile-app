@@ -50,7 +50,7 @@ class DeviceService {
       }
       
       // Generate new web device ID
-      const newWebDeviceId = 'web-device-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      const newWebDeviceId = 'web-device-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
       
       // Persist it
       await Preferences.set({ 
@@ -62,7 +62,7 @@ class DeviceService {
     } catch (error) {
       // If preferences fail, generate a session-only ID
       console.warn('Failed to persist web device ID, using session-only ID:', error);
-      return 'web-device-session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      return 'web-device-session-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
     }
   }
 
