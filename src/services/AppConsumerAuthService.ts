@@ -195,6 +195,11 @@ export class AppConsumerAuthService {
       throw new Error(`Kong call failed: ${response.status}`);
     }
 
+    // Check if response has the expected structure
+    if (!response.body || !response.body.result) {
+      throw new Error('Invalid Kong response: missing result field');
+    }
+
     const result = response.body.result;
 
     // Kong returns token
@@ -215,7 +220,7 @@ export class AppConsumerAuthService {
       return deviceToken;
     }
 
-    throw new Error('Invalid Kong response');
+    throw new Error('Invalid Kong response: no token or secret provided');
   }
 
   // ================= MAIN =================
