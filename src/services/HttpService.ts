@@ -50,7 +50,22 @@ export class HttpService {
       const contentType = response.headers.get('content-type');
       
       if (contentType && contentType.includes('application/json')) {
-        responseBody = await response.json();
+        try {
+          responseBody = await response.json();
+        } catch (jsonError) {
+          const requestInfo = `${request.method} ${url}`;
+          const jsonErrorMessage = jsonError instanceof Error ? jsonError.message : String(jsonError);
+          const enhancedError = new Error(
+            `Failed to parse JSON response for ${requestInfo}. Response status: ${response.status}. JSON parsing error: ${jsonErrorMessage}`
+          );
+          
+          // Preserve original JSON parsing error for debugging
+          if (jsonError instanceof Error) {
+            (enhancedError as any).originalError = jsonError;
+          }
+          
+          throw enhancedError;
+        }
       } else {
         responseBody = await response.text() as unknown as T;
       }
@@ -62,6 +77,11 @@ export class HttpService {
         ok: response.ok
       };
     } catch (error) {
+      // If this is already a JSON parsing error, don't wrap it again
+      if (error instanceof Error && error.message.includes('Failed to parse JSON response')) {
+        throw error;
+      }
+      
       const originalMessage = error instanceof Error ? error.message : String(error);
       const requestInfo = `${request.method} ${url}`;
       const enhancedError = new Error(
