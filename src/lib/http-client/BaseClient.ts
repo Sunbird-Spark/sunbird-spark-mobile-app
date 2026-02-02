@@ -13,7 +13,7 @@ export abstract class BaseClient implements IHttpClient {
   }
 
   protected onResponse(response: ApiResponse<any>): void {
-        const handler = this.statusHandlers[response.status];
+    const handler = this.statusHandlers[response.status];
     if (handler) {
       handler(response);
     }

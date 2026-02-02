@@ -1,7 +1,7 @@
 export interface ApiResponse<T> {
   data: T;
   status: number;
-  headers: Record<string, any>;
+  headers: Record<string, string | string[]>;
 }
 
 export type StatusHandlerConfig = Record<number, (res: ApiResponse<any>) => void>;

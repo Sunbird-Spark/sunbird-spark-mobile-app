@@ -94,6 +94,24 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+// Mock NativeConfigService to avoid Capacitor plugin import issues
+vi.mock('./services/NativeConfigService', () => ({
+  NativeConfigServiceInstance: {
+    load: vi.fn().mockResolvedValue({
+      baseUrl: 'https://dev.sunbirded.org',
+      mobileAppConsumer: 'test-consumer',
+      mobileAppKey: 'test-key',
+      mobileAppSecret: 'test-secret',
+      producerId: 'test-producer',
+    }),
+  },
+}));
+
+// Mock API config initialization
+vi.mock('./api/config', () => ({
+  initializeApiClient: vi.fn().mockResolvedValue(undefined),
+}));
+
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);
