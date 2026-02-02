@@ -1,10 +1,10 @@
 import { Http } from '@capacitor-community/http';
 import { BaseClient } from '../BaseClient';
-import { ApiResponse, HttpClientConfig } from '../types';
+import { ApiResponse, HttpClientConfig, HeaderOperation } from '../types';
 
 export class CapacitorAdapter extends BaseClient {
   private config: HttpClientConfig;
-  private authToken: string | null = null;
+  private customHeaders: Record<string, string> = {};
 
   constructor(config: HttpClientConfig) {
     super(config);
@@ -22,12 +22,9 @@ export class CapacitorAdapter extends BaseClient {
   private getHeaders(customHeaders?: Record<string, string>): Record<string, string> {
     const headers = {
       ...this.config.defaultHeaders,
+      ...this.customHeaders,
       ...customHeaders,
     };
-
-    if (this.authToken) {
-      headers['Authorization'] = `Bearer ${this.authToken}`;
-    }
 
     return headers;
   }
@@ -93,11 +90,24 @@ export class CapacitorAdapter extends BaseClient {
     return `${this.config.baseURL}${path}`;
   }
 
+  // Convenience methods for auth (internally use updateHeaders)
   setAuthHeader(token: string): void {
-    this.authToken = token;
+    this.updateHeaders([{ key: 'Authorization', value: `Bearer ${token}`, action: 'add' }]);
   }
 
   clearAuthHeader(): void {
-    this.authToken = null;
+    this.updateHeaders([{ key: 'Authorization', action: 'remove' }]);
+  }
+
+  updateHeaders(headers: HeaderOperation[]): void {
+    headers.forEach(({ key, value, action }) => {
+      if (action === 'add') {
+        if (value) {
+          this.customHeaders[key] = value;
+        }
+      } else if (action === 'remove') {
+        delete this.customHeaders[key];
+      }
+    });
   }
 }

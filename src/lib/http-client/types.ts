@@ -4,6 +4,12 @@ export interface ApiResponse<T> {
   headers: Record<string, string | string[]>;
 }
 
+export interface HeaderOperation {
+  key: string;
+  value?: string;
+  action: 'add' | 'remove';
+}
+
 export type StatusHandlerConfig = Record<number, (res: ApiResponse<any>) => void>;
 
 export interface HttpClientConfig {
@@ -17,6 +23,5 @@ export interface IHttpClient {
   post<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>>;
   put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>>;
   delete<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>>;
-  setAuthHeader(token: string): void;
-  clearAuthHeader(): void;
+  updateHeaders(headers: HeaderOperation[]): void;
 }

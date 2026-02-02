@@ -1,18 +1,14 @@
-import {
-  IonApp,
-  IonRouterOutlet,
-  setupIonicReact,
-} from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { Redirect, Route } from 'react-router-dom';
 import { useEffect } from 'react';
-import Dashboard from './pages/Dashboard';
-import Home from './pages/HomePage';
+import { Redirect, Route } from 'react-router-dom';
+import { AppInitializer } from './AppInitializer';
 import CoursesPage from './pages/CoursesPage';
-import ScanPage from './pages/ScanPage';
+import Dashboard from './pages/Dashboard';
 import DownloadsPage from './pages/DownloadsPage';
+import Home from './pages/HomePage';
 import ProfilePage from './pages/ProfilePage';
-import { initializeApiClient } from './api/config';
+import ScanPage from './pages/ScanPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -37,9 +33,9 @@ setupIonicReact();
 
 const App: React.FC = () => {
   useEffect(() => {
-    // Initialize the API client on app startup
-    initializeApiClient().catch(error => {
-      console.error('Failed to initialize API client:', error);
+    // Initialize all application services on startup
+    AppInitializer.init().catch((error) => {
+      console.error('Failed to initialize application:', error);
     });
   }, []);
 

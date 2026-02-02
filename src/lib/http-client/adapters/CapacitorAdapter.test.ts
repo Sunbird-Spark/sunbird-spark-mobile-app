@@ -45,4 +45,65 @@ describe('CapacitorAdapter', () => {
     const result = await adapter.get('/test');
     expect(handler).toHaveBeenCalledWith(result);
   });
+
+  it('should add and remove headers using updateHeaders', async () => {
+    (Http.get as any).mockResolvedValue({
+      data: { id: 1 },
+      status: 200,
+      headers: {},
+    });
+
+    // Add headers
+    adapter.updateHeaders([
+      { key: 'X-Custom-Header', value: 'custom-value', action: 'add' },
+      { key: 'X-Another-Header', value: 'another-value', action: 'add' },
+    ]);
+
+    await adapter.get('/test');
+
+    expect(Http.get).toHaveBeenCalledWith({
+      url: 'http://test.com/test',
+      headers: {
+        'X-Custom-Header': 'custom-value',
+        'X-Another-Header': 'another-value',
+      },
+    });
+
+    // Remove one header
+    adapter.updateHeaders([
+      { key: 'X-Custom-Header', action: 'remove' },
+    ]);
+
+    await adapter.get('/test2');
+
+    expect(Http.get).toHaveBeenCalledWith({
+      url: 'http://test.com/test2',
+      headers: {
+        'X-Another-Header': 'another-value',
+      },
+    });
+  });
+
+  it('should preserve auth header when using updateHeaders', async () => {
+    (Http.get as any).mockResolvedValue({
+      data: { id: 1 },
+      status: 200,
+      headers: {},
+    });
+
+    adapter.setAuthHeader('test-token');
+    adapter.updateHeaders([
+      { key: 'X-Custom-Header', value: 'custom-value', action: 'add' },
+    ]);
+
+    await adapter.get('/test');
+
+    expect(Http.get).toHaveBeenCalledWith({
+      url: 'http://test.com/test',
+      headers: {
+        'Authorization': 'Bearer test-token',
+        'X-Custom-Header': 'custom-value',
+      },
+    });
+  });
 });

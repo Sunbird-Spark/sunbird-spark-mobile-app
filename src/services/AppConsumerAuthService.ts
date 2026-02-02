@@ -2,7 +2,7 @@ import { SignJWT, decodeJwt } from 'jose';
 import { Capacitor } from '@capacitor/core';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { NativeConfigServiceInstance } from './NativeConfigService';
-import { HttpRequestBuilder, HttpMethod, HttpService } from './HttpService';
+import { getClient, IHttpClient } from '../lib/http-client';
 import { deviceService } from './device/deviceService';
 
 export class AppConsumerAuthService {
@@ -13,7 +13,7 @@ export class AppConsumerAuthService {
   private mobileAppConsumer!: string;
   private deviceConsumerKey!: string;
 
-  private httpService!: HttpService;
+  private httpClient!: IHttpClient;
 
   private appJwt: string | null = null;
   private deviceJwt: string | null = null;
@@ -91,12 +91,12 @@ export class AppConsumerAuthService {
     const effectiveProducerId = producerId || 'dev-producer';
     this.deviceConsumerKey = `${effectiveProducerId}-${deviceId}`;
 
-    this.httpService = new HttpService(config.baseUrl);
+    this.httpClient = getClient();
 
-    this.httpService.setDefaultHeaders({
-      'X-App-Id': effectiveProducerId,
-      'X-Device-Id': deviceId
-    });
+    this.httpClient.updateHeaders([
+      { key: 'X-App-Id', value: effectiveProducerId, action: 'add' },
+      { key: 'X-Device-Id', value: deviceId, action: 'add' }
+    ]);
 
     try {
       const { value } = await SecureStoragePlugin.get({ key: AppConsumerAuthService.APP_JWT_STORAGE });
@@ -137,6 +137,9 @@ export class AppConsumerAuthService {
     // Generate App JWT if not cached
     if (!this.appJwt) {
       await this.generateAppJwt();
+    } else {
+      // If we have a cached valid token, set it in the client
+      this.httpClient.setAuthHeader(this.appJwt);
     }
   }
 
@@ -147,6 +150,7 @@ export class AppConsumerAuthService {
       if (Capacitor.getPlatform() === 'web') {
         const mockToken = 'dev-mock-app-token-' + Date.now();
         this.appJwt = mockToken;
+        this.httpClient.setAuthHeader(mockToken);
         await SecureStoragePlugin.set({ key: AppConsumerAuthService.APP_JWT_STORAGE, value: mockToken });
         return mockToken;
       }
@@ -163,6 +167,7 @@ export class AppConsumerAuthService {
       .sign(secret);
 
     this.appJwt = token;
+    this.httpClient.setAuthHeader(token);
     await SecureStoragePlugin.set({ key: AppConsumerAuthService.APP_JWT_STORAGE, value: token });
 
     return token;
@@ -174,33 +179,32 @@ export class AppConsumerAuthService {
       await this.generateAppJwt();
     }
 
-    const request = new HttpRequestBuilder()
-      .withPath(path)
-      .withType(HttpMethod.POST)
-      .withHeaders({
-        Authorization: `Bearer ${this.appJwt}`,
+    const requestBody = {
+      id: 'ekstep.genie.device.register',
+      ver: '1.0',
+      ts: new Date().toISOString(),
+      request: { key: this.deviceConsumerKey }
+    };
+
+    // No need to manually set Authorization header - the client handles it
+    const response = await this.httpClient.post<{ result: { token?: string; secret?: string } }>(
+      path,
+      requestBody,
+      {
         'Content-Type': 'application/json'
-      })
-      .withBody({
-        id: 'ekstep.genie.device.register',
-        ver: '1.0',
-        ts: new Date().toISOString(),
-        request: { key: this.deviceConsumerKey }
-      })
-      .build();
+      }
+    );
 
-    const response = await this.httpService.execute<{ result: { token?: string; secret?: string } }>(request);
-
-    if (!response.ok) {
+    if (response.status < 200 || response.status >= 300) {
       throw new Error(`Kong call failed: ${response.status}`);
     }
 
     // Check if response has the expected structure
-    if (!response.body || !response.body.result) {
+    if (!response.data || !response.data.result) {
       throw new Error('Invalid Kong response: missing result field');
     }
 
-    const result = response.body.result;
+    const result = response.data.result;
 
     // Kong returns token
     if (result.token) {
@@ -268,7 +272,7 @@ export class AppConsumerAuthService {
     return this.deviceJwt;
   }
 
-  getHttpService(): HttpService {
-    return this.httpService;
+  getHttpClient(): IHttpClient {
+    return this.httpClient;
   }
 }
