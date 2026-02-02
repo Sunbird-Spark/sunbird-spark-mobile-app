@@ -22,7 +22,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@capacitor-community/http": "^1.4.1",
     "@capacitor-community/sqlite": "^7.0.3",
