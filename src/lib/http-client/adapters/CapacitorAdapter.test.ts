@@ -475,5 +475,29 @@ describe('CapacitorAdapter', () => {
         },
       });
     });
+
+    it('should not add header when value is null or undefined for add action', async () => {
+      (CapacitorHttp.get as any).mockResolvedValue({
+        data: { id: 1 },
+        status: 200,
+        headers: {},
+      });
+
+      adapter.updateHeaders([
+        { key: 'X-Null', value: null as any, action: 'add' },
+        { key: 'X-Undefined', value: undefined as any, action: 'add' },
+        { key: 'X-Valid', value: 'valid', action: 'add' },
+      ]);
+
+      await adapter.get('/test');
+
+      // null and undefined values should not be added, only valid header
+      expect(CapacitorHttp.get).toHaveBeenCalledWith({
+        url: 'http://test.com/api/test',
+        headers: {
+          'X-Valid': 'valid',
+        },
+      });
+    });
   });
 });

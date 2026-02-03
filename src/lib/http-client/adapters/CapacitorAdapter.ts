@@ -133,7 +133,8 @@ export class CapacitorAdapter extends BaseClient {
   public updateHeaders(headers: HeaderOperation[]): void {
     _.forEach(headers, ({ key, value, action }) => {
       if (action === 'add') {
-        if (value) {
+        // Only add headers with valid, non-empty values
+        if (value !== undefined && value !== null && value !== '') {
           _.set(this.customHeaders, key, value);
         }
       } else if (action === 'remove') {
