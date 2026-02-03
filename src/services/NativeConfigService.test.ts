@@ -1,15 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NativeConfigServiceInstance } from './NativeConfigService';
-import { Capacitor } from '@capacitor/core';
 import { CapacitorReadNativeSetting } from 'capacitor-read-native-setting';
 
 // Mock dependencies
-vi.mock('@capacitor/core', () => ({
-  Capacitor: {
-    getPlatform: vi.fn(),
-  },
-}));
-
 vi.mock('capacitor-read-native-setting', () => ({
   CapacitorReadNativeSetting: {
     read: vi.fn(),
@@ -17,16 +10,17 @@ vi.mock('capacitor-read-native-setting', () => ({
 }));
 
 describe('NativeConfigService', () => {
-  let mockCapacitor: any;
   let mockReadNativeSetting: any;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockCapacitor = Capacitor;
     mockReadNativeSetting = CapacitorReadNativeSetting;
     
     // Reset cached config
     (NativeConfigServiceInstance as any).config = null;
+    
+    // Reset the mock completely
+    mockReadNativeSetting.read.mockReset();
   });
 
   describe('load', () => {
@@ -43,26 +37,10 @@ describe('NativeConfigService', () => {
 
       const result = await NativeConfigServiceInstance.load();
       expect(result).toBe(cachedConfig);
-      expect(mockCapacitor.getPlatform).not.toHaveBeenCalled();
-    });
-
-    it('should return web config when platform is web', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('web');
-
-      const result = await NativeConfigServiceInstance.load();
-
-      expect(result).toEqual({
-        baseUrl: 'https://sandbox.sunbirded.org',
-        mobileAppConsumer: '',
-        mobileAppKey: '',
-        mobileAppSecret: '',
-        producerId: '',
-      });
       expect(mockReadNativeSetting.read).not.toHaveBeenCalled();
     });
 
     it('should read native settings on native platform', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('android');
       mockReadNativeSetting.read
         .mockResolvedValueOnce({ value: 'https://api.sunbird.org' })
         .mockResolvedValueOnce({ value: 'mobile_device' })
@@ -89,7 +67,6 @@ describe('NativeConfigService', () => {
     });
 
     it('should handle null values from native settings', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('android');
       mockReadNativeSetting.read
         .mockResolvedValueOnce({ value: null })
         .mockResolvedValueOnce({ value: null })
@@ -109,7 +86,6 @@ describe('NativeConfigService', () => {
     });
 
     it('should handle undefined values from native settings', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('android');
       mockReadNativeSetting.read
         .mockResolvedValueOnce({ value: undefined })
         .mockResolvedValueOnce({ value: undefined })
@@ -129,7 +105,6 @@ describe('NativeConfigService', () => {
     });
 
     it('should return fallback config when native reading fails', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('android');
       mockReadNativeSetting.read.mockRejectedValue(new Error('Native read failed'));
 
       const result = await NativeConfigServiceInstance.load();
@@ -144,17 +119,21 @@ describe('NativeConfigService', () => {
     });
 
     it('should cache config after first load', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('web');
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: 'https://api.sunbird.org' })
+        .mockResolvedValueOnce({ value: 'mobile_device' })
+        .mockResolvedValueOnce({ value: 'mobile_app' })
+        .mockResolvedValueOnce({ value: 'secret123' })
+        .mockResolvedValueOnce({ value: 'sunbird.app' });
 
       const result1 = await NativeConfigServiceInstance.load();
       const result2 = await NativeConfigServiceInstance.load();
 
       expect(result1).toBe(result2);
-      expect(mockCapacitor.getPlatform).toHaveBeenCalledTimes(1);
+      expect(mockReadNativeSetting.read).toHaveBeenCalledTimes(5);
     });
 
     it('should handle iOS platform', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('ios');
       mockReadNativeSetting.read
         .mockResolvedValueOnce({ value: 'https://ios.api.sunbird.org' })
         .mockResolvedValueOnce({ value: 'ios_consumer' })
@@ -174,7 +153,6 @@ describe('NativeConfigService', () => {
     });
 
     it('should handle partial native setting failures', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('android');
       mockReadNativeSetting.read
         .mockResolvedValueOnce({ value: 'https://api.sunbird.org' })
         .mockRejectedValueOnce(new Error('Failed to read consumer'))
@@ -201,13 +179,21 @@ describe('NativeConfigService', () => {
     });
 
     it('should maintain state across calls', async () => {
-      mockCapacitor.getPlatform.mockReturnValue('web');
+      // First, ensure we start with a clean state
+      (NativeConfigServiceInstance as any).config = null;
+      
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: 'https://api.sunbird.org' })
+        .mockResolvedValueOnce({ value: 'mobile_device' })
+        .mockResolvedValueOnce({ value: 'mobile_app' })
+        .mockResolvedValueOnce({ value: 'secret123' })
+        .mockResolvedValueOnce({ value: 'sunbird.app' });
 
       await NativeConfigServiceInstance.load();
       const config = (NativeConfigServiceInstance as any).config;
 
       expect(config).toBeDefined();
-      expect(config.baseUrl).toBe('https://sandbox.sunbirded.org');
+      expect(config.baseUrl).toBe('https://api.sunbird.org');
     });
   });
 });
