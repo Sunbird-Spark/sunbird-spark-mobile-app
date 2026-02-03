@@ -6,17 +6,20 @@ import './index.css';
 import { NetworkProvider } from './providers/NetworkProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { QueryProvider } from './providers/QueryProvider';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
 root.render(
   <React.StrictMode>
-    <NetworkProvider>
-      <AuthProvider>
-        <LanguageProvider>
-          <App />
-        </LanguageProvider>
-      </AuthProvider>
-    </NetworkProvider>
+    <QueryProvider>
+      <NetworkProvider>
+        <AuthProvider>
+          <LanguageProvider>
+            <App />
+          </LanguageProvider>
+        </AuthProvider>
+      </NetworkProvider>
+    </QueryProvider>
   </React.StrictMode>,
 );

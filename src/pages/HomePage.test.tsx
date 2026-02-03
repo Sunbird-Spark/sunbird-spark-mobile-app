@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HomePage from './HomePage';
 
 // Mock Ionic components
@@ -131,6 +132,24 @@ vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext,
 }));
 
+// Create a test query client
+const createTestQueryClient = () => new QueryClient({
+  defaultOptions: {
+    queries: { retry: false },
+    mutations: { retry: false },
+  },
+});
+
+// Test wrapper component
+const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const queryClient = createTestQueryClient();
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -138,39 +157,39 @@ describe('HomePage', () => {
   });
 
   it('renders without crashing', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByTestId('ion-page')).toBeInTheDocument();
   });
 
   it('renders page structure correctly', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByTestId('ion-header')).toBeInTheDocument();
     expect(screen.getByTestId('ion-toolbar')).toBeInTheDocument();
     expect(screen.getByTestId('ion-content')).toBeInTheDocument();
   });
 
   it('renders correct title when not authenticated', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByText('Home')).toBeInTheDocument();
   });
 
   it('renders correct title when authenticated', () => {
     mockAuthContext.isAuthenticated = true;
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     // The authenticated header shows "welcomeBack" (translation key) and user name
     expect(screen.getByText('welcomeBack')).toBeInTheDocument();
     expect(screen.getByText('Test User')).toBeInTheDocument();
   });
 
   it('renders language switcher', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     // The HomePage doesn't have a language switcher in the header, it has a login button
     expect(screen.getByText('login')).toBeInTheDocument();
   });
 
   it('shows quick actions when authenticated', () => {
     mockAuthContext.isAuthenticated = true;
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByText('Quick Actions')).toBeInTheDocument();
     // Check that the quick actions grid is present
     expect(screen.getByTestId('ion-grid')).toBeInTheDocument();
@@ -181,43 +200,43 @@ describe('HomePage', () => {
   });
 
   it('does not show quick actions when not authenticated', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.queryByText('Quick Actions')).not.toBeInTheDocument();
   });
 
   it('shows continue learning section when authenticated and has progress', () => {
     mockAuthContext.isAuthenticated = true;
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByText('Continue Learning')).toBeInTheDocument();
   });
 
   it('renders featured courses section', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByText('Featured Courses')).toBeInTheDocument();
     // The page shows both featured courses (2) and browse courses (3) = 5 total
     expect(screen.getAllByTestId('course-card')).toHaveLength(5);
   });
 
   it('renders browse courses section when not authenticated', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByText('Browse Courses')).toBeInTheDocument();
   });
 
   it('does not render browse courses section when authenticated', () => {
     mockAuthContext.isAuthenticated = true;
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.queryByText('Browse Courses')).not.toBeInTheDocument();
   });
 
   it('navigates to courses page when view all is clicked', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     const viewAllButtons = screen.getAllByText('View All');
     fireEvent.click(viewAllButtons[0]);
     expect(mockPush).toHaveBeenCalledWith('/courses');
   });
 
   it('renders course cards with correct variants', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     const courseCards = screen.getAllByTestId('course-card');
     
     // Featured courses should use compact variant
@@ -228,12 +247,12 @@ describe('HomePage', () => {
   });
 
   it('renders fullscreen content', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     expect(screen.getByTestId('ion-content')).toHaveAttribute('data-fullscreen', 'true');
   });
 
   it('renders condensed header', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     // The HomePage doesn't have a condensed header structure like Dashboard
     const headers = screen.getAllByTestId('ion-header');
     expect(headers.length).toBeGreaterThan(0);
@@ -246,13 +265,13 @@ describe('HomePage', () => {
       i18n: { dir: () => 'rtl' },
     });
     
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     // The page has multiple icons: login button, view all buttons, bottom navigation
     expect(screen.getAllByTestId('ion-icon').length).toBeGreaterThan(2);
   });
 
   it('renders correct number of browse courses when not authenticated', () => {
-    render(<HomePage />);
+    render(<HomePage />, { wrapper: TestWrapper });
     const browseCourseCards = screen.getAllByTestId('course-card').filter(card =>
       card.getAttribute('data-variant') === 'horizontal'
     );

@@ -1,8 +1,10 @@
 import { initializeApiClient } from './api/config';
+import { AppConsumerAuthService } from './services/AppConsumerAuthService';
+import { getClient } from './lib/http-client';
 
 /**
  * AppInitializer handles all application initialization logic
- * This includes API client setup and other startup configurations
+ * This includes API client setup and authentication
  */
 export class AppInitializer {
   private static initialized = false;
@@ -13,36 +15,30 @@ export class AppInitializer {
    */
   static async init(): Promise<void> {
     if (this.initialized) {
-      console.warn('AppInitializer.init() called multiple times');
       return;
     }
 
     try {
-      console.log('Starting application initialization...');
-
       // Initialize API client
-      await this.initializeApiClient();
+      await initializeApiClient();
 
-      // Add other initialization logic here as needed
-      // e.g., analytics, crash reporting, feature flags, etc.
+      // Initialize authentication service
+      const authService = AppConsumerAuthService.getInstance();
+      await authService.init();
+
+      // Get Kong token and set it in HTTP client
+      const kongToken = await authService.getAuthenticatedToken();
+      
+      // Set both Authorization and X-Authenticated-User-Token headers
+      const httpClient = getClient();
+      httpClient.updateHeaders([
+        { key: 'Authorization', value: `Bearer ${kongToken}`, action: 'add' },
+        { key: 'X-Authenticated-User-Token', value: kongToken, action: 'add' },
+      ]);
 
       this.initialized = true;
-      console.log('Application initialization completed successfully');
     } catch (error) {
-      console.error('Failed to initialize application:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Initialize the API client with proper configuration
-   */
-  private static async initializeApiClient(): Promise<void> {
-    try {
-      await initializeApiClient();
-      console.log('API client initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize API client:', error);
+      console.error('AppInitializer: Initialization failed:', error);
       throw error;
     }
   }
@@ -52,12 +48,5 @@ export class AppInitializer {
    */
   static isInitialized(): boolean {
     return this.initialized;
-  }
-
-  /**
-   * Reset initialization state (useful for testing)
-   */
-  static reset(): void {
-    this.initialized = false;
   }
 }

@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core';
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { decodeJwt, SignJWT } from 'jose';
 import { getClient, IHttpClient } from '../lib/http-client';
@@ -11,10 +10,8 @@ export class AppConsumerAuthService {
   private mobileAppKey!: string;
   private mobileAppSecret!: string;
   private mobileAppConsumer!: string;
-  private deviceConsumerKey!: string;
 
   private httpClient!: IHttpClient;
-
   private appJwt: string | null = null;
   private deviceJwt: string | null = null;
 
@@ -25,20 +22,15 @@ export class AppConsumerAuthService {
 
   /**
    * Validates if a JWT token is still valid (not expired)
-   * Returns true if valid, false if expired or invalid
    */
   private isTokenValid(token: string | null): boolean {
     if (!token) return false;
-
-    // Skip validation for mock tokens (development mode)
-    if (token.startsWith('dev-mock-')) return true;
 
     try {
       const payload = decodeJwt(token);
 
       // Check if token has expiration time
       if (!payload.exp) {
-        // If no expiration, assume it's valid (some tokens don't expire)
         return true;
       }
 
@@ -46,8 +38,6 @@ export class AppConsumerAuthService {
       const currentTime = Math.floor(Date.now() / 1000);
       return payload.exp > currentTime;
     } catch (error) {
-      // If we can't decode the token, it's invalid
-      console.warn('Failed to decode JWT token:', error);
       return false;
     }
   }
@@ -59,7 +49,7 @@ export class AppConsumerAuthService {
     try {
       await SecureStoragePlugin.remove({ key: storageKey });
     } catch (error) {
-      console.warn(`Failed to clear expired token from storage (${storageKey}):`, error);
+      // Ignore storage errors
     }
   }
 
@@ -70,7 +60,6 @@ export class AppConsumerAuthService {
     return this.instance;
   }
 
-  // ================= INIT =================
   async init(): Promise<void> {
     const config = await NativeConfigServiceInstance.load();
 
@@ -78,44 +67,35 @@ export class AppConsumerAuthService {
     this.mobileAppSecret = config.mobileAppSecret;
     this.mobileAppConsumer = config.mobileAppConsumer;
 
-    // Use device service to get hashed device ID (matches existing Sunbird implementation)
     const deviceId = await deviceService.getHashedDeviceId();
     const producerId = config.producerId;
 
-    // For web development, skip validation since config values are empty
-    if (Capacitor.getPlatform() !== 'web' && !producerId) {
+    if (!producerId) {
       throw new Error('Producer ID is not configured. Please set producer_id in gradle.properties');
     }
-
-    // Use a default for web development to avoid empty string issues
-    const effectiveProducerId = producerId || 'dev-producer';
-    this.deviceConsumerKey = `${effectiveProducerId}-${deviceId}`;
 
     this.httpClient = getClient();
 
     this.httpClient.updateHeaders([
-      { key: 'X-App-Id', value: effectiveProducerId, action: 'add' },
+      { key: 'X-App-Id', value: producerId, action: 'add' },
       { key: 'X-Device-Id', value: deviceId, action: 'add' },
     ]);
 
+    // Load cached tokens
     try {
       const { value } = await SecureStoragePlugin.get({
         key: AppConsumerAuthService.APP_JWT_STORAGE,
       });
       const cachedToken = value ?? null;
 
-      // Only use cached token if it's valid and not expired
       if (this.isTokenValid(cachedToken)) {
         this.appJwt = cachedToken;
       } else if (cachedToken) {
-        console.info('Cached APP JWT is expired or invalid, will regenerate');
         this.appJwt = null;
-        // Clear expired token from storage
         await this.clearExpiredTokenFromStorage(AppConsumerAuthService.APP_JWT_STORAGE);
       }
     } catch (error) {
-      // Ignore storage errors - token will be regenerated if needed
-      console.error('Failed to load cached APP consumer JWT from secure storage:', error);
+      // Ignore storage errors
     }
 
     try {
@@ -124,123 +104,50 @@ export class AppConsumerAuthService {
       });
       const cachedToken = value ?? null;
 
-      // Only use cached token if it's valid and not expired
       if (this.isTokenValid(cachedToken)) {
         this.deviceJwt = cachedToken;
       } else if (cachedToken) {
-        console.info('Cached DEVICE JWT is expired or invalid, will regenerate');
         this.deviceJwt = null;
-        // Clear expired token from storage
         await this.clearExpiredTokenFromStorage(AppConsumerAuthService.DEVICE_JWT_STORAGE);
       }
     } catch (error) {
-      // Ignore storage errors - token will be regenerated if needed
-      console.error('Failed to load cached DEVICE consumer JWT from secure storage:', error);
+      // Ignore storage errors
     }
 
     // Generate App JWT if not cached
     if (!this.appJwt) {
       await this.generateAppJwt();
-    } else {
-      // If we have a cached valid token, set it in the client
-      this.httpClient.updateHeaders([
-        { key: 'Authorization', value: `Bearer ${this.appJwt}`, action: 'add' },
-      ]);
     }
   }
 
-  // ================= APP JWT =================
   private async generateAppJwt(): Promise<string> {
     if (!this.mobileAppSecret || this.mobileAppSecret.trim() === '') {
-      // For web development, return a mock JWT instead of throwing
-      if (Capacitor.getPlatform() === 'web') {
-        const mockToken = 'dev-mock-app-token-' + Date.now();
-        this.appJwt = mockToken;
-        this.httpClient.updateHeaders([
-          { key: 'Authorization', value: `Bearer ${mockToken}`, action: 'add' },
-        ]);
-        await SecureStoragePlugin.set({
-          key: AppConsumerAuthService.APP_JWT_STORAGE,
-          value: mockToken,
-        });
-        return mockToken;
-      }
       throw new Error('Mobile app secret is not configured. Check native config service.');
     }
 
     const secret = new TextEncoder().encode(this.mobileAppSecret);
+    const now = Math.floor(Date.now() / 1000);
+    const expiry = now + (24 * 60 * 60); // 24 hours from now
 
-    const token = await new SignJWT({})
+    const token = await new SignJWT({
+      aud: 'sunbird-api',
+      scope: 'read write',
+      client_id: this.mobileAppKey,
+    })
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuer(this.mobileAppKey)
       .setSubject(this.mobileAppConsumer)
-      .setIssuedAt()
+      .setIssuedAt(now)
+      .setExpirationTime(expiry)
+      .setJti(`jwt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`)
       .sign(secret);
 
     this.appJwt = token;
-    this.httpClient.updateHeaders([
-      { key: 'Authorization', value: `Bearer ${token}`, action: 'add' },
-    ]);
     await SecureStoragePlugin.set({ key: AppConsumerAuthService.APP_JWT_STORAGE, value: token });
 
     return token;
   }
 
-  // ================= DEVICE REGISTRATION =================
-  private async registerDeviceWithKong(path: string): Promise<string> {
-    if (!this.appJwt) {
-      await this.generateAppJwt();
-    }
-
-    const requestBody = {
-      id: 'ekstep.genie.device.register',
-      ver: '1.0',
-      ts: new Date().toISOString(),
-      request: { key: this.deviceConsumerKey },
-    };
-
-    // No need to manually set Authorization header - the client handles it
-    const response = await this.httpClient.post<{ result: { token?: string; secret?: string } }>(
-      path,
-      requestBody,
-      {
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (response.status < 200 || response.status >= 300) {
-      throw new Error(`Kong call failed: ${response.status}`);
-    }
-
-    // Check if response has the expected structure
-    if (!response.data || !response.data.result) {
-      throw new Error('Invalid Kong response: missing result field');
-    }
-
-    const result = response.data.result;
-
-    // Kong returns token
-    if (result.token) {
-      return result.token;
-    }
-
-    // Kong returns secret → we sign
-    if (result.secret) {
-      const secret = new TextEncoder().encode(result.secret);
-
-      const deviceToken = await new SignJWT({})
-        .setProtectedHeader({ alg: 'HS256' })
-        .setIssuer(this.deviceConsumerKey)
-        .setIssuedAt()
-        .sign(secret);
-
-      return deviceToken;
-    }
-
-    throw new Error('Invalid Kong response: no token or secret provided');
-  }
-
-  // ================= MAIN =================
   async getAuthenticatedToken(): Promise<string> {
     // Check if we have a valid cached device JWT
     if (this.deviceJwt && this.isTokenValid(this.deviceJwt)) {
@@ -249,34 +156,17 @@ export class AppConsumerAuthService {
 
     // Clear invalid token from memory and storage
     if (this.deviceJwt && !this.isTokenValid(this.deviceJwt)) {
-      console.info('Cached device JWT is expired or invalid, will regenerate');
       this.deviceJwt = null;
       await this.clearExpiredTokenFromStorage(AppConsumerAuthService.DEVICE_JWT_STORAGE);
     }
 
-    // In development mode, return a mock token to avoid Kong connection errors
-    if (Capacitor.getPlatform() === 'web') {
-      const mockToken = 'dev-mock-device-token-' + Date.now();
-      this.deviceJwt = mockToken;
-      return mockToken;
+    // Use app JWT as the authenticated token
+    if (!this.appJwt) {
+      await this.generateAppJwt();
     }
-
-    try {
-      this.deviceJwt = await this.registerDeviceWithKong(
-        `/api/api-manager/v2/consumer/${this.mobileAppConsumer}/credential/register`,
-      );
-    } catch (error) {
-      console.warn('Kong V2 registration failed, trying V1:', error);
-      try {
-        this.deviceJwt = await this.registerDeviceWithKong(
-          `/api/api-manager/v1/consumer/${this.mobileAppConsumer}/credential/register`,
-        );
-      } catch (v1Error) {
-        console.error('Both Kong V2 and V1 registration failed:', v1Error);
-        throw new Error('Device registration failed: Kong API unavailable');
-      }
-    }
-
+    
+    this.deviceJwt = this.appJwt;
+    
     await SecureStoragePlugin.set({
       key: AppConsumerAuthService.DEVICE_JWT_STORAGE,
       value: this.deviceJwt,

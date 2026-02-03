@@ -1,0 +1,213 @@
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { NativeConfigServiceInstance } from './NativeConfigService';
+import { Capacitor } from '@capacitor/core';
+import { CapacitorReadNativeSetting } from 'capacitor-read-native-setting';
+
+// Mock dependencies
+vi.mock('@capacitor/core', () => ({
+  Capacitor: {
+    getPlatform: vi.fn(),
+  },
+}));
+
+vi.mock('capacitor-read-native-setting', () => ({
+  CapacitorReadNativeSetting: {
+    read: vi.fn(),
+  },
+}));
+
+describe('NativeConfigService', () => {
+  let mockCapacitor: any;
+  let mockReadNativeSetting: any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCapacitor = Capacitor;
+    mockReadNativeSetting = CapacitorReadNativeSetting;
+    
+    // Reset cached config
+    (NativeConfigServiceInstance as any).config = null;
+  });
+
+  describe('load', () => {
+    it('should return cached config if already loaded', async () => {
+      const cachedConfig = {
+        baseUrl: 'cached-url',
+        mobileAppConsumer: 'cached-consumer',
+        mobileAppKey: 'cached-key',
+        mobileAppSecret: 'cached-secret',
+        producerId: 'cached-producer',
+      };
+
+      (NativeConfigServiceInstance as any).config = cachedConfig;
+
+      const result = await NativeConfigServiceInstance.load();
+      expect(result).toBe(cachedConfig);
+      expect(mockCapacitor.getPlatform).not.toHaveBeenCalled();
+    });
+
+    it('should return web config when platform is web', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('web');
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: 'https://sandbox.sunbirded.org',
+        mobileAppConsumer: '',
+        mobileAppKey: '',
+        mobileAppSecret: '',
+        producerId: '',
+      });
+      expect(mockReadNativeSetting.read).not.toHaveBeenCalled();
+    });
+
+    it('should read native settings on native platform', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('android');
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: 'https://api.sunbird.org' })
+        .mockResolvedValueOnce({ value: 'mobile_device' })
+        .mockResolvedValueOnce({ value: 'mobile_app' })
+        .mockResolvedValueOnce({ value: 'secret123' })
+        .mockResolvedValueOnce({ value: 'sunbird.app' });
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: 'https://api.sunbird.org',
+        mobileAppConsumer: 'mobile_device',
+        mobileAppKey: 'mobile_app',
+        mobileAppSecret: 'secret123',
+        producerId: 'sunbird.app',
+      });
+
+      expect(mockReadNativeSetting.read).toHaveBeenCalledTimes(5);
+      expect(mockReadNativeSetting.read).toHaveBeenCalledWith({ key: 'base_url' });
+      expect(mockReadNativeSetting.read).toHaveBeenCalledWith({ key: 'mobile_app_consumer' });
+      expect(mockReadNativeSetting.read).toHaveBeenCalledWith({ key: 'mobile_app_key' });
+      expect(mockReadNativeSetting.read).toHaveBeenCalledWith({ key: 'mobile_app_secret' });
+      expect(mockReadNativeSetting.read).toHaveBeenCalledWith({ key: 'producer_id' });
+    });
+
+    it('should handle null values from native settings', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('android');
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: null })
+        .mockResolvedValueOnce({ value: null })
+        .mockResolvedValueOnce({ value: null })
+        .mockResolvedValueOnce({ value: null })
+        .mockResolvedValueOnce({ value: null });
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: '',
+        mobileAppConsumer: '',
+        mobileAppKey: '',
+        mobileAppSecret: '',
+        producerId: '',
+      });
+    });
+
+    it('should handle undefined values from native settings', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('android');
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: undefined })
+        .mockResolvedValueOnce({ value: undefined })
+        .mockResolvedValueOnce({ value: undefined })
+        .mockResolvedValueOnce({ value: undefined })
+        .mockResolvedValueOnce({ value: undefined });
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: '',
+        mobileAppConsumer: '',
+        mobileAppKey: '',
+        mobileAppSecret: '',
+        producerId: '',
+      });
+    });
+
+    it('should return fallback config when native reading fails', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('android');
+      mockReadNativeSetting.read.mockRejectedValue(new Error('Native read failed'));
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: '',
+        mobileAppConsumer: '',
+        mobileAppKey: '',
+        mobileAppSecret: '',
+        producerId: '',
+      });
+    });
+
+    it('should cache config after first load', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('web');
+
+      const result1 = await NativeConfigServiceInstance.load();
+      const result2 = await NativeConfigServiceInstance.load();
+
+      expect(result1).toBe(result2);
+      expect(mockCapacitor.getPlatform).toHaveBeenCalledTimes(1);
+    });
+
+    it('should handle iOS platform', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('ios');
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: 'https://ios.api.sunbird.org' })
+        .mockResolvedValueOnce({ value: 'ios_consumer' })
+        .mockResolvedValueOnce({ value: 'ios_key' })
+        .mockResolvedValueOnce({ value: 'ios_secret' })
+        .mockResolvedValueOnce({ value: 'ios.producer' });
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: 'https://ios.api.sunbird.org',
+        mobileAppConsumer: 'ios_consumer',
+        mobileAppKey: 'ios_key',
+        mobileAppSecret: 'ios_secret',
+        producerId: 'ios.producer',
+      });
+    });
+
+    it('should handle partial native setting failures', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('android');
+      mockReadNativeSetting.read
+        .mockResolvedValueOnce({ value: 'https://api.sunbird.org' })
+        .mockRejectedValueOnce(new Error('Failed to read consumer'))
+        .mockResolvedValueOnce({ value: 'mobile_app' })
+        .mockResolvedValueOnce({ value: 'secret123' })
+        .mockResolvedValueOnce({ value: 'sunbird.app' });
+
+      const result = await NativeConfigServiceInstance.load();
+
+      expect(result).toEqual({
+        baseUrl: '',
+        mobileAppConsumer: '',
+        mobileAppKey: '',
+        mobileAppSecret: '',
+        producerId: '',
+      });
+    });
+  });
+
+  describe('singleton instance', () => {
+    it('should export a singleton instance', () => {
+      expect(NativeConfigServiceInstance).toBeDefined();
+      expect(typeof NativeConfigServiceInstance.load).toBe('function');
+    });
+
+    it('should maintain state across calls', async () => {
+      mockCapacitor.getPlatform.mockReturnValue('web');
+
+      await NativeConfigServiceInstance.load();
+      const config = (NativeConfigServiceInstance as any).config;
+
+      expect(config).toBeDefined();
+      expect(config.baseUrl).toBe('https://sandbox.sunbirded.org');
+    });
+  });
+});

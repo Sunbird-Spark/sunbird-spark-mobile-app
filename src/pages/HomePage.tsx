@@ -1,13 +1,10 @@
 import React from 'react';
 import {
   IonButton,
-  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
   IonPage,
-  IonTitle,
-  IonToolbar,
 } from '@ionic/react';
 import { chevronForward, chevronBack } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
@@ -19,12 +16,36 @@ import CourseCard from '../components/courses/CourseCard';
 import QuickActions from '../components/home/QuickActions';
 import { getFeaturedCourses, getInProgressCourses, courses } from '../data/mockData';
 import { useAuth } from '../contexts/AuthContext';
+import { useOrganizationSearch } from '../hooks/useOrganizationSearch';
+import { AppInitializer } from '../AppInitializer';
 
 const HomePage: React.FC = () => {
   const history = useHistory();
   const { t, i18n } = useTranslation();
   const { isAuthenticated } = useAuth();
   const dir = i18n.dir();
+
+  const { mutate: searchOrganizations } = useOrganizationSearch();
+
+  // Initialize channel ID by searching for the default organization
+  React.useEffect(() => {
+    const initializeChannelId = () => {
+      if (AppInitializer.isInitialized()) {
+        searchOrganizations({
+          request: { 
+            filters: { 
+              slug: 'sunbird', 
+              isTenant: true 
+            } 
+          }
+        });
+      } else {
+        setTimeout(initializeChannelId, 500);
+      }
+    };
+
+    initializeChannelId();
+  }, [searchOrganizations]);
 
   const featuredCourses = getFeaturedCourses();
   const inProgressCourses = getInProgressCourses();

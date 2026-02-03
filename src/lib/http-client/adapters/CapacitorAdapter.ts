@@ -1,6 +1,7 @@
-import { Http } from '@capacitor-community/http';
+import { CapacitorHttp } from '@capacitor/core';
 import { BaseClient } from '../BaseClient';
-import { ApiResponse, HttpClientConfig, HeaderOperation } from '../types';
+import { ApiResponse, HeaderOperation, HttpClientConfig } from '../types';
+import _ from 'lodash';
 
 export class CapacitorAdapter extends BaseClient {
   private config: HttpClientConfig;
@@ -8,15 +9,44 @@ export class CapacitorAdapter extends BaseClient {
 
   constructor(config: HttpClientConfig) {
     super(config);
-    this.config = config;
+    
+    // Combine baseURL and apiPrefix.
+    // If baseURL is provided, it's the host. apiPrefix is the path.
+    // If baseURL is empty/undefined, we just use apiPrefix as the baseURL for relative requests.
+    const prefix = config.apiPrefix ?? '/api';
+    const baseURL = config.baseURL ? `${config.baseURL}${prefix}` : prefix;
+    
+    this.config = {
+      ...config,
+      baseURL,
+    };
   }
 
-  private mapResponse<T>(res: any): ApiResponse<T> {
-    return {
-      data: res.data,
-      status: res.status,
-      headers: res.headers || {},
+  private mapResponse<T>(capacitorResponse: any): ApiResponse<T> {
+    const result = _.get(capacitorResponse.data, 'result');
+    // If result exists and is not null/undefined, return result. Otherwise return full data.
+    const data = !_.isNil(result) ? result : capacitorResponse.data;
+    
+    const mappedResponse = {
+      data: data as T,
+      status: capacitorResponse.status,
+      headers: capacitorResponse.headers as Record<string, any>,
     };
+    
+    return mappedResponse;
+  }
+
+  private async request<T>(requestFn: () => Promise<any>): Promise<ApiResponse<T>> {
+    try {
+      const response = await requestFn();
+      return this.mapResponse(response);
+    } catch (error: any) {
+      // If the error already looks like an HTTP response (e.g., 4xx/5xx), normalize it
+      if (error && typeof error === 'object' && 'status' in error) {
+        return this.mapResponse(error);
+      }
+      throw error;
+    }
   }
 
   private getHeaders(customHeaders?: Record<string, string>): Record<string, string> {
@@ -25,88 +55,89 @@ export class CapacitorAdapter extends BaseClient {
       ...this.customHeaders,
       ...customHeaders,
     };
-
-    return headers;
+    
+    // Clean headers - remove null/undefined values and ensure all values are strings
+    const cleanHeaders: Record<string, string> = {};
+    Object.entries(headers).forEach(([key, value]) => {
+      if (value != null && value !== undefined) {
+        cleanHeaders[key] = String(value);
+      }
+    });
+    
+    return cleanHeaders;
   }
 
-  private async executeRequest<T>(
-    method: string,
-    url: string,
-    options: { data?: any; headers?: Record<string, string> }
-  ): Promise<ApiResponse<T>> {
-    const fullUrl = this.buildUrl(url);
-    const headers = this.getHeaders(options.headers);
-
-    try {
-      let res: any;
-      
-      switch (method.toUpperCase()) {
-        case 'GET':
-          res = await Http.get({ url: fullUrl, headers });
-          break;
-        case 'POST':
-          res = await Http.post({ url: fullUrl, data: options.data, headers });
-          break;
-        case 'PUT':
-          res = await Http.put({ url: fullUrl, data: options.data, headers });
-          break;
-        case 'DELETE':
-          res = await Http.del({ url: fullUrl, headers });
-          break;
-        default:
-          throw new Error(`Unsupported HTTP method: ${method}`);
-      }
-
-      return this.mapResponse<T>(res);
-    } catch (error: any) {
-      // If the error already looks like an HTTP response (e.g., 4xx/5xx), normalize it
-      if (error && typeof error === 'object' && 'status' in error) {
-        return this.mapResponse<T>(error);
-      }
-
-      // Otherwise, throw a meaningful error
-      const message = error?.message || String(error);
-      throw new Error(`HTTP ${method.toUpperCase()} ${fullUrl} failed: ${message}`);
-    }
+  private buildUrl(path: string): string {
+    // Ensure path starts with /
+    const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+    const fullUrl = `${this.config.baseURL}${normalizedPath}`;
+    return fullUrl;
   }
 
   protected async _get<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
-    return this.executeRequest<T>('GET', url, { headers });
+    const fullUrl = this.buildUrl(url);
+    const cleanHeaders = this.getHeaders(headers);
+    
+    return this.request(() => 
+      CapacitorHttp.get({ 
+        url: fullUrl, 
+        headers: cleanHeaders
+      })
+    );
   }
 
   protected async _post<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
-    return this.executeRequest<T>('POST', url, { data, headers });
+    const fullUrl = this.buildUrl(url);
+    const cleanHeaders = this.getHeaders(headers);
+    
+    // Ensure data is properly serialized
+    const requestData = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : undefined;
+    
+    return this.request(() => 
+      CapacitorHttp.post({ 
+        url: fullUrl, 
+        data: requestData,
+        headers: cleanHeaders
+      })
+    );
   }
 
   protected async _put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
-    return this.executeRequest<T>('PUT', url, { data, headers });
+    const fullUrl = this.buildUrl(url);
+    const cleanHeaders = this.getHeaders(headers);
+    
+    // Ensure data is properly serialized
+    const requestData = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : undefined;
+    
+    return this.request(() => 
+      CapacitorHttp.put({ 
+        url: fullUrl, 
+        data: requestData,
+        headers: cleanHeaders
+      })
+    );
   }
 
   protected async _delete<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
-    return this.executeRequest<T>('DELETE', url, { headers });
+    const fullUrl = this.buildUrl(url);
+    const cleanHeaders = this.getHeaders(headers);
+    
+    return this.request(() => 
+      CapacitorHttp.del({ 
+        url: fullUrl, 
+        headers: cleanHeaders
+      })
+    );
   }
 
-  private buildUrl(path: string) {
-    return `${this.config.baseURL}${path}`;
-  }
-
-  // Convenience methods for auth (internally use updateHeaders)
-  setAuthHeader(token: string): void {
-    this.updateHeaders([{ key: 'Authorization', value: `Bearer ${token}`, action: 'add' }]);
-  }
-
-  clearAuthHeader(): void {
-    this.updateHeaders([{ key: 'Authorization', action: 'remove' }]);
-  }
-
-  updateHeaders(headers: HeaderOperation[]): void {
-    headers.forEach(({ key, value, action }) => {
+  public updateHeaders(headers: HeaderOperation[]): void {
+    _.forEach(headers, ({ key, value, action }) => {
       if (action === 'add') {
         if (value) {
-          this.customHeaders[key] = value;
+          _.set(this.customHeaders, key, value);
         }
       } else if (action === 'remove') {
-        delete this.customHeaders[key];
+        _.unset(this.customHeaders, key);
       }
     });
   }

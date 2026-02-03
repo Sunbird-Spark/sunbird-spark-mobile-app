@@ -1,5 +1,9 @@
 [
 	{
+		"pkg": "@capacitor-community/http",
+		"classpath": "com.getcapacitor.plugin.http.Http"
+	},
+	{
 		"pkg": "@capacitor-community/sqlite",
 		"classpath": "com.getcapacitor.community.database.sqlite.CapacitorSQLitePlugin"
 	},
@@ -55,7 +59,7 @@
 		"pkg": "capacitor-read-native-setting",
 		"classpath": "com.ingageco.readnativesetting.CapacitorReadNativeSetting"
 	},
-{
+	{
 		"pkg": "capacitor-secure-storage-plugin",
 		"classpath": "com.whitestein.securestorage.SecureStoragePluginPlugin"
 	}

@@ -9,6 +9,9 @@ const config: CapacitorConfig = {
       enabled: true,
     },
   },
+  server: {
+    cleartext: true,
+  },
 };
 
 export default config;
