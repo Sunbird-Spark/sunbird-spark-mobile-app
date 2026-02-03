@@ -29,6 +29,7 @@ const HomePage: React.FC = () => {
 
   // Initialize channel ID by searching for the default organization
   React.useEffect(() => {
+    let timeoutId: number;
     const initializeChannelId = () => {
       if (AppInitializer.isInitialized()) {
         searchOrganizations({
@@ -40,11 +41,16 @@ const HomePage: React.FC = () => {
           }
         });
       } else {
-        setTimeout(initializeChannelId, 500);
+        timeoutId = setTimeout(initializeChannelId, 500);
       }
     };
 
     initializeChannelId();
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [searchOrganizations]);
 
   const featuredCourses = getFeaturedCourses();
