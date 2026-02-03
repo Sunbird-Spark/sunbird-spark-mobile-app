@@ -1,29 +1,13 @@
-import { CapacitorHttp } from '@capacitor/core';
-import { ApiResponse } from '../lib/http-client';
-import { NativeConfigServiceInstance } from './NativeConfigService';
+import { getClient, ApiResponse } from '../lib/http-client';
 
 export class SystemSettingService {
   public async read<T = any>(id: string): Promise<ApiResponse<T>> {
     try {
-      const config = await NativeConfigServiceInstance.load();
-      const headers = {
+      const response = await getClient().get<T>(`/learner/data/v1/system/settings/get/${id}`, {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-      };
-      
-      // Use CapacitorHttp directly with dynamic base URL + learner path
-      const response = await CapacitorHttp.get({
-        url: `${config.baseUrl}/learner/data/v1/system/settings/get/${id}`,
-        headers
       });
-      
-      // Map response to match expected format
-      const result = response.data?.result || response.data;
-      return {
-        data: result as T,
-        status: response.status,
-        headers: response.headers as Record<string, any>,
-      };
+      return response;
     } catch (error) {
       console.error('SystemSettingService API Error:', error);
       throw error;
