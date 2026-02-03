@@ -52,13 +52,6 @@ class MockBaseClient extends BaseClient {
     return response;
   }
 
-  setAuthHeader(token: string): void {
-    // Mock implementation
-  }
-
-  clearAuthHeader(): void {
-    // Mock implementation
-  }
 }
 
 describe('BaseClient', () => {
