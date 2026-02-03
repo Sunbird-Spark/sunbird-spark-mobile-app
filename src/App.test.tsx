@@ -112,6 +112,14 @@ vi.mock('./api/config', () => ({
   initializeApiClient: vi.fn().mockResolvedValue(undefined),
 }));
 
+// Mock AppInitializer
+vi.mock('./AppInitializer', () => ({
+  AppInitializer: {
+    init: vi.fn().mockResolvedValue(undefined),
+    isInitialized: vi.fn().mockReturnValue(true),
+  },
+}));
+
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);
@@ -126,9 +134,11 @@ describe('App', () => {
   it('renders routes', () => {
     render(<App />);
     expect(screen.getByTestId('route-/home')).toBeInTheDocument();
-    expect(screen.getByTestId('route-/dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/courses')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/scan')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/downloads')).toBeInTheDocument();
     expect(screen.getByTestId('route-/profile')).toBeInTheDocument();
-    expect(screen.getByTestId('route-/')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/dashboard')).toBeInTheDocument();
   });
 
   it('renders redirect component', () => {

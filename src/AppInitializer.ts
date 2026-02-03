@@ -39,6 +39,22 @@ export class AppInitializer {
       this.initialized = true;
     } catch (error) {
       console.error('AppInitializer: Initialization failed:', error);
+      
+      // Ensure the application does not remain in a partially initialized state
+      this.initialized = false;
+      
+      try {
+        // Roll back any authorization headers that may have been set
+        const httpClient = getClient();
+        httpClient.updateHeaders([
+          { key: 'Authorization', value: '', action: 'remove' },
+          { key: 'X-Authenticated-User-Token', value: '', action: 'remove' },
+        ]);
+      } catch (cleanupError) {
+        // If cleanup fails, log it but preserve the original initialization error
+        console.error('AppInitializer: Failed to clean up after initialization error:', cleanupError);
+      }
+      
       throw error;
     }
   }
