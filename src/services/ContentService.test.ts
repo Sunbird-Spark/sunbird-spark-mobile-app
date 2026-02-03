@@ -23,23 +23,24 @@ describe('ContentService', () => {
   describe('getContent', () => {
     it('should successfully search for content', async () => {
       // Arrange
+      const payload = {
+        request: {
+          filters: {
+            contentType: ['Course'],
+            status: ['Live']
+          },
+          limit: 10
+        }
+      };
       mockHttpClient.post.mockResolvedValue(mockContentResponse);
 
       // Act
-      const result = await contentService.getContent();
+      const result = await contentService.getContent(payload);
 
       // Assert
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         '/content/v1/search',
-        {
-          request: {
-            filters: {
-              contentType: ['Course'],
-              status: ['Live']
-            },
-            limit: 10
-          }
-        },
+        payload,
         {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -52,46 +53,49 @@ describe('ContentService', () => {
 
     it('should handle API errors', async () => {
       // Arrange
+      const payload = { request: { filters: {}, limit: 5 } };
       mockHttpClient.post.mockRejectedValue(mockApiError);
 
       // Act & Assert
-      await expect(contentService.getContent()).rejects.toThrow('API Error');
+      await expect(contentService.getContent(payload)).rejects.toThrow('API Error');
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         '/content/v1/search',
-        expect.any(Object),
+        payload,
         expect.any(Object)
       );
     });
 
-    it('should pass correct request payload', async () => {
+    it('should pass custom request payload', async () => {
       // Arrange
+      const customPayload = {
+        request: {
+          filters: {
+            contentType: ['TextBook'],
+            status: ['Draft']
+          },
+          limit: 20
+        }
+      };
       mockHttpClient.post.mockResolvedValue(mockContentResponse);
 
       // Act
-      await contentService.getContent();
+      await contentService.getContent(customPayload);
 
       // Assert
       expect(mockHttpClient.post).toHaveBeenCalledWith(
         '/content/v1/search',
-        expect.objectContaining({
-          request: expect.objectContaining({
-            filters: expect.objectContaining({
-              contentType: ['Course'],
-              status: ['Live']
-            }),
-            limit: 10
-          })
-        }),
+        customPayload,
         expect.any(Object)
       );
     });
 
     it('should pass correct headers', async () => {
       // Arrange
+      const payload = { request: { filters: {} } };
       mockHttpClient.post.mockResolvedValue(mockContentResponse);
 
       // Act
-      await contentService.getContent();
+      await contentService.getContent(payload);
 
       // Assert
       expect(mockHttpClient.post).toHaveBeenCalledWith(
@@ -106,10 +110,11 @@ describe('ContentService', () => {
 
     it('should return content with correct structure', async () => {
       // Arrange
+      const payload = { request: { filters: {} } };
       mockHttpClient.post.mockResolvedValue(mockContentResponse);
 
       // Act
-      const result = await contentService.getContent();
+      const result = await contentService.getContent(payload);
 
       // Assert
       expect(result.data.result.count).toBe(2);
@@ -121,6 +126,7 @@ describe('ContentService', () => {
 
     it('should handle empty content results', async () => {
       // Arrange
+      const payload = { request: { filters: {} } };
       const emptyResponse = {
         ...mockContentResponse,
         data: {
@@ -134,7 +140,7 @@ describe('ContentService', () => {
       mockHttpClient.post.mockResolvedValue(emptyResponse);
 
       // Act
-      const result = await contentService.getContent();
+      const result = await contentService.getContent(payload);
 
       // Assert
       expect(result.data.result.content).toHaveLength(0);
