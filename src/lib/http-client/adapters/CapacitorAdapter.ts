@@ -59,7 +59,7 @@ export class CapacitorAdapter extends BaseClient {
     // Clean headers - remove null/undefined values and ensure all values are strings
     const cleanHeaders: Record<string, string> = {};
     Object.entries(headers).forEach(([key, value]) => {
-      if (value != null && value !== undefined) {
+      if (value != null) {
         cleanHeaders[key] = String(value);
       }
     });
