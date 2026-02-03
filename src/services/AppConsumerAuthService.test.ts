@@ -32,6 +32,13 @@ vi.mock('./NativeConfigService', () => ({
 vi.mock('../lib/http-client', () => ({
   getClient: vi.fn().mockReturnValue({
     updateHeaders: vi.fn(),
+    post: vi.fn().mockResolvedValue({
+      data: {
+        result: {
+          secret: 'mock-device-secret'
+        }
+      }
+    }),
   }),
 }));
 
@@ -262,13 +269,27 @@ describe('AppConsumerAuthService', () => {
       expect(token).toBeTruthy();
     });
 
-    it('should use app JWT as device JWT', async () => {
+    it('should register device and get device JWT', async () => {
       const token = await service.getAuthenticatedToken();
       
       expect(mockSecureStorage.set).toHaveBeenCalledWith({
         key: 'DEVICE_CONSUMER_JWT',
-        value: token,
+        value: expect.any(String),
       });
+      expect(token).toBeTruthy();
+      // The token should be different from app JWT since it's generated with device secret
+      expect(token).not.toBe((service as any).appJwt);
+    });
+
+    it('should fallback to app JWT when device registration fails', async () => {
+      // Mock HTTP client to simulate registration failure
+      const { getClient } = await import('../lib/http-client');
+      const mockClient = vi.mocked(getClient());
+      mockClient.post = vi.fn().mockRejectedValue(new Error('Registration failed'));
+
+      const token = await service.getAuthenticatedToken();
+      
+      expect(token).toBe((service as any).appJwt);
     });
   });
 

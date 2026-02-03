@@ -143,6 +143,59 @@ export class AppConsumerAuthService {
     return token;
   }
 
+  private async registerDeviceWithKong(): Promise<string> {
+    if (!this.appJwt) {
+      throw new Error('App JWT is required for device registration');
+    }
+
+    const deviceId = await deviceService.getHashedDeviceId();
+    
+    const requestBody = {
+      id: 'api.device.register',
+      ver: '1.0',
+      ts: new Date().toISOString(),
+      params: {
+        msgid: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      },
+      request: {
+        key: deviceId,
+      },
+    };
+
+    try {
+      const response = await this.httpClient.post<{
+        result?: {
+          secret?: string;
+        };
+      }>('/api/api-manager/v1/consumer/mobile_device/credential/register', requestBody, {
+        'Authorization': `Bearer ${this.appJwt}`,
+        'Content-Type': 'application/json',
+      });
+
+      if (response.data?.result?.secret) {
+        // Generate device JWT using the secret from Kong
+        const secret = new TextEncoder().encode(response.data.result.secret);
+        const now = Math.floor(Date.now() / 1000);
+        const expiry = now + (24 * 60 * 60); // 24 hours from now
+
+        const deviceJwt = await new SignJWT({})
+          .setProtectedHeader({ alg: 'HS256' })
+          .setIssuer(this.mobileAppKey)
+          .setSubject(deviceId)
+          .setIssuedAt(now)
+          .setExpirationTime(expiry)
+          .sign(secret);
+
+        return deviceJwt;
+      } else {
+        throw new Error('Device registration failed: No secret received from Kong');
+      }
+    } catch (error) {
+      console.error('Device registration failed:', error);
+      throw new Error(`Device registration failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
   async getAuthenticatedToken(): Promise<string> {
     // Check if we have a valid cached device JWT
     if (this.deviceJwt && this.isTokenValid(this.deviceJwt)) {
@@ -155,19 +208,32 @@ export class AppConsumerAuthService {
       await this.clearExpiredTokenFromStorage(AppConsumerAuthService.DEVICE_JWT_STORAGE);
     }
 
-    // Use app JWT as the authenticated token
-    if (!this.appJwt) {
+    // Ensure we have a valid app JWT
+    if (!this.appJwt || !this.isTokenValid(this.appJwt)) {
       await this.generateAppJwt();
     }
-    
-    this.deviceJwt = this.appJwt;
-    
-    await SecureStoragePlugin.set({
-      key: AppConsumerAuthService.DEVICE_JWT_STORAGE,
-      value: this.deviceJwt,
-    });
 
-    return this.deviceJwt;
+    // Register device with Kong to get device JWT
+    try {
+      this.deviceJwt = await this.registerDeviceWithKong();
+      
+      // Cache the device JWT
+      await SecureStoragePlugin.set({
+        key: AppConsumerAuthService.DEVICE_JWT_STORAGE,
+        value: this.deviceJwt,
+      });
+
+      return this.deviceJwt;
+    } catch (error) {
+      console.error('Failed to get device JWT, falling back to app JWT:', error);
+      
+      // Fallback to app JWT if device registration fails
+      if (!this.appJwt) {
+        await this.generateAppJwt();
+      }
+      
+      return this.appJwt!;
+    }
   }
 
   getHttpClient(): IHttpClient {
