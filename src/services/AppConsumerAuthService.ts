@@ -129,17 +129,12 @@ export class AppConsumerAuthService {
     const now = Math.floor(Date.now() / 1000);
     const expiry = now + (24 * 60 * 60); // 24 hours from now
 
-    const token = await new SignJWT({
-      aud: 'sunbird-api',
-      scope: 'read write',
-      client_id: this.mobileAppKey,
-    })
+    const token = await new SignJWT({})
       .setProtectedHeader({ alg: 'HS256' })
       .setIssuer(this.mobileAppKey)
       .setSubject(this.mobileAppConsumer)
       .setIssuedAt(now)
       .setExpirationTime(expiry)
-      .setJti(`jwt-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`)
       .sign(secret);
 
     this.appJwt = token;
