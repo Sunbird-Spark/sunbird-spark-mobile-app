@@ -1,0 +1,228 @@
+/* =============================================
+   My Learning Page — all styles
+   ============================================= */
+
+.my-learning-page {
+    --background: #f4f4f4;
+}
+
+/* ── Header ── */
+.my-learning-page .ml-header {
+    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+}
+
+.my-learning-page .ml-toolbar {
+    --background: #ffffff !important;
+    --color: #222222 !important;
+    --border-width: 0 !important;
+}
+
+/* Override global white header rule */
+.my-learning-page .ml-toolbar .ml-title,
+.my-learning-page .ml-toolbar .ml-back-btn,
+.my-learning-page .ml-toolbar .ml-filter-btn {
+    color: #222222 !important;
+}
+
+.my-learning-page .ml-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: left;
+    padding-inline-start: 0;
+}
+
+.my-learning-page .ml-back-btn {
+    --color: #a85236 !important;
+}
+
+.ml-filter-wrapper {
+    position: relative;
+}
+
+.ml-filter-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+/* Filter dropdown — rendered inside IonContent, positioned at top-right */
+.ml-filter-dropdown {
+    position: fixed;
+    top: 56px;
+    right: 12px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.12);
+    padding: 6px 0;
+    min-width: 140px;
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.ml-filter-option {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    background: none;
+    border: none;
+    text-align: left;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #222222;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.ml-filter-option:hover {
+    background: #f4f4f4;
+}
+
+.ml-filter-active {
+    color: #a85236;
+    font-weight: 500;
+    background: #FFF7F2;
+}
+
+/* ── Content ── */
+.ml-content {
+    --background: #f4f4f4;
+}
+
+.ml-cards-container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Course card ── */
+.ml-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.09);
+    overflow: hidden;
+}
+
+.ml-card-body {
+    display: flex;
+    padding: 16px;
+    gap: 12px;
+}
+
+.ml-card-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+/* ── Status badge ── */
+.ml-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 36px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    width: fit-content;
+}
+
+.ml-badge-ongoing {
+    background: #FFF1C7;
+    border: 1px solid #CC8545;
+    color: #000000;
+}
+
+.ml-badge-completed {
+    background: #CAE5B6;
+    border: 1px solid #82A668;
+    color: #000000;
+}
+
+/* ── Course title ── */
+.ml-course-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #222222;
+    margin: 2px 0 0;
+    line-height: 1.4;
+}
+
+/* ── Due date ── */
+.ml-due-date {
+    font-family: 'Rubik', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: #757575;
+    margin: 0;
+}
+
+/* ── Progress row ── */
+.ml-progress-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.ml-progress-ring {
+    flex-shrink: 0;
+}
+
+.ml-progress-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #222222;
+}
+
+/* ── Thumbnail ── */
+.ml-thumbnail {
+    width: 70px;
+    height: 70px;
+    border-radius: 10px;
+    overflow: hidden;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 30px;
+}
+
+.ml-thumbnail img,
+.ml-thumb-placeholder {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: linear-gradient(135deg, #1a2a3a 0%, #2d4a5a 50%, #1a2a3a 100%);
+    border-radius: 10px;
+}
+
+/* ── Card footer ── */
+.ml-card-footer {
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: center;
+    padding: 12px 16px;
+}
+
+.ml-cert-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #a85236;
+}

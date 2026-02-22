@@ -125,7 +125,7 @@ const ProfilePage: React.FC = () => {
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false}>
+          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/my-learning">
             <IonLabel className="profile-action-label">My Learning</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
