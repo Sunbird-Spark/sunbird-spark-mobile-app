@@ -13,6 +13,7 @@ import DownloadsPage from './pages/DownloadsPage';
 import ProfilePage from './pages/ProfilePage';
 import PersonalDetailsPage from './pages/PersonalDetailsPage';
 import MyLearningPage from './pages/MyLearningPage';
+import DownloadedContentsPage from './pages/DownloadedContentsPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -61,6 +62,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/profile/my-learning">
             <MyLearningPage />
+          </Route>
+          <Route exact path="/profile/downloaded-contents">
+            <DownloadedContentsPage />
           </Route>
           <Route exact path="/dashboard">
             <Dashboard />

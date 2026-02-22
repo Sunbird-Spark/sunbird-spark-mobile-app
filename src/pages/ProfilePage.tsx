@@ -130,6 +130,11 @@ const ProfilePage: React.FC = () => {
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
+          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
+            <IonLabel className="profile-action-label">Downloaded Contents</IonLabel>
+            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+          </IonItem>
+
           <IonItem className="profile-action-item profile-action-logout" button detail={false} onClick={logout}>
             <svg slot="start" className="profile-logout-icon" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0.937881 7.58364L0.366072 7.12605L0 7.58364L0.366072 8.04123L0.937881 7.58364ZM7.52718 8.31579C7.93132 8.31579 8.25932 7.98779 8.25932 7.58364C8.25932 7.1795 7.93132 6.8515 7.52718 6.8515V8.31579ZM3.29465 3.46533L0.366072 7.12605L1.50969 8.04123L4.43827 4.38051L3.29465 3.46533ZM0.366072 8.04123L3.29465 11.702L4.43827 10.7868L1.50969 7.12605L0.366072 8.04123ZM0.937881 8.31579H7.52718V6.8515H0.937881V8.31579Z" fill="#CC8545" />
@@ -144,7 +149,7 @@ const ProfilePage: React.FC = () => {
       </IonContent>
 
       <BottomNavigation />
-    </IonPage>
+    </IonPage >
   );
 };
 
