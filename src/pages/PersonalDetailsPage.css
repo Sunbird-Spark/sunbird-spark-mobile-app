@@ -1,0 +1,296 @@
+/* =============================================
+   Personal Details Page — all styles
+   ============================================= */
+
+.personal-details-page {
+    --background: #ffffff;
+}
+
+/* ── Page header ── */
+.personal-details-page .pd-header {
+    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+}
+
+/* Override the global gradient toolbar from index.css */
+.personal-details-page .pd-toolbar {
+    --background: #ffffff !important;
+    --color: #222222 !important;
+    --border-width: 0 !important;
+}
+
+/* Override the global "ion-header ion-toolbar *" white rule */
+.personal-details-page .pd-toolbar .pd-title,
+.personal-details-page .pd-toolbar .pd-back-btn,
+.personal-details-page .pd-toolbar .pd-edit-btn {
+    color: #222222 !important;
+}
+
+.personal-details-page .pd-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: left;
+    padding-inline-start: 0;
+}
+
+.personal-details-page .pd-back-btn {
+    --color: #a85236 !important;
+}
+
+.personal-details-page .pd-edit-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+/* ── Page content ── */
+.pd-content {
+    --background: #ffffff;
+}
+
+.pd-form-container {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Shared form-group / label / input */
+.pd-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.pd-label {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #757575;
+}
+
+.pd-input {
+    width: 100%;
+    height: 40px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    padding: 0 12px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #222222;
+    background: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.pd-input:focus {
+    border-color: #a85236;
+}
+
+/* =============================================
+   Edit Modal — styled as a bottom sheet
+   ============================================= */
+
+/*
+ * No breakpoints needed. We position the modal at the bottom
+ * and give it 85% height using Ionic CSS vars + alignment.
+ */
+.pd-edit-modal {
+    --background: #ffffff;
+    --border-radius: 20px 20px 0 0;
+    --height: 85%;
+    --max-height: 85%;
+    align-items: flex-end;
+}
+
+/* Force the shadow-DOM content to respect the radius */
+.pd-edit-modal::part(content) {
+    border-radius: 20px 20px 0 0;
+}
+
+/* Modal toolbar — white bg, no border */
+.pd-modal-toolbar {
+    --background: #ffffff !important;
+    --color: #222222 !important;
+    --border-width: 0;
+    --min-height: 44px;
+}
+
+/* Close ✕ button */
+.pd-modal-close-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal content area */
+.pd-modal-content {
+    --background: #ffffff;
+}
+
+.pd-modal-form {
+    padding: 8px 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Footer with Verify button ──
+ * This div sits OUTSIDE IonContent (but inside IonPage),
+ * so it is never scrolled and always visible at the bottom.
+ */
+.pd-modal-footer {
+    flex-shrink: 0;
+}
+
+.pd-verify-btn {
+    width: 100%;
+    height: 55px;
+    background: #a85236;
+    color: #ffffff;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    text-align: center;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.pd-verify-btn:hover {
+    background: #cc8545;
+}
+
+.pd-verify-btn:active {
+    background: #8f4630;
+}
+
+/* =============================================
+   OTP Verification Modal
+   ============================================= */
+
+/* Same bottom-sheet sizing as the edit modal */
+.pd-otp-modal {
+    --background: #ffffff;
+    --border-radius: 20px 20px 0 0;
+    --height: 55%;
+    --max-height: 55%;
+    align-items: flex-end;
+}
+
+.pd-otp-modal::part(content) {
+    border-radius: 20px 20px 0 0;
+}
+
+/* OTP body */
+.otp-body {
+    padding: 4px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* "Enter the code" */
+.otp-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0 0 12px;
+    text-align: center;
+}
+
+/* Subtitle */
+.otp-subtitle {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #757575;
+    text-align: center;
+    margin: 0 0 24px;
+    line-height: 1.5;
+}
+
+/* "OTP is valid for 30 minutes" */
+.otp-validity {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #222222;
+    margin: 0 0 16px;
+    text-align: center;
+}
+
+/* 6-digit OTP input boxes */
+.otp-inputs {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.otp-box {
+    width: 40px;
+    height: 40px;
+    border: 1px solid #a85236;
+    border-radius: 4px;
+    text-align: center;
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #222222;
+    background: #ffffff;
+    outline: none;
+    box-sizing: border-box;
+    caret-color: #a85236;
+}
+
+.otp-box:focus {
+    border-color: #a85236;
+    box-shadow: 0 0 0 2px rgba(168, 82, 54, 0.15);
+}
+
+/* Timer + Resend row */
+.otp-timer-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+}
+
+.otp-timer {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+}
+
+.otp-resend {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #a85236;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.otp-resend:disabled {
+    color: #a85236;
+    cursor: default;
+}
+
+/* Submit button – reuse pd-verify-btn base */
+.pd-submit-btn {
+    border-radius: 0;
+}
