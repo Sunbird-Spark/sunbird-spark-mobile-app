@@ -1,0 +1,328 @@
+/* =============================================
+   Help and Support Page
+   ============================================= */
+
+.help-support-page {
+    --background: #f4f4f4;
+}
+
+/* ── Header ── */
+.help-support-page .hs-header {
+    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+    background: #ffffff;
+}
+
+.help-support-page .hs-toolbar {
+    --background: #ffffff !important;
+    --color: #222222 !important;
+    --border-width: 0 !important;
+}
+
+.help-support-page .hs-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #222222;
+    text-align: left;
+    padding-inline-start: 16px;
+}
+
+.hs-header-icon-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+/* ── Content ── */
+.hs-content {
+    --background: #f4f4f4;
+}
+
+.hs-container {
+    padding: 24px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ── Hero section ── */
+.hs-hero-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 24px;
+    font-weight: 500;
+    color: #222222;
+    margin: 0;
+    line-height: 1.35;
+}
+
+/* ── FAQ Category Cards ── */
+.hs-category-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.hs-category-card {
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    border-radius: 12px;
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.09);
+    padding: 0 20px 20px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.hs-accent-bar {
+    width: 32px;
+    height: 12px;
+    background: #CC8545;
+    border-radius: 0 0 2px 2px;
+    margin-top: 0;
+}
+
+.hs-category-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000000;
+    margin: 0;
+}
+
+.hs-category-desc {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: #000000;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.hs-category-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+}
+
+.hs-faq-count {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #757575;
+}
+
+.hs-arrow-icon {
+    color: #A85236;
+    display: flex;
+    align-items: center;
+}
+
+.hs-arrow-icon svg {
+    width: 18px;
+    height: 11px;
+}
+
+/* ── Most Viewed FAQ's ── */
+.hs-faq-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hs-faq-section-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000000;
+    margin: 0 0 4px;
+}
+
+.hs-faq-item {
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.hs-faq-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.hs-faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    gap: 12px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.hs-faq-question-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+    flex: 1;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.hs-faq-chevron {
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+    color: #A85236;
+    display: flex;
+    align-items: center;
+}
+
+.hs-faq-chevron.expanded {
+    transform: rotate(180deg);
+}
+
+.hs-faq-answer {
+    padding: 0 20px 16px;
+    overflow: hidden;
+    animation: hs-slide-down 0.25s ease;
+}
+
+.hs-faq-answer-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #757575;
+    margin: 0;
+    line-height: 1.6;
+}
+
+@keyframes hs-slide-down {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        max-height: 300px;
+    }
+}
+
+/* ── Report an Issue Modal ── */
+.hs-report-modal {
+    --border-radius: 0;
+    --height: 75%;
+    align-items: flex-end;
+}
+
+.hs-modal-toolbar {
+    --background: #ffffff;
+    --border-width: 0;
+    --padding-start: 16px;
+    --padding-end: 16px;
+    --padding-top: 8px;
+    --padding-bottom: 8px;
+}
+
+.hs-modal-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000000;
+    margin: 0;
+}
+
+.hs-modal-close {
+    background: none;
+    border: none;
+    padding: 8px;
+    margin: -8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hs-modal-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.hs-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.hs-modal-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    color: #757575;
+    outline: none;
+}
+
+.hs-modal-select:focus {
+    border-color: #A85236;
+}
+
+.hs-modal-select:not(:invalid) {
+    color: #000000;
+}
+
+.hs-select-chevron {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.hs-modal-textarea {
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    color: #000000;
+    outline: none;
+    resize: none;
+}
+
+.hs-modal-textarea::placeholder {
+    color: #757575;
+}
+
+.hs-modal-textarea:focus {
+    border-color: #A85236;
+}
+
+.hs-modal-submit {
+    width: 100%;
+    background: #A85236;
+    color: #ffffff;
+    border: none;
+    border-radius: 0;
+    padding: 18px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 0;
+}

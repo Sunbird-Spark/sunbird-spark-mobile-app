@@ -1,0 +1,177 @@
+/* =============================================
+   FAQ Detail Page
+   ============================================= */
+
+.faq-detail-page {
+    --background: #f4f4f4;
+}
+
+/* ── Header ── */
+.faq-detail-page .fd-header {
+    box-shadow: none;
+    background: #ffffff;
+}
+
+.faq-detail-page .fd-toolbar {
+    --background: #ffffff !important;
+    --color: #222222 !important;
+    --border-width: 0 !important;
+}
+
+.fd-back-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ── Content ── */
+.fd-content {
+    --background: #f4f4f4;
+}
+
+.fd-container {
+    padding: 24px 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* ── Section title ── */
+.fd-section-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #000000;
+    margin: 0;
+    line-height: 1.4;
+}
+
+/* ── FAQ accordion items ── */
+.fd-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.fd-faq-item {
+    background: #ffffff;
+    border: 1px solid #d4d4d4;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow 0.2s ease;
+}
+
+.fd-faq-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.fd-faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    cursor: pointer;
+    gap: 12px;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+}
+
+.fd-faq-question-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #000000;
+    flex: 1;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.fd-faq-chevron {
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+    color: #A85236;
+    display: flex;
+    align-items: center;
+}
+
+.fd-faq-chevron.expanded {
+    transform: rotate(180deg);
+}
+
+/* ── Answer area ── */
+.fd-faq-answer {
+    padding: 0 20px 16px;
+    overflow: hidden;
+    animation: fd-slide-down 0.25s ease;
+}
+
+.fd-faq-answer-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #757575;
+    margin: 0 0 16px;
+    line-height: 1.6;
+}
+
+/* ── Feedback row ── */
+.fd-feedback-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eeeeee;
+}
+
+.fd-feedback-label {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #757575;
+}
+
+.fd-feedback-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.15s ease;
+}
+
+.fd-feedback-btn:hover {
+    background: rgba(168, 82, 54, 0.08);
+}
+
+.fd-feedback-no {
+    color: #222222;
+}
+
+.fd-feedback-yes {
+    color: #A85236;
+}
+
+.fd-feedback-btn.selected {
+    background: rgba(168, 82, 54, 0.12);
+}
+
+@keyframes fd-slide-down {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+
+    to {
+        opacity: 1;
+        max-height: 400px;
+    }
+}
