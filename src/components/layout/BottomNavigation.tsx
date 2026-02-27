@@ -19,7 +19,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { path: '/explore', icon: searchOutline, label: 'Explore' },
-  { path: '/courses', icon: bookOutline, label: 'My learning' },
+  { path: '/profile/my-learning', icon: bookOutline, label: 'My learning' },
   { path: '/', icon: homeOutline, activeIcon: home, label: 'Home' },
   { path: '/support', icon: helpCircleOutline, label: 'Support' },
   { path: '/profile', icon: personOutline, label: 'Profile' },

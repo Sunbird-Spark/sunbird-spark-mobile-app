@@ -1,197 +1,409 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-    IonContent,
-    IonHeader,
-    IonPage,
-    IonTitle,
-    IonToolbar,
-    IonButtons,
-    IonBackButton,
+  IonContent,
+  IonHeader,
+  IonPage,
+  IonToolbar,
 } from '@ionic/react';
-import { chevronBackOutline } from 'ionicons/icons';
-import './MyLearningPage.css';
+import { BottomNavigation } from '../components/layout/BottomNavigation';
+import { ContentCardCarousel, ContentCardItem } from '../components/home/ContentCardCarousel';
+import { courses as allCourses, getInProgressCourses } from '../data/mockData';
 
-interface CourseItem {
-    id: number;
-    title: string;
-    dueDate: string;
-    progress: number;
-    status: 'Ongoing' | 'Completed';
-}
+// ── Design tokens ──────────────────────────────────────────────────────────
+const BRICK = 'rgb(168, 82, 54)';
+const ORANGE = 'rgb(204, 133, 69)';
+const FONT = "'Rubik', sans-serif";
 
-const courses: CourseItem[] = [
-    { id: 1, title: 'Data Engineering Foundations', dueDate: '20th Feb', progress: 30, status: 'Ongoing' },
-    { id: 2, title: 'The AI Engineer Course 2026: Compl...', dueDate: '20th Feb', progress: 70, status: 'Ongoing' },
-    { id: 3, title: 'Data Engineering Foundations', dueDate: '20th Feb', progress: 100, status: 'Completed' },
-    { id: 4, title: 'The AI Engineer Course 2026: Compl...', dueDate: '20th Feb', progress: 50, status: 'Ongoing' },
-];
+// ── SVG icons ──────────────────────────────────────────────────────────────
+const BellIcon = () => (
+  <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M10 2C6.686 2 4 4.686 4 8V13L2 15V16H18V15L16 13V8C16 4.686 13.314 2 10 2Z" stroke="rgb(34,34,34)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+    <path d="M8 17C8 18.1 8.9 19 10 19C11.1 19 12 18.1 12 17" stroke="rgb(34,34,34)" strokeWidth="1.5" />
+  </svg>
+);
 
-/* ── Circular progress ring ── */
-const ProgressRing: React.FC<{ progress: number; size?: number }> = ({ progress, size = 26 }) => {
-    const stroke = 3;
-    const radius = (size - stroke) / 2;
-    const circumference = 2 * Math.PI * radius;
-    const offset = circumference - (progress / 100) * circumference;
+const LangIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="8.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
+    <ellipse cx="10" cy="10" rx="4" ry="8.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
+    <line x1="2" y1="7.5" x2="18" y2="7.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
+    <line x1="2" y1="12.5" x2="18" y2="12.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
+  </svg>
+);
 
-    return (
-        <svg width={size} height={size} className="ml-progress-ring">
-            <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="none"
-                stroke="#F0CE94"
-                strokeWidth={stroke}
-            />
-            <circle
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="none"
-                stroke="#A85236"
-                strokeWidth={stroke}
-                strokeDasharray={circumference}
-                strokeDashoffset={offset}
-                strokeLinecap="round"
-                transform={`rotate(-90 ${size / 2} ${size / 2})`}
-            />
-        </svg>
-    );
+const ChevronDownIcon = () => (
+  <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M1 1L6 6L11 1" stroke="rgb(34,34,34)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+// ── Progress bar ───────────────────────────────────────────────────────────
+const ProgressBar: React.FC<{ progress: number; color?: string }> = ({ progress, color = BRICK }) => (
+  <div style={{ width: '100%', height: '5px', backgroundColor: 'rgb(244, 244, 244)', borderRadius: '10px', overflow: 'hidden' }}>
+    <div style={{ width: `${progress}%`, height: '100%', backgroundColor: color, borderRadius: '10px' }} />
+  </div>
+);
+
+// ── Concentric donut chart ─────────────────────────────────────────────────
+const DonutChart: React.FC = () => {
+  const size = 133;
+  const cx = size / 2;
+  const cy = size / 2;
+
+  const outerR = 52;
+  const outerStroke = 10;
+  const outerCirc = 2 * Math.PI * outerR;
+  const outerOffset = outerCirc * (1 - 0.72);
+
+  const innerR = 32;
+  const innerStroke = 10;
+  const innerCirc = 2 * Math.PI * innerR;
+  const innerOffset = innerCirc * (1 - 0.55);
+
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+      {/* Outer track */}
+      <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={outerStroke} />
+      {/* Outer fill */}
+      <circle
+        cx={cx} cy={cy} r={outerR}
+        fill="none" stroke={BRICK} strokeWidth={outerStroke}
+        strokeDasharray={outerCirc}
+        strokeDashoffset={outerOffset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+      />
+      {/* Inner track */}
+      <circle cx={cx} cy={cy} r={innerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={innerStroke} />
+      {/* Inner fill */}
+      <circle
+        cx={cx} cy={cy} r={innerR}
+        fill="none" stroke={ORANGE} strokeWidth={innerStroke}
+        strokeDasharray={innerCirc}
+        strokeDashoffset={innerOffset}
+        strokeLinecap="round"
+        transform={`rotate(-90 ${cx} ${cy})`}
+      />
+      {/* Center text */}
+      <text x={cx} y={cy - 4} textAnchor="middle" fill="rgb(34,34,34)" fontFamily={FONT} fontSize="20" fontWeight="700">
+        130
+      </text>
+      <text x={cx} y={cy + 14} textAnchor="middle" fill="rgb(100,100,100)" fontFamily={FONT} fontSize="10" fontWeight="400">
+        Hrs
+      </text>
+    </svg>
+  );
 };
 
-/* ── Eye icon for Preview Certificate ── */
-const EyeIcon: React.FC = () => (
-    <svg width="14" height="10" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M7 1C4 1 1.5 5 1.5 5C1.5 5 4 9 7 9C10 9 12.5 5 12.5 5C12.5 5 10 1 7 1Z" stroke="#CC8545" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <circle cx="7" cy="5" r="2" stroke="#CC8545" strokeWidth="1.5" />
-    </svg>
+// ── Course card ────────────────────────────────────────────────────────────
+interface CourseCardProps {
+  thumbnail: string;
+  title: string;
+  progress: number;
+  badgeLabel: string;
+  badgeBg: string;
+  badgeBorder: string;
+}
+
+const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, badgeLabel, badgeBg, badgeBorder }) => (
+  <div style={{
+    backgroundColor: '#ffffff',
+    borderRadius: '20px',
+    boxShadow: '2px 2px 20px rgba(0,0,0,0.09)',
+    padding: '14px',
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'flex-start',
+  }}>
+    <div style={{ width: '119px', height: '119px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
+      <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+    </div>
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '119px', minWidth: 0 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
+        <span style={{
+          alignSelf: 'flex-start',
+          backgroundColor: badgeBg,
+          border: `1px solid ${badgeBorder}`,
+          borderRadius: '36px',
+          padding: '3px 10px',
+          fontFamily: FONT,
+          fontSize: '12px',
+          fontWeight: 400,
+          color: 'rgb(0,0,0)',
+          whiteSpace: 'nowrap',
+        }}>
+          {badgeLabel}
+        </span>
+        <p style={{
+          fontFamily: FONT,
+          fontSize: '14px',
+          fontWeight: 500,
+          color: 'rgb(34,34,34)',
+          margin: 0,
+          lineHeight: 1.3,
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+        } as React.CSSProperties}>
+          {title}
+        </p>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
+        <div style={{ flex: 1 }}>
+          <ProgressBar progress={progress} />
+        </div>
+        <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 400, color: 'rgb(34,34,34)', flexShrink: 0 }}>
+          {progress}%
+        </span>
+      </div>
+    </div>
+  </div>
 );
 
-/* ── Download icon ── */
-const DownloadIcon: React.FC = () => (
-    <svg width="11" height="14" viewBox="0 0 11 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5.5 1V10M5.5 10L2 6.5M5.5 10L9 6.5" stroke="#CC8545" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        <line x1="1" y1="13" x2="10" y2="13" stroke="#CC8545" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-);
+// ── Types ──────────────────────────────────────────────────────────────────
+type Tab = 'Active Courses' | 'Completed' | 'Upcoming' | 'Paused';
 
-/* ── Filter icon ── */
-const FilterIcon: React.FC = () => (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1H17L11 9.5V15L7 17V9.5L1 1Z" stroke="#A85236" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
+const upcomingClasses = [
+  {
+    id: 1,
+    time: '09:00 AM',
+    title: 'Digital Literacy Fundamentals',
+    subtitle: 'Module 3: Internet Safety',
+    bg: 'rgb(245, 241, 243)',
+  },
+  {
+    id: 2,
+    time: '11:30 AM',
+    title: 'Sustainable Development Goals',
+    subtitle: 'Module 2: People-Focused Goals',
+    bg: 'rgb(240, 246, 242)',
+  },
+];
 
-type FilterOption = 'All' | 'Ongoing' | 'Completed';
-
+// ── Page ───────────────────────────────────────────────────────────────────
 const MyLearningPage: React.FC = () => {
-    const [filter, setFilter] = useState<FilterOption>('All');
-    const [showFilter, setShowFilter] = useState(false);
-    const filterRef = useRef<HTMLDivElement>(null);
+  const [activeTab, setActiveTab] = useState<Tab>('Active Courses');
 
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (e: MouseEvent) => {
-            if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
-                setShowFilter(false);
-            }
-        };
-        if (showFilter) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [showFilter]);
+  const inProgressCourses = getInProgressCourses();
+  const completedCourses = allCourses.filter(c => c.enrolled && c.progress === 100);
+  const activeCoursesFull = [...inProgressCourses, ...inProgressCourses].slice(0, 4);
 
-    const filteredCourses = filter === 'All'
-        ? courses
-        : courses.filter(c => c.status === filter);
+  const recommendedItems: ContentCardItem[] = allCourses.slice(0, 4).map(c => ({
+    id: c.id,
+    title: c.title,
+    thumbnail: c.thumbnail,
+    tag: 'Course',
+    rating: c.rating,
+    lessons: c.lessons,
+  }));
 
-    return (
-        <IonPage className="my-learning-page">
-            {/* ── Header ── */}
-            <IonHeader className="ml-header ion-no-border">
-                <IonToolbar className="ml-toolbar">
-                    <IonButtons slot="start">
-                        <IonBackButton
-                            defaultHref="/profile"
-                            text=""
-                            icon={chevronBackOutline}
-                            className="ml-back-btn"
-                        />
-                    </IonButtons>
-                    <IonTitle className="ml-title">My Learning</IonTitle>
-                    <IonButtons slot="end">
-                        <button className="ml-filter-btn" onClick={() => setShowFilter(v => !v)}>
-                            <FilterIcon />
-                        </button>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
+  const tabs: Tab[] = ['Active Courses', 'Completed', 'Upcoming', 'Paused'];
 
-            {/* ── Course cards ── */}
-            <IonContent className="ml-content">
-                {/* Filter dropdown — rendered inside IonContent so it's not clipped by IonHeader */}
-                {showFilter && (
-                    <div className="ml-filter-dropdown" ref={filterRef}>
-                        {(['All', 'Ongoing', 'Completed'] as FilterOption[]).map(opt => (
-                            <button
-                                key={opt}
-                                className={`ml-filter-option ${filter === opt ? 'ml-filter-active' : ''}`}
-                                onClick={() => { setFilter(opt); setShowFilter(false); }}
-                            >
-                                {opt}
-                            </button>
-                        ))}
+  return (
+    <IonPage>
+      {/* ── Header ── */}
+      <IonHeader className="ion-no-border">
+        <IonToolbar style={{ '--background': '#ffffff', '--border-width': '0', '--padding-start': '0', '--padding-end': '0' } as React.CSSProperties}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
+            <h1 style={{ fontFamily: FONT, fontSize: '20px', fontWeight: 600, color: 'rgb(34,34,34)', margin: 0 }}>
+              My Learning
+            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <BellIcon />
+              </button>
+              <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <LangIcon />
+              </button>
+            </div>
+          </div>
+        </IonToolbar>
+      </IonHeader>
+
+      <IonContent fullscreen>
+        {/* ── Courses heading ── */}
+        <div style={{ padding: '8px 16px' }}>
+          <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 600, color: 'rgb(34,34,34)' }}>
+              Courses
+            </span>
+            <ChevronDownIcon />
+          </button>
+        </div>
+
+        {/* ── Tab bar ── */}
+        <div style={{
+          display: 'flex',
+          borderBottom: '1px solid rgb(230, 230, 230)',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          marginBottom: '16px',
+        }}>
+          {tabs.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              style={{
+                flexShrink: 0,
+                padding: '10px 16px',
+                border: 'none',
+                borderBottom: activeTab === tab ? `2px solid ${BRICK}` : '2px solid transparent',
+                marginBottom: '-1px',
+                backgroundColor: 'transparent',
+                color: activeTab === tab ? BRICK : 'rgb(130, 130, 130)',
+                fontFamily: FONT,
+                fontSize: '14px',
+                fontWeight: activeTab === tab ? 600 : 400,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Active Courses tab ── */}
+        {activeTab === 'Active Courses' && (
+          <>
+            {/* Upcoming Classes */}
+            <div style={{ padding: '0 16px 12px' }}>
+              <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 500, color: 'rgb(34,34,34)', margin: '0 0 12px 0' }}>
+                Upcoming Classes
+              </h3>
+              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px' }}>
+                {upcomingClasses.map(cls => (
+                  <div
+                    key={cls.id}
+                    style={{
+                      flexShrink: 0,
+                      width: '220px',
+                      backgroundColor: cls.bg,
+                      borderRadius: '16px',
+                      padding: '14px',
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'flex-start',
+                    }}
+                  >
+                    <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 600, color: 'rgb(34,34,34)', flexShrink: 0, paddingTop: '1px' }}>
+                      {cls.time}
+                    </span>
+                    <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.15)', flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 500, color: 'rgb(34,34,34)', margin: '0 0 4px 0', lineHeight: 1.3 }}>
+                        {cls.title}
+                      </p>
+                      <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 400, color: 'rgb(100,100,100)', margin: 0, lineHeight: 1.3 }}>
+                        {cls.subtitle}
+                      </p>
                     </div>
-                )}
-                <div className="ml-cards-container">
-                    {filteredCourses.map(course => (
-                        <div className="ml-card" key={course.id}>
-                            {/* Card body */}
-                            <div className="ml-card-body">
-                                {/* Left content */}
-                                <div className="ml-card-info">
-                                    {/* Status badge */}
-                                    <span className={`ml-badge ${course.status === 'Completed' ? 'ml-badge-completed' : 'ml-badge-ongoing'}`}>
-                                        {course.status}
-                                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
 
-                                    <h3 className="ml-course-title">{course.title}</h3>
-                                    <p className="ml-due-date">Due Date : {course.dueDate}</p>
+            {/* Active Course Cards */}
+            <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {activeCoursesFull.map((course, idx) => (
+                <CourseCard
+                  key={`${course.id}-${idx}`}
+                  thumbnail={course.thumbnail}
+                  title={course.title}
+                  progress={course.progress}
+                  badgeLabel="Course"
+                  badgeBg="rgb(255, 241, 199)"
+                  badgeBorder={ORANGE}
+                />
+              ))}
+            </div>
 
-                                    {/* Progress row */}
-                                    <div className="ml-progress-row">
-                                        <ProgressRing progress={course.progress} />
-                                        <span className="ml-progress-text">{course.progress}%</span>
-                                    </div>
-                                </div>
+            {/* View More */}
+            <div style={{ padding: '16px' }}>
+              <button style={{
+                width: '100%',
+                padding: '12px',
+                borderRadius: '10px',
+                border: `1px solid ${BRICK}`,
+                backgroundColor: 'transparent',
+                color: BRICK,
+                fontFamily: FONT,
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: 'pointer',
+              }}>
+                View More Courses
+              </button>
+            </div>
+          </>
+        )}
 
-                                {/* Thumbnail */}
-                                <div className="ml-thumbnail">
-                                    <div className="ml-thumb-placeholder" />
-                                </div>
-                            </div>
+        {/* ── Completed tab ── */}
+        {activeTab === 'Completed' && (
+          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {completedCourses.length === 0 ? (
+              <p style={{ fontFamily: FONT, fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
+                No completed courses yet.
+              </p>
+            ) : (
+              completedCourses.map(course => (
+                <CourseCard
+                  key={course.id}
+                  thumbnail={course.thumbnail}
+                  title={course.title}
+                  progress={100}
+                  badgeLabel="Completed"
+                  badgeBg="rgb(220, 242, 226)"
+                  badgeBorder="rgb(49, 134, 86)"
+                />
+              ))
+            )}
+          </div>
+        )}
 
-                            {/* Card footer — action link */}
-                            <div className="ml-card-footer">
-                                <button className="ml-cert-btn">
-                                    {course.status === 'Completed' ? (
-                                        <>
-                                            <DownloadIcon />
-                                            <span>Download Certificate</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <EyeIcon />
-                                            <span>Preview Certificate</span>
-                                        </>
-                                    )}
-                                </button>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </IonContent>
-        </IonPage>
-    );
+        {/* ── Upcoming / Paused tabs ── */}
+        {(activeTab === 'Upcoming' || activeTab === 'Paused') && (
+          <p style={{ fontFamily: FONT, fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
+            No {activeTab.toLowerCase()} courses yet.
+          </p>
+        )}
+
+        {/* ── Total Hrs Spent ── */}
+        <div style={{ padding: '16px' }}>
+          <div style={{ backgroundColor: 'rgb(255, 241, 199)', borderRadius: '20px', padding: '16px' }}>
+            <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 600, color: 'rgb(34,34,34)', margin: '0 0 16px 0' }}>
+              Total Hrs Spent
+            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <DonutChart />
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                {[
+                  { label: 'Courses', value: '72 Hrs', color: BRICK },
+                  { label: 'Assessments', value: '38 Hrs', color: ORANGE },
+                  { label: 'Practice', value: '20 Hrs', color: 'rgb(102, 166, 130)' },
+                ].map(stat => (
+                  <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <div style={{ width: '32px', height: '8px', borderRadius: '4px', backgroundColor: stat.color, flexShrink: 0 }} />
+                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 400, color: 'rgb(34,34,34)', flex: 1 }}>{stat.label}</span>
+                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: 'rgb(34,34,34)', flexShrink: 0 }}>{stat.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Recommended Content ── */}
+        <ContentCardCarousel title="Recommended Content" items={recommendedItems} />
+
+        {/* Bottom spacing */}
+        <div style={{ height: '100px' }} />
+      </IonContent>
+
+      <BottomNavigation />
+    </IonPage>
+  );
 };
 
 export default MyLearningPage;
