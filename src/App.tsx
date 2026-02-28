@@ -7,6 +7,7 @@ import { IonReactRouter } from '@ionic/react-router';
 import { Redirect, Route } from 'react-router-dom';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/HomePage';
+import ExplorePage from './pages/ExplorePage';
 import CoursesPage from './pages/CoursesPage';
 import ScanPage from './pages/ScanPage';
 import DownloadsPage from './pages/DownloadsPage';
@@ -44,6 +45,9 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <IonRouterOutlet>
+          <Route exact path="/explore">
+            <ExplorePage />
+          </Route>
           <Route exact path="/home">
             <Home />
           </Route>

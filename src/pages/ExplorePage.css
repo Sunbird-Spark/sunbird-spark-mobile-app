@@ -1,0 +1,322 @@
+.masonry-grid {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    align-items: flex-start;
+}
+
+.masonry-col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    flex: 1;
+    min-width: 0;
+}
+
+.explore-card {
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+.standard-card {
+    background: #ffffff;
+}
+
+.card-image-wrap {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+.card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card-content {
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.card-badge {
+    align-self: flex-start;
+    padding: 4px 10px;
+    border-radius: 16px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: #222222;
+}
+
+.bg-yellow-badge {
+    background-color: rgb(255, 241, 199);
+    border: 1px solid rgb(204, 133, 69);
+    color: #222222;
+}
+
+.bg-white-badge {
+    background-color: #ffffff;
+    margin: 12px;
+    align-self: flex-start;
+    color: #222222;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 2;
+}
+
+.card-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: #222222;
+    margin: 0;
+    margin-top: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.card-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    color: #757575;
+    margin-top: auto;
+}
+
+.star {
+    color: #a85236;
+    font-size: 14px;
+}
+
+.dot {
+    font-size: 14px;
+}
+
+/* Overlay cards (Video, Epub, PDF) */
+.overlay-card {
+    aspect-ratio: 0.77;
+    /* approx 174/226 */
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.overlay-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    position: relative;
+    z-index: 2;
+}
+
+.overlay-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: #ffffff;
+    margin: 0;
+}
+
+.overlay-link {
+    font-family: 'Rubik', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    opacity: 0.95;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ── Filter Modal ── */
+.filter-modal {
+    --border-radius: 20px 20px 0 0;
+}
+
+.filter-sheet-container {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.filter-sheet-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.filter-sheet-header h2 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.filter-sheet-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+/* ── Sidebar ── */
+.filter-sidebar {
+    width: 140px;
+    background-color: #f9f9f9;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.filter-tab {
+    background: none;
+    border: none;
+    padding: 16px 20px;
+    text-align: left;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222222;
+    cursor: pointer;
+    border-left: 4px solid transparent;
+    transition: all 0.2s;
+}
+
+.filter-tab.active {
+    background-color: #ffffff;
+    border-left: 4px solid #a85236;
+    color: #a85236;
+}
+
+/* ── Options Pane ── */
+.filter-options {
+    flex: 1;
+    padding: 16px 24px;
+    overflow-y: auto;
+    background-color: #ffffff;
+}
+
+.checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.checkbox-item span {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: #222222;
+}
+
+/* Custom Checkbox */
+.custom-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid rgb(204, 133, 69);
+    border-radius: 3px;
+    background-color: white;
+    margin: 0;
+    flex-shrink: 0;
+    position: relative;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.custom-checkbox:checked {
+    background-color: rgb(168, 82, 54);
+    border-color: rgb(168, 82, 54);
+}
+
+.custom-checkbox:checked::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    width: 5px;
+    height: 9px;
+    border: solid #ffffff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+}
+
+/* ── Filter Footer ── */
+.filter-sheet-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    height: 100px;
+    background-color: #ffffff;
+    box-shadow: 0 -2px 24px rgba(0, 0, 0, 0.1);
+}
+
+.clear-filters-btn {
+    background: none;
+    border: none;
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: rgb(168, 82, 54);
+    padding: 0;
+    cursor: pointer;
+}
+
+.apply-filters-btn {
+    background-color: rgb(168, 82, 54);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    width: 182px;
+    height: 42px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
