@@ -8,6 +8,7 @@ import {
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { ContentCardCarousel, ContentCardItem } from '../components/home/ContentCardCarousel';
 import { courses as allCourses, getInProgressCourses } from '../data/mockData';
+import { LanguageSelector } from '../components/common/LanguageSelector';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const BRICK = 'rgb(168, 82, 54)';
@@ -16,18 +17,8 @@ const FONT = "'Rubik', sans-serif";
 
 // ── SVG icons ──────────────────────────────────────────────────────────────
 const BellIcon = () => (
-  <svg width="20" height="22" viewBox="0 0 20 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 2C6.686 2 4 4.686 4 8V13L2 15V16H18V15L16 13V8C16 4.686 13.314 2 10 2Z" stroke="rgb(34,34,34)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-    <path d="M8 17C8 18.1 8.9 19 10 19C11.1 19 12 18.1 12 17" stroke="rgb(34,34,34)" strokeWidth="1.5" />
-  </svg>
-);
-
-const LangIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="10" r="8.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
-    <ellipse cx="10" cy="10" rx="4" ry="8.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
-    <line x1="2" y1="7.5" x2="18" y2="7.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
-    <line x1="2" y1="12.5" x2="18" y2="12.5" stroke="rgb(34,34,34)" strokeWidth="1.5" />
+  <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="#a85236" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
+    <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
   </svg>
 );
 
@@ -210,12 +201,21 @@ const MyLearningPage: React.FC = () => {
               My Learning
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <button
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'relative',
+                }}
+                aria-label="Notifications"
+              >
                 <BellIcon />
               </button>
-              <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                <LangIcon />
-              </button>
+              <LanguageSelector />
             </div>
           </div>
         </IonToolbar>
