@@ -5,97 +5,97 @@
 .collection-details-header {
     --background: #FFFFFF;
     --padding-top: env(safe-area-inset-top);
-    padding: 16px 16px;
-    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+    padding: 1rem 1rem;
+    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
 }
 
 .collection-details-title-section {
-    padding: 24px 16px;
+    padding: 1.5rem 1rem;
     background: white;
     /* Soft shadow to separate from the F4F4F4 background below */
-    box-shadow: 0 8px 14px -4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0.5rem 0.875rem -0.25rem rgba(0, 0, 0, 0.05);
 }
 
 .collection-details-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #222222;
-    margin: 0 0 12px 0;
+    margin: 0 0 0.75rem 0;
     line-height: 1.4;
 }
 
 .collection-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
 }
 
 .collection-meta .star {
-    color: #A85236;
+    color: var(--ion-color-primary);
 }
 
 .collection-meta .dot {
     color: #5F5F5F;
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 
 .collection-curriculum-container {
-    padding: 16px 16px;
+    padding: 1rem 1rem;
 }
 
 /* Accordion styles */
 .curriculum-accordion-group {
-    margin-bottom: 24px;
+    margin-bottom: 1.5rem;
 }
 
 .curriculum-accordion {
     background: white;
-    margin-bottom: 16px;
-    border-radius: 20px;
+    margin-bottom: 1rem;
+    border-radius: 1.25rem;
     overflow: hidden;
 }
 
 /* Add custom accordion icon color to match design */
 .curriculum-accordion::part(accordion-icon) {
-    color: #A85236;
+    color: var(--ion-color-primary);
 }
 
 .curriculum-accordion::part(content) {
-    padding-bottom: 16px;
+    padding-bottom: 1rem;
 }
 
 .curriculum-header {
     --background: transparent;
     --color: #222222;
-    --padding-start: 20px;
-    --padding-end: 20px;
-    --padding-top: 20px;
-    --padding-bottom: 20px;
+    --padding-start: 1.25rem;
+    --padding-end: 1.25rem;
+    --padding-top: 1.25rem;
+    --padding-bottom: 1.25rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
 }
 
 .curriculum-header-subtitle {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
     font-weight: 400;
-    margin-top: 4px;
+    margin-top: 0.25rem;
 }
 
 .curriculum-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
-    margin: 12px 16px 0 16px;
+    padding: 1rem;
+    margin: 0.75rem 1rem 0 1rem;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+    border-radius: 0.625rem;
+    box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(168, 82, 54, 0.1);
     font-family: 'Rubik', sans-serif;
 }
@@ -103,16 +103,16 @@
 .curriculum-item-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .curriculum-item-title {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #222222;
 }
 
 .curriculum-item-time {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #757575;
 }
 
@@ -122,20 +122,20 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: #A85236;
-    padding: 16px;
+    background: var(--ion-color-primary);
+    padding: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     z-index: 100;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
     cursor: pointer;
 }
 
 .collection-bottom-cta-text {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     color: white;
 }
@@ -143,7 +143,7 @@
 /* ── Upcoming Batches Bottom Sheet Modal ── */
 
 .batch-modal {
-    --border-radius: 30px 30px 0 0;
+    --border-radius: 1.875rem 1.875rem 0 0;
 }
 
 /* To force Ionic Modal to properly handle rounded corners when using sheet */
@@ -164,12 +164,12 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 32px 24px 8px 24px;
+    padding: 2rem 1.5rem 0.5rem 1.5rem;
 }
 
 .batch-modal-header h2 {
     font-family: 'Rubik', sans-serif;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #222222;
     margin: 0;
@@ -186,15 +186,15 @@
 }
 
 .batch-modal-content {
-    padding: 0 24px 24px 24px;
+    padding: 0 1.5rem 1.5rem 1.5rem;
     flex-grow: 1;
 }
 
 .batch-modal-subtitle {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
-    margin: 0 0 24px 0;
+    margin: 0 0 1.5rem 0;
     line-height: 1.5;
 }
 
@@ -209,10 +209,10 @@
     -webkit-appearance: none;
     background: #FFFFFF;
     border: 1px solid #D4D4D4;
-    border-radius: 12px;
-    padding: 16px;
+    border-radius: 0.75rem;
+    padding: 1rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     color: #222222;
     cursor: pointer;
     /* Optional shadow to match design if appropriate */
@@ -220,12 +220,12 @@
 
 .batch-select:focus {
     outline: none;
-    border-color: #A85236;
+    border-color: var(--ion-color-primary);
 }
 
 .batch-select-icon {
     position: absolute;
-    right: 16px;
+    right: 1rem;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
@@ -234,12 +234,12 @@
 /* Fix width and position of bottom sheet button since it sits in a modal sheet */
 /* Fix width and position of bottom sheet button since it sits in a modal sheet */
 .batch-modal-cta-bar {
-    background: #A85236;
-    padding: 16px;
+    background: var(--ion-color-primary);
+    padding: 1rem;
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     cursor: pointer;
 }
 
@@ -251,5 +251,5 @@
     width: 100%;
     margin: 0;
     border-radius: 0;
-    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom));
 }

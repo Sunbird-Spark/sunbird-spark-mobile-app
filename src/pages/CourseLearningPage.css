@@ -5,50 +5,50 @@
 .course-learning-header {
     --background: #FFFFFF;
     --padding-top: env(safe-area-inset-top);
-    padding: 16px 16px;
+    padding: 1rem 1rem;
     /* Soft shadow matches the top area of the structure */
 }
 
 .course-learning-title-section {
-    padding: 24px 16px;
+    padding: 1.5rem 1rem;
     background: white;
     /* Soft shadow to separate from the F4F4F4 background below */
-    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
-    margin-bottom: 2px;
+    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+    margin-bottom: 0.125rem;
 }
 
 .course-learning-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 600;
     color: #222222;
-    margin: 0 0 12px 0;
+    margin: 0 0 0.75rem 0;
     line-height: 1.4;
 }
 
 .course-learning-meta {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.5rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
-    margin-bottom: 24px;
+    margin-bottom: 1.5rem;
 }
 
 .course-learning-meta .star {
-    color: #A85236;
+    color: var(--ion-color-primary);
 }
 
 .course-learning-meta .dot {
     color: #5F5F5F;
-    font-size: 12px;
+    font-size: 0.75rem;
 }
 
 .course-progress-row {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 1rem;
 }
 
 .circular-progress {
@@ -58,20 +58,20 @@
 .progress-details {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 0.375rem;
 }
 
 .progress-percentage {
     margin: 0;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     color: #222222;
 }
 
 .progress-date {
     font-family: 'Rubik', sans-serif;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #757575;
 }
 
@@ -80,82 +80,82 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     background: white;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+    box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
 }
 
 .toggle-label {
     font-family: 'Rubik', sans-serif;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #757575;
-    margin-right: 12px;
+    margin-right: 0.75rem;
 }
 
 /* Default styling for the Ionic Toggle. You may need more specific CSS variable overrides if this does not closely mirror the gray handle look */
 .custom-toggle {
     --track-background: #E0E0E0;
-    --track-background-checked: #A85236;
+    --track-background-checked: var(--ion-color-primary);
     padding: 0;
 }
 
 /* Accordion sections */
 .course-learning-curriculum-container {
-    padding: 0 16px;
-    margin-bottom: 24px;
+    padding: 0 1rem;
+    margin-bottom: 1.5rem;
 }
 
 .curriculum-accordion-group {
-    margin-bottom: 24px;
+    margin-bottom: 1.5rem;
 }
 
 .curriculum-accordion {
     background: white;
-    margin-bottom: 16px;
-    border-radius: 20px;
+    margin-bottom: 1rem;
+    border-radius: 1.25rem;
     overflow: hidden;
 }
 
 /* Add custom accordion icon color to match design */
 .curriculum-accordion::part(accordion-icon) {
-    color: #A85236;
-    margin-right: 20px;
+    color: var(--ion-color-primary);
+    margin-right: 1.25rem;
     /* Offset the icon from the edge slightly */
 }
 
 .curriculum-accordion::part(content) {
-    padding-bottom: 16px;
+    padding-bottom: 1rem;
 }
 
 .curriculum-header {
     --background: transparent;
     --color: #222222;
-    --padding-start: 20px;
-    --padding-end: 20px;
-    --padding-top: 20px;
-    --padding-bottom: 20px;
+    --padding-start: 1.25rem;
+    --padding-end: 1.25rem;
+    --padding-top: 1.25rem;
+    --padding-bottom: 1.25rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
 }
 
 .curriculum-header-subtitle {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
     font-weight: 400;
-    margin-top: 4px;
+    margin-top: 0.25rem;
 }
 
 .curriculum-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
-    margin: 12px 16px 0 16px;
+    padding: 1rem;
+    margin: 0.75rem 1rem 0 1rem;
     background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+    border-radius: 0.625rem;
+    box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(168, 82, 54, 0.1);
     font-family: 'Rubik', sans-serif;
 }
@@ -163,45 +163,45 @@
 .curriculum-item-left {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .curriculum-item-title {
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #222222;
 }
 
 .curriculum-item-time {
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #757575;
 }
 
 /* Info Cards */
 .info-cards-container {
-    padding: 0 16px;
+    padding: 0 1rem;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 1rem;
 }
 
 .info-card {
     background: white;
-    border: 1px solid #CC8545;
-    border-radius: 20px;
-    padding: 24px;
-    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--ion-color-primary-tint);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
 }
 
 .info-card-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
 }
 
 .info-card-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     color: #222222;
     margin: 0;
@@ -209,43 +209,43 @@
 
 .info-card-desc {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
     line-height: 1.5;
-    margin: 0 0 16px 0;
+    margin: 0 0 1rem 0;
 }
 
 .info-card-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 24px;
+    margin-top: 1.5rem;
 }
 
 .info-card-date {
     font-family: 'Rubik', sans-serif;
-    font-size: 12px;
+    font-size: 0.75rem;
     color: #BDBDBD;
 }
 
 /* Buttons */
 .btn-primary {
-    background: #A85236;
+    background: var(--ion-color-primary);
     color: white;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
     border: none;
     cursor: pointer;
 }
 
 .btn-link {
     background: transparent;
-    color: #A85236;
+    color: var(--ion-color-primary);
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     border: none;
     padding: 0;

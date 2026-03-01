@@ -21,7 +21,7 @@
 .fd-back-btn {
     background: none;
     border: none;
-    padding: 8px 12px;
+    padding: 0.5rem 0.75rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -34,16 +34,16 @@
 }
 
 .fd-container {
-    padding: 24px 16px 100px;
+    padding: 1.5rem 1rem 6.25rem;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 1rem;
 }
 
 /* ── Section title ── */
 .fd-section-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 500;
     color: #000000;
     margin: 0;
@@ -54,28 +54,28 @@
 .fd-faq-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .fd-faq-item {
     background: #ffffff;
     border: 1px solid #d4d4d4;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
 }
 
 .fd-faq-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
 }
 
 .fd-faq-question {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     cursor: pointer;
-    gap: 12px;
+    gap: 0.75rem;
     background: none;
     border: none;
     width: 100%;
@@ -84,7 +84,7 @@
 
 .fd-faq-question-text {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     color: #000000;
     flex: 1;
@@ -95,7 +95,7 @@
 .fd-faq-chevron {
     flex-shrink: 0;
     transition: transform 0.25s ease;
-    color: #A85236;
+    color: var(--ion-color-primary);
     display: flex;
     align-items: center;
 }
@@ -106,17 +106,17 @@
 
 /* ── Answer area ── */
 .fd-faq-answer {
-    padding: 0 20px 16px;
+    padding: 0 1.25rem 1rem;
     overflow: hidden;
     animation: fd-slide-down 0.25s ease;
 }
 
 .fd-faq-answer-text {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 400;
     color: #757575;
-    margin: 0 0 16px;
+    margin: 0 0 1rem;
     line-height: 1.6;
 }
 
@@ -124,14 +124,14 @@
 .fd-feedback-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding-top: 12px;
+    gap: 0.75rem;
+    padding-top: 0.75rem;
     border-top: 1px solid #eeeeee;
 }
 
 .fd-feedback-label {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 400;
     color: #757575;
 }
@@ -141,10 +141,10 @@
     border: none;
     cursor: pointer;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
-    padding: 4px 8px;
-    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
     transition: background 0.15s ease;
 }
 
@@ -157,7 +157,7 @@
 }
 
 .fd-feedback-yes {
-    color: #A85236;
+    color: var(--ion-color-primary);
 }
 
 .fd-feedback-btn.selected {
@@ -172,6 +172,6 @@
 
     to {
         opacity: 1;
-        max-height: 400px;
+        max-height: 25rem;
     }
 }

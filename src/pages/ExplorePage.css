@@ -1,22 +1,22 @@
 .masonry-grid {
     display: flex;
-    gap: 16px;
-    padding: 16px;
+    gap: 1rem;
+    padding: 1rem;
     align-items: flex-start;
 }
 
 .masonry-col {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 1rem;
     flex: 1;
     min-width: 0;
 }
 
 .explore-card {
-    border-radius: 14px;
+    border-radius: 0.875rem;
     overflow: hidden;
-    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
     background: #ffffff;
@@ -40,31 +40,31 @@
 }
 
 .card-content {
-    padding: 12px;
+    padding: 0.75rem;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 0.5rem;
 }
 
 .card-badge {
     align-self: flex-start;
-    padding: 4px 10px;
-    border-radius: 16px;
+    padding: 0.25rem 0.625rem;
+    border-radius: 1rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 11px;
+    font-size: 0.6875rem;
     font-weight: 500;
     color: #222222;
 }
 
 .bg-yellow-badge {
     background-color: rgb(255, 241, 199);
-    border: 1px solid rgb(204, 133, 69);
+    border: 1px solid var(--ion-color-primary-tint);
     color: #222222;
 }
 
 .bg-white-badge {
     background-color: #ffffff;
-    margin: 12px;
+    margin: 0.75rem;
     align-self: flex-start;
     color: #222222;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -74,12 +74,12 @@
 
 .card-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     line-height: 1.3;
     color: #222222;
     margin: 0;
-    margin-top: 4px;
+    margin-top: 0.25rem;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     line-clamp: 3;
@@ -90,20 +90,20 @@
 .card-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 0.375rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     color: #757575;
     margin-top: auto;
 }
 
 .star {
-    color: #a85236;
-    font-size: 14px;
+    color: var(--ion-color-primary);
+    font-size: 0.875rem;
 }
 
 .dot {
-    font-size: 14px;
+    font-size: 0.875rem;
 }
 
 /* Overlay cards (Video, Epub, PDF) */
@@ -117,17 +117,17 @@
 }
 
 .overlay-content {
-    padding: 16px;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
     position: relative;
     z-index: 2;
 }
 
 .overlay-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     line-height: 1.3;
     color: #ffffff;
@@ -136,18 +136,18 @@
 
 .overlay-link {
     font-family: 'Rubik', sans-serif;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #ffffff;
     opacity: 0.95;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 0.25rem;
 }
 
 /* ── Filter Modal ── */
 .filter-modal {
-    --border-radius: 20px 20px 0 0;
+    --border-radius: 1.25rem 1.25rem 0 0;
 }
 
 .filter-sheet-container {
@@ -163,13 +163,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     border-bottom: 1px solid #e0e0e0;
 }
 
 .filter-sheet-header h2 {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 600;
     color: #222222;
     margin: 0;
@@ -178,7 +178,7 @@
 .close-btn {
     background: none;
     border: none;
-    padding: 8px;
+    padding: 0.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -194,7 +194,7 @@
 
 /* ── Sidebar ── */
 .filter-sidebar {
-    width: 140px;
+    width: 8.75rem;
     background-color: #f9f9f9;
     border-right: 1px solid #e0e0e0;
     display: flex;
@@ -205,27 +205,27 @@
 .filter-tab {
     background: none;
     border: none;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     text-align: left;
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #222222;
     cursor: pointer;
-    border-left: 4px solid transparent;
+    border-left: 0.25rem solid transparent;
     transition: all 0.2s;
 }
 
 .filter-tab.active {
     background-color: #ffffff;
-    border-left: 4px solid #a85236;
-    color: #a85236;
+    border-left: 0.25rem solid var(--ion-color-primary);
+    color: var(--ion-color-primary);
 }
 
 /* ── Options Pane ── */
 .filter-options {
     flex: 1;
-    padding: 16px 24px;
+    padding: 1rem 1.5rem;
     overflow-y: auto;
     background-color: #ffffff;
 }
@@ -233,19 +233,19 @@
 .checkbox-list {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 1.25rem;
 }
 
 .checkbox-item {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 0.75rem;
     cursor: pointer;
 }
 
 .checkbox-item span {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 400;
     color: #222222;
 }
@@ -254,10 +254,10 @@
 .custom-checkbox {
     appearance: none;
     -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border: 1.5px solid rgb(204, 133, 69);
-    border-radius: 3px;
+    width: 1rem;
+    height: 1rem;
+    border: 0.0938rem solid var(--ion-color-primary-tint);
+    border-radius: 0.1875rem;
     background-color: white;
     margin: 0;
     flex-shrink: 0;
@@ -267,19 +267,19 @@
 }
 
 .custom-checkbox:checked {
-    background-color: rgb(168, 82, 54);
-    border-color: rgb(168, 82, 54);
+    background-color: var(--ion-color-primary);
+    border-color: var(--ion-color-primary);
 }
 
 .custom-checkbox:checked::after {
     content: '';
     position: absolute;
-    left: 4px;
+    left: 0.25rem;
     top: 1px;
-    width: 5px;
-    height: 9px;
+    width: 0.3125rem;
+    height: 0.5625rem;
     border: solid #ffffff;
-    border-width: 0 2px 2px 0;
+    border-width: 0 0.125rem 0.125rem 0;
     transform: rotate(45deg);
 }
 
@@ -288,33 +288,33 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
-    height: 100px;
+    padding: 0 1.25rem;
+    height: 6.25rem;
     background-color: #ffffff;
-    box-shadow: 0 -2px 24px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -0.125rem 1.5rem rgba(0, 0, 0, 0.1);
 }
 
 .clear-filters-btn {
     background: none;
     border: none;
     font-family: 'Rubik', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 500;
-    color: rgb(168, 82, 54);
+    color: var(--ion-color-primary);
     padding: 0;
     cursor: pointer;
 }
 
 .apply-filters-btn {
-    background-color: rgb(168, 82, 54);
+    background-color: var(--ion-color-primary);
     color: #ffffff;
     border: none;
-    border-radius: 10px;
+    border-radius: 0.625rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
-    width: 182px;
-    height: 42px;
+    width: 11.375rem;
+    height: 2.625rem;
     cursor: pointer;
     display: flex;
     align-items: center;

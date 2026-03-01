@@ -8,7 +8,7 @@
 
 /* ── Header ── */
 .help-support-page .hs-header {
-    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
     background: #ffffff;
 }
 
@@ -20,17 +20,17 @@
 
 .help-support-page .hs-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 500;
     color: #222222;
     text-align: left;
-    padding-inline-start: 16px;
+    padding-inline-start: 1rem;
 }
 
 .hs-header-icon-btn {
     background: none;
     border: none;
-    padding: 8px 12px;
+    padding: 0.5rem 0.75rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -42,16 +42,16 @@
 }
 
 .hs-container {
-    padding: 24px 16px 100px;
+    padding: 1.5rem 1rem 6.25rem;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 1.25rem;
 }
 
 /* ── Hero section ── */
 .hs-hero-text {
     font-family: 'Rubik', sans-serif;
-    font-size: 24px;
+    font-size: 1.5rem;
     font-weight: 500;
     color: #222222;
     margin: 0;
@@ -62,32 +62,32 @@
 .hs-category-cards {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 1.25rem;
 }
 
 .hs-category-card {
     background: #ffffff;
     border: 1px solid #d4d4d4;
-    border-radius: 12px;
-    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.09);
-    padding: 0 20px 20px;
+    border-radius: 0.75rem;
+    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.09);
+    padding: 0 1.25rem 1.25rem;
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
 }
 
 .hs-accent-bar {
-    width: 32px;
-    height: 12px;
-    background: #CC8545;
-    border-radius: 0 0 2px 2px;
+    width: 2rem;
+    height: 0.75rem;
+    background: var(--ion-color-primary-tint);
+    border-radius: 0 0 0.125rem 0.125rem;
     margin-top: 0;
 }
 
 .hs-category-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 500;
     color: #000000;
     margin: 0;
@@ -95,7 +95,7 @@
 
 .hs-category-desc {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 400;
     color: #000000;
     margin: 0;
@@ -106,61 +106,61 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-top: 6px;
+    margin-top: 0.375rem;
 }
 
 .hs-faq-count {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 400;
     color: #757575;
 }
 
 .hs-arrow-icon {
-    color: #A85236;
+    color: var(--ion-color-primary);
     display: flex;
     align-items: center;
 }
 
 .hs-arrow-icon svg {
-    width: 18px;
-    height: 11px;
+    width: 1.125rem;
+    height: 0.6875rem;
 }
 
 /* ── Most Viewed FAQ's ── */
 .hs-faq-section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0.75rem;
 }
 
 .hs-faq-section-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 500;
     color: #000000;
-    margin: 0 0 4px;
+    margin: 0 0 0.25rem;
 }
 
 .hs-faq-item {
     background: #ffffff;
     border: 1px solid #d4d4d4;
-    border-radius: 12px;
+    border-radius: 0.75rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
 }
 
 .hs-faq-item:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
 }
 
 .hs-faq-question {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
+    padding: 1rem 1.25rem;
     cursor: pointer;
-    gap: 12px;
+    gap: 0.75rem;
     background: none;
     border: none;
     width: 100%;
@@ -169,7 +169,7 @@
 
 .hs-faq-question-text {
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     color: #000000;
     flex: 1;
@@ -180,7 +180,7 @@
 .hs-faq-chevron {
     flex-shrink: 0;
     transition: transform 0.25s ease;
-    color: #A85236;
+    color: var(--ion-color-primary);
     display: flex;
     align-items: center;
 }
@@ -190,14 +190,14 @@
 }
 
 .hs-faq-answer {
-    padding: 0 20px 16px;
+    padding: 0 1.25rem 1rem;
     overflow: hidden;
     animation: hs-slide-down 0.25s ease;
 }
 
 .hs-faq-answer-text {
     font-family: 'Rubik', sans-serif;
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 400;
     color: #757575;
     margin: 0;
@@ -212,7 +212,7 @@
 
     to {
         opacity: 1;
-        max-height: 300px;
+        max-height: 18.75rem;
     }
 }
 
@@ -226,15 +226,15 @@
 .hs-modal-toolbar {
     --background: #ffffff;
     --border-width: 0;
-    --padding-start: 16px;
-    --padding-end: 16px;
-    --padding-top: 8px;
-    --padding-bottom: 8px;
+    --padding-start: 1rem;
+    --padding-end: 1rem;
+    --padding-top: 0.5rem;
+    --padding-bottom: 0.5rem;
 }
 
 .hs-modal-title {
     font-family: 'Rubik', sans-serif;
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 500;
     color: #000000;
     margin: 0;
@@ -243,8 +243,8 @@
 .hs-modal-close {
     background: none;
     border: none;
-    padding: 8px;
-    margin: -8px;
+    padding: 0.5rem;
+    margin: -0.5rem;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -254,7 +254,7 @@
 .hs-modal-form {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 1rem;
 }
 
 .hs-select-wrapper {
@@ -268,16 +268,16 @@
     width: 100%;
     background: #ffffff;
     border: 1px solid #d4d4d4;
-    border-radius: 8px;
-    padding: 14px 16px;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     color: #757575;
     outline: none;
 }
 
 .hs-modal-select:focus {
-    border-color: #A85236;
+    border-color: var(--ion-color-primary);
 }
 
 .hs-modal-select:not(:invalid) {
@@ -286,7 +286,7 @@
 
 .hs-select-chevron {
     position: absolute;
-    right: 16px;
+    right: 1rem;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: none;
@@ -296,10 +296,10 @@
     width: 100%;
     background: #ffffff;
     border: 1px solid #d4d4d4;
-    border-radius: 8px;
-    padding: 14px 16px;
+    border-radius: 0.5rem;
+    padding: 0.875rem 1rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     color: #000000;
     outline: none;
     resize: none;
@@ -310,18 +310,18 @@
 }
 
 .hs-modal-textarea:focus {
-    border-color: #A85236;
+    border-color: var(--ion-color-primary);
 }
 
 .hs-modal-submit {
     width: 100%;
-    background: #A85236;
+    background: var(--ion-color-primary);
     color: #ffffff;
     border: none;
     border-radius: 0;
-    padding: 18px;
+    padding: 1.125rem;
     font-family: 'Rubik', sans-serif;
-    font-size: 16px;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     margin-top: 0;
