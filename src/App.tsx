@@ -18,6 +18,7 @@ import DownloadedContentsPage from './pages/DownloadedContentsPage';
 import HelpAndSupportPage from './pages/HelpAndSupportPage';
 import FaqDetailPage from './pages/FaqDetailPage';
 
+
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
 
@@ -36,6 +37,8 @@ import '@ionic/react/css/text-transformation.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import VideoContentPage from './pages/VideoContentPage';
+import SearchPage from './pages/SearchPage';
 
 setupIonicReact();
 
@@ -45,6 +48,9 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <IonRouterOutlet>
+          <Route exact path="/search">
+            <SearchPage />
+          </Route>
           <Route exact path="/explore">
             <ExplorePage />
           </Route>
@@ -80,6 +86,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/dashboard">
             <Dashboard />
+          </Route>
+          <Route exact path="/video/:id">
+            <VideoContentPage />
           </Route>
           <Route exact path="/">
             <Redirect to="/home" />

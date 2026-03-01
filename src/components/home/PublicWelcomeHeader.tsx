@@ -3,6 +3,7 @@ import { IonToolbar } from '@ionic/react';
 import sunbirdLogo from '../../assets/sunbird-logo-new.png';
 import { useAuth } from '../../contexts/AuthContext';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { useHistory } from 'react-router-dom';
 
 const DemoToggleIcon = ({ isActive }: { isActive: boolean }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -14,6 +15,7 @@ const DemoToggleIcon = ({ isActive }: { isActive: boolean }) => (
 
 export const PublicWelcomeHeader: React.FC = () => {
   const { isAuthenticated, login, logout } = useAuth();
+  const history = useHistory();
 
   return (
     <IonToolbar
@@ -50,6 +52,7 @@ export const PublicWelcomeHeader: React.FC = () => {
         }}>
           {/* Search icon */}
           <button
+            onClick={() => history.push('/search')}
             style={{
               background: 'none',
               border: 'none',

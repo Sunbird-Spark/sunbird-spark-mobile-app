@@ -1,15 +1,8 @@
-import React from 'react';
-import {
-    IonContent,
-    IonHeader,
-    IonPage,
-    IonToolbar,
-    IonModal,
-    IonFooter,
-} from '@ionic/react';
+import React, { useState } from 'react';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonModal, IonFooter } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
+import { useHistory } from 'react-router-dom';
 import './ExplorePage.css';
-
 // ── Icons ──
 const FilterIcon = () => (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -147,6 +140,7 @@ const mockExploreItems = [
 const ExplorePage: React.FC = () => {
     const [showFilter, setShowFilter] = React.useState(false);
     const [filterTab, setFilterTab] = React.useState('Collections');
+    const history = useHistory();
 
     // We'll split the items into left and right columns for a masonry-like look
     const leftCol = mockExploreItems.filter((_, i) => i % 2 === 0);
@@ -155,12 +149,16 @@ const ExplorePage: React.FC = () => {
     const renderCard = (item: any) => {
         if (item.layout === 'overlay') {
             return (
-                <div key={item.id} className="explore-card overlay-card" style={{
-                    background: `${item.background}, ${item.backgroundImage}`,
-                    backgroundSize: 'cover',
-                    backgroundBlendMode: 'overlay',
-                    backgroundPosition: 'center'
-                }}>
+                <div
+                    key={item.id}
+                    className="explore-card overlay-card"
+                    onClick={() => history.push(`/video/${item.id}`)}
+                    style={{
+                        background: `${item.background}, ${item.backgroundImage}`,
+                        backgroundSize: 'cover',
+                        backgroundBlendMode: 'overlay',
+                        backgroundPosition: 'center'
+                    }}>
                     <div className="card-badge bg-white-badge">
                         {item.type}
                     </div>
@@ -168,12 +166,16 @@ const ExplorePage: React.FC = () => {
                         <h3 className="overlay-title">{item.title}</h3>
                         <span className="overlay-link">{item.linkText}</span>
                     </div>
-                </div>
+                </div >
             );
         }
 
         return (
-            <div key={item.id} className="explore-card standard-card">
+            <div
+                key={item.id}
+                className="explore-card standard-card"
+                onClick={() => history.push(`/video/${item.id}`)}
+            >
                 <div className="card-image-wrap">
                     <img src={item.thumbnail} alt={item.title} className="card-image" />
                 </div>

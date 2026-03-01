@@ -1,0 +1,291 @@
+/* ── Container & Global ── */
+.video-content-page {
+    --background: #f4f4f4;
+}
+
+.video-container {
+    padding-bottom: 24px;
+}
+
+/* ── Header Actions ── */
+.custom-back-btn {
+    --color: rgb(168, 82, 54);
+}
+
+.header-actions {
+    display: flex;
+    gap: 16px;
+    padding-right: 16px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.action-btn ion-icon {
+    font-size: 24px;
+    --ion-color-primary: rgb(168, 82, 54);
+}
+
+/* ── Video Hero Section ── */
+.video-hero {
+    background: #ffffff;
+    padding: 16px 20px;
+    padding-bottom: 30px;
+    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+    /* shadow-14-14 from JSON */
+    border-bottom-left-radius: 20px;
+    border-bottom-right-radius: 20px;
+    margin-bottom: 24px;
+}
+
+.video-meta {
+    margin-bottom: 20px;
+}
+
+.video-meta h1 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+
+.meta-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    color: #757575;
+}
+
+.rating {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.star {
+    font-size: 12px;
+    color: rgb(168, 82, 54);
+}
+
+.dot {
+    font-size: 14px;
+    color: #959595;
+}
+
+.video-player-placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    border-radius: 20px;
+    background-color: #0b7f8c;
+    /* Approx from screenshot */
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.08);
+    /* shadow-30-14 */
+}
+
+.video-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 2px 2px 34px rgba(0, 0, 0, 0.4);
+    /* shadow-34-4 */
+    cursor: pointer;
+}
+
+/* ── Common Sections ── */
+.section {
+    padding: 0 20px;
+    margin-bottom: 32px;
+}
+
+.section h2 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: #222222;
+    margin: 0 0 16px 0;
+}
+
+/* ── Related Videos Stack ── */
+.related-videos-section {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 24px 20px;
+    margin: 0 20px 24px 20px;
+}
+
+.related-videos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.related-video-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.rv-thumbnail-wrapper {
+    position: relative;
+    width: 112px;
+    height: 64px;
+    border-radius: 8px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.rv-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.rv-play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.rv-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.rv-info h3 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+    margin: 0 0 6px 0;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.rv-info .meta-stats {
+    font-size: 12px;
+}
+
+/* ── Related Content Horizontal Scroll ── */
+.section-header-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    cursor: pointer;
+}
+
+.section-header-link h2 {
+    margin: 0;
+}
+
+.horizontal-scroll-container {
+    display: flex;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    /* Hide scrollbar for cleanlyness */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.horizontal-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* Reusing Explore Page standard-card styling for horizontal list */
+.horizontal-scroll-container .standard-card {
+    min-width: 174px;
+    width: 174px;
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.15);
+    /* shadow-20-4 */
+    display: flex;
+    flex-direction: column;
+}
+
+.horizontal-scroll-container .card-img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+}
+
+.horizontal-scroll-container .card-badge {
+    align-self: flex-start;
+    font-family: 'Rubik', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    padding: 4px 8px;
+    border-radius: 20px;
+    border: 1px solid rgb(204, 133, 69);
+    background-color: rgb(255, 241, 199);
+    color: #000000;
+    margin-bottom: 8px;
+}
+
+.horizontal-scroll-container .textbook-badge {
+    /* Need specific border/bg if it's different in design tokens, fallback to same for now */
+    border-color: rgb(204, 133, 69);
+    background-color: rgb(255, 241, 199);
+}
+
+.horizontal-scroll-container h3 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+    margin: 0 0 8px 0;
+    /* Clamp to 2 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.horizontal-scroll-container .meta-stats {
+    margin-top: auto;
+    font-size: 12px;
+}

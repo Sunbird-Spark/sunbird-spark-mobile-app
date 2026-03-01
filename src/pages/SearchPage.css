@@ -1,0 +1,159 @@
+/* SearchPage.css */
+
+.search-container {
+    padding: 16px;
+    background-color: #ffffff;
+    height: 100%;
+}
+
+.search-input-wrapper {
+    margin-bottom: 24px;
+}
+
+.search-input-box {
+    width: 100%;
+    height: 56px;
+    background: #FFFFFF;
+    border: 1px solid #E0E0E0;
+    /* Approximate light gray border based on image */
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    /* Optional: shadow based on general design system, though screenshot doesn't show a strong shadow here */
+}
+
+.search-input-box:focus-within {
+    border-color: #a85236;
+    /* Highlight border on focus if desired, adhering to theme color */
+}
+
+.search-text-input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    color: #222222;
+    outline: none;
+}
+
+/* Imitating the cursor line in the screenshot if it's empty */
+.search-text-input:focus {
+    outline: none;
+}
+
+/* Recommended Section */
+.recommended-section {
+    margin-top: 16px;
+}
+
+.recommended-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #222222;
+    margin-bottom: 16px;
+}
+
+.recommended-grid {
+    display: flex;
+    gap: 16px;
+}
+
+/* Reusing ExplorePage card styles concepts but scoped here for Search Page */
+.search-explore-card {
+    background: #FFFFFF;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.05);
+    /* Softer shadow */
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.search-explore-card .card-image-wrap {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    /* Adjusted for recommended aspect ratio */
+    overflow: hidden;
+    padding: 8px 8px 0 8px;
+    /* Inner padding for the image wrapper */
+}
+
+.search-explore-card .card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    /* Inner border radius */
+}
+
+.search-explore-card .card-content {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.search-explore-card .card-badge {
+    align-self: flex-start;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-family: 'Rubik', sans-serif;
+    font-weight: 500;
+    border: 1px solid #757575;
+    /* Default border */
+}
+
+.search-explore-card .bg-yellow-badge {
+    background: #FFF1C7;
+    /* Derived from standard tokens */
+    color: #000;
+    border: 1px solid rgba(204, 133, 69, 0.5);
+    /* subtle border matching text context if any */
+}
+
+.search-explore-card .card-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #222222;
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.search-explore-card .card-meta {
+    font-family: 'Rubik', sans-serif;
+    font-size: 12px;
+    color: #757575;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-explore-card .rating {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+}
+
+.search-explore-card .star {
+    color: #A85236;
+    /* Matching design token */
+    font-size: 10px;
+}
+
+.search-explore-card .dot {
+    font-size: 12px;
+    color: #757575;
+}
