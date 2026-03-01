@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonContent, IonModal, IonFooter } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonModal, IonFooter, IonImg } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { useHistory } from 'react-router-dom';
 import './ExplorePage.css';
@@ -177,7 +177,7 @@ const ExplorePage: React.FC = () => {
                 onClick={() => history.push(`/video/${item.id}`)}
             >
                 <div className="card-image-wrap">
-                    <img src={item.thumbnail} alt={item.title} className="card-image" />
+                    <IonImg src={item.thumbnail} alt={item.title} className="card-image"  />
                 </div>
                 <div className="card-content">
                     <div className="card-badge bg-yellow-badge">

@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import {
-  IonContent,
+import { IonContent,
   IonHeader,
   IonPage,
-  IonToolbar,
-} from '@ionic/react';
+  IonToolbar,, IonImg } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { ContentCardCarousel, ContentCardItem } from '../components/home/ContentCardCarousel';
 import { courses as allCourses, getInProgressCourses } from '../data/mockData';
@@ -107,7 +105,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
     alignItems: 'flex-start',
   }}>
     <div style={{ width: '119px', height: '119px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
-      <img src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+      <IonImg src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }}  />
     </div>
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '119px', minWidth: 0 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>

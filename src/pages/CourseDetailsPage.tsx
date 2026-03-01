@@ -1,5 +1,5 @@
 import React from 'react';
-import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonImg } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import './CourseDetailsPage.css';
 
@@ -233,7 +233,7 @@ const CourseDetailsPage: React.FC = () => {
                                 className="content-card standard-card related-card"
                                 onClick={() => history.push(`/video/${item.id}`)}
                             >
-                                <img src={item.thumbnail} alt={item.title} className="card-img" />
+                                <IonImg src={item.thumbnail} alt={item.title} className="card-img"  />
                                 <div className="card-badge bg-yellow-badge">{item.type}</div>
                                 <h3 className="card-title">{item.title}</h3>
                                 <div className="card-meta">

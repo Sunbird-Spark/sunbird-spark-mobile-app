@@ -1,5 +1,5 @@
 import React from 'react';
-import { IonPage, IonHeader, IonToolbar, IonContent } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonImg, IonInput } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import './SearchPage.css';
 
@@ -56,7 +56,7 @@ const SearchPage: React.FC = () => {
                 onClick={() => history.push(`/video/${item.id}`)}
             >
                 <div className="card-image-wrap">
-                    <img src={item.thumbnail} alt={item.title} className="card-image" />
+                    <IonImg src={item.thumbnail} alt={item.title} className="card-image" />
                 </div>
                 <div className="card-content">
                     <div className="card-badge bg-yellow-badge">
@@ -99,7 +99,7 @@ const SearchPage: React.FC = () => {
                         <div className="search-input-box">
                             {/* We could use an input field here, but based on the design screenshot, 
                                 it looks like an active text input area with a cursor line. */}
-                            <input
+                            <IonInput
                                 type="text"
                                 className="search-text-input"
                                 autoFocus
