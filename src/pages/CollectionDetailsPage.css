@@ -1,0 +1,117 @@
+.collection-details-page {
+    --background: #F4F4F4;
+}
+
+.collection-details-header {
+    --background: #FFFFFF;
+    --padding-top: env(safe-area-inset-top);
+    padding: 16px 16px;
+    box-shadow: 0 14px 14px rgba(0, 0, 0, 0.05);
+}
+
+.collection-details-title-section {
+    padding: 24px 16px;
+    background: white;
+    /* Soft shadow to separate from the F4F4F4 background below */
+    box-shadow: 0 8px 14px -4px rgba(0, 0, 0, 0.05);
+}
+
+.collection-details-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0 0 12px 0;
+    line-height: 1.4;
+}
+
+.collection-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    color: #757575;
+}
+
+.collection-meta .star {
+    color: #A85236;
+}
+
+.collection-meta .dot {
+    color: #5F5F5F;
+    font-size: 12px;
+}
+
+.collection-curriculum-container {
+    padding: 16px 16px;
+}
+
+/* Accordion styles */
+.curriculum-accordion-group {
+    margin-bottom: 24px;
+}
+
+.curriculum-accordion {
+    background: white;
+    margin-bottom: 16px;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* Add custom accordion icon color to match design */
+.curriculum-accordion::part(accordion-icon) {
+    color: #A85236;
+}
+
+.curriculum-accordion::part(content) {
+    padding-bottom: 16px;
+}
+
+.curriculum-header {
+    --background: transparent;
+    --color: #222222;
+    --padding-start: 20px;
+    --padding-end: 20px;
+    --padding-top: 20px;
+    --padding-bottom: 20px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.curriculum-header-subtitle {
+    font-size: 14px;
+    color: #757575;
+    font-weight: 400;
+    margin-top: 4px;
+}
+
+.curriculum-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    margin: 12px 16px 0 16px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 14px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(168, 82, 54, 0.1);
+    font-family: 'Rubik', sans-serif;
+}
+
+.curriculum-item-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.curriculum-item-title {
+    font-size: 14px;
+    color: #222222;
+}
+
+.curriculum-item-time {
+    font-size: 12px;
+    color: #757575;
+}

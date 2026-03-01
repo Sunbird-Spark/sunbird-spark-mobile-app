@@ -39,6 +39,8 @@ import '@ionic/react/css/text-transformation.css';
 import './theme/variables.css';
 import VideoContentPage from './pages/VideoContentPage';
 import SearchPage from './pages/SearchPage';
+import CourseDetailsPage from './pages/CourseDetailsPage';
+import CollectionDetailsPage from './pages/CollectionDetailsPage';
 
 setupIonicReact();
 
@@ -89,6 +91,12 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/video/:id">
             <VideoContentPage />
+          </Route>
+          <Route exact path="/course-details">
+            <CourseDetailsPage />
+          </Route>
+          <Route exact path="/collection-details">
+            <CollectionDetailsPage />
           </Route>
           <Route exact path="/">
             <Redirect to="/home" />
