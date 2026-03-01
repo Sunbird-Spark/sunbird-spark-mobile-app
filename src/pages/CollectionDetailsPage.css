@@ -115,3 +115,141 @@
     font-size: 12px;
     color: #757575;
 }
+
+/* ── CTA Button ── */
+.collection-bottom-cta-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #A85236;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    cursor: pointer;
+}
+
+.collection-bottom-cta-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: white;
+}
+
+/* ── Upcoming Batches Bottom Sheet Modal ── */
+
+.batch-modal {
+    --border-radius: 30px 30px 0 0;
+}
+
+/* To force Ionic Modal to properly handle rounded corners when using sheet */
+.batch-modal::part(handle) {
+    background: transparent;
+    display: none;
+}
+
+.batch-modal-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-color: #ffffff;
+}
+
+.batch-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 32px 24px 8px 24px;
+}
+
+.batch-modal-header h2 {
+    font-family: 'Rubik', sans-serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #222222;
+    margin: 0;
+}
+
+.batch-modal-close {
+    background: transparent;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.batch-modal-content {
+    padding: 0 24px 24px 24px;
+    flex-grow: 1;
+}
+
+.batch-modal-subtitle {
+    font-family: 'Rubik', sans-serif;
+    font-size: 14px;
+    color: #757575;
+    margin: 0 0 24px 0;
+    line-height: 1.5;
+}
+
+.batch-select-container {
+    position: relative;
+    width: 100%;
+}
+
+.batch-select {
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #FFFFFF;
+    border: 1px solid #D4D4D4;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 16px;
+    color: #222222;
+    cursor: pointer;
+    /* Optional shadow to match design if appropriate */
+}
+
+.batch-select:focus {
+    outline: none;
+    border-color: #A85236;
+}
+
+.batch-select-icon {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+/* Fix width and position of bottom sheet button since it sits in a modal sheet */
+/* Fix width and position of bottom sheet button since it sits in a modal sheet */
+.batch-modal-cta-bar {
+    background: #A85236;
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+}
+
+.modal-submit-btn {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    margin: 0;
+    border-radius: 0;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+}

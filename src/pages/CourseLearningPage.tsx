@@ -1,18 +1,12 @@
 import React from 'react';
-import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal } from '@ionic/react';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonToggle } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
-import './CollectionDetailsPage.css';
+import './CourseLearningPage.css';
 
 // ── Icons ──
 const BackIcon = () => (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M15 18L9 12L15 6" stroke="#A85236" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
-
-const SearchIcon = () => (
-    <svg width="19" height="19" viewBox="0 0 19 19" fill="#a85236" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
     </svg>
 );
 
@@ -34,22 +28,73 @@ const DocumentIcon = () => (
     </svg>
 );
 
-const CollectionDetailsPage: React.FC = () => {
-    const history = useHistory();
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
+const CertificateIcon = () => (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="2" y="3" width="16" height="14" rx="2" fill="#D28D5D" />
+        <path d="M7 6H13M7 9H13M7 12H10" stroke="#FFFFFF" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="15" cy="14" r="3" fill="#A85236" />
+    </svg>
+);
+
+const DownloadIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13 9V11C13 11.5304 12.7893 12.0391 12.4142 12.4142C12.0391 12.7893 11.5304 13 11 13H3C2.46957 13 1.96086 12.7893 1.58579 12.4142C1.21071 12.0391 1 11.5304 1 11V9M4 5L7 8M7 8L10 5M7 8V1" stroke="#A85236" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+const CheckSquareIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="12" height="12" rx="2" stroke="#A85236" strokeWidth="1.2" />
+        <path d="M4 7L6.5 9.5L10 4.5" stroke="#A85236" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+// ── Progress Circular Widget ──
+const CircularProgress = ({ value }: { value: number }) => {
+    const radius = 18;
+    const stroke = 4;
+    const normalizedRadius = radius - stroke * 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const strokeDashoffset = circumference - (value / 100) * circumference;
 
     return (
-        <IonPage className="collection-details-page">
+        <svg height={radius * 2} width={radius * 2} className="circular-progress">
+            <circle
+                stroke="#F0CE94"
+                fill="transparent"
+                strokeWidth={stroke}
+                r={normalizedRadius}
+                cx={radius}
+                cy={radius}
+            />
+            <circle
+                stroke="#A85236"
+                fill="transparent"
+                strokeWidth={stroke}
+                strokeDasharray={circumference + ' ' + circumference}
+                style={{ strokeDashoffset }}
+                strokeLinecap="round"
+                r={normalizedRadius}
+                cx={radius}
+                cy={radius}
+                transform={`rotate(-90 ${radius} ${radius})`}
+            />
+        </svg>
+    );
+};
+
+const CourseLearningPage: React.FC = () => {
+    const history = useHistory();
+
+    return (
+        <IonPage className="course-learning-page">
             <IonHeader className="ion-no-border">
-                <IonToolbar className="collection-details-header">
+                <IonToolbar className="course-learning-header">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <button onClick={() => history.goBack()} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                             <BackIcon />
                         </button>
-                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                            <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
-                                <SearchIcon />
-                            </button>
+                        <div style={{ display: 'flex', alignItems: 'center' }}>
                             <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
                                 <ShareIcon />
                             </button>
@@ -60,22 +105,38 @@ const CollectionDetailsPage: React.FC = () => {
 
             <IonContent fullscreen>
                 {/* Meta details */}
-                <div className="collection-details-title-section">
-                    <h1 className="collection-details-title">The AI Engineer Course 2026: Complete AI Engineer Bootcamp</h1>
-                    <div className="collection-meta">
+                <div className="course-learning-title-section">
+                    <h1 className="course-learning-title">The AI Engineer Course 2026: Complete AI Engineer Bootcamp</h1>
+                    <div className="course-learning-meta">
                         <span className="rating">4.5 <span className="star">★</span></span>
                         <span className="dot">•</span>
                         <span>25 Lessons</span>
                     </div>
+
+                    <div className="course-progress-row">
+                        <CircularProgress value={30} />
+                        <div className="progress-details">
+                            <h3 className="progress-percentage">Completed : 30%</h3>
+                            <span className="progress-date">Batch Started on : 3rd Jan</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="toggle-section">
+                    <span className="toggle-label">View downloaded only</span>
+                    <IonToggle className="custom-toggle" />
                 </div>
 
                 {/* Course Curriculum */}
-                <div className="collection-curriculum-container">
+                <div className="course-learning-curriculum-container">
                     <IonAccordionGroup className="curriculum-accordion-group" value={['week1']} multiple={true}>
                         <IonAccordion value="week1" className="curriculum-accordion">
                             <IonItem slot="header" className="curriculum-header" lines="none">
                                 <IonLabel>
-                                    <div>Week 1: Foundation &amp; Basics</div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>Week 1: Foundation &amp; Basics</div>
+                                        <DownloadIcon />
+                                    </div>
                                     <div className="curriculum-header-subtitle">Business analysis, planning, and monitoring</div>
                                 </IonLabel>
                             </IonItem>
@@ -120,7 +181,12 @@ const CollectionDetailsPage: React.FC = () => {
 
                         <IonAccordion value="week2" className="curriculum-accordion">
                             <IonItem slot="header" className="curriculum-header" lines="none">
-                                <IonLabel>Week 2: Core Competencies</IonLabel>
+                                <IonLabel>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>Week 2: Core Competencies</div>
+                                        <CheckSquareIcon />
+                                    </div>
+                                </IonLabel>
                             </IonItem>
                             <div slot="content">
                                 {/* Empty for design */}
@@ -129,7 +195,12 @@ const CollectionDetailsPage: React.FC = () => {
 
                         <IonAccordion value="week3" className="curriculum-accordion">
                             <IonItem slot="header" className="curriculum-header" lines="none">
-                                <IonLabel>Week 3: Professional Application</IonLabel>
+                                <IonLabel>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div>Week 3: Professional Application</div>
+                                        <DownloadIcon />
+                                    </div>
+                                </IonLabel>
                             </IonItem>
                             <div slot="content">
                                 {/* Empty for design */}
@@ -137,61 +208,33 @@ const CollectionDetailsPage: React.FC = () => {
                         </IonAccordion>
                     </IonAccordionGroup>
                 </div>
-                {/* padding for CTA */}
-                <div style={{ height: '80px' }}></div>
-            </IonContent>
 
-            {/* Bottom CTA Button */}
-            <div className="collection-bottom-cta-bar" onClick={() => setIsModalOpen(true)}>
-                <span className="collection-bottom-cta-text">Join the Course</span>
-            </div>
-
-            {/* Upcoming Batches Modal */}
-            <IonModal
-                isOpen={isModalOpen}
-                onDidDismiss={() => setIsModalOpen(false)}
-                initialBreakpoint={0.4}
-                breakpoints={[0, 0.4, 0.75, 1]}
-                className="batch-modal"
-            >
-                <div className="batch-modal-inner">
-                    <div className="batch-modal-header">
-                        <h2>Upcoming Batches</h2>
-                        <button className="batch-modal-close" onClick={() => setIsModalOpen(false)}>
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="#A85236" />
-                            </svg>
-                        </button>
-                    </div>
-
-                    <div className="batch-modal-content">
-                        <p className="batch-modal-subtitle">Select a batch to start learning.</p>
-
-                        <div className="batch-select-container">
-                            <select className="batch-select">
-                                <option value="" disabled selected>Select a Batch</option>
-                                <option value="batch1">Batch 1: March 10 - April 10</option>
-                                <option value="batch2">Batch 2: April 15 - May 15</option>
-                            </select>
-                            <svg className="batch-select-icon" width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M1 1L7 7L13 1" stroke="#A85236" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                {/* Additional Info Cards */}
+                <div className="info-cards-container">
+                    <div className="info-card">
+                        <div className="info-card-header">
+                            <CertificateIcon />
+                            <h3 className="info-card-title">Certificate</h3>
                         </div>
+                        <p className="info-card-desc">Earn a certificate on completion of the course. Verify the details before completing the course.</p>
+                        <button className="btn-primary">Preview Certificate</button>
                     </div>
 
-                    {/* Modal Bottom CTA */}
-                    <div className="batch-modal-cta-wrap">
-                        <div className="batch-modal-cta-bar modal-submit-btn" onClick={() => {
-                            setIsModalOpen(false);
-                            history.push('/course-learning');
-                        }}>
-                            <span className="collection-bottom-cta-text">Join The Batch</span>
+                    <div className="info-card">
+                        <h3 className="info-card-title" style={{ marginTop: 0 }}>Profile Data Sharing</h3>
+                        <p className="info-card-desc">Profile data sharing is Off. You have not agreed to share your profile details with the course administrator</p>
+                        <div className="info-card-footer">
+                            <span className="info-card-date">Last updated on 07/01/2026</span>
+                            <button className="btn-link">Update</button>
                         </div>
                     </div>
                 </div>
-            </IonModal>
+
+                {/* padding for scroll area */}
+                <div style={{ height: '40px' }}></div>
+            </IonContent>
         </IonPage>
     );
 };
 
-export default CollectionDetailsPage;
+export default CourseLearningPage;
