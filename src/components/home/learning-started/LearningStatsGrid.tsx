@@ -43,30 +43,30 @@ const stats: StatTile[] = [
   {
     value: '30',
     label: 'Total Contents',
-    tileBg: 'rgb(112, 173, 191)',
+    tileBg: 'var(--ion-color-secondary)',
     iconBg: 'rgb(61, 143, 167)',
-    icon: <ListIcon color="rgb(255, 255, 255)" />,
+    icon: <ListIcon color="var(--ion-color-light)" />,
   },
   {
     value: '05',
     label: 'Contents in Progress',
-    tileBg: 'rgb(204, 133, 69)',
+    tileBg: 'var(--ion-color-primary-tint)',
     iconBg: 'rgb(176, 102, 36)',
-    icon: <InProgressIcon color="rgb(255, 255, 255)" />,
+    icon: <InProgressIcon color="var(--ion-color-light)" />,
   },
   {
     value: '13',
     label: 'Contents Completed',
     tileBg: 'rgb(102, 166, 130)',
     iconBg: 'rgb(49, 134, 86)',
-    icon: <CheckIcon color="rgb(255, 255, 255)" />,
+    icon: <CheckIcon color="var(--ion-color-light)" />,
   },
   {
     value: '06',
     label: 'Certifications Earned',
-    tileBg: 'rgb(153, 112, 138)',
+    tileBg: 'var(--ion-color-medium)',
     iconBg: 'rgb(116, 76, 101)',
-    icon: <CertificateIcon color="rgb(255, 255, 255)" />,
+    icon: <CertificateIcon color="var(--ion-color-light)" />,
   },
 ];
 
@@ -102,7 +102,7 @@ export const LearningStatsGrid: React.FC = () => {
               fontFamily: "'Rubik', sans-serif",
               fontSize: '24px',
               fontWeight: 600,
-              color: 'rgb(255, 255, 255)',
+              color: 'var(--ion-color-light)',
               margin: 0,
               lineHeight: 1,
             }}>
@@ -129,7 +129,7 @@ export const LearningStatsGrid: React.FC = () => {
             fontFamily: "'Rubik', sans-serif",
             fontSize: '14px',
             fontWeight: 400,
-            color: 'rgb(255, 255, 255)',
+            color: 'var(--ion-color-light)',
             margin: 0,
             lineHeight: 1.2,
           }}>

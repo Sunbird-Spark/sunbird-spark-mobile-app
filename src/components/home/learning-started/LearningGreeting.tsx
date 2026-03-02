@@ -10,7 +10,7 @@ export const LearningGreeting: React.FC = () => {
         fontFamily: "'Rubik', sans-serif",
         fontSize: '20px',
         fontWeight: 500,
-        color: 'rgb(34, 34, 34)',
+        color: 'var(--ion-color-dark, var(--color-222222, #222222))',
         margin: '0 0 4px 0',
       }}>
         Hi {firstName}
@@ -19,7 +19,7 @@ export const LearningGreeting: React.FC = () => {
         fontFamily: "'Rubik', sans-serif",
         fontSize: '14px',
         fontWeight: 400,
-        color: 'rgb(117, 117, 117)',
+        color: 'var(--ion-color-medium, var(--color-757575, #757575))',
         margin: 0,
       }}>
         Your exciting learning journey starts here. Dive in!

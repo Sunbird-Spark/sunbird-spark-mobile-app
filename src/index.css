@@ -113,7 +113,7 @@
         --orange-secondary: 33 53% 62%;
         /* GINGER */
         --purple-primary: 319 75% 20%;
-        /* JAMUN #540f3b */
+        /* JAMUN var(--color-540f3b, #540f3b) */
         --purple-secondary: 324 20% 53%;
         /* LAVENDER var(--ion-color-medium) */
 
@@ -257,7 +257,7 @@ ion-tab-button:hover {
     margin: 0;
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0));
     overflow: hidden;
     transition: all 0.2s ease;
 }
@@ -293,7 +293,7 @@ ion-tab-button:hover {
 .course-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #333;
+    color: var(--color-333, #333);
     margin-bottom: 0.25rem;
     line-height: 1.3;
     display: -webkit-box;
@@ -311,7 +311,7 @@ ion-tab-button:hover {
 
 .rating-stars {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--color-666, #666);
 }
 
 /* Horizontal Course Cards (Browse Courses) */
@@ -319,7 +319,7 @@ ion-tab-button:hover {
     margin: 0 1rem 0.75rem 1rem;
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.1);
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0));
     transition: all 0.2s ease;
 }
 
@@ -347,7 +347,7 @@ ion-tab-button:hover {
 
 .course-instructor {
     font-size: 0.8rem;
-    color: #666;
+    color: var(--color-666, #666);
     margin-top: 0.125rem;
 }
 
@@ -363,7 +363,7 @@ ion-tab-button:hover {
 
 .progress-text {
     font-size: 0.75rem;
-    color: #666;
+    color: var(--color-666, #666);
     margin: 0;
     text-align: right;
 }
@@ -372,7 +372,7 @@ ion-tab-button:hover {
 .ion-padding h2 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #333;
+    color: var(--color-333, #333);
     margin: 1rem 0 0.75rem 0;
 }
 
@@ -385,7 +385,7 @@ ion-tab-button:hover {
     position: relative;
     padding: 1.5rem 1.25rem 2rem;
     overflow: hidden;
-    background: #ffffff;
+    background: var(--ion-color-light);
 }
 
 .hero-bg-shape {
@@ -394,7 +394,7 @@ ion-tab-button:hover {
     right: -5rem;
     width: 32.3125rem;
     height: 10.5625rem;
-    background: #FFF1C7;
+    background: var(--ion-color-warning-tint, var(--color-fff1c7, #FFF1C7));
     border-radius: 50%;
     z-index: 0;
 }
@@ -440,7 +440,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.875rem;
     font-weight: 600;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     line-height: 1.18;
     margin: 0 0 0.75rem 0;
     max-width: 18.5rem;
@@ -450,7 +450,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     line-height: 1.57;
     margin: 0 0 1.25rem 0;
     max-width: 19.75rem;
@@ -461,7 +461,7 @@ ion-tab-button:hover {
     align-items: center;
     gap: 0.625rem;
     background: var(--ion-color-primary);
-    color: #ffffff;
+    color: var(--ion-color-light);
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
@@ -485,7 +485,7 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     justify-content: space-around;
-    background: #ffffff;
+    background: var(--ion-color-light);
     border-radius: 1.25rem;
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
     margin: -1rem 0.9375rem 1.5rem;
@@ -513,7 +513,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: center;
 }
 
@@ -521,14 +521,14 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     text-align: center;
 }
 
 .stats-divider {
     width: 1px;
     height: 2.5rem;
-    background: #e0e0e0;
+    background: var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0));
     flex-shrink: 0;
 }
 
@@ -549,7 +549,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     margin: 0;
 }
 
@@ -579,7 +579,7 @@ ion-tab-button:hover {
 .content-card {
     flex: 0 0 auto;
     width: 14rem;
-    background: #ffffff;
+    background: var(--ion-color-light);
     border-radius: 0.875rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
     overflow: hidden;
@@ -614,8 +614,8 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #000000;
-    background: #FFF1C7;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
+    background: var(--ion-color-warning-tint, var(--color-fff1c7, #FFF1C7));
     border: 1px solid var(--ion-color-primary-tint);
     border-radius: 2.25rem;
     padding: 0.125rem 0.75rem;
@@ -625,7 +625,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     line-height: 1.4;
     padding: 0.5rem 0.875rem 0;
     margin: 0;
@@ -648,11 +648,11 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
 }
 
 .content-card-dot {
-    color: #5f5f5f;
+    color: var(--ion-color-medium-shade, var(--color-5f5f5f, #5F5F5F));
     font-size: 0.625rem;
 }
 
@@ -660,7 +660,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
 }
 
 /* --- Categories Grid --- */
@@ -680,7 +680,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     margin: 0;
 }
 
@@ -750,7 +750,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #ffffff;
+    color: var(--ion-color-light);
     line-height: 1.3;
 }
 
@@ -791,7 +791,7 @@ ion-tab-button:hover {
 
 /* --- Resource Center --- */
 .resource-center-section {
-    background: #FFF1C7;
+    background: var(--ion-color-warning-tint, var(--color-fff1c7, #FFF1C7));
     padding: 1.75rem 0 2rem;
     margin: 0.5rem 0;
 }
@@ -807,14 +807,14 @@ ion-tab-button:hover {
 .resource-center-line {
     flex: 1;
     height: 1px;
-    background: #222222;
+    background: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .resource-center-label {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: center;
     white-space: nowrap;
 }
@@ -823,7 +823,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: center;
     margin: 0 1.25rem 1.25rem;
 }
@@ -893,8 +893,8 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
-    color: #000000;
-    background: #ffffff;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
+    background: var(--ion-color-light);
     border-radius: 0.375rem;
     padding: 0.25rem 0.75rem;
     align-self: flex-start;
@@ -904,7 +904,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 500;
-    color: #ffffff;
+    color: var(--ion-color-light);
     line-height: 1.35;
     margin: 0;
 }
@@ -920,7 +920,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #ffffff;
+    color: var(--ion-color-light);
 }
 
 /* --- FAQ Section --- */
@@ -932,7 +932,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     margin: 0 0 1rem 0;
 }
 
@@ -943,8 +943,8 @@ ion-tab-button:hover {
 }
 
 .faq-item {
-    background: #ffffff;
-    border: 1px solid #d4d4d4;
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.75rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
@@ -971,7 +971,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     line-height: 1.4;
     flex: 1;
 }
@@ -994,7 +994,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     line-height: 1.65;
     margin: 0;
 }
@@ -1005,7 +1005,7 @@ ion-tab-button:hover {
 
 /* Profile header — white background, no gradient */
 .profile-header .profile-toolbar {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
     --border-width: 0;
 }
 
@@ -1013,7 +1013,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: left;
     padding-inline-start: 1rem;
 }
@@ -1025,7 +1025,7 @@ ion-tab-button:hover {
 
 /* --- Profile Info Card --- */
 .profile-info-card {
-    background: rgb(255, 255, 255);
+    background: var(--ion-color-light);
     border-radius: 1.25rem;
     margin: 1rem 0.9375rem;
     padding: 1.75rem 1.25rem 1.5rem;
@@ -1069,7 +1069,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: rgb(34, 34, 34);
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: center;
     margin: 0 0 0.25rem;
 }
@@ -1078,7 +1078,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: rgb(117, 117, 117);
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     text-align: left;
     margin: 0 0 1rem;
 }
@@ -1093,7 +1093,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 400;
-    color: rgb(117, 117, 117);
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     text-align: center;
 }
 
@@ -1141,7 +1141,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: rgb(255, 255, 255);
+    color: var(--ion-color-light);
     line-height: 1;
 }
 
@@ -1149,7 +1149,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: rgb(255, 255, 255);
+    color: var(--ion-color-light);
     margin-top: 0.25rem;
 }
 
@@ -1164,7 +1164,7 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgb(255, 255, 255);
+    color: var(--ion-color-light);
     font-size: 1.125rem;
 }
 
@@ -1196,7 +1196,7 @@ ion-tab-button:hover {
 }
 
 .profile-action-item {
-    --background: rgb(255, 255, 255);
+    --background: var(--ion-color-light);
     --border-color: var(--ion-color-primary);
     --border-width: 1px;
     --border-style: solid;
@@ -1215,7 +1215,7 @@ ion-tab-button:hover {
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 400;
-    color: rgb(34, 34, 34);
+    color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .profile-action-chevron {
@@ -1240,7 +1240,7 @@ ion-tab-button:hover {
 }
 
 /* --- Override header white style for public page --- */
-ion-header ion-toolbar[style*="background: #ffffff"],
+ion-header ion-toolbar[style*="background: var(--ion-color-light)"],
 ion-header ion-toolbar[style*="background: white"] {
-    --color: #222222;
+    --color: var(--ion-color-dark, var(--color-222222, #222222));
 }

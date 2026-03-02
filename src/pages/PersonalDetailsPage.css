@@ -3,19 +3,19 @@
    ============================================= */
 
 .personal-details-page {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
 }
 
 /* ── Page header ── */
 .personal-details-page .pd-header {
     box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
-    background: #ffffff;
+    background: var(--ion-color-light);
 }
 
 /* Override the global gradient toolbar from index.css */
 .personal-details-page .pd-toolbar {
-    --background: #ffffff !important;
-    --color: #222222 !important;
+    --background: var(--ion-color-light) !important;
+    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
 
@@ -23,7 +23,7 @@
 .personal-details-page .pd-toolbar .pd-title,
 .personal-details-page .pd-toolbar .pd-back-btn,
 .personal-details-page .pd-toolbar .pd-edit-btn {
-    color: #222222 !important;
+    color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
 }
 
 .personal-details-page .pd-title {
@@ -49,7 +49,7 @@
 
 /* ── Page content ── */
 .pd-content {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
 }
 
 .pd-form-container {
@@ -70,20 +70,20 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
 }
 
 .pd-input {
     width: 100%;
     height: 2.5rem;
-    border: 1px solid #d7d7d7;
+    border: 1px solid var(--color-d7d7d7, #d7d7d7);
     border-radius: 0.5rem;
     padding: 0 0.75rem;
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #222222;
-    background: #ffffff;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
+    background: var(--ion-color-light);
     outline: none;
     box-sizing: border-box;
 }
@@ -101,7 +101,7 @@
  * and give it 85% height using Ionic CSS vars + alignment.
  */
 .pd-edit-modal {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
     --border-radius: 1.25rem 1.25rem 0 0;
     --height: 85%;
     --max-height: 85%;
@@ -115,8 +115,8 @@
 
 /* Modal toolbar — white bg, no border */
 .pd-modal-toolbar {
-    --background: #ffffff !important;
-    --color: #222222 !important;
+    --background: var(--ion-color-light) !important;
+    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0;
     --min-height: 2.75rem;
 }
@@ -134,7 +134,7 @@
 
 /* Modal content area */
 .pd-modal-content {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
 }
 
 .pd-modal-form {
@@ -156,7 +156,7 @@
     width: 100%;
     height: 3.4375rem;
     background: var(--ion-color-primary);
-    color: #ffffff;
+    color: var(--ion-color-light);
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
@@ -180,7 +180,7 @@
 
 /* Same bottom-sheet sizing as the edit modal */
 .pd-otp-modal {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
     --border-radius: 1.25rem 1.25rem 0 0;
     --height: 55%;
     --max-height: 55%;
@@ -204,7 +204,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     margin: 0 0 0.75rem;
     text-align: center;
 }
@@ -214,7 +214,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     text-align: center;
     margin: 0 0 1.5rem;
     line-height: 1.5;
@@ -225,7 +225,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     margin: 0 0 1rem;
     text-align: center;
 }
@@ -247,8 +247,8 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #222222;
-    background: #ffffff;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
+    background: var(--ion-color-light);
     outline: none;
     box-sizing: border-box;
     caret-color: var(--ion-color-primary);
@@ -271,7 +271,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .otp-resend {

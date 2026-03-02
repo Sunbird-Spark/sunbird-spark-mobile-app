@@ -37,7 +37,7 @@ const ChevronIcon: React.FC<{ expanded: boolean }> = ({ expanded }) => (
         xmlns="http://www.w3.org/2000/svg"
         className={`faq-chevron ${expanded ? 'faq-chevron-expanded' : ''}`}
     >
-        <path d="M0 0L5 5L10 0" stroke="#a85236" strokeWidth="2" />
+        <path d="M0 0L5 5L10 0" stroke="var(--ion-color-primary)" strokeWidth="2" />
     </svg>
 );
 

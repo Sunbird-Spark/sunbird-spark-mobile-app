@@ -17,7 +17,7 @@ interface ContentCardCarouselProps {
 }
 
 const StarIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="#a85236" xmlns="http://www.w3.org/2000/svg">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
         <path d="M7 0.5L8.76 5.06L13.5 5.52L9.89 8.63L10.96 13.26L7 10.77L3.04 13.26L4.11 8.63L0.5 5.52L5.24 5.06L7 0.5Z" />
     </svg>
 );
@@ -34,7 +34,7 @@ export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title,
                     onClick={() => history.push('/courses')}
                     aria-label="View all"
                 >
-                    <svg width="13" height="9" viewBox="0 0 13 9" fill="#a85236" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8.5 0L7.09 1.41L9.67 4H0V6H9.67L7.09 8.59L8.5 10L13 5L8.5 0Z" transform="translate(0, -0.5)" />
                     </svg>
                 </button>

@@ -2,7 +2,7 @@ import React from 'react';
 import { getInProgressCourses } from '../../../data/mockData';
 
 const ArrowIcon = () => (
-  <svg width="14" height="9" viewBox="0 0 13 9" fill="rgb(255,255,255)" xmlns="http://www.w3.org/2000/svg">
+  <svg width="14" height="9" viewBox="0 0 13 9" fill="var(--ion-color-light)" xmlns="http://www.w3.org/2000/svg">
     <path d="M8.5 0L7.09 1.41L9.67 4H0V6H9.67L7.09 8.59L8.5 10L13 5L8.5 0Z" transform="translate(0, -0.5)" />
   </svg>
 );
@@ -39,7 +39,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
         cy={size / 2}
         r={radius}
         fill="none"
-        stroke="rgb(168, 82, 54)"
+        stroke="var(--ion-color-primary)"
         strokeWidth={strokeWidth}
         strokeDasharray={circumference}
         strokeDashoffset={offset}
@@ -62,7 +62,7 @@ export const ContinueLearningCard: React.FC = () => {
         fontFamily: "'Rubik', sans-serif",
         fontSize: '18px',
         fontWeight: 500,
-        color: 'rgb(34, 34, 34)',
+        color: 'var(--ion-color-dark, var(--color-222222, #222222))',
         margin: '0 0 12px 0',
       }}>
         Continue from where you left
@@ -70,7 +70,7 @@ export const ContinueLearningCard: React.FC = () => {
 
       {/* Card */}
       <div style={{
-        backgroundColor: 'rgb(255, 255, 255)',
+        backgroundColor: 'var(--ion-color-light)',
         borderRadius: '20px',
         boxShadow: '2px 2px 20px rgba(0, 0, 0, 0.09)',
         display: 'flex',
@@ -111,7 +111,7 @@ export const ContinueLearningCard: React.FC = () => {
             fontFamily: "'Rubik', sans-serif",
             fontSize: '16px',
             fontWeight: 500,
-            color: 'rgb(34, 34, 34)',
+            color: 'var(--ion-color-dark, var(--color-222222, #222222))',
             margin: '0 0 12px 0',
             lineHeight: 1.4,
           }}>
@@ -130,7 +130,7 @@ export const ContinueLearningCard: React.FC = () => {
               fontFamily: "'Rubik', sans-serif",
               fontSize: '14px',
               fontWeight: 400,
-              color: 'rgb(34, 34, 34)',
+              color: 'var(--ion-color-dark, var(--color-222222, #222222))',
               margin: 0,
             }}>
               Completed: {course.progress}%
@@ -140,7 +140,7 @@ export const ContinueLearningCard: React.FC = () => {
           {/* Continue Learning button */}
           <button
             style={{
-              backgroundColor: 'rgb(168, 82, 54)',
+              backgroundColor: 'var(--ion-color-primary)',
               borderRadius: '10px',
               border: 'none',
               padding: '10px 14px',
@@ -155,7 +155,7 @@ export const ContinueLearningCard: React.FC = () => {
               fontFamily: "'Rubik', sans-serif",
               fontSize: '16px',
               fontWeight: 500,
-              color: 'rgb(255, 255, 255)',
+              color: 'var(--ion-color-light)',
             }}>
               Continue Learning
             </span>

@@ -3,18 +3,18 @@
    ============================================= */
 
 .my-learning-page {
-    --background: #f4f4f4;
+    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 /* ── Header ── */
 .my-learning-page .ml-header {
     box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
-    background: #ffffff;
+    background: var(--ion-color-light);
 }
 
 .my-learning-page .ml-toolbar {
-    --background: #ffffff !important;
-    --color: #222222 !important;
+    --background: var(--ion-color-light) !important;
+    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
 
@@ -22,7 +22,7 @@
 .my-learning-page .ml-toolbar .ml-title,
 .my-learning-page .ml-toolbar .ml-back-btn,
 .my-learning-page .ml-toolbar .ml-filter-btn {
-    color: #222222 !important;
+    color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
 }
 
 .my-learning-page .ml-title {
@@ -55,7 +55,7 @@
     position: fixed;
     top: 3.5rem;
     right: 0.75rem;
-    background: #ffffff;
+    background: var(--ion-color-light);
     border-radius: 0.75rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.12);
     padding: 0.375rem 0;
@@ -74,24 +74,24 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     cursor: pointer;
     transition: background 0.15s;
 }
 
 .ml-filter-option:hover {
-    background: #f4f4f4;
+    background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 .ml-filter-active {
     color: var(--ion-color-primary);
     font-weight: 500;
-    background: #FFF7F2;
+    background: var(--ion-color-light-tint, var(--color-fff7f2, #FFF7F2));
 }
 
 /* ── Content ── */
 .ml-content {
-    --background: #f4f4f4;
+    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 .ml-cards-container {
@@ -103,7 +103,7 @@
 
 /* ── Course card ── */
 .ml-card {
-    background: #ffffff;
+    background: var(--ion-color-light);
     border-radius: 1rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.09);
     overflow: hidden;
@@ -135,15 +135,15 @@
 }
 
 .ml-badge-ongoing {
-    background: #FFF1C7;
+    background: var(--ion-color-warning-tint, var(--color-fff1c7, #FFF1C7));
     border: 1px solid var(--ion-color-primary-tint);
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
 }
 
 .ml-badge-completed {
-    background: #CAE5B6;
+    background: var(--ion-color-success-tint, var(--color-cae5b6, #CAE5B6));
     border: 1px solid var(--ion-color-success);
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
 }
 
 /* ── Course title ── */
@@ -151,7 +151,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     margin: 0.125rem 0 0;
     line-height: 1.4;
 }
@@ -161,7 +161,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     margin: 0;
 }
 
@@ -181,7 +181,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 400;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 /* ── Thumbnail ── */
@@ -200,13 +200,13 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    background: linear-gradient(135deg, #1a2a3a 0%, #2d4a5a 50%, #1a2a3a 100%);
+    background: linear-gradient(135deg, var(--color-1a2a3a, #1a2a3a) 0%, var(--color-2d4a5a, #2d4a5a) 50%, var(--color-1a2a3a, #1a2a3a) 100%);
     border-radius: 0.625rem;
 }
 
 /* ── Card footer ── */
 .ml-card-footer {
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid var(--color-f0f0f0, #f0f0f0);
     display: flex;
     justify-content: center;
     padding: 0.75rem 1rem;

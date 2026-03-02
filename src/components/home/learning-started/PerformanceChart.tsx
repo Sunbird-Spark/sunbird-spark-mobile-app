@@ -33,7 +33,7 @@ export const PerformanceChart: React.FC = () => {
     <section style={{ padding: '0 16px 16px' }}>
       {/* Performance card */}
       <div style={{
-        backgroundColor: 'rgb(255, 255, 255)',
+        backgroundColor: 'var(--ion-color-light)',
         borderRadius: '20px',
         border: '1px solid rgb(215, 215, 215)',
         padding: '16px',
@@ -88,8 +88,8 @@ export const PerformanceChart: React.FC = () => {
         >
           <defs>
             <linearGradient id="chartAreaGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="rgb(204, 133, 69)" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="rgb(204, 133, 69)" stopOpacity="0" />
+              <stop offset="0%" stopColor="var(--ion-color-primary-tint)" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="var(--ion-color-primary-tint)" stopOpacity="0" />
             </linearGradient>
           </defs>
 
@@ -100,7 +100,7 @@ export const PerformanceChart: React.FC = () => {
           <path
             d={pathD}
             fill="none"
-            stroke="rgb(204, 133, 69)"
+            stroke="var(--ion-color-primary-tint)"
             strokeWidth="1.5"
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -111,7 +111,7 @@ export const PerformanceChart: React.FC = () => {
             cx={highlightX}
             cy={highlightY}
             r="4"
-            fill="rgb(204, 133, 69)"
+            fill="var(--ion-color-primary-tint)"
           />
         </svg>
 

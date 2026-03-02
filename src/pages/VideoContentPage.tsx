@@ -24,7 +24,7 @@ const VideoContentPage: React.FC = () => {
                     <IonButtons slot="start">
                         <button className="action-btn" onClick={() => history.goBack()} style={{ padding: '8px' }}>
                             <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 2L2 10L10 18" stroke="#A85236" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
                     </IonButtons>
@@ -55,7 +55,7 @@ const VideoContentPage: React.FC = () => {
                             <IonImg src="https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Video Thumbnail" className="video-thumbnail" />
                             <div className="play-button">
                                 <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="#A85236" />
+                                    <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="var(--ion-color-primary)" />
                                 </svg>
                             </div>
                         </div>
@@ -73,7 +73,7 @@ const VideoContentPage: React.FC = () => {
                                         />
                                         <div className="rv-play-btn">
                                             <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M8 4L0.5 8.33013L0.5 -0.330127L8 4Z" fill="#A85236" />
+                                                <path d="M8 4L0.5 8.33013L0.5 -0.330127L8 4Z" fill="var(--ion-color-primary)" />
                                             </svg>
                                         </div>
                                     </div>
@@ -94,7 +94,7 @@ const VideoContentPage: React.FC = () => {
                         <div className="section-header-link">
                             <h2>Related Content</h2>
                             <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M11.2687 3L6.31135 0.449666V5.55033L11.2687 3ZM0.90625 3.5H6.80709V2.5H0.90625V3.5Z" fill="#A85236" />
+                                <path d="M11.2687 3L6.31135 0.449666V5.55033L11.2687 3ZM0.90625 3.5H6.80709V2.5H0.90625V3.5Z" fill="var(--ion-color-primary)" />
                             </svg>
                         </div>
                         <div className="horizontal-scroll-container">

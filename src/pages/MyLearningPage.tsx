@@ -11,20 +11,20 @@ import { courses as allCourses, getInProgressCourses } from '../data/mockData';
 import { LanguageSelector } from '../components/common/LanguageSelector';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
-const BRICK = 'rgb(168, 82, 54)';
-const ORANGE = 'rgb(204, 133, 69)';
+const BRICK = 'var(--ion-color-primary)';
+const ORANGE = 'var(--ion-color-primary-tint)';
 const FONT = "'Rubik', sans-serif";
 
 // ── SVG icons ──────────────────────────────────────────────────────────────
 const BellIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="#a85236" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
+  <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
     <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
   </svg>
 );
 
 const ChevronDownIcon = () => (
   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 1L6 6L11 1" stroke="rgb(34,34,34)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M1 1L6 6L11 1" stroke="var(--ion-color-dark, var(--color-222222, #222222))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
@@ -76,7 +76,7 @@ const DonutChart: React.FC = () => {
         transform={`rotate(-90 ${cx} ${cy})`}
       />
       {/* Center text */}
-      <text x={cx} y={cy - 4} textAnchor="middle" fill="rgb(34,34,34)" fontFamily={FONT} fontSize="20" fontWeight="700">
+      <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--ion-color-dark, var(--color-222222, #222222))" fontFamily={FONT} fontSize="20" fontWeight="700">
         130
       </text>
       <text x={cx} y={cy + 14} textAnchor="middle" fill="rgb(100,100,100)" fontFamily={FONT} fontSize="10" fontWeight="400">
@@ -98,7 +98,7 @@ interface CourseCardProps {
 
 const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, badgeLabel, badgeBg, badgeBorder }) => (
   <div style={{
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--ion-color-light)',
     borderRadius: '20px',
     boxShadow: '2px 2px 20px rgba(0,0,0,0.09)',
     padding: '14px',
@@ -120,7 +120,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
           fontFamily: FONT,
           fontSize: '12px',
           fontWeight: 400,
-          color: 'rgb(0,0,0)',
+          color: 'var(--ion-color-dark, var(--color-000000, #000000))',
           whiteSpace: 'nowrap',
         }}>
           {badgeLabel}
@@ -129,7 +129,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
           fontFamily: FONT,
           fontSize: '14px',
           fontWeight: 500,
-          color: 'rgb(34,34,34)',
+          color: 'var(--ion-color-dark, var(--color-222222, #222222))',
           margin: 0,
           lineHeight: 1.3,
           display: '-webkit-box',
@@ -144,7 +144,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
         <div style={{ flex: 1 }}>
           <ProgressBar progress={progress} />
         </div>
-        <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 400, color: 'rgb(34,34,34)', flexShrink: 0 }}>
+        <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>
           {progress}%
         </span>
       </div>
@@ -195,9 +195,9 @@ const MyLearningPage: React.FC = () => {
     <IonPage>
       {/* ── Header ── */}
       <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': '#ffffff', '--border-width': '0', '--padding-start': '0', '--padding-end': '0' } as React.CSSProperties}>
+        <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--border-width': '0', '--padding-start': '0', '--padding-end': '0' } as React.CSSProperties}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
-            <h1 style={{ fontFamily: FONT, fontSize: '20px', fontWeight: 600, color: 'rgb(34,34,34)', margin: 0 }}>
+            <h1 style={{ fontFamily: FONT, fontSize: '20px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
               My Learning
             </h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -225,7 +225,7 @@ const MyLearningPage: React.FC = () => {
         {/* ── Courses heading ── */}
         <div style={{ padding: '8px 16px' }}>
           <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 600, color: 'rgb(34,34,34)' }}>
+            <span style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))' }}>
               Courses
             </span>
             <ChevronDownIcon />
@@ -269,7 +269,7 @@ const MyLearningPage: React.FC = () => {
           <>
             {/* Upcoming Classes */}
             <div style={{ padding: '0 16px 12px' }}>
-              <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 500, color: 'rgb(34,34,34)', margin: '0 0 12px 0' }}>
+              <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 12px 0' }}>
                 Upcoming Classes
               </h3>
               <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px' }}>
@@ -287,12 +287,12 @@ const MyLearningPage: React.FC = () => {
                       alignItems: 'flex-start',
                     }}
                   >
-                    <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 600, color: 'rgb(34,34,34)', flexShrink: 0, paddingTop: '1px' }}>
+                    <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0, paddingTop: '1px' }}>
                       {cls.time}
                     </span>
                     <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.15)', flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 500, color: 'rgb(34,34,34)', margin: '0 0 4px 0', lineHeight: 1.3 }}>
+                      <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 4px 0', lineHeight: 1.3 }}>
                         {cls.title}
                       </p>
                       <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 400, color: 'rgb(100,100,100)', margin: 0, lineHeight: 1.3 }}>
@@ -372,7 +372,7 @@ const MyLearningPage: React.FC = () => {
         {/* ── Total Hrs Spent ── */}
         <div style={{ padding: '16px' }}>
           <div style={{ backgroundColor: 'rgb(255, 241, 199)', borderRadius: '20px', padding: '16px' }}>
-            <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 600, color: 'rgb(34,34,34)', margin: '0 0 16px 0' }}>
+            <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 16px 0' }}>
               Total Hrs Spent
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -385,8 +385,8 @@ const MyLearningPage: React.FC = () => {
                 ].map(stat => (
                   <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '32px', height: '8px', borderRadius: '4px', backgroundColor: stat.color, flexShrink: 0 }} />
-                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 400, color: 'rgb(34,34,34)', flex: 1 }}>{stat.label}</span>
-                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: 'rgb(34,34,34)', flexShrink: 0 }}>{stat.value}</span>
+                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flex: 1 }}>{stat.label}</span>
+                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>{stat.value}</span>
                   </div>
                 ))}
               </div>

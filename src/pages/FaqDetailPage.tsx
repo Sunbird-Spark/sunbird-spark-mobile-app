@@ -12,7 +12,7 @@ import './FaqDetailPage.css';
 /* ── Chevron icon ── */
 const ChevronDownIcon: React.FC = () => (
     <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M1 1L5 5L9 1" stroke="#A85236" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M1 1L5 5L9 1" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );
 
@@ -143,7 +143,7 @@ const FaqDetailPage: React.FC = () => {
                     <IonButtons slot="start">
                         <button className="fd-back-btn" onClick={() => history.push('/support')}>
                             <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 1L1 9L9 17" stroke="#A85236" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M9 1L1 9L9 17" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         </button>
                     </IonButtons>

@@ -10,13 +10,13 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({ label }) => (
     display: 'inline-block',
     alignSelf: 'flex-start',
     backgroundColor: 'rgb(255, 241, 199)',
-    border: '1px solid rgb(204, 133, 69)',
+    border: '1px solid var(--ion-color-primary-tint)',
     borderRadius: '36px',
     padding: '4px 10px',
     fontFamily: "'Rubik', sans-serif",
     fontSize: '14px',
     fontWeight: 400,
-    color: 'rgb(0, 0, 0)',
+    color: 'var(--ion-color-dark, var(--color-000000, #000000))',
     whiteSpace: 'nowrap',
   }}>
     {label}
@@ -42,7 +42,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
       <div style={{
         width: `${progress}%`,
         height: '100%',
-        backgroundColor: 'rgb(168, 82, 54)',
+        backgroundColor: 'var(--ion-color-primary)',
         borderRadius: '10px',
       }} />
     </div>
@@ -61,7 +61,7 @@ export const InProgressContents: React.FC = () => {
         fontFamily: "'Rubik', sans-serif",
         fontSize: '18px',
         fontWeight: 500,
-        color: 'rgb(34, 34, 34)',
+        color: 'var(--ion-color-dark, var(--color-222222, #222222))',
         margin: '0 0 12px 0',
       }}>
         In Progress Contents
@@ -76,7 +76,7 @@ export const InProgressContents: React.FC = () => {
             <div
               key={`${course.id}-${idx}`}
               style={{
-                backgroundColor: 'rgb(255, 255, 255)',
+                backgroundColor: 'var(--ion-color-light)',
                 borderRadius: '16px',
                 boxShadow: '2px 2px 20px rgba(0, 0, 0, 0.09)',
                 padding: '14px',
@@ -94,7 +94,7 @@ export const InProgressContents: React.FC = () => {
                   fontFamily: "'Rubik', sans-serif",
                   fontSize: '16px',
                   fontWeight: 500,
-                  color: 'rgb(34, 34, 34)',
+                  color: 'var(--ion-color-dark, var(--color-222222, #222222))',
                   margin: 0,
                   lineHeight: 1.3,
                 }}>
@@ -112,7 +112,7 @@ export const InProgressContents: React.FC = () => {
                     fontFamily: "'Rubik', sans-serif",
                     fontSize: '14px',
                     fontWeight: 400,
-                    color: 'rgb(34, 34, 34)',
+                    color: 'var(--ion-color-dark, var(--color-222222, #222222))',
                     flexShrink: 0,
                   }}>
                     {course.progress}%

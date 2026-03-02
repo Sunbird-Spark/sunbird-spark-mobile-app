@@ -37,8 +37,8 @@ export const BottomNavigation: React.FC = () => {
         left: 0,
         right: 0,
         zIndex: 1000,
-        backgroundColor: '#ffffff',
-        borderTop: '1px solid #e0e0e0',
+        backgroundColor: 'var(--ion-color-light)',
+        borderTop: '1px solid var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0))',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
@@ -67,7 +67,7 @@ export const BottomNavigation: React.FC = () => {
               cursor: 'pointer',
               padding: '4px 8px',
               minWidth: '60px',
-              color: isActive ? '#a85236' : '#757575',
+              color: isActive ? 'var(--ion-color-primary)' : 'var(--ion-color-medium, var(--color-757575, #757575))',
               transition: 'color 0.2s ease',
             }}
           >

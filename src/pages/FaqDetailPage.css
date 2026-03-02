@@ -3,18 +3,18 @@
    ============================================= */
 
 .faq-detail-page {
-    --background: #f4f4f4;
+    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 /* ── Header ── */
 .faq-detail-page .fd-header {
     box-shadow: none;
-    background: #ffffff;
+    background: var(--ion-color-light);
 }
 
 .faq-detail-page .fd-toolbar {
-    --background: #ffffff !important;
-    --color: #222222 !important;
+    --background: var(--ion-color-light) !important;
+    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
 
@@ -30,7 +30,7 @@
 
 /* ── Content ── */
 .fd-content {
-    --background: #f4f4f4;
+    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 .fd-container {
@@ -45,7 +45,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     margin: 0;
     line-height: 1.4;
 }
@@ -58,8 +58,8 @@
 }
 
 .fd-faq-item {
-    background: #ffffff;
-    border: 1px solid #d4d4d4;
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.75rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
@@ -86,7 +86,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     flex: 1;
     margin: 0;
     line-height: 1.45;
@@ -115,7 +115,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     margin: 0 0 1rem;
     line-height: 1.6;
 }
@@ -126,14 +126,14 @@
     align-items: center;
     gap: 0.75rem;
     padding-top: 0.75rem;
-    border-top: 1px solid #eeeeee;
+    border-top: 1px solid var(--color-eeeeee, #eeeeee);
 }
 
 .fd-feedback-label {
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
 }
 
 .fd-feedback-btn {
@@ -153,7 +153,7 @@
 }
 
 .fd-feedback-no {
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .fd-feedback-yes {

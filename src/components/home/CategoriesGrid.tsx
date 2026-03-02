@@ -10,19 +10,19 @@ interface Category {
 const categories: Category[] = [
     {
         name: 'UI/UX Design',
-        gradient: 'linear-gradient(135deg, #a85236 0%, #cc8545 100%)',
+        gradient: 'linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-tint) 100%)',
     },
     {
         name: 'IT Development',
-        gradient: 'linear-gradient(135deg, #4A90E2 0%, #50E3C2 100%)',
+        gradient: 'linear-gradient(135deg, var(--color-4a90e2, #4A90E2) 0%, var(--color-50e3c2, #50E3C2) 100%)',
     },
     {
         name: 'Digital Marketing',
-        gradient: 'linear-gradient(135deg, #F5A623 0%, #F8E71C 100%)',
+        gradient: 'linear-gradient(135deg, var(--color-f5a623, #F5A623) 0%, var(--color-f8e71c, #F8E71C) 100%)',
     },
     {
         name: 'Entrepreneurship',
-        gradient: 'linear-gradient(135deg, #BD10E0 0%, #9013FE 100%)',
+        gradient: 'linear-gradient(135deg, var(--color-bd10e0, #BD10E0) 0%, var(--color-9013fe, #9013FE) 100%)',
     },
 ];
 
@@ -38,7 +38,7 @@ export const CategoriesGrid: React.FC = () => {
                     onClick={() => history.push('/courses')}
                     aria-label="Browse all categories"
                 >
-                    <svg width="13" height="9" viewBox="0 0 13 9" fill="#a85236" xmlns="http://www.w3.org/2000/svg">
+                    <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8.5 0L7.09 1.41L9.67 4H0V6H9.67L7.09 8.59L8.5 10L13 5L8.5 0Z" transform="translate(0, -0.5)" />
                     </svg>
                 </button>

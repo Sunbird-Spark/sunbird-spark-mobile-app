@@ -3,18 +3,18 @@
    ============================================= */
 
 .help-support-page {
-    --background: #f4f4f4;
+    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 /* ── Header ── */
 .help-support-page .hs-header {
     box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
-    background: #ffffff;
+    background: var(--ion-color-light);
 }
 
 .help-support-page .hs-toolbar {
-    --background: #ffffff !important;
-    --color: #222222 !important;
+    --background: var(--ion-color-light) !important;
+    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
 
@@ -22,7 +22,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: left;
     padding-inline-start: 1rem;
 }
@@ -38,7 +38,7 @@
 
 /* ── Content ── */
 .hs-content {
-    --background: #f4f4f4;
+    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
 .hs-container {
@@ -53,7 +53,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.5rem;
     font-weight: 500;
-    color: #222222;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
     margin: 0;
     line-height: 1.35;
 }
@@ -66,8 +66,8 @@
 }
 
 .hs-category-card {
-    background: #ffffff;
-    border: 1px solid #d4d4d4;
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.75rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.09);
     padding: 0 1.25rem 1.25rem;
@@ -89,7 +89,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     margin: 0;
 }
 
@@ -97,7 +97,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 400;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     margin: 0;
     line-height: 1.5;
 }
@@ -113,7 +113,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
 }
 
 .hs-arrow-icon {
@@ -138,13 +138,13 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     margin: 0 0 0.25rem;
 }
 
 .hs-faq-item {
-    background: #ffffff;
-    border: 1px solid #d4d4d4;
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.75rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
@@ -171,7 +171,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     flex: 1;
     margin: 0;
     line-height: 1.45;
@@ -199,7 +199,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     margin: 0;
     line-height: 1.6;
 }
@@ -224,7 +224,7 @@
 }
 
 .hs-modal-toolbar {
-    --background: #ffffff;
+    --background: var(--ion-color-light);
     --border-width: 0;
     --padding-start: 1rem;
     --padding-end: 1rem;
@@ -236,7 +236,7 @@
     font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     margin: 0;
 }
 
@@ -266,13 +266,13 @@
     appearance: none;
     -webkit-appearance: none;
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #d4d4d4;
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.5rem;
     padding: 0.875rem 1rem;
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
     outline: none;
 }
 
@@ -281,7 +281,7 @@
 }
 
 .hs-modal-select:not(:invalid) {
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
 }
 
 .hs-select-chevron {
@@ -294,19 +294,19 @@
 
 .hs-modal-textarea {
     width: 100%;
-    background: #ffffff;
-    border: 1px solid #d4d4d4;
+    background: var(--ion-color-light);
+    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.5rem;
     padding: 0.875rem 1rem;
     font-family: 'Rubik', sans-serif;
     font-size: 1rem;
-    color: #000000;
+    color: var(--ion-color-dark, var(--color-000000, #000000));
     outline: none;
     resize: none;
 }
 
 .hs-modal-textarea::placeholder {
-    color: #757575;
+    color: var(--ion-color-medium, var(--color-757575, #757575));
 }
 
 .hs-modal-textarea:focus {
@@ -316,7 +316,7 @@
 .hs-modal-submit {
     width: 100%;
     background: var(--ion-color-primary);
-    color: #ffffff;
+    color: var(--ion-color-light);
     border: none;
     border-radius: 0;
     padding: 1.125rem;
