@@ -32,7 +32,7 @@ describe('CapacitorAdapter', () => {
       data: { result: 'test-data' },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     const res = await adapter.get('/test');
 
@@ -55,7 +55,7 @@ describe('CapacitorAdapter', () => {
       data: { result: 'test-data' },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     await adapter.get('http://other.com/test');
 
@@ -76,7 +76,7 @@ describe('CapacitorAdapter', () => {
       data: { foo: 'bar' }, // no result property
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     const res = await adapter.get('/test');
 
@@ -90,7 +90,7 @@ describe('CapacitorAdapter', () => {
       data: { result: 'created' },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     const dataPayload = { name: 'test' };
     const res = await adapter.post('/test', dataPayload);
@@ -113,7 +113,7 @@ describe('CapacitorAdapter', () => {
       data: { result: 'updated' },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     const dataPayload = { name: 'updated' };
     const res = await adapter.put('/test', dataPayload);
@@ -136,7 +136,7 @@ describe('CapacitorAdapter', () => {
       data: { result: 'patched' },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     const dataPayload = { name: 'patched' };
     const res = await adapter.patch('/test', dataPayload);
@@ -159,7 +159,7 @@ describe('CapacitorAdapter', () => {
       data: { result: 'deleted' },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     const res = await adapter.delete('/test');
 
@@ -182,7 +182,7 @@ describe('CapacitorAdapter', () => {
 
     adapter.updateHeaders(operations);
 
-    (CapacitorHttp.request as any).mockResolvedValue({ status: 200, data: {} });
+    (CapacitorHttp.request as unknown).mockResolvedValue({ status: 200, data: {} });
 
     await adapter.get('/test');
 
@@ -206,7 +206,7 @@ describe('CapacitorAdapter', () => {
       },
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     await expect(adapter.get('/test')).rejects.toThrow('Bad Request Message');
   });
@@ -218,7 +218,7 @@ describe('CapacitorAdapter', () => {
       data: {},
     };
 
-    (CapacitorHttp.request as any).mockResolvedValue(mockResponse);
+    (CapacitorHttp.request as unknown).mockResolvedValue(mockResponse);
 
     await expect(adapter.get('/test')).rejects.toThrow('Request failed (500)');
   });

@@ -7,8 +7,8 @@ const mockSubscribe = vi.fn();
 
 vi.mock('../services/network/networkService', () => ({
   networkService: {
-    init: (...args: any[]) => mockInit(...args),
-    subscribe: (listener: any) => mockSubscribe(listener),
+    init: (...args: unknown[]) => mockInit(...args),
+    subscribe: (listener: unknown) => mockSubscribe(listener),
   },
 }));
 

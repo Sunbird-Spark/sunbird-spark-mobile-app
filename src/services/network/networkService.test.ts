@@ -8,8 +8,8 @@ const mockRemove = vi.fn();
 
 vi.mock('@capacitor/network', () => ({
   Network: {
-    getStatus: (...args: any[]) => mockGetStatus(...args),
-    addListener: (...args: any[]) => mockAddListener(...args),
+    getStatus: (...args: unknown[]) => mockGetStatus(...args),
+    addListener: (...args: unknown[]) => mockAddListener(...args),
   },
 }));
 
@@ -25,10 +25,10 @@ describe('NetworkService', () => {
     mockHandle = { remove: mockRemove };
 
     // Reset the service state
-    (networkService as any).initialized = false;
-    (networkService as any).handle = null;
-    (networkService as any).listeners.clear();
-    (networkService as any).state = {
+    (networkService as unknown).initialized = false;
+    (networkService as unknown).handle = null;
+    (networkService as unknown).listeners.clear();
+    (networkService as unknown).state = {
       connected: true,
       connectionType: 'unknown',
     };
@@ -215,7 +215,7 @@ describe('NetworkService', () => {
       await networkService.stop();
 
       expect(mockRemove).toHaveBeenCalledTimes(1);
-      expect((networkService as any).initialized).toBe(false);
+      expect((networkService as unknown).initialized).toBe(false);
     });
 
     it('should allow restart after stop', async () => {

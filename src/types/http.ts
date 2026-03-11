@@ -11,7 +11,7 @@ export interface HttpRequest {
   url: string;
   method: HttpMethod;
   headers?: Record<string, string>;
-  body?: any;
+  body?: unknown;
 }
 
 export interface HttpResponse<T = any> {
@@ -39,7 +39,7 @@ export class HttpRequestBuilder {
     return this;
   }
 
-  withBody(body: any): HttpRequestBuilder {
+  withBody(body: unknown): HttpRequestBuilder {
     this.request.body = body;
     return this;
   }

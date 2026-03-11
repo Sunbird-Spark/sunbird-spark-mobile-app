@@ -33,7 +33,7 @@ export class CapacitorAdapter extends BaseClient {
   private async request<T>(
     method: string,
     url: string,
-    data?: any,
+    data?: unknown,
     headers?: Record<string, string>
   ): Promise<ApiResponse<T>> {
     const fullUrl = url.startsWith('http://') || url.startsWith('https://')
@@ -45,42 +45,38 @@ export class CapacitorAdapter extends BaseClient {
       ...headers,
     };
 
-    try {
-      const response = await CapacitorHttp.request({
-        method,
-        url: fullUrl,
-        headers: mergedHeaders,
-        data: data,
-      });
+    const response = await CapacitorHttp.request({
+      method,
+      url: fullUrl,
+      headers: mergedHeaders,
+      data: data,
+    });
 
-      if (response.status >= 400) {
-        const body = response.data;
-        const params = body?.params;
-        const errmsg = typeof params?.errmsg === 'string'
-          ? params.errmsg
-          : `Request failed (${response.status})`;
-        throw new Error(errmsg);
-      }
-
-      return this.mapResponse<T>(response);
-    } catch (error) {
-      throw error;
+    if (response.status >= 400) {
+      const body = response.data;
+      const params = body?.params;
+      const errmsg = typeof params?.errmsg === 'string'
+        ? params.errmsg
+        : `Request failed (${response.status})`;
+      throw new Error(errmsg);
     }
+
+    return this.mapResponse<T>(response);
   }
 
   protected async _get<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     return this.request('GET', url, undefined, headers);
   }
 
-  protected async _post<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+  protected async _post<T>(url: string, data: unknown, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     return this.request('POST', url, data, headers);
   }
 
-  protected async _put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+  protected async _put<T>(url: string, data: unknown, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     return this.request('PUT', url, data, headers);
   }
 
-  protected async _patch<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+  protected async _patch<T>(url: string, data: unknown, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     return this.request('PATCH', url, data, headers);
   }
 

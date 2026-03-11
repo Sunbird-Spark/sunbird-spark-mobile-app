@@ -146,7 +146,7 @@ const ExplorePage: React.FC = () => {
     const leftCol = mockExploreItems.filter((_, i) => i % 2 === 0);
     const rightCol = mockExploreItems.filter((_, i) => i % 2 !== 0);
 
-    const renderCard = (item: any) => {
+    const renderCard = (item: unknown) => {
         if (item.layout === 'overlay') {
             return (
                 <div

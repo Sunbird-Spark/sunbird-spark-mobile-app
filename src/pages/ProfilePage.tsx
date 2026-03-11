@@ -18,7 +18,7 @@ import {
   ribbonOutline,
   chevronForwardOutline,
 } from 'ionicons/icons';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import Avatar from 'react-avatar';
 

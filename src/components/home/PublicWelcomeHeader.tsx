@@ -1,7 +1,7 @@
 import React from 'react';
 import { IonToolbar } from '@ionic/react';
 import sunbirdLogo from '../../assets/sunbird-logo-new.png';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 import { LanguageSelector } from '../common/LanguageSelector';
 import { useHistory } from 'react-router-dom';
 

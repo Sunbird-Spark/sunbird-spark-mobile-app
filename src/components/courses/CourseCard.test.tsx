@@ -5,7 +5,31 @@ import { Course } from '../../data/mockData';
 
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
-  IonCard: ({ children, button, onClick, className, style }: any) => (
+  IonApp: ({ children }: any) => <div>{children}</div>,
+  IonRouterOutlet: ({ children }: any) => <div>{children}</div>,
+  IonPage: ({ children }: any) => <div>{children}</div>,
+  IonHeader: ({ children }: any) => <header>{children}</header>,
+  IonToolbar: ({ children }: any) => <div>{children}</div>,
+  IonTitle: ({ children }: any) => <div>{children}</div>,
+  IonContent: ({ children }: any) => <div>{children}</div>,
+  IonButton: ({ children }: any) => <button>{children}</button>,
+  IonIcon: () => <span />,
+  IonSpinner: () => <span />,
+  IonCard: ({ children }: any) => <div>{children}</div>,
+  IonCardHeader: ({ children }: any) => <div>{children}</div>,
+  IonCardTitle: ({ children }: any) => <div>{children}</div>,
+  IonCardContent: ({ children }: any) => <div>{children}</div>,
+  IonText: ({ children }: any) => <span>{children}</span>,
+  IonGrid: ({ children }: any) => <div>{children}</div>,
+  IonRow: ({ children }: any) => <div>{children}</div>,
+  IonCol: ({ children }: any) => <div>{children}</div>,
+  IonBadge: ({ children }: any) => <span>{children}</span>,
+  IonPopover: ({ children, isOpen }: any) => (isOpen ? <div>{children}</div> : null),
+  IonImg: ({ src, alt }: any) => <img src={src} alt={alt} />,
+  IonProgressBar: () => <span />,
+  IonPopover: ({ children }: any) => <div>{children}</div>,
+  IonImg: ({ src, alt }: any) => <img src={src} alt={alt} />,
+  useIonRouter: () => ({ push: vi.fn() }),
     <div 
       data-testid="ion-card" 
       onClick={onClick}
@@ -16,30 +40,30 @@ vi.mock('@ionic/react', () => ({
       {children}
     </div>
   ),
-  IonCardHeader: ({ children, className }: any) => (
+  IonCardHeader: ({ children, className }: unknown) => (
     <div data-testid="ion-card-header" className={className}>
       {children}
     </div>
   ),
-  IonCardTitle: ({ children, className }: any) => (
+  IonCardTitle: ({ children, className }: unknown) => (
     <h3 data-testid="ion-card-title" className={className}>
       {children}
     </h3>
   ),
-  IonCardSubtitle: ({ children, className }: any) => (
+  IonCardSubtitle: ({ children, className }: unknown) => (
     <p data-testid="ion-card-subtitle" className={className}>
       {children}
     </p>
   ),
-  IonCardContent: ({ children, className }: any) => (
+  IonCardContent: ({ children, className }: unknown) => (
     <div data-testid="ion-card-content" className={className}>
       {children}
     </div>
   ),
-  IonProgressBar: ({ value, className }: any) => (
+  IonProgressBar: ({ value, className }: unknown) => (
     <div data-testid="ion-progress-bar" data-value={value} className={className} />
   ),
-  IonBadge: ({ children, color, className }: any) => (
+  IonBadge: ({ children, color, className }: unknown) => (
     <span data-testid="ion-badge" data-color={color} className={className}>
       {children}
     </span>

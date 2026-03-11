@@ -33,9 +33,9 @@ describe('DeviceService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset service state properly
-    (deviceService as any).initialized = false;
-    (deviceService as any).listeners.clear();
-    (deviceService as any).state = {
+    (deviceService as unknown).initialized = false;
+    (deviceService as unknown).listeners.clear();
+    (deviceService as unknown).state = {
       deviceId: '',
       platform: 'unknown',
       model: 'unknown',
@@ -218,7 +218,7 @@ describe('DeviceService', () => {
       unsubscribe();
 
       // Verify listener was removed (internal state check)
-      expect((deviceService as any).listeners.has(listener)).toBe(false);
+      expect((deviceService as unknown).listeners.has(listener)).toBe(false);
     });
   });
 

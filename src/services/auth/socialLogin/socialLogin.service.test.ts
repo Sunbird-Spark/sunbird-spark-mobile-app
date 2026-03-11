@@ -7,9 +7,9 @@ const mockLogout = vi.fn();
 
 vi.mock('@capgo/capacitor-social-login', () => ({
   SocialLogin: {
-    initialize: (...args: any[]) => mockInitialize(...args),
-    login: (...args: any[]) => mockLogin(...args),
-    logout: (...args: any[]) => mockLogout(...args),
+    initialize: (...args: unknown[]) => mockInitialize(...args),
+    login: (...args: unknown[]) => mockLogin(...args),
+    logout: (...args: unknown[]) => mockLogout(...args),
   },
 }));
 
@@ -20,8 +20,8 @@ describe('SocialLoginService', () => {
     // Reset all mocks before each test
     vi.clearAllMocks();
     // Reset the initialized state by creating a new instance
-    (socialLoginService as any).initialized = false;
-    (socialLoginService as any).initializationPromise = null;
+    (socialLoginService as unknown).initialized = false;
+    (socialLoginService as unknown).initializationPromise = null;
   });
 
   describe('initGoogle', () => {

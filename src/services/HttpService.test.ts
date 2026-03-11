@@ -3,7 +3,7 @@ import { HttpService, HttpMethod } from './HttpService';
 
 // Mock fetch globally
 const mockFetch = vi.fn();
-(globalThis as any).fetch = mockFetch;
+(globalThis as unknown).fetch = mockFetch;
 
 describe('HttpService', () => {
   let httpService: HttpService;
@@ -65,7 +65,7 @@ describe('HttpService', () => {
       try {
         await httpService.execute(request);
         expect.fail('Expected error to be thrown');
-      } catch (error: any) {
+      } catch (error: unknown) {
         expect(error.originalError).toBeDefined();
         expect(error.originalError.message).toBe('Unexpected token in JSON');
       }

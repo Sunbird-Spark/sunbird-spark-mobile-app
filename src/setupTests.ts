@@ -24,6 +24,18 @@ vi.mock('@ionic/react/css/display.css', () => ({}));
 vi.mock('./theme/variables.css', () => ({}));
 vi.mock('./pages/Home.css', () => ({}));
 
+import React from 'react';
+
+// Mock Ionic React components
+// (Removed global IonPopover / IonImg mocks here because individual tests redefine vi.mock('@ionic/react'), overriding this, which breaks exports)
+
+// Mock Ionicons
+vi.mock('ionicons/icons', async () => {
+  return {
+    searchOutline: 'search-outline-mock',
+  };
+});
+
 // Global test setup
 Object.defineProperty(window, 'matchMedia', {
   writable: true,

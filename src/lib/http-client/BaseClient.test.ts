@@ -13,13 +13,13 @@ class TestClient extends BaseClient {
     protected async _get<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
         return this.mockGet(url, headers);
     }
-    protected async _post<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    protected async _post<T>(url: string, data: unknown, headers?: Record<string, string>): Promise<ApiResponse<T>> {
         return this.mockPost(url, data, headers);
     }
-    protected async _put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    protected async _put<T>(url: string, data: unknown, headers?: Record<string, string>): Promise<ApiResponse<T>> {
         return this.mockPut(url, data, headers);
     }
-    protected async _patch<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    protected async _patch<T>(url: string, data: unknown, headers?: Record<string, string>): Promise<ApiResponse<T>> {
         return this.mockPatch(url, data, headers);
     }
     protected async _delete<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
@@ -39,7 +39,7 @@ describe('BaseClient', () => {
             }
         });
 
-        const mockResponse: ApiResponse<any> = {
+        const mockResponse: ApiResponse<unknown> = {
             data: null,
             status: 401,
             headers: {}

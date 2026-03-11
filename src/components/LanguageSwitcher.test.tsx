@@ -5,14 +5,38 @@ import LanguageSwitcher from './LanguageSwitcher';
 
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
-  IonSelect: ({
+  IonApp: ({ children }: any) => <div>{children}</div>,
+  IonRouterOutlet: ({ children }: any) => <div>{children}</div>,
+  IonPage: ({ children }: any) => <div>{children}</div>,
+  IonHeader: ({ children }: any) => <header>{children}</header>,
+  IonToolbar: ({ children }: any) => <div>{children}</div>,
+  IonTitle: ({ children }: any) => <div>{children}</div>,
+  IonContent: ({ children }: any) => <div>{children}</div>,
+  IonButton: ({ children }: any) => <button>{children}</button>,
+  IonIcon: () => <span />,
+  IonSpinner: () => <span />,
+  IonCard: ({ children }: any) => <div>{children}</div>,
+  IonCardHeader: ({ children }: any) => <div>{children}</div>,
+  IonCardTitle: ({ children }: any) => <div>{children}</div>,
+  IonCardContent: ({ children }: any) => <div>{children}</div>,
+  IonText: ({ children }: any) => <span>{children}</span>,
+  IonGrid: ({ children }: any) => <div>{children}</div>,
+  IonRow: ({ children }: any) => <div>{children}</div>,
+  IonCol: ({ children }: any) => <div>{children}</div>,
+  IonBadge: ({ children }: any) => <span>{children}</span>,
+  IonPopover: ({ children, isOpen }: any) => (isOpen ? <div>{children}</div> : null),
+  IonImg: ({ src, alt }: any) => <img src={src} alt={alt} />,
+  IonProgressBar: () => <span />,
+  IonPopover: ({ children }: any) => <div>{children}</div>,
+  IonImg: ({ src, alt }: any) => <img src={src} alt={alt} />,
+  useIonRouter: () => ({ push: vi.fn() }),
     children,
     onIonChange,
     value,
     interface: interfaceType,
     placeholder,
     color,
-  }: any) => (
+  }: unknown) => (
     <select
       data-testid="language-select"
       onChange={(e) => onIonChange({ detail: { value: e.target.value } })}
@@ -24,7 +48,7 @@ vi.mock('@ionic/react', () => ({
       {children}
     </select>
   ),
-  IonSelectOption: ({ children, value }: any) => <option value={value}>{children}</option>,
+  IonSelectOption: ({ children, value }: unknown) => <option value={value}>{children}</option>,
 }));
 
 // Mock react-i18next
@@ -40,7 +64,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('renders with English as current language', () => {
-    (useTranslation as any).mockReturnValue({
+    (useTranslation as unknown).mockReturnValue({
       i18n: {
         language: 'en',
         changeLanguage: mockChangeLanguage,
@@ -56,7 +80,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('renders with Hindi as current language', () => {
-    (useTranslation as any).mockReturnValue({
+    (useTranslation as unknown).mockReturnValue({
       i18n: {
         language: 'hi',
         changeLanguage: mockChangeLanguage,
@@ -71,7 +95,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('displays all available languages', () => {
-    (useTranslation as any).mockReturnValue({
+    (useTranslation as unknown).mockReturnValue({
       i18n: {
         language: 'en',
         changeLanguage: mockChangeLanguage,
@@ -85,7 +109,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('changes language when option is selected', () => {
-    (useTranslation as any).mockReturnValue({
+    (useTranslation as unknown).mockReturnValue({
       i18n: {
         language: 'en',
         changeLanguage: mockChangeLanguage,
@@ -101,7 +125,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('applies custom color prop', () => {
-    (useTranslation as any).mockReturnValue({
+    (useTranslation as unknown).mockReturnValue({
       i18n: {
         language: 'en',
         changeLanguage: mockChangeLanguage,
@@ -116,7 +140,7 @@ describe('LanguageSwitcher', () => {
   });
 
   it('applies custom interface prop', () => {
-    (useTranslation as any).mockReturnValue({
+    (useTranslation as unknown).mockReturnValue({
       i18n: {
         language: 'en',
         changeLanguage: mockChangeLanguage,

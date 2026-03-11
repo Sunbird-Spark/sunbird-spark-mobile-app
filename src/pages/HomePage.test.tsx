@@ -4,7 +4,31 @@ import HomePage from './HomePage';
 
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
-  IonButton: ({ children, onClick, fill, size, className }: any) => (
+  IonApp: ({ children }: any) => <div>{children}</div>,
+  IonRouterOutlet: ({ children }: any) => <div>{children}</div>,
+  IonPage: ({ children }: any) => <div>{children}</div>,
+  IonHeader: ({ children }: any) => <header>{children}</header>,
+  IonToolbar: ({ children }: any) => <div>{children}</div>,
+  IonTitle: ({ children }: any) => <div>{children}</div>,
+  IonContent: ({ children }: any) => <div>{children}</div>,
+  IonButton: ({ children }: any) => <button>{children}</button>,
+  IonIcon: () => <span />,
+  IonSpinner: () => <span />,
+  IonCard: ({ children }: any) => <div>{children}</div>,
+  IonCardHeader: ({ children }: any) => <div>{children}</div>,
+  IonCardTitle: ({ children }: any) => <div>{children}</div>,
+  IonCardContent: ({ children }: any) => <div>{children}</div>,
+  IonText: ({ children }: any) => <span>{children}</span>,
+  IonGrid: ({ children }: any) => <div>{children}</div>,
+  IonRow: ({ children }: any) => <div>{children}</div>,
+  IonCol: ({ children }: any) => <div>{children}</div>,
+  IonBadge: ({ children }: any) => <span>{children}</span>,
+  IonPopover: ({ children, isOpen }: any) => (isOpen ? <div>{children}</div> : null),
+  IonImg: ({ src, alt }: any) => <img src={src} alt={alt} />,
+  IonProgressBar: () => <span />,
+  IonPopover: ({ children }: any) => <div>{children}</div>,
+  IonImg: ({ src, alt }: any) => <img src={src} alt={alt} />,
+  useIonRouter: () => ({ push: vi.fn() }),
     <button
       data-testid="ion-button"
       onClick={onClick}
@@ -15,29 +39,29 @@ vi.mock('@ionic/react', () => ({
       {children}
     </button>
   ),
-  IonContent: ({ children, fullscreen }: any) => (
+  IonContent: ({ children, fullscreen }: unknown) => (
     <div data-testid="ion-content" data-fullscreen={fullscreen}>
       {children}
     </div>
   ),
-  IonHeader: ({ children, collapse }: any) => (
+  IonHeader: ({ children, collapse }: unknown) => (
     <div data-testid="ion-header" data-collapse={collapse}>
       {children}
     </div>
   ),
-  IonIcon: ({ icon, slot }: any) => (
+  IonIcon: ({ icon, slot }: unknown) => (
     <span data-testid="ion-icon" data-icon={icon} data-slot={slot} />
   ),
-  IonPage: ({ children }: any) => <div data-testid="ion-page">{children}</div>,
-  IonTitle: ({ children, size }: any) => (
+  IonPage: ({ children }: unknown) => <div data-testid="ion-page">{children}</div>,
+  IonTitle: ({ children, size }: unknown) => (
     <h1 data-testid="ion-title" data-size={size}>{children}</h1>
   ),
-  IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
-  IonButtons: ({ children }: any) => <div data-testid="ion-buttons">{children}</div>,
-  IonAvatar: ({ children }: any) => <div data-testid="ion-avatar">{children}</div>,
-  IonGrid: ({ children }: any) => <div data-testid="ion-grid">{children}</div>,
-  IonRow: ({ children }: any) => <div data-testid="ion-row">{children}</div>,
-  IonCol: ({ children }: any) => <div data-testid="ion-col">{children}</div>,
+  IonToolbar: ({ children }: unknown) => <div data-testid="ion-toolbar">{children}</div>,
+  IonButtons: ({ children }: unknown) => <div data-testid="ion-buttons">{children}</div>,
+  IonAvatar: ({ children }: unknown) => <div data-testid="ion-avatar">{children}</div>,
+  IonGrid: ({ children }: unknown) => <div data-testid="ion-grid">{children}</div>,
+  IonRow: ({ children }: unknown) => <div data-testid="ion-row">{children}</div>,
+  IonCol: ({ children }: unknown) => <div data-testid="ion-col">{children}</div>,
 }));
 
 // Mock react-router-dom
@@ -94,7 +118,7 @@ vi.mock('../components/LanguageSwitcher', () => ({
 
 // Mock CourseCard
 vi.mock('../components/courses/CourseCard', () => ({
-  default: ({ course, variant }: any) => (
+  default: ({ course, variant }: unknown) => (
     <div data-testid="course-card" data-variant={variant} data-course-id={course.id}>
       {course.title}
     </div>
@@ -109,7 +133,7 @@ vi.mock('../components/home/StatsBar', () => ({
   StatsBar: () => <div data-testid="stats-bar">Stats Bar</div>,
 }));
 vi.mock('../components/home/ContentCardCarousel', () => ({
-  ContentCardCarousel: ({ title }: any) => (
+  ContentCardCarousel: ({ title }: unknown) => (
     <div data-testid="content-card-carousel" data-title={title}>{title}</div>
   ),
 }));

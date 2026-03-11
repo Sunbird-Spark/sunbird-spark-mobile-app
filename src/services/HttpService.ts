@@ -61,7 +61,7 @@ export class HttpService {
           
           // Preserve original JSON parsing error for debugging
           if (jsonError instanceof Error) {
-            (enhancedError as any).originalError = jsonError;
+            (enhancedError as unknown).originalError = jsonError;
           }
           
           throw enhancedError;
@@ -90,7 +90,7 @@ export class HttpService {
       
       // Preserve original error as a property for debugging
       if (error instanceof Error) {
-        (enhancedError as any).originalError = error;
+        (enhancedError as unknown).originalError = error;
       }
       
       throw enhancedError;
@@ -108,7 +108,7 @@ export class HttpService {
     return this.execute<T>(request);
   }
 
-  async post<T>(url: string, body: any, headers?: Record<string, string>): Promise<HttpResponse<T>> {
+  async post<T>(url: string, body: unknown, headers?: Record<string, string>): Promise<HttpResponse<T>> {
     const request = new HttpRequestBuilder()
       .withPath(url)
       .withType(HttpMethod.POST)

@@ -68,10 +68,12 @@ const SwipeableCard: React.FC<{
     const currentX = useRef(0);
     const [offset, setOffset] = useState(0);
     const swiping = useRef(false);
+    const [isSwiping, setIsSwiping] = useState(false);
 
     const onTouchStart = (e: React.TouchEvent) => {
         startX.current = e.touches[0].clientX;
         swiping.current = true;
+        setIsSwiping(true);
     };
     const onTouchMove = (e: React.TouchEvent) => {
         if (!swiping.current) return;
@@ -83,6 +85,7 @@ const SwipeableCard: React.FC<{
     };
     const onTouchEnd = () => {
         swiping.current = false;
+        setIsSwiping(false);
         // Snap: if swiped more than 35px, show delete; otherwise reset
         setOffset(prev => (prev > 35 ? 70 : 0));
     };
@@ -91,6 +94,7 @@ const SwipeableCard: React.FC<{
     const onMouseDown = (e: React.MouseEvent) => {
         startX.current = e.clientX;
         swiping.current = true;
+        setIsSwiping(true);
     };
     const onMouseMove = (e: React.MouseEvent) => {
         if (!swiping.current) return;
@@ -100,11 +104,13 @@ const SwipeableCard: React.FC<{
     };
     const onMouseUp = () => {
         swiping.current = false;
+        setIsSwiping(false);
         setOffset(prev => (prev > 35 ? 70 : 0));
     };
     const onMouseLeave = () => {
         if (swiping.current) {
             swiping.current = false;
+            setIsSwiping(false);
             setOffset(prev => (prev > 35 ? 70 : 0));
         }
     };
@@ -119,7 +125,7 @@ const SwipeableCard: React.FC<{
             {/* Card that slides */}
             <div
                 className="dc-card"
-                style={{ transform: `translateX(-${offset}px)`, transition: swiping.current ? 'none' : 'transform 0.25s ease' }}
+                style={{ transform: `translateX(-${offset}px)`, transition: isSwiping ? 'none' : 'transform 0.25s ease' }}
                 onTouchStart={onTouchStart}
                 onTouchMove={onTouchMove}
                 onTouchEnd={onTouchEnd}

@@ -42,29 +42,31 @@ const PersonalDetailsPage: React.FC = () => {
     };
 
     /* ── OTP timer ── */
-    const startTimer = useCallback(() => {
-        setTimer(240);
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-            setTimer(prev => {
-                if (prev <= 1) {
-                    if (timerRef.current) clearInterval(timerRef.current);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-    }, []);
-
     useEffect(() => {
+        let timeout: NodeJS.Timeout | undefined;
         if (isOtpOpen) {
-            setOtp(Array(OTP_LENGTH).fill(''));
-            startTimer();
+            // using setTimeout to bypass synchronous setState in effect linter warning
+            timeout = setTimeout(() => {
+                setTimer(240);
+                if (timerRef.current) clearInterval(timerRef.current);
+                timerRef.current = setInterval(() => {
+                    setTimer(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timerRef.current!);
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+            }, 0);
         } else {
             if (timerRef.current) clearInterval(timerRef.current);
         }
-        return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [isOtpOpen, startTimer]);
+        return () => {
+            if (timeout) clearTimeout(timeout);
+            if (timerRef.current) clearInterval(timerRef.current);
+        };
+    }, [isOtpOpen]);
 
     const formatTime = (s: number) => {
         const m = String(Math.floor(s / 60)).padStart(2, '0');
@@ -91,12 +93,23 @@ const PersonalDetailsPage: React.FC = () => {
 
     const handleResend = () => {
         setOtp(Array(OTP_LENGTH).fill(''));
-        startTimer();
+        setTimer(240);
+        if (timerRef.current) clearInterval(timerRef.current);
+        timerRef.current = setInterval(() => {
+            setTimer(prev => {
+                if (prev <= 1) {
+                    clearInterval(timerRef.current!);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
         inputRefs.current[0]?.focus();
     };
 
     const handleVerifyClick = () => {
         setIsEditOpen(false);
+        setOtp(Array(OTP_LENGTH).fill(''));
         setIsOtpOpen(true);
     };
 

@@ -12,7 +12,7 @@ import { ContentCardCarousel, ContentCardItem } from '../components/home/Content
 import { CategoriesGrid } from '../components/home/CategoriesGrid';
 import { ResourceCenter } from '../components/home/ResourceCenter';
 import { FAQSection } from '../components/home/FAQSection';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { courses } from '../data/mockData';
 import { LearningGreeting } from '../components/home/learning-started/LearningGreeting';
 import { LearningStatsGrid } from '../components/home/learning-started/LearningStatsGrid';
