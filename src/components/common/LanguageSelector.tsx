@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IonPopover } from '@ionic/react';
 
 export const languages = [
@@ -11,21 +11,22 @@ export const languages = [
 export const LanguageSelector: React.FC = () => {
     const [isOpen, setIsOpen] = React.useState(false);
     const [currentLang, setCurrentLang] = React.useState(languages[0]);
-    const buttonRef = useRef<HTMLButtonElement>(null);
+    const [triggerEvent, setTriggerEvent] = useState<Event | undefined>(undefined);
+
+    // Sync HTML direction when language changes
+    useEffect(() => {
+        document.documentElement.dir = currentLang.dir;
+    }, [currentLang]);
 
     const handleLanguageChange = (lang: typeof languages[0]) => {
         setCurrentLang(lang);
         setIsOpen(false);
-
-        // Change HTML direction
-        document.documentElement.dir = lang.dir;
     };
 
     return (
         <>
             <button
-                ref={buttonRef}
-                onClick={(e) => setIsOpen(true)}
+                onClick={(e) => { setTriggerEvent(e.nativeEvent); setIsOpen(true); }}
                 style={{
                     background: 'none',
                     border: 'none',
@@ -44,7 +45,7 @@ export const LanguageSelector: React.FC = () => {
 
             <IonPopover
                 isOpen={isOpen}
-                event={buttonRef.current as any}
+                event={triggerEvent}
                 triggerAction="click"
                 onDidDismiss={() => setIsOpen(false)}
                 side="bottom"
