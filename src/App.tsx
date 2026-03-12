@@ -3,12 +3,18 @@ import { IonReactRouter } from '@ionic/react-router';
 import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { AppInitializer } from './AppInitializer';
-import CoursesPage from './pages/CoursesPage';
 import Dashboard from './pages/Dashboard';
-import DownloadsPage from './pages/DownloadsPage';
 import Home from './pages/HomePage';
+import ExplorePage from './pages/ExplorePage';
+import CoursesPage from './pages/CoursesPage';
+import DownloadsPage from './pages/DownloadsPage';
 import ProfilePage from './pages/ProfilePage';
 import ScanPage from './pages/ScanPage';
+import PersonalDetailsPage from './pages/PersonalDetailsPage';
+import MyLearningPage from './pages/MyLearningPage';
+import DownloadedContentsPage from './pages/DownloadedContentsPage';
+import HelpAndSupportPage from './pages/HelpAndSupportPage';
+import FaqDetailPage from './pages/FaqDetailPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -28,6 +34,11 @@ import '@ionic/react/css/text-transformation.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import VideoContentPage from './pages/VideoContentPage';
+import SearchPage from './pages/SearchPage';
+import CourseDetailsPage from './pages/CourseDetailsPage';
+import CollectionDetailsPage from './pages/CollectionDetailsPage';
+import CourseLearningPage from './pages/CourseLearningPage';
 
 setupIonicReact();
 
@@ -48,6 +59,12 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <IonRouterOutlet>
+          <Route exact path="/search">
+            <SearchPage />
+          </Route>
+          <Route exact path="/explore">
+            <ExplorePage />
+          </Route>
           <Route exact path="/home">
             <Home />
           </Route>
@@ -63,8 +80,35 @@ const App: React.FC = () => {
           <Route exact path="/profile">
             <ProfilePage />
           </Route>
+          <Route exact path="/profile/personal-details">
+            <PersonalDetailsPage />
+          </Route>
+          <Route exact path="/profile/my-learning">
+            <MyLearningPage />
+          </Route>
+          <Route exact path="/profile/downloaded-contents">
+            <DownloadedContentsPage />
+          </Route>
+          <Route exact path="/support">
+            <HelpAndSupportPage />
+          </Route>
+          <Route exact path="/support/:category">
+            <FaqDetailPage />
+          </Route>
           <Route exact path="/dashboard">
             <Dashboard />
+          </Route>
+          <Route exact path="/video/:id">
+            <VideoContentPage />
+          </Route>
+          <Route exact path="/course-details">
+            <CourseDetailsPage />
+          </Route>
+          <Route exact path="/collection-details">
+            <CollectionDetailsPage />
+          </Route>
+          <Route exact path="/course-learning">
+            <CourseLearningPage />
           </Route>
           <Route exact path="/">
             <Redirect to="/home" />

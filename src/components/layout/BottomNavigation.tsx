@@ -2,32 +2,32 @@ import React from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
 import {
-  home,
+  searchOutline,
   bookOutline,
-  qrCodeOutline,
-  downloadOutline,
+  homeOutline,
+  home,
+  helpCircleOutline,
   personOutline,
 } from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
 
 interface NavItem {
   path: string;
   icon: string;
-  labelKey: string;
+  activeIcon?: string;
+  label: string;
 }
 
 const navItems: NavItem[] = [
-  { path: '/', icon: home, labelKey: 'home' },
-  { path: '/courses', icon: bookOutline, labelKey: 'courses' },
-  { path: '/scan', icon: qrCodeOutline, labelKey: 'scan' },
-  { path: '/downloads', icon: downloadOutline, labelKey: 'downloads' },
-  { path: '/profile', icon: personOutline, labelKey: 'profile' },
+  { path: '/explore', icon: searchOutline, label: 'Explore' },
+  { path: '/profile/my-learning', icon: bookOutline, label: 'My learning' },
+  { path: '/', icon: homeOutline, activeIcon: home, label: 'Home' },
+  { path: '/support', icon: helpCircleOutline, label: 'Support' },
+  { path: '/profile', icon: personOutline, label: 'Profile' },
 ];
 
 export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
-  const { t } = useTranslation();
 
   return (
     <div
@@ -37,18 +37,21 @@ export const BottomNavigation: React.FC = () => {
         left: 0,
         right: 0,
         zIndex: 1000,
-        backgroundColor: '#ffffff',
-        borderTop: '1px solid #e0e0e0',
+        backgroundColor: 'var(--ion-color-light)',
+        borderTop: '1px solid var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0))',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',
         padding: '8px 0',
         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
+        boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
       }}
     >
       {navItems.map((item) => {
         const isActive = location.pathname === item.path ||
           (item.path !== '/' && location.pathname.startsWith(item.path));
+
+        const iconToUse = isActive && item.activeIcon ? item.activeIcon : item.icon;
 
         return (
           <button
@@ -62,14 +65,14 @@ export const BottomNavigation: React.FC = () => {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
-              padding: '4px 12px',
+              padding: '4px 8px',
               minWidth: '60px',
-              color: isActive ? '#FF6B35' : '#888888',
+              color: isActive ? 'var(--ion-color-primary)' : 'var(--ion-color-medium, var(--color-757575, #757575))',
               transition: 'color 0.2s ease',
             }}
           >
             <IonIcon
-              icon={item.icon}
+              icon={iconToUse}
               style={{
                 fontSize: '24px',
                 marginBottom: '4px',
@@ -78,11 +81,10 @@ export const BottomNavigation: React.FC = () => {
             <span
               style={{
                 fontSize: '11px',
-                fontWeight: '500',
-                textTransform: 'capitalize',
+                fontWeight: isActive ? '500' : '400',
               }}
             >
-              {t(item.labelKey)}
+              {item.label}
             </span>
           </button>
         );

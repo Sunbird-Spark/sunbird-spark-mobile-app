@@ -1,13 +1,12 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HomePage from './HomePage';
 
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
   IonButton: ({ children, onClick, fill, size, className }: any) => (
-    <button 
-      data-testid="ion-button" 
+    <button
+      data-testid="ion-button"
       onClick={onClick}
       data-fill={fill}
       data-size={size}
@@ -55,10 +54,13 @@ vi.mock('ionicons/icons', () => ({
   chevronForward: 'chevron-forward-icon',
   chevronBack: 'chevron-back-icon',
   home: 'home-icon',
+  homeOutline: 'home-outline-icon',
   bookOutline: 'book-outline-icon',
   qrCodeOutline: 'qr-code-outline-icon',
   downloadOutline: 'download-outline-icon',
   personOutline: 'person-outline-icon',
+  searchOutline: 'search-outline-icon',
+  helpCircleOutline: 'help-circle-outline-icon',
   logIn: 'log-in-icon',
   person: 'person-icon',
   notifications: 'notifications-icon',
@@ -99,6 +101,28 @@ vi.mock('../components/courses/CourseCard', () => ({
   ),
 }));
 
+// Mock new section components
+vi.mock('../components/home/HeroSection', () => ({
+  HeroSection: () => <div data-testid="hero-section">Hero Section</div>,
+}));
+vi.mock('../components/home/StatsBar', () => ({
+  StatsBar: () => <div data-testid="stats-bar">Stats Bar</div>,
+}));
+vi.mock('../components/home/ContentCardCarousel', () => ({
+  ContentCardCarousel: ({ title }: any) => (
+    <div data-testid="content-card-carousel" data-title={title}>{title}</div>
+  ),
+}));
+vi.mock('../components/home/CategoriesGrid', () => ({
+  CategoriesGrid: () => <div data-testid="categories-grid">Categories Grid</div>,
+}));
+vi.mock('../components/home/ResourceCenter', () => ({
+  ResourceCenter: () => <div data-testid="resource-center">Resource Center</div>,
+}));
+vi.mock('../components/home/FAQSection', () => ({
+  FAQSection: () => <div data-testid="faq-section">FAQ Section</div>,
+}));
+
 // Mock data
 vi.mock('../data/mockData', () => ({
   getFeaturedCourses: () => [
@@ -109,9 +133,11 @@ vi.mock('../data/mockData', () => ({
     { id: 3, title: 'Advanced React', description: 'Advanced concepts', progress: 45 },
   ],
   courses: [
-    { id: 4, title: 'JavaScript', description: 'JS fundamentals' },
-    { id: 5, title: 'CSS', description: 'Styling basics' },
-    { id: 6, title: 'HTML', description: 'Web structure' },
+    { id: '1', title: 'JavaScript', description: 'JS fundamentals', thumbnail: '', rating: 4.5, lessons: 20 },
+    { id: '2', title: 'CSS', description: 'Styling basics', thumbnail: '', rating: 4.3, lessons: 15 },
+    { id: '3', title: 'HTML', description: 'Web structure', thumbnail: '', rating: 4.7, lessons: 12 },
+    { id: '4', title: 'React', description: 'React basics', thumbnail: '', rating: 4.8, lessons: 25 },
+    { id: '5', title: 'Node', description: 'Node basics', thumbnail: '', rating: 4.6, lessons: 18 },
   ],
   currentUser: {
     id: 'user-1',
@@ -132,24 +158,6 @@ vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext,
 }));
 
-// Create a test query client
-const createTestQueryClient = () => new QueryClient({
-  defaultOptions: {
-    queries: { retry: false },
-    mutations: { retry: false },
-  },
-});
-
-// Test wrapper component
-const TestWrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const queryClient = createTestQueryClient();
-  return (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
-  );
-};
-
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -157,124 +165,52 @@ describe('HomePage', () => {
   });
 
   it('renders without crashing', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
+    render(<HomePage />);
     expect(screen.getByTestId('ion-page')).toBeInTheDocument();
   });
 
   it('renders page structure correctly', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
+    render(<HomePage />);
     expect(screen.getByTestId('ion-header')).toBeInTheDocument();
-    expect(screen.getByTestId('ion-toolbar')).toBeInTheDocument();
     expect(screen.getByTestId('ion-content')).toBeInTheDocument();
   });
 
-  it('renders correct title when not authenticated', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.getByText('Home')).toBeInTheDocument();
+  it('renders hero section', () => {
+    render(<HomePage />);
+    expect(screen.getByTestId('hero-section')).toBeInTheDocument();
   });
 
-  it('renders correct title when authenticated', () => {
-    mockAuthContext.isAuthenticated = true;
-    render(<HomePage />, { wrapper: TestWrapper });
-    // The authenticated header shows "welcomeBack" (translation key) and user name
-    expect(screen.getByText('welcomeBack')).toBeInTheDocument();
-    expect(screen.getByText('Test User')).toBeInTheDocument();
+  it('renders stats bar', () => {
+    render(<HomePage />);
+    expect(screen.getByTestId('stats-bar')).toBeInTheDocument();
   });
 
-  it('renders language switcher', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    // The HomePage doesn't have a language switcher in the header, it has a login button
-    expect(screen.getByText('login')).toBeInTheDocument();
+  it('renders content card carousels', () => {
+    render(<HomePage />);
+    const carousels = screen.getAllByTestId('content-card-carousel');
+    expect(carousels).toHaveLength(3);
+    expect(carousels[0]).toHaveAttribute('data-title', 'Most Popular Content');
+    expect(carousels[1]).toHaveAttribute('data-title', 'Most Viewed Content');
+    expect(carousels[2]).toHaveAttribute('data-title', 'Trending Content');
   });
 
-  it('shows quick actions when authenticated', () => {
-    mockAuthContext.isAuthenticated = true;
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.getByText('Quick Actions')).toBeInTheDocument();
-    // Check that the quick actions grid is present
-    expect(screen.getByTestId('ion-grid')).toBeInTheDocument();
-    expect(screen.getByTestId('ion-row')).toBeInTheDocument();
-    // Check for the specific icons in quick actions
-    const quickActionIcons = screen.getAllByTestId('ion-icon');
-    expect(quickActionIcons.length).toBeGreaterThan(4); // Should have multiple icons
+  it('renders categories grid', () => {
+    render(<HomePage />);
+    expect(screen.getByTestId('categories-grid')).toBeInTheDocument();
   });
 
-  it('does not show quick actions when not authenticated', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.queryByText('Quick Actions')).not.toBeInTheDocument();
+  it('renders resource center', () => {
+    render(<HomePage />);
+    expect(screen.getByTestId('resource-center')).toBeInTheDocument();
   });
 
-  it('shows continue learning section when authenticated and has progress', () => {
-    mockAuthContext.isAuthenticated = true;
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.getByText('Continue Learning')).toBeInTheDocument();
-  });
-
-  it('renders featured courses section', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.getByText('Featured Courses')).toBeInTheDocument();
-    // The page shows both featured courses (2) and browse courses (3) = 5 total
-    expect(screen.getAllByTestId('course-card')).toHaveLength(5);
-  });
-
-  it('renders browse courses section when not authenticated', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.getByText('Browse Courses')).toBeInTheDocument();
-  });
-
-  it('does not render browse courses section when authenticated', () => {
-    mockAuthContext.isAuthenticated = true;
-    render(<HomePage />, { wrapper: TestWrapper });
-    expect(screen.queryByText('Browse Courses')).not.toBeInTheDocument();
-  });
-
-  it('navigates to courses page when view all is clicked', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    const viewAllButtons = screen.getAllByText('View All');
-    fireEvent.click(viewAllButtons[0]);
-    expect(mockPush).toHaveBeenCalledWith('/courses');
-  });
-
-  it('renders course cards with correct variants', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    const courseCards = screen.getAllByTestId('course-card');
-    
-    // Featured courses should use compact variant
-    const featuredCards = courseCards.filter(card => 
-      card.getAttribute('data-variant') === 'compact'
-    );
-    expect(featuredCards).toHaveLength(2);
+  it('renders FAQ section', () => {
+    render(<HomePage />);
+    expect(screen.getByTestId('faq-section')).toBeInTheDocument();
   });
 
   it('renders fullscreen content', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
+    render(<HomePage />);
     expect(screen.getByTestId('ion-content')).toHaveAttribute('data-fullscreen', 'true');
-  });
-
-  it('renders condensed header', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    // The HomePage doesn't have a condensed header structure like Dashboard
-    const headers = screen.getAllByTestId('ion-header');
-    expect(headers.length).toBeGreaterThan(0);
-  });
-
-  it('handles RTL direction correctly', () => {
-    // Mock RTL direction
-    vi.mocked(vi.importMock('react-i18next')).useTranslation = () => ({
-      t: (key: string) => key,
-      i18n: { dir: () => 'rtl' },
-    });
-    
-    render(<HomePage />, { wrapper: TestWrapper });
-    // The page has multiple icons: login button, view all buttons, bottom navigation
-    expect(screen.getAllByTestId('ion-icon').length).toBeGreaterThan(2);
-  });
-
-  it('renders correct number of browse courses when not authenticated', () => {
-    render(<HomePage />, { wrapper: TestWrapper });
-    const browseCourseCards = screen.getAllByTestId('course-card').filter(card =>
-      card.getAttribute('data-variant') === 'horizontal'
-    );
-    expect(browseCourseCards).toHaveLength(3); // Should show 3 courses
   });
 });

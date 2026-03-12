@@ -1,0 +1,197 @@
+import React from 'react';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
+import './CollectionDetailsPage.css';
+
+// ── Icons ──
+const BackIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M15 18L9 12L15 6" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
+
+const SearchIcon = () => (
+    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
+        <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
+    </svg>
+);
+
+const ShareIcon = () => (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.34C15.11 18.55 15.08 18.77 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="var(--ion-color-primary)" />
+    </svg>
+);
+
+const VideoIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M11.3333 4.66667L14.6667 2V10L11.3333 7.33333V10C11.3333 10.7333 10.7333 11.3333 10 11.3333H2C1.26667 11.3333 0.666667 10.7333 0.666667 10V3.33333C0.666667 2.6 1.26667 2 2 2H10C10.7333 2 11.3333 2.6 11.3333 3.33333V4.66667ZM10 9.33333V4H2V9.33333H10Z" fill="var(--ion-color-primary)" />
+    </svg>
+);
+
+const DocumentIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M9.33333 1.33333H2.66667C1.93333 1.33333 1.34 1.93333 1.34 2.66667L1.33333 13.3333C1.33333 14.0667 1.92667 14.6667 2.66001 14.6667H11.3333C12.0667 14.6667 12.6667 14.0667 12.6667 13.3333V4.66667L9.33333 1.33333ZM10.6667 12H3.33333V10.6667H10.6667V12ZM10.6667 9.33333H3.33333V8H10.6667V9.33333ZM8.66667 5.33333V2.33333L11.6667 5.33333H8.66667Z" fill="var(--ion-color-primary)" />
+    </svg>
+);
+
+const CollectionDetailsPage: React.FC = () => {
+    const history = useHistory();
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+    return (
+        <IonPage className="collection-details-page">
+            <IonHeader className="ion-no-border">
+                <IonToolbar className="collection-details-header">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <button onClick={() => history.goBack()} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                            <BackIcon />
+                        </button>
+                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                            <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
+                                <SearchIcon />
+                            </button>
+                            <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
+                                <ShareIcon />
+                            </button>
+                        </div>
+                    </div>
+                </IonToolbar>
+            </IonHeader>
+
+            <IonContent fullscreen>
+                {/* Meta details */}
+                <div className="collection-details-title-section">
+                    <h1 className="collection-details-title">The AI Engineer Course 2026: Complete AI Engineer Bootcamp</h1>
+                    <div className="collection-meta">
+                        <span className="rating">4.5 <span className="star">★</span></span>
+                        <span className="dot">•</span>
+                        <span>25 Lessons</span>
+                    </div>
+                </div>
+
+                {/* Course Curriculum */}
+                <div className="collection-curriculum-container">
+                    <IonAccordionGroup className="curriculum-accordion-group" value={['week1']} multiple={true}>
+                        <IonAccordion value="week1" className="curriculum-accordion">
+                            <IonItem slot="header" className="curriculum-header" lines="none">
+                                <IonLabel>
+                                    <div>Week 1: Foundation &amp; Basics</div>
+                                    <div className="curriculum-header-subtitle">Business analysis, planning, and monitoring</div>
+                                </IonLabel>
+                            </IonItem>
+                            <div slot="content">
+                                <div className="curriculum-item">
+                                    <div className="curriculum-item-left">
+                                        <VideoIcon />
+                                        <span className="curriculum-item-title">0.1 Overview</span>
+                                    </div>
+                                    <span className="curriculum-item-time">04:56</span>
+                                </div>
+                                <div className="curriculum-item">
+                                    <div className="curriculum-item-left">
+                                        <DocumentIcon />
+                                        <span className="curriculum-item-title">0.2 Business Decisions and Analytics</span>
+                                    </div>
+                                    <span className="curriculum-item-time">04:56</span>
+                                </div>
+                                <div className="curriculum-item">
+                                    <div className="curriculum-item-left">
+                                        <VideoIcon />
+                                        <span className="curriculum-item-title">0.3 Types of Business Analytics</span>
+                                    </div>
+                                    <span className="curriculum-item-time">04:56</span>
+                                </div>
+                                <div className="curriculum-item">
+                                    <div className="curriculum-item-left">
+                                        <VideoIcon />
+                                        <span className="curriculum-item-title">0.4 Applications of Business Analytics</span>
+                                    </div>
+                                    <span className="curriculum-item-time">04:56</span>
+                                </div>
+                                <div className="curriculum-item">
+                                    <div className="curriculum-item-left">
+                                        <DocumentIcon />
+                                        <span className="curriculum-item-title">0.5 Data Science Overview</span>
+                                    </div>
+                                    <span className="curriculum-item-time">04:56</span>
+                                </div>
+                            </div>
+                        </IonAccordion>
+
+                        <IonAccordion value="week2" className="curriculum-accordion">
+                            <IonItem slot="header" className="curriculum-header" lines="none">
+                                <IonLabel>Week 2: Core Competencies</IonLabel>
+                            </IonItem>
+                            <div slot="content">
+                                {/* Empty for design */}
+                            </div>
+                        </IonAccordion>
+
+                        <IonAccordion value="week3" className="curriculum-accordion">
+                            <IonItem slot="header" className="curriculum-header" lines="none">
+                                <IonLabel>Week 3: Professional Application</IonLabel>
+                            </IonItem>
+                            <div slot="content">
+                                {/* Empty for design */}
+                            </div>
+                        </IonAccordion>
+                    </IonAccordionGroup>
+                </div>
+                {/* padding for CTA */}
+                <div style={{ height: '80px' }}></div>
+            </IonContent>
+
+            {/* Bottom CTA Button */}
+            <div className="collection-bottom-cta-bar" onClick={() => setIsModalOpen(true)}>
+                <span className="collection-bottom-cta-text">Join the Course</span>
+            </div>
+
+            {/* Upcoming Batches Modal */}
+            <IonModal
+                isOpen={isModalOpen}
+                onDidDismiss={() => setIsModalOpen(false)}
+                initialBreakpoint={0.4}
+                breakpoints={[0, 0.4, 0.75, 1]}
+                className="batch-modal"
+            >
+                <div className="batch-modal-inner">
+                    <div className="batch-modal-header">
+                        <h2>Upcoming Batches</h2>
+                        <button className="batch-modal-close" onClick={() => setIsModalOpen(false)}>
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="var(--ion-color-primary)" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div className="batch-modal-content">
+                        <p className="batch-modal-subtitle">Select a batch to start learning.</p>
+
+                        <div className="batch-select-container">
+                            <select className="batch-select">
+                                <option value="" disabled selected>Select a Batch</option>
+                                <option value="batch1">Batch 1: March 10 - April 10</option>
+                                <option value="batch2">Batch 2: April 15 - May 15</option>
+                            </select>
+                            <svg className="batch-select-icon" width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L7 7L13 1" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* Modal Bottom CTA */}
+                    <div className="batch-modal-cta-wrap">
+                        <div className="batch-modal-cta-bar modal-submit-btn" onClick={() => {
+                            setIsModalOpen(false);
+                            history.push('/course-learning');
+                        }}>
+                            <span className="collection-bottom-cta-text">Join The Batch</span>
+                        </div>
+                    </div>
+                </div>
+            </IonModal>
+        </IonPage>
+    );
+};
+
+export default CollectionDetailsPage;

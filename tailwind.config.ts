@@ -19,7 +19,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        roboto: ['Roboto', 'sans-serif'],
+        sans: ['Rubik', 'sans-serif'],
+        rubik: ['Rubik', 'sans-serif'],
       },
       colors: {
         /* Material Design 3 Color System */
