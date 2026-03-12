@@ -48,6 +48,7 @@ vi.mock('react-router-dom', () => ({
 // Mock ionicons with all required icons
 vi.mock('ionicons/icons', () => ({
   home: 'home-icon',
+  homeOutline: 'home-outline-icon',
   person: 'person-icon',
   personOutline: 'person-outline-icon',
   statsChart: 'stats-chart-icon',
@@ -58,6 +59,9 @@ vi.mock('ionicons/icons', () => ({
   chevronBack: 'chevron-back-icon',
   logIn: 'log-in-icon',
   notifications: 'notifications-icon',
+  searchOutline: 'search-outline-icon',
+  helpCircleOutline: 'help-circle-outline-icon',
+  chevronBackOutline: 'chevron-back-outline-icon',
 }));
 
 // Mock pages
@@ -69,8 +73,64 @@ vi.mock('./pages/Dashboard', () => ({
   default: () => <div data-testid="dashboard-page">Dashboard Page</div>,
 }));
 
-vi.mock('./pages/Profile', () => ({
+vi.mock('./pages/ProfilePage', () => ({
   default: () => <div data-testid="profile-page">Profile Page</div>,
+}));
+
+vi.mock('./pages/ExplorePage', () => ({
+  default: () => <div data-testid="explore-page">Explore Page</div>,
+}));
+
+vi.mock('./pages/CoursesPage', () => ({
+  default: () => <div data-testid="courses-page">Courses Page</div>,
+}));
+
+vi.mock('./pages/ScanPage', () => ({
+  default: () => <div data-testid="scan-page">Scan Page</div>,
+}));
+
+vi.mock('./pages/DownloadsPage', () => ({
+  default: () => <div data-testid="downloads-page">Downloads Page</div>,
+}));
+
+vi.mock('./pages/PersonalDetailsPage', () => ({
+  default: () => <div data-testid="personal-details-page">Personal Details Page</div>,
+}));
+
+vi.mock('./pages/MyLearningPage', () => ({
+  default: () => <div data-testid="my-learning-page">My Learning Page</div>,
+}));
+
+vi.mock('./pages/DownloadedContentsPage', () => ({
+  default: () => <div data-testid="downloaded-contents-page">Downloaded Contents Page</div>,
+}));
+
+vi.mock('./pages/HelpAndSupportPage', () => ({
+  default: () => <div data-testid="help-page">Help Page</div>,
+}));
+
+vi.mock('./pages/FaqDetailPage', () => ({
+  default: () => <div data-testid="faq-page">FAQ Page</div>,
+}));
+
+vi.mock('./pages/VideoContentPage', () => ({
+  default: () => <div data-testid="video-page">Video Page</div>,
+}));
+
+vi.mock('./pages/SearchPage', () => ({
+  default: () => <div data-testid="search-page">Search Page</div>,
+}));
+
+vi.mock('./pages/CourseDetailsPage', () => ({
+  default: () => <div data-testid="course-details-page">Course Details Page</div>,
+}));
+
+vi.mock('./pages/CollectionDetailsPage', () => ({
+  default: () => <div data-testid="collection-details-page">Collection Details Page</div>,
+}));
+
+vi.mock('./pages/CourseLearningPage', () => ({
+  default: () => <div data-testid="course-learning-page">Course Learning Page</div>,
 }));
 
 // Mock CSS imports
@@ -139,6 +199,8 @@ describe('App', () => {
     expect(screen.getByTestId('route-/downloads')).toBeInTheDocument();
     expect(screen.getByTestId('route-/profile')).toBeInTheDocument();
     expect(screen.getByTestId('route-/dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/explore')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/search')).toBeInTheDocument();
   });
 
   it('renders redirect component', () => {

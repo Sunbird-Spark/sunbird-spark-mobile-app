@@ -92,6 +92,16 @@ vi.mock('../components/LanguageSwitcher', () => ({
   default: () => <div data-testid="language-switcher">Language Switcher</div>,
 }));
 
+// Mock PublicWelcomeHeader to avoid transitive IonPopover dependency from LanguageSelector
+vi.mock('../components/home/PublicWelcomeHeader', () => ({
+  PublicWelcomeHeader: () => <div data-testid="ion-toolbar">Public Welcome Header</div>,
+}));
+
+// Mock BottomNavigation to avoid transitive icon dependency issues
+vi.mock('../components/layout/BottomNavigation', () => ({
+  BottomNavigation: () => <div data-testid="bottom-navigation">Bottom Navigation</div>,
+}));
+
 // Mock CourseCard
 vi.mock('../components/courses/CourseCard', () => ({
   default: ({ course, variant }: any) => (
