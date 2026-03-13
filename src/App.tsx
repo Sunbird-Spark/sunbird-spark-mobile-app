@@ -44,12 +44,7 @@ setupIonicReact();
 
 const App: React.FC = () => {
   useEffect(() => {
-    console.log('App: Component mounted, starting initialization...');
-    // Initialize all application services on startup
     AppInitializer.init()
-      .then(() => {
-        console.log('App: Initialization completed successfully');
-      })
       .catch((error) => {
         console.error('App: Failed to initialize application:', error);
       });

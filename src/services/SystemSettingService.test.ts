@@ -34,7 +34,7 @@ describe('SystemSettingService', () => {
 
       // Assert
       expect(mockClient.get).toHaveBeenCalledWith(
-        `/learner/data/v1/system/settings/get/${settingId}`,
+        `/data/v1/system/settings/get/${settingId}`,
         {
           'Content-Type': 'application/json',
           'Accept': 'application/json'
@@ -62,7 +62,7 @@ describe('SystemSettingService', () => {
 
       // Assert
       expect(mockClient.get).toHaveBeenCalledWith(
-        `/learner/data/v1/system/settings/get/${settingId}`,
+        `/data/v1/system/settings/get/${settingId}`,
         expect.any(Object)
       );
     });
@@ -94,7 +94,7 @@ describe('SystemSettingService', () => {
       for (const settingId of settingIds) {
         await systemSettingService.read(settingId);
         expect(mockClient.get).toHaveBeenCalledWith(
-          `/learner/data/v1/system/settings/get/${settingId}`,
+          `/data/v1/system/settings/get/${settingId}`,
           expect.any(Object)
         );
       }

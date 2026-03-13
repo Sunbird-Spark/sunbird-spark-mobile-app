@@ -182,7 +182,7 @@ describe('CapacitorAdapter', () => {
 
       expect(CapacitorHttp.post).toHaveBeenCalledWith({
         url: 'http://test.com/api/test',
-        data: '{"name":"test"}',
+        data: { name: 'test' },
         headers: {},
       });
       expect(result).toEqual({ data: { id: 1 }, status: 201, headers: {} });
@@ -216,7 +216,7 @@ describe('CapacitorAdapter', () => {
 
       expect(CapacitorHttp.post).toHaveBeenCalledWith({
         url: 'http://test.com/api/test',
-        data: undefined,
+        data: null,
         headers: {},
       });
       expect(result).toEqual({ data: { id: 1 }, status: 201, headers: {} });
@@ -252,7 +252,7 @@ describe('CapacitorAdapter', () => {
 
       expect(CapacitorHttp.put).toHaveBeenCalledWith({
         url: 'http://test.com/api/test',
-        data: '{"name":"updated"}',
+        data: { name: 'updated' },
         headers: {},
       });
       expect(result).toEqual({ data: { id: 1 }, status: 200, headers: {} });

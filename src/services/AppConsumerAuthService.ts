@@ -164,17 +164,15 @@ export class AppConsumerAuthService {
 
     try {
       const response = await this.httpClient.post<{
-        result?: {
-          secret?: string;
-        };
-      }>('/api/api-manager/v1/consumer/mobile_device/credential/register', requestBody, {
+        secret?: string;
+      }>('/api-manager/v1/consumer/mobile_device/credential/register', requestBody, {
         'Authorization': `Bearer ${this.appJwt}`,
         'Content-Type': 'application/json',
       });
 
-      if (response.data?.result?.secret) {
+      if (response.data?.secret) {
         // Generate device JWT using the secret from Kong
-        const secret = new TextEncoder().encode(response.data.result.secret);
+        const secret = new TextEncoder().encode(response.data.secret);
         const now = Math.floor(Date.now() / 1000);
         const expiry = now + (24 * 60 * 60); // 24 hours from now
 

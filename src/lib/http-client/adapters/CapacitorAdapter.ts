@@ -90,13 +90,10 @@ export class CapacitorAdapter extends BaseClient {
     const fullUrl = this.buildUrl(url);
     const cleanHeaders = this.getHeaders(headers);
     
-    // Ensure data is properly serialized
-    const requestData = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : undefined;
-    
-    return this.request(() => 
-      CapacitorHttp.post({ 
-        url: fullUrl, 
-        data: requestData,
+    return this.request(() =>
+      CapacitorHttp.post({
+        url: fullUrl,
+        data: data,
         headers: cleanHeaders
       })
     );
@@ -106,13 +103,10 @@ export class CapacitorAdapter extends BaseClient {
     const fullUrl = this.buildUrl(url);
     const cleanHeaders = this.getHeaders(headers);
     
-    // Ensure data is properly serialized
-    const requestData = data ? (typeof data === 'string' ? data : JSON.stringify(data)) : undefined;
-    
-    return this.request(() => 
-      CapacitorHttp.put({ 
-        url: fullUrl, 
-        data: requestData,
+    return this.request(() =>
+      CapacitorHttp.put({
+        url: fullUrl,
+        data: data,
         headers: cleanHeaders
       })
     );

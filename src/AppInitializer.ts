@@ -29,11 +29,11 @@ export class AppInitializer {
       // Get Kong token and set it in HTTP client
       const kongToken = await authService.getAuthenticatedToken();
       
-      // Set both Authorization and X-Authenticated-User-Token headers
+      // Set Authorization header with device JWT from Kong
+      // Note: X-Authenticated-User-Token is set separately after user login
       const httpClient = getClient();
       httpClient.updateHeaders([
         { key: 'Authorization', value: `Bearer ${kongToken}`, action: 'add' },
-        { key: 'X-Authenticated-User-Token', value: kongToken, action: 'add' },
       ]);
 
       this.initialized = true;
@@ -48,7 +48,6 @@ export class AppInitializer {
         const httpClient = getClient();
         httpClient.updateHeaders([
           { key: 'Authorization', value: '', action: 'remove' },
-          { key: 'X-Authenticated-User-Token', value: '', action: 'remove' },
         ]);
       } catch (cleanupError) {
         // If cleanup fails, log it but preserve the original initialization error

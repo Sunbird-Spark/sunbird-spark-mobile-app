@@ -34,9 +34,7 @@ vi.mock('../lib/http-client', () => ({
     updateHeaders: vi.fn(),
     post: vi.fn().mockResolvedValue({
       data: {
-        result: {
-          secret: 'mock-device-secret'
-        }
+        secret: 'mock-device-secret'
       }
     }),
   }),

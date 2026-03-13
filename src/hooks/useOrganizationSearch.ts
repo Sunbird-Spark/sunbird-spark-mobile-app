@@ -12,7 +12,7 @@ export const useOrganizationSearch = (): UseMutationResult<ApiResponse<any>, Err
       // Extract channel ID from organization response and set it in headers
       const organizations = data.data?.response?.content;
       if (organizations && organizations.length > 0) {
-        const channelId = organizations[0].channel || organizations[0].identifier;
+        const channelId = organizations[0].hashTagId || organizations[0].identifier;
         if (channelId) {
           ChannelManager.setChannelId(channelId);
         }
