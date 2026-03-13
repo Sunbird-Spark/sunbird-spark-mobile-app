@@ -6,8 +6,5 @@
 		"CapacitorHttp": {
 			"enabled": true
 		}
-	},
-	"server": {
-		"cleartext": true
 	}
 }
