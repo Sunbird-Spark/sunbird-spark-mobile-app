@@ -24,7 +24,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@capacitor-community/http": "^1.4.1",
     "@capacitor-community/sqlite": "^7.0.3",
     "@capacitor/android": "^7.4.4",
     "@capacitor/barcode-scanner": "^2.2.4",
