@@ -6,8 +6,8 @@ import { Course } from '../../data/mockData';
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
   IonCard: ({ children, button, onClick, className, style }: any) => (
-    <div 
-      data-testid="ion-card" 
+    <div
+      data-testid="ion-card"
       onClick={onClick}
       className={className}
       style={style}
@@ -43,6 +43,9 @@ vi.mock('@ionic/react', () => ({
     <span data-testid="ion-badge" data-color={color} className={className}>
       {children}
     </span>
+  ),
+  IonImg: ({ src, alt, className }: any) => (
+    <img data-testid="ion-img" src={src} alt={alt} className={className} />
   ),
 }));
 

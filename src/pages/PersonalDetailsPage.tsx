@@ -57,14 +57,23 @@ const PersonalDetailsPage: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        if (isOtpOpen) {
-            setOtp(Array(OTP_LENGTH).fill(''));
-            startTimer();
-        } else {
+        if (!isOtpOpen) {
             if (timerRef.current) clearInterval(timerRef.current);
+            return;
         }
+        // OTP modal opened — start a fresh timer via interval (no sync setState)
+        if (timerRef.current) clearInterval(timerRef.current);
+        let remaining = 240;
+        timerRef.current = setInterval(() => {
+            remaining -= 1;
+            if (remaining <= 0) {
+                if (timerRef.current) clearInterval(timerRef.current);
+                remaining = 0;
+            }
+            setTimer(remaining);
+        }, 1000);
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [isOtpOpen, startTimer]);
+    }, [isOtpOpen]);
 
     const formatTime = (s: number) => {
         const m = String(Math.floor(s / 60)).padStart(2, '0');

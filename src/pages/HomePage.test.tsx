@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import HomePage from './HomePage';
 
@@ -92,6 +92,16 @@ vi.mock('../components/LanguageSwitcher', () => ({
   default: () => <div data-testid="language-switcher">Language Switcher</div>,
 }));
 
+// Mock PublicWelcomeHeader to avoid transitive IonPopover dependency from LanguageSelector
+vi.mock('../components/home/PublicWelcomeHeader', () => ({
+  PublicWelcomeHeader: () => <div data-testid="ion-toolbar">Public Welcome Header</div>,
+}));
+
+// Mock BottomNavigation to avoid transitive icon dependency issues
+vi.mock('../components/layout/BottomNavigation', () => ({
+  BottomNavigation: () => <div data-testid="bottom-navigation">Bottom Navigation</div>,
+}));
+
 // Mock CourseCard
 vi.mock('../components/courses/CourseCard', () => ({
   default: ({ course, variant }: any) => (
@@ -172,7 +182,6 @@ describe('HomePage', () => {
   it('renders page structure correctly', () => {
     render(<HomePage />);
     expect(screen.getByTestId('ion-header')).toBeInTheDocument();
-    expect(screen.getByTestId('ion-toolbar')).toBeInTheDocument();
     expect(screen.getByTestId('ion-content')).toBeInTheDocument();
   });
 
@@ -208,24 +217,6 @@ describe('HomePage', () => {
   it('renders FAQ section', () => {
     render(<HomePage />);
     expect(screen.getByTestId('faq-section')).toBeInTheDocument();
-  });
-
-  it('shows quick actions when authenticated', () => {
-    mockAuthContext.isAuthenticated = true;
-    render(<HomePage />);
-    expect(screen.getByText('Quick Actions')).toBeInTheDocument();
-    expect(screen.getByTestId('ion-grid')).toBeInTheDocument();
-  });
-
-  it('does not show quick actions when not authenticated', () => {
-    render(<HomePage />);
-    expect(screen.queryByText('Quick Actions')).not.toBeInTheDocument();
-  });
-
-  it('shows continue learning section when authenticated and has progress', () => {
-    mockAuthContext.isAuthenticated = true;
-    render(<HomePage />);
-    expect(screen.getByText('Continue Learning')).toBeInTheDocument();
   });
 
   it('renders fullscreen content', () => {

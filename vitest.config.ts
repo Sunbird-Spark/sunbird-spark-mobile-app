@@ -10,7 +10,6 @@ export default defineConfig({
     setupFiles: './src/setupTests.ts',
     css: true,
     pool: 'threads',
-    singleThread: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -33,6 +32,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'capacitor-read-native-setting': path.resolve(__dirname, './src/__mocks__/capacitor-read-native-setting.ts'),
     },
   },
 });

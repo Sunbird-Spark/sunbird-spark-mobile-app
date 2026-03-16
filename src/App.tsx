@@ -1,23 +1,20 @@
-import {
-  IonApp,
-  IonRouterOutlet,
-  setupIonicReact,
-} from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
+import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
+import { AppInitializer } from './AppInitializer';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/HomePage';
 import ExplorePage from './pages/ExplorePage';
 import CoursesPage from './pages/CoursesPage';
-import ScanPage from './pages/ScanPage';
 import DownloadsPage from './pages/DownloadsPage';
 import ProfilePage from './pages/ProfilePage';
+import ScanPage from './pages/ScanPage';
 import PersonalDetailsPage from './pages/PersonalDetailsPage';
 import MyLearningPage from './pages/MyLearningPage';
 import DownloadedContentsPage from './pages/DownloadedContentsPage';
 import HelpAndSupportPage from './pages/HelpAndSupportPage';
 import FaqDetailPage from './pages/FaqDetailPage';
-
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -45,8 +42,14 @@ import CourseLearningPage from './pages/CourseLearningPage';
 
 setupIonicReact();
 
-
 const App: React.FC = () => {
+  useEffect(() => {
+    AppInitializer.init()
+      .catch((error) => {
+        console.error('App: Failed to initialize application:', error);
+      });
+  }, []);
+
   return (
     <IonApp>
       <IonReactRouter>

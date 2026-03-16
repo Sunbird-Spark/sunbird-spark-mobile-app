@@ -15,11 +15,11 @@ android {
         def MOBILE_APP_SECRET = project.findProperty("mobile_app_secret") ?: ""
         def PRODUCER_ID = project.findProperty("producer_id") ?: ""
 
-        resValue "string", "base_url", BASE_URL
-        resValue "string", "mobile_app_consumer", MOBILE_APP_CONSUMER
-        resValue "string", "mobile_app_key", MOBILE_APP_KEY
-        resValue "string", "mobile_app_secret", MOBILE_APP_SECRET
-        resValue "string", "producer_id", PRODUCER_ID
+        resValue "string", "base_url", "\"${BASE_URL}\""
+        resValue "string", "mobile_app_consumer", "\"${MOBILE_APP_CONSUMER}\""
+        resValue "string", "mobile_app_key", "\"${MOBILE_APP_KEY}\""
+        resValue "string", "mobile_app_secret", "\"${MOBILE_APP_SECRET}\""
+        resValue "string", "producer_id", "\"${PRODUCER_ID}\""
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {

@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core';
 import { CapacitorReadNativeSetting } from 'capacitor-read-native-setting';
 
 export type NativeConfig = {
@@ -17,17 +16,7 @@ class NativeConfigService {
    * Caches result so we don't hit the plugin multiple times
    */
   async load(): Promise<NativeConfig> {
-    if (this.config) return this.config;
-
-    // If running in browser (npm run dev), plugin doesn't exist
-    if (Capacitor.getPlatform() === 'web') {
-      this.config = {
-        baseUrl: '',
-        mobileAppConsumer: '',
-        mobileAppKey: '',
-        mobileAppSecret: '',
-        producerId: ''
-      };
+    if (this.config) {
       return this.config;
     }
 
@@ -48,8 +37,6 @@ class NativeConfigService {
 
       return this.config;
     } catch (error) {
-      console.error('Failed to load native config:', error);
-
       // Fallback to empty values so app doesn't crash
       this.config = {
         baseUrl: '',
