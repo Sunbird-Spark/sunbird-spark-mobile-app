@@ -1,0 +1,206 @@
+{
+  "categories": [
+    {
+      "name": "Contenu (recherche)",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Le message « Contenu bientôt disponible » s'affiche sur mon écran et je ne vois aucun contenu pour le code QR scanné",
+          "description": "Votre État est en train de créer du contenu pour ce code QR. Le retard est dû au grand nombre de manuels scolaires pour de nombreuses classes, supports et matières. Vous verrez le contenu dès que l'État l'aura créé."
+        },
+        {
+          "topic": "Je ne vois pas de contenu pour mon conseil, support, classe ou matière",
+          "description": "Votre État n'a pas encore créé ni ajouté de contenu pour votre support, conseil, classe ou matière. Si vous voyez des livres répertoriés dans la bibliothèque de l'application, vous obtiendrez très probablement le contenu au cours de cette année scolaire."
+        },
+        {
+          "topic": "Je souhaite obtenir l'application mobile sur iOS ou ordinateur",
+          "description": "Vous pouvez visiter https://dev.sunbirded.org/explore/ depuis votre navigateur sur les appareils iOS ou ordinateur pour consulter le contenu. Nous travaillons actuellement sur une application de bureau pour une utilisation hors ligne qui devrait être prête dans le courant de l'année"
+        },
+        {
+          "topic": "Je ne vois pas le bouton de scan du code QR",
+          "description": "Ceci est dû à une version obsolète du composant \u003Cb\u003EAndroid System WebView\u003C/b\u003E sur votre téléphone. Pour mettre à jour le composant WebView :\n1. Accédez au Google Play Store\n2. Accédez au lien Android WebView. Utilisez https://play.google.com/store/apps/details?id=com.google.android.webview.\n\nRemarque : Android WebView est un composant préinstallé qui permet aux applications Android d'afficher du contenu web.\nIl doit être maintenu à jour pour garantir les dernières mises à jour de sécurité."
+        },
+        {
+          "topic": "Je souhaite accéder à des ressources particulières par type",
+          "description": "\u003Cul\u003E\u003Cli\u003ECliquez sur l'onglet \u003Cb\u003EType de ressource\u003C/b\u003E sur la page d'accueil\u003C/li\u003E\u003Cli\u003ESélectionnez Projet, Observation, Enquête ou Cours\u003C/li\u003E\u003Cli\u003EUne liste des ressources disponibles du type de ressource sélectionné pour votre rôle et votre localisation s'affiche\u003C/li\u003E\u003Cli\u003ECliquez sur la ressource souhaitée dans la liste pour l'utiliser ou la démarrer\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Lecture de contenu",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "J'ai un appareil sous Android 4.4, je ne peux pas lire de contenu dessus",
+          "description": "La version Android 4.4 ne prend pas en charge le HTML5 et donc tout le contenu ne peut pas être lu. Pour lire du contenu sur un appareil sous Android 4.4, essayez ce qui suit :\n\u003Cul\u003E\n\u003Cli\u003EMettez à jour la version Android vers la plus récente, de préférence vers une version supérieure à 5.1\u003C/li\u003E\n\u003Cli\u003EMettez à jour l'application mobile {{APP_NAME}} vers la dernière version\u003C/li\u003E\n\u003C/ul\u003EL'application invite à télécharger et installer Crosswalk lors de la lecture de contenu sous Android 4.4. L'utilisation de Crosswalk permet de lire la plupart du contenu sous Android 4.4\n\n"
+        },
+        {
+          "topic": "Je souhaite lire du contenu sans connexion Internet",
+          "description": "Vous ne pouvez télécharger du contenu que lorsque vous êtes connecté à Internet. Seul le contenu téléchargé peut être lu ultérieurement sans Internet.\nVous ne pouvez lire les vidéos YouTube que lorsque vous êtes connecté à Internet car YouTube ne permet pas aux autres applications de télécharger des vidéos."
+        },
+        {
+          "topic": "Le contenu occupe beaucoup d'espace sur mon téléphone",
+          "description": "Vous pouvez supprimer le contenu téléchargé depuis l'onglet des téléchargements de l'application pour libérer de l'espace"
+        },
+        {
+          "topic": "Lorsque j'essaie de lire une vidéo, j'obtiens l'erreur « Le média n'a pas pu être chargé »",
+          "description": "Si vous obtenez cette erreur, vous pouvez :\n\u003Cul\u003E\u003Cli\u003ETélécharger la vidéo et la lire,\u003C/li\u003E\u003C/ul\u003EOU\n\u003Cul\u003E\u003Cli\u003ESi vous ne voyez pas l'option de téléchargement, et si vous avez une carte SIM d'un autre opérateur réseau, basculez vers l'autre réseau et réessayez\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Lorsque j'essaie de lire un PDF, j'obtiens l'erreur « PDF manquant »",
+          "description": "Si vous obtenez cette erreur, vous devez :\n\u003Cul\u003E\u003Cli\u003EMettre à jour l'application (si une mise à jour est disponible)\u003C/ul\u003E\u003C/li\u003E\nSi le problème persiste après la mise à jour, alors\n\u003Cul\u003E\u003Cli\u003ESupprimez le PDF si vous l'avez téléchargé\u003C/li\u003E\n\u003Cli\u003EVérifiez votre connexion Internet et essayez de lire le contenu à nouveau\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Profil",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Je ne vois pas mon conseil, support, classe et matière",
+          "description": "Votre État ne prend pas actuellement en charge tous les conseils, supports, classes et matières. Dès que votre État les ajoutera, vous les verrez dans la liste."
+        },
+        {
+          "topic": "Je ne parviens pas à voir les paramètres de mon profil",
+          "description": "Ceci est dû à une version obsolète du composant \u003Cb\u003EAndroid System WebView\u003C/b\u003E sur votre téléphone. Pour mettre à jour le composant WebView :\n1. Accédez au Google Play Store\n2. Accédez au lien Android WebView. Utilisez https://play.google.com/store/apps/details?id=com.google.android.webview\n\nRemarque : Android WebView est un composant préinstallé qui permet aux applications Android d'afficher du contenu web.\nIl doit être maintenu à jour pour garantir les dernières mises à jour de sécurité."
+        },
+        {
+          "topic": "Je suis connecté en tant qu'Enseignant ou Autre. Je souhaite changer mon rôle",
+          "description": "\u003Cul\u003E\u003Cli\u003EAccédez à la page \u003Cb\u003EProfil\u003C/b\u003E\u003C/li\u003E\u003Cli\u003ECliquez sur \u003Cb\u003EModifier\u003C/b\u003E sous les détails de votre rôle et localisation\u003C/li\u003E\u003Cli\u003EModifiez votre rôle\u003C/li\u003E\u003Cli\u003E\u003Cb\u003ERemarque :\u003C/b\u003E Si vous souhaitez modifier votre rôle en \u003Cb\u003EResponsable\u003C/b\u003E, sélectionnez votre sous-rôle et les détails de localisation pertinents\u003C/li\u003E\u003Cli\u003ECliquez sur \u003Cb\u003ESoumettre\u003C/b\u003E\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite voir les programmes et ressources pour mon rôle et ma localisation",
+          "description": "\u003Cul\u003E\u003Cli\u003ECliquez sur \u003Cb\u003EProgrammes\u003C/b\u003E sur la page d'accueil\u003C/li\u003E\u003Cli\u003ELa liste des programmes pour votre rôle et votre localisation s'affiche\u003C/li\u003E\u003Cli\u003ESélectionnez un programme pour voir toutes ses ressources\u003C/li\u003E\u003Cli\u003ECliquez sur la ressource pour l'utiliser ou la démarrer\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Mon profil ne reflète pas correctement ma progression dans le cours",
+          "description": "Pour mettre à jour votre progression de cours dans votre profil, accédez à \u003Cb\u003EMes apprentissages\u003C/b\u003E. Cliquez sur le Cours. Après l'ouverture du cours, accédez au menu kebab (trois points verticaux à droite)\u003E cliquez sur \u003Cb\u003ESynchroniser la progression maintenant\u003C/b\u003E. Attendez quelques minutes. Votre profil devrait maintenant refléter votre progression de cours correcte"
+        }
+      ]
+    },
+    {
+      "name": "Connexion",
+      "videos": [
+        {
+          "id": "01",
+          "name": "Vidéo d'exemple",
+          "thumbnail": "https://ntpproductionall.blob.core.windows.net/ntp-content-production/content/do_31309320735055872011111/artifact/nishtha_icon.thumb.jpg",
+          "url": "https://ntpproductionall.blob.core.windows.net/ntp-content-production/content/assets/do_31309320735055872011111/engagement-with-language-.mp4"
+        }
+      ],
+      "faqs": [
+        {
+          "topic": "Je ne parviens pas à me connecter",
+          "description": "Pour utiliser l'application mobile {{APP_NAME}}, vous devez d'abord vous inscrire. Vous pouvez vous inscrire lorsque vous êtes connecté à Internet en utilisant l'une de ces options :\n\t\t\u003Cul\u003E\n\t\t\u003Cli\u003ENuméro de téléphone mobile ou adresse e-mail enregistrés\u003C/li\u003E\n\t\t\u003Cli\u003EIdentifiant fourni par l'État\u003C/li\u003E\n\t\t\u003Cli\u003EIdentifiant Google (Gmail) existant\u003C/li\u003E\n\t\t\u003C/ul\u003ESi vous vous êtes déjà inscrit, vérifiez que vous disposez d'une connexion Internet correcte."
+        }
+      ]
+    },
+    {
+      "name": "Création de contenu",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Je souhaite créer et ajouter du contenu sur {{APP_NAME}}",
+          "description": "Actuellement, l'État désigne des enseignants pour créer et ajouter du contenu sur {{APP_NAME}}. Si vous souhaitez créer du contenu, envoyez une demande à l'autorité de votre État pour obtenir les droits de création"
+        }
+      ]
+    },
+    {
+      "name": "Cours et certificats",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Je souhaite me désinscrire d'un cours",
+          "description": "Sélectionnez le cours duquel vous souhaitez vous désinscrire, appuyez sur le menu d'options (trois points verticaux) dans le coin supérieur droit et appuyez sur « Se désinscrire »"
+        },
+        {
+          "topic": "Je souhaite connaître l'état d'achèvement de mon cours",
+          "description": "Après avoir terminé un cours avec succès, le nom du cours sera affiché dans la section « Formations suivies » de votre page de profil"
+        },
+        {
+          "topic": "J'ai terminé la formation mais ma progression n'est pas à 100 %.",
+          "description": "Sunbird marque la progression de la formation à 100 % uniquement après avoir visionné toutes les vidéos ou lu tous les documents PDF en intégralité. Si vous visionnez une vidéo partiellement ou sautez des pages lors de la lecture d'un document, votre progression n'est pas marquée à 100 %."
+        },
+        {
+          "topic": "Je ne parviens pas à télécharger mon certificat de cours",
+          "description": "Vous avez peut-être une ancienne version de l'application. Accédez à \u003Cb\u003EPlay Store \u003E Sunbird\u003C/b\u003E. Cliquez sur \u003Cb\u003EMettre à jour\u003C/b\u003E pour obtenir la dernière version de l'application. Vous devriez pouvoir télécharger le certificat une fois l'application mise à jour avec succès."
+        }
+      ]
+    },
+    {
+      "name": "Autres",
+      "faqs": [
+        {
+          "topic": "J'ai terminé ma formation iGOT COVID, mais je n'ai pas reçu mon certificat",
+          "description": "Votre certificat de formation COVID sera émis dans les 7 jours ouvrables suivant la fin de toute formation COVID. Vous serez informé par e-mail ou SMS lorsque le certificat sera émis. Si vous ne recevez pas votre certificat dans les 7 jours ouvrables, contactez \u003Ca href=\"mailto:support@i-got.freshdesk.com\"\u003Esupport@i-got.freshdesk.com\u003C/a\u003E."
+        },
+        {
+          "topic": "Je souhaite télécharger mon certificat de formation iGOT COVID",
+          "description": "Votre certificat de formation iGOT COVID sera émis dans les 7 jours ouvrables suivant la fin de toute formation COVID. Vous serez informé par e-mail ou SMS lorsque le certificat sera émis. Après avoir reçu l'information, pour télécharger votre certificat :\u003Cul\u003E\u003Cli\u003EAccédez à \u003Cb\u003EProfil\u003C/b\u003E \u003E \u003Cb\u003EFormations suivies\u003C/b\u003E\u003C/li\u003E\u003Cli\u003ECliquez sur \u003Cb\u003ETélécharger\u003C/b\u003E\u003C/li\u003E\u003Cli\u003ELe certificat est téléchargé en arrière-plan\u003C/li\u003E\u003Cli\u003EVisualisez-le et ouvrez-le depuis votre gestionnaire de fichiers Android\u003C/li\u003E\u003C/ul\u003E\nSi vous ne recevez pas votre certificat dans les 7 jours ouvrables, contactez \u003Ca href=\"mailto:support@i-got.freshdesk.com\"\u003Esupport@i-got.freshdesk.com\u003C/a\u003E."
+        },
+        {
+          "topic": "Je souhaite savoir si j'ai terminé ma formation",
+          "description": "Pour savoir si vous avez terminé la formation COVID, vérifiez si :\u003Cul\u003E\u003Cli\u003EL'état de progression de votre formation est à 100 %\u003C/li\u003E\u003Cli\u003ELe nom de la formation apparaît sous \u003Cb\u003EProfil\u003C/b\u003E \u003E \u003Cb\u003EFormations suivies\u003C/b\u003E\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Gestion de projets",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Je souhaite modifier les détails du projet",
+          "description": "\u003Cul\u003E\u003Cli\u003E1. Ouvrez le projet\u003C/li\u003E\u003Cli\u003E2. Cliquez sur les 3 points dans le coin supérieur droit\u003C/li\u003E\u003Cli\u003ECliquez sur \u003Cb\u003EModifier\u003C/b\u003E\u003C/li\u003E\u003Cli\u003ECliquez sur l'icône \u003Cb\u003EModifier\u003C/b\u003E (crayon) pour modifier les détails\u003C/li\u003E\u003Cli\u003ECliquez sur \u003Cb\u003EEnregistrer les modifications\u003C/b\u003E pour sauvegarder les changements\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite modifier le statut d'une tâche lorsqu'il n'y a pas de sous-tâche",
+          "description": "\u003Cul\u003E\u003Cli\u003EOuvrez le projet\u003C/li\u003E\u003Cli\u003ECliquez sur la tâche\u003C/li\u003E\u003Cli\u003ECliquez sur le menu déroulant sous la tâche\u003C/li\u003E\u003Cli\u003EModifiez le statut et cliquez sur OK\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite modifier le statut d'une tâche lorsqu'une sous-tâche est présente",
+          "description": "\u003Cul\u003E\u003Cli\u003EOuvrez le projet\u003C/li\u003E\u003Cli\u003ECliquez sur la tâche souhaitée\u003C/li\u003E\u003Cli\u003EUne liste de sous-tâches s'affiche\u003C/li\u003E\u003Cli\u003ECliquez sur le menu déroulant de la sous-tâche\u003C/li\u003E\u003Cli\u003EModifiez le statut et cliquez sur OK\u003C/li\u003E\u003Cli\u003E\u003Cb\u003ERemarque :\u003C/b\u003E Le statut de la tâche est marqué comme terminé automatiquement uniquement si le statut de toutes ses sous-tâches est terminé.\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite ajouter un fichier de preuve au projet après l'achèvement de la tâche",
+          "description": "\u003Cul\u003E\u003Cli\u003E1. Ouvrez le \u003Cb\u003EProjet\u003C/b\u003E\u003C/li\u003E\u003Cli\u003E2. Cliquez sur la tâche terminée\u003C/li\u003E\u003Cli\u003E3. Cliquez sur \u003Cb\u003EAjouter une pièce jointe\u003C/b\u003E dans le coin inférieur droit\u003C/li\u003E\u003Cli\u003E4. Cliquez sur \u003Cb\u003EUtiliser l'appareil photo\u003C/b\u003E pour prendre une photo\u003C/li\u003E\u003Cli\u003E5. Cliquez sur \u003Cb\u003ECharger depuis la bibliothèque\u003C/b\u003E pour sélectionner l'image depuis votre téléphone\u003C/li\u003E\u003Cli\u003E6. Vous verrez le message \u003Cb\u003EPièce jointe ajoutée avec succès\u003C/b\u003E dans la fenêtre contextuelle en haut de votre écran\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite ajouter un fichier de preuve pour l'Observation ou l'Enquête (Uniquement lorsqu'une question propose l'option fichiers)",
+          "description": "\u003Cul\u003E\u003Cli\u003EDémarrez le questionnaire d'observation/enquête\u003C/li\u003E\u003Cli\u003ECliquez sur l'option fichiers dans la question\u003C/li\u003E\u003Cli\u003ESélectionnez appareil photo/télécharger une image\u003C/li\u003E\u003Cli\u003EUne icône d'image est ajoutée pour indiquer que la preuve a été ajoutée.\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite accéder à mes rapports de Projet sur {{APP_NAME}}",
+          "description": "\u003Cul\u003E\u003Cli\u003ECliquez sur \u003Cb\u003ERapports\u003C/b\u003E sur la page d'accueil\u003C/li\u003E\u003Cli\u003ESélectionnez le type de ressource comme Projet\u003C/li\u003E\u003Cli\u003EConsultez le rapport de synthèse du projet, des tâches et des catégories\u003C/li\u003E\u003Cli\u003ECliquez sur le filtre pour sélectionner un programme particulier\u003C/li\u003E\u003Cli\u003ECliquez sur « Voir le rapport » pour les rapports détaillés\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Je souhaite accéder à mes rapports d'Observation sur {{APP_NAME}}",
+          "description": "\u003Cul\u003E\u003Cli\u003ECliquez sur \u003Cb\u003ERapports\u003C/b\u003E sur la page d'accueil\u003C/li\u003E\u003Cli\u003ESélectionnez le type de ressource comme \u003Cb\u003EObservation\u003C/b\u003E\u003C/li\u003E\u003Cli\u003ESélectionnez le formulaire d'observation\u003C/li\u003E\u003Cli\u003ESélectionnez l'Entité\u003C/li\u003E\u003Cli\u003ECliquez sur \u003Cb\u003EVoir le rapport de l'Entité\u003C/b\u003E\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    }
+  ],
+  "constants": {
+    "charactersLeft": "caractères restants",
+    "explainMsg": "Pourriez-vous expliquer le problème ?",
+    "faqMsg": "Questions fréquemment posées",
+    "faqTitle": "FAQ",
+    "help": "Aide",
+    "helpMsg": "Cette réponse vous a-t-elle aidé ?",
+    "initiateEmailButton": "Envoyer un e-mail",
+    "knowMoreMsg": "Que souhaitez-vous savoir de plus ?",
+    "noMsg": "Non",
+    "reportIssue": "Signaler un problème",
+    "reportIssueMsg": "Signaler un autre problème",
+    "resolveMsg": "Obtenez de l'aide pour trouver du contenu, résoudre des problèmes techniques et bien plus encore. Parcourez les sujets pour trouver des FAQ, des vidéos d'aide et plus encore.",
+    "selectCategoryTitle": "Sélectionner une catégorie",
+    "sorryMsg": "Nous sommes désolés !",
+    "submitButton": "Envoyer le commentaire",
+    "tellMoreMsg": "Dites-nous en plus sur le problème que vous avez rencontré",
+    "thanksForFeedbackMsg": "Merci pour votre commentaire. Nous ne pourrons peut-être pas répondre à chaque suggestion qui nous est envoyée, mais votre avis est précieux. Il contribue à améliorer {{app_name}} pour tout le monde.",
+    "thanksMsg": "Merci pour votre réponse !",
+    "triggerEmailMsg": "Après avoir ajouté les détails dans la zone de texte et appuyé sur le bouton Envoyer un e-mail, nous enverrons un e-mail en votre nom. Vous pourrez y ajouter des détails supplémentaires et/ou joindre des fichiers.",
+    "typeHere": "Saisissez ici...",
+    "videoTitle": "Vidéo(s)",
+    "yesMsg": "Oui"
+  }
+}

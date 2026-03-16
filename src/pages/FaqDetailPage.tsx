@@ -7,6 +7,7 @@ import {
     IonToolbar,
     IonButtons,
 } from '@ionic/react';
+import { useFaqData } from '../hooks/useFaqData';
 import './FaqDetailPage.css';
 
 /* ── Chevron icon ── */
@@ -16,116 +17,22 @@ const ChevronDownIcon: React.FC = () => (
     </svg>
 );
 
-/* ── FAQ data per category ── */
-
-interface FaqItem {
-    question: string;
-    answer: string;
-}
-
-const faqData: Record<string, { title: string; faqs: FaqItem[] }> = {
-    login: {
-        title: "Login FAQ's",
-        faqs: [
-            {
-                question: 'What kind of courses are available on this platform?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'What if I need help during the course?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Are the courses accredited or do they offer certification?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Can I learn in offline mode?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'What if I need help during the course?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Are the courses accredited or do they offer certification?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Can I learn in offline mode?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-        ],
-    },
-    profile: {
-        title: "Profile FAQ's",
-        faqs: [
-            {
-                question: 'What kind of courses are available on this platform?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'What if I need help during the course?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Are the courses accredited or do they offer certification?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Can I learn in offline mode?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'What if I need help during the course?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-        ],
-    },
-    'course-certificates': {
-        title: "Course & Certification FAQ's",
-        faqs: [
-            {
-                question: 'What kind of courses are available on this platform?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'What if I need help during the course?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Are the courses accredited or do they offer certification?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Can I learn in offline mode?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'What if I need help during the course?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Are the courses accredited or do they offer certification?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-            {
-                question: 'Can I learn in offline mode?',
-                answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-            },
-        ],
-    },
-};
 
 /* ── Component ── */
 
 const FaqDetailPage: React.FC = () => {
     const { category } = useParams<{ category: string }>();
     const history = useHistory();
-    const data = faqData[category] || { title: "FAQ's", faqs: [] };
+    const { faqData, isLoading, isError } = useFaqData();
+
+    const categoryData = faqData?.categories.find(c => c.slug === category);
+    const data = categoryData
+        ? { title: `${categoryData.title} FAQ's`, faqs: categoryData.faqs }
+        : { title: "FAQ's", faqs: [] };
 
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
-    const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no'>>({});
+    const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>({});
+    const [feedbackText, setFeedbackText] = useState<Record<number, string>>({});
 
     const toggleFaq = (index: number) => {
         setExpandedFaq(prev => (prev === index ? -1 : index));
@@ -133,6 +40,11 @@ const FaqDetailPage: React.FC = () => {
 
     const handleFeedback = (index: number, value: 'yes' | 'no') => {
         setFeedback(prev => ({ ...prev, [index]: value }));
+    };
+
+    const handleSubmitFeedback = (index: number) => {
+        setFeedbackText(prev => ({ ...prev, [index]: '' }));
+        setFeedback(prev => ({ ...prev, [index]: 'submitted' }));
     };
 
     return (
@@ -153,6 +65,9 @@ const FaqDetailPage: React.FC = () => {
             {/* ── Content ── */}
             <IonContent className="fd-content">
                 <div className="fd-container">
+                    {isLoading && <p className="fd-status-text">Loading...</p>}
+                    {isError && <p className="fd-status-text">Failed to load FAQs. Please try again.</p>}
+
                     <h1 className="fd-section-title">{data.title}</h1>
 
                     <div className="fd-faq-list">
@@ -171,21 +86,49 @@ const FaqDetailPage: React.FC = () => {
                                 {expandedFaq === idx && (
                                     <div className="fd-faq-answer">
                                         <p className="fd-faq-answer-text">{faq.answer}</p>
-                                        <div className="fd-feedback-row">
-                                            <span className="fd-feedback-label">Did this answer help you?</span>
-                                            <button
-                                                className={`fd-feedback-btn fd-feedback-no ${feedback[idx] === 'no' ? 'selected' : ''}`}
-                                                onClick={() => handleFeedback(idx, 'no')}
-                                            >
-                                                No
-                                            </button>
-                                            <button
-                                                className={`fd-feedback-btn fd-feedback-yes ${feedback[idx] === 'yes' ? 'selected' : ''}`}
-                                                onClick={() => handleFeedback(idx, 'yes')}
-                                            >
-                                                Yes
-                                            </button>
-                                        </div>
+
+                                        {feedback[idx] === 'yes' || feedback[idx] === 'submitted' ? (
+                                            <div className="fd-feedback-thanks">
+                                                <span>Thank you for your feedback!</span>
+                                            </div>
+                                        ) : feedback[idx] === 'no' ? (
+                                            <div className="fd-feedback-form">
+                                                <p className="fd-feedback-sorry">Sorry to hear that</p>
+                                                <p className="fd-feedback-improve">What could we do to improve?</p>
+                                                <textarea
+                                                    className="fd-feedback-textarea"
+                                                    placeholder="Tell us more..."
+                                                    value={feedbackText[idx] || ''}
+                                                    onChange={(e) =>
+                                                        setFeedbackText(prev => ({ ...prev, [idx]: e.target.value }))
+                                                    }
+                                                    rows={3}
+                                                />
+                                                <button
+                                                    className="fd-feedback-submit"
+                                                    disabled={!feedbackText[idx]?.trim()}
+                                                    onClick={() => handleSubmitFeedback(idx)}
+                                                >
+                                                    Submit Feedback
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="fd-feedback-row">
+                                                <span className="fd-feedback-label">Did this answer help you?</span>
+                                                <button
+                                                    className="fd-feedback-btn fd-feedback-no"
+                                                    onClick={() => handleFeedback(idx, 'no')}
+                                                >
+                                                    No
+                                                </button>
+                                                <button
+                                                    className="fd-feedback-btn fd-feedback-yes"
+                                                    onClick={() => handleFeedback(idx, 'yes')}
+                                                >
+                                                    Yes
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 )}
                             </div>
