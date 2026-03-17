@@ -51,7 +51,15 @@ const HelpAndSupportPage: React.FC = () => {
     const [showToast, setShowToast] = useState(false);
 
     const { faqData, isLoading: faqLoading } = useFaqData();
-    const { data: formData } = useFormRead();
+    const { data: formData } = useFormRead({
+        request: {
+            type: 'dynamicform',
+            subType: 'support_v2',
+            action: 'get',
+            component: 'app',
+            rootOrgId: '*',
+        }
+    });
 
     const categories = faqData?.categories ?? [];
     const mostViewedFaqs = faqData?.categories.flatMap(c => c.faqs).slice(0, 4) ?? [];
@@ -101,25 +109,25 @@ const HelpAndSupportPage: React.FC = () => {
                     {faqLoading ? (
                         <div className="hs-loading">Loading...</div>
                     ) : (
-                    <div className="hs-category-cards">
-                        {categories.map((cat, idx) => (
-                            <div
-                                className="hs-category-card"
-                                key={idx}
-                                onClick={() => history.push(`/support/${cat.slug}`)}
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <div className="hs-accent-bar" />
-                                <h2 className="hs-category-title">{cat.title}</h2>
-                                <div className="hs-category-footer">
-                                    <span className="hs-faq-count">{cat.faqCount} FAQ's</span>
-                                    <span className="hs-arrow-icon">
-                                        <ArrowRightIcon />
-                                    </span>
+                        <div className="hs-category-cards">
+                            {categories.map((cat, idx) => (
+                                <div
+                                    className="hs-category-card"
+                                    key={idx}
+                                    onClick={() => history.push(`/support/${cat.slug}`)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    <div className="hs-accent-bar" />
+                                    <h2 className="hs-category-title">{cat.title}</h2>
+                                    <div className="hs-category-footer">
+                                        <span className="hs-faq-count">{cat.faqCount} FAQ's</span>
+                                        <span className="hs-arrow-icon">
+                                            <ArrowRightIcon />
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
                     )}
                 </div>
 
