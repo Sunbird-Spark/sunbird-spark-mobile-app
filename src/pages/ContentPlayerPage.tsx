@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -8,17 +9,52 @@ import {
   IonBackButton,
   IonSpinner,
 } from '@ionic/react';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
+import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
+import { useQumlContent } from '../hooks/useQumlContent';
 import './ContentPlayerPage.css';
+
+const QUML_MIME_TYPES = [
+  'application/vnd.sunbird.questionset',
+  'application/vnd.sunbird.question',
+];
 
 const ContentPlayerPage: React.FC = () => {
   const { contentId } = useParams<{ contentId: string }>();
-  const { data, isLoading, error } = useContentRead(contentId);
+  const history = useHistory();
 
-  const content = data?.data?.result?.content;
-  const mimeType = content?.mimeType;
+  // First fetch content metadata to determine mimeType
+  const { data, isLoading, error } = useContentRead(contentId);
+  const contentData = data?.data?.content;
+  const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
+
+  // For QuML content, fetch hierarchy + questions via dedicated hook
+  const {
+    data: qumlData,
+    isLoading: isQumlLoading,
+    error: qumlError,
+  } = useQumlContent(contentId, { enabled: isQumlContent });
+
+  // Use QuML data when applicable, otherwise standard content data
+  const playerMetadata = isQumlContent ? qumlData : contentData;
+  const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
+  const playerError = error || (isQumlContent ? qumlError : null);
+  const mimeType = playerMetadata?.mimeType;
+
+  // Lock to landscape on mount, unlock on unmount
+  useEffect(() => {
+    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
+    return () => {
+      ScreenOrientation.unlock().catch(() => {});
+    };
+  }, []);
+
+  const handleBack = useCallback(() => {
+    ScreenOrientation.unlock().catch(() => {});
+    history.goBack();
+  }, [history]);
 
   const handlePlayerEvent = (event: any) => {
     console.log('[ContentPlayerPage] Player event:', event);
@@ -28,27 +64,21 @@ const ContentPlayerPage: React.FC = () => {
     console.log('[ContentPlayerPage] Telemetry event:', event);
   };
 
-  if (isLoading) {
+  if (playerIsLoading) {
     return (
-      <IonPage>
-        <IonHeader>
-          <IonToolbar>
-            <IonButtons slot="start">
-              <IonBackButton defaultHref="/home" />
-            </IonButtons>
-            <IonTitle>Content Player</IonTitle>
-          </IonToolbar>
-        </IonHeader>
+      <IonPage className="content-player-fullscreen">
         <IonContent className="ion-padding ion-text-center">
-          <IonSpinner name="crescent" />
+          <div className="content-player-loading">
+            <IonSpinner name="crescent" />
+          </div>
         </IonContent>
       </IonPage>
     );
   }
 
-  if (error || !content || !mimeType) {
+  if (playerError || !playerMetadata || !mimeType) {
     return (
-      <IonPage>
+      <IonPage className="content-player-fullscreen">
         <IonHeader>
           <IonToolbar>
             <IonButtons slot="start">
@@ -59,7 +89,7 @@ const ContentPlayerPage: React.FC = () => {
         </IonHeader>
         <IonContent className="ion-padding">
           <div className="content-player-error">
-            <p>{error ? `Failed to load content: ${error.message}` : 'No content data available. Please select content to play.'}</p>
+            <p>{playerError ? `Failed to load content: ${playerError.message}` : 'No content data available. Please select content to play.'}</p>
           </div>
         </IonContent>
       </IonPage>
@@ -67,20 +97,17 @@ const ContentPlayerPage: React.FC = () => {
   }
 
   return (
-    <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/home" />
-          </IonButtons>
-          <IonTitle>{content.name || 'Content Player'}</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="content-player-page" scrollY={false}>
+    <IonPage className="content-player-fullscreen">
+      <IonContent scrollY={false}>
+        <button className="content-player-close-btn" onClick={handleBack}>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+        </button>
         <div className="content-player-container">
           <ContentPlayer
             mimeType={mimeType}
-            metadata={content}
+            metadata={playerMetadata}
             onPlayerEvent={handlePlayerEvent}
             onTelemetryEvent={handleTelemetryEvent}
           />
