@@ -91,6 +91,12 @@ const ExplorePage: React.FC = () => {
     const debouncedQuery = useDebounce(searchQuery, 600);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
+    // Keep search state in sync with URL query parameter so deep-linking works
+    useEffect(() => {
+        setShowSearch(!!urlQuery);
+        setSearchQuery(urlQuery);
+    }, [urlQuery]);
+
     // ── Filters & Sort (applied immediately on selection, like the portal) ──
     const [filters, setFilters] = useState<FilterState>({});
     const [sortBy, setSortBy] = useState<Record<string, string>>({ lastUpdatedOn: 'desc' });
