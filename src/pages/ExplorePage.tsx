@@ -105,7 +105,7 @@ const ExplorePage: React.FC = () => {
     // ── Form read for filter groups ──
     const { data: formData, isLoading: isFormLoading } = useFormRead({
         request: {
-            type: 'portal',
+            type: 'app',
             subType: 'explorepage',
             action: 'filters',
             component: 'app',
@@ -165,7 +165,7 @@ const ExplorePage: React.FC = () => {
         });
 
         infiniteScrollRef.current?.complete();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [data]);
 
     // ── Handlers ──
