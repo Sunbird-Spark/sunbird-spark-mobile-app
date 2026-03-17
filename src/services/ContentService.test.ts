@@ -147,4 +147,91 @@ describe('ContentService', () => {
       expect(result.data.result.count).toBe(0);
     });
   });
+
+  describe('contentSearch', () => {
+    const mockSearchResponse = {
+      data: { count: 1, content: [{ identifier: 'do_1', name: 'Item' }] },
+      status: 200,
+      headers: {},
+    };
+
+    it('should call composite search endpoint with default values', async () => {
+      mockHttpClient.post.mockResolvedValue(mockSearchResponse);
+
+      const result = await contentService.contentSearch();
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/composite/v1/search', {
+        request: {
+          filters: {},
+          facets: undefined,
+          limit: 9,
+          offset: 0,
+          query: '',
+          sort_by: { lastUpdatedOn: 'desc' },
+        },
+      });
+      expect(result).toEqual(mockSearchResponse);
+    });
+
+    it('should pass custom filters', async () => {
+      mockHttpClient.post.mockResolvedValue(mockSearchResponse);
+
+      await contentService.contentSearch({
+        filters: { primaryCategory: ['Course'] },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/composite/v1/search', {
+        request: expect.objectContaining({
+          filters: { primaryCategory: ['Course'] },
+        }),
+      });
+    });
+
+    it('should pass custom limit and offset', async () => {
+      mockHttpClient.post.mockResolvedValue(mockSearchResponse);
+
+      await contentService.contentSearch({ limit: 20, offset: 10 });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/composite/v1/search', {
+        request: expect.objectContaining({
+          limit: 20,
+          offset: 10,
+        }),
+      });
+    });
+
+    it('should pass query and sort_by', async () => {
+      mockHttpClient.post.mockResolvedValue(mockSearchResponse);
+
+      await contentService.contentSearch({
+        query: 'math',
+        sort_by: { lastUpdatedOn: 'asc' },
+      });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/composite/v1/search', {
+        request: expect.objectContaining({
+          query: 'math',
+          sort_by: { lastUpdatedOn: 'asc' },
+        }),
+      });
+    });
+
+    it('should pass facets when provided', async () => {
+      mockHttpClient.post.mockResolvedValue(mockSearchResponse);
+
+      await contentService.contentSearch({ facets: ['primaryCategory', 'medium'] });
+
+      expect(mockHttpClient.post).toHaveBeenCalledWith('/composite/v1/search', {
+        request: expect.objectContaining({
+          facets: ['primaryCategory', 'medium'],
+        }),
+      });
+    });
+
+    it('should propagate errors from the HTTP client', async () => {
+      mockHttpClient.post.mockRejectedValue(new Error('Network error'));
+
+      await expect(contentService.contentSearch()).rejects.toThrow('Network error');
+    });
+  });
 });

@@ -1,0 +1,55 @@
+import React from 'react';
+import { IonImg } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
+import type { ContentSearchItem } from '../../types/contentTypes';
+import './ContentCards.css';
+
+interface CollectionCardProps {
+    item: ContentSearchItem;
+}
+
+const UserIcon = () => (
+    <svg className="collection-card-stats-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+    </svg>
+);
+
+const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
+    const history = useHistory();
+    const imageUrl = item.posterImage || item.appIcon || item.thumbnail || '';
+    const creator = item.creator ?? item.createdBy ?? 'Unknown';
+    const lessons = item.leafNodesCount ?? 0;
+    const badge = item.primaryCategory || 'Collection';
+
+    return (
+        <div
+            className="collection-card"
+            onClick={() => history.push(`/collection/${item.identifier}`)}
+        >
+            {/* Image */}
+            <div className="collection-card-image-wrapper">
+                <div className="collection-card-image-inner">
+                    {imageUrl
+                        ? <IonImg src={imageUrl} alt={item.name} className="collection-card-image" />
+                        : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)' }} />
+                    }
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="collection-card-content">
+                <div className="collection-card-badge">{badge}</div>
+                <h3 className="collection-card-title">{item.name || 'Untitled'}</h3>
+                <div className="collection-card-stats">
+                    <UserIcon />
+                    <span>{creator}</span>
+                    <span>•</span>
+                    <span>{lessons} Lessons</span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default CollectionCard;
