@@ -3,6 +3,8 @@ import { IonReactRouter } from '@ionic/react-router';
 import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { AppInitializer } from './AppInitializer';
+import { useAppInitialized } from './hooks/useAppInitialized';
+import PageLoader from './components/common/PageLoader';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/HomePage';
 import ExplorePage from './pages/ExplorePage';
@@ -44,12 +46,22 @@ import ContentPlayerPage from './pages/ContentPlayerPage';
 setupIonicReact();
 
 const App: React.FC = () => {
+  const isInitialized = useAppInitialized();
+
   useEffect(() => {
     AppInitializer.init()
       .catch((error) => {
         console.error('App: Failed to initialize application:', error);
       });
   }, []);
+
+  if (!isInitialized) {
+    return (
+      <IonApp>
+        <PageLoader />
+      </IonApp>
+    );
+  }
 
   return (
     <IonApp>
