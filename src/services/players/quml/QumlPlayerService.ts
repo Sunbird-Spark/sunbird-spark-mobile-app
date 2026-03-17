@@ -34,30 +34,34 @@ export class QumlPlayerService {
   ): Promise<QumlPlayerConfig> {
     await this.loadScript();
 
-    const sid = `session-${Date.now()}`;
-    const uid = 'anonymous';
+    const sid = contextProps?.sid || `session-${Date.now()}`;
+    const uid = contextProps?.uid || 'anonymous';
 
-    let did = '';
-    try {
-      did = await deviceService.getHashedDeviceId();
-    } catch (error) {
-      console.warn('Failed to fetch device ID:', error);
-    }
-
-    let channel = '';
-    try {
-      const orgResponse = await this.orgService.search({
-        filters: { isTenant: true }
-      });
-      const org = orgResponse?.data?.result?.response?.content?.[0];
-      if (org?.channel) {
-        channel = org.channel;
+    let did = contextProps?.did || '';
+    if (!did) {
+      try {
+        did = await deviceService.getHashedDeviceId();
+      } catch (error) {
+        console.warn('Failed to fetch device ID:', error);
       }
-    } catch (error) {
-      console.warn('Failed to fetch channel from org service:', error);
     }
 
-    const pdata = {
+    let channel = contextProps?.channel || '';
+    if (!channel) {
+      try {
+        const orgResponse = await this.orgService.search({
+          filters: { isTenant: true }
+        });
+        const org = orgResponse?.data?.result?.response?.content?.[0];
+        if (org?.channel) {
+          channel = org.channel;
+        }
+      } catch (error) {
+        console.warn('Failed to fetch channel from org service:', error);
+      }
+    }
+
+    const pdata = contextProps?.pdata || {
       id: 'sunbird.app',
       ver: '1.0.0',
       pid: 'sunbird-app.contentplayer',

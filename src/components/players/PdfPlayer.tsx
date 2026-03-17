@@ -5,6 +5,11 @@ import type { PdfPlayerEvent, PdfPlayerContextProps, PdfPlayerMetadata } from '.
 interface PdfPlayerProps {
   metadata: PdfPlayerMetadata;
   mode?: string;
+  channel?: string;
+  pdata?: { id: string; ver: string; pid: string };
+  did?: string;
+  sid?: string;
+  uid?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
@@ -15,6 +20,11 @@ interface PdfPlayerProps {
 export const PdfPlayer: React.FC<PdfPlayerProps> = ({
   metadata,
   mode,
+  channel,
+  pdata,
+  did,
+  sid,
+  uid,
   cdata,
   contextRollup,
   objectRollup,
@@ -25,16 +35,31 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
   const serviceRef = useRef<PdfPlayerService>(new PdfPlayerService());
 
   const contextProps = useMemo<PdfPlayerContextProps | undefined>(() => {
-    if (mode === undefined && cdata === undefined && contextRollup === undefined && objectRollup === undefined) {
+    if (
+      mode === undefined &&
+      channel === undefined &&
+      pdata === undefined &&
+      did === undefined &&
+      sid === undefined &&
+      uid === undefined &&
+      cdata === undefined &&
+      contextRollup === undefined &&
+      objectRollup === undefined
+    ) {
       return undefined;
     }
     return {
       ...(mode !== undefined && { mode }),
+      ...(channel !== undefined && { channel }),
+      ...(pdata !== undefined && { pdata }),
+      ...(did !== undefined && { did }),
+      ...(sid !== undefined && { sid }),
+      ...(uid !== undefined && { uid }),
       ...(cdata !== undefined && { cdata }),
       ...(contextRollup !== undefined && { contextRollup }),
       ...(objectRollup !== undefined && { objectRollup }),
     };
-  }, [mode, cdata, contextRollup, objectRollup]);
+  }, [mode, channel, pdata, did, sid, uid, cdata, contextRollup, objectRollup]);
 
   const handlePlayerEvent = useCallback((event: PdfPlayerEvent) => {
     onPlayerEvent?.(event);

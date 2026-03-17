@@ -39,28 +39,38 @@ export class VideoPlayerService {
   ): Promise<VideoPlayerConfig> {
     await this.loadScript();
 
-    const sid = `session-${Date.now()}`;
-    const uid = 'anonymous';
+    const sid = contextProps?.sid || `session-${Date.now()}`;
+    const uid = contextProps?.uid || 'anonymous';
 
-    let did = '';
-    try {
-      did = await deviceService.getHashedDeviceId();
-    } catch (error) {
-      console.warn('Failed to fetch device ID, using fallback:', error);
-    }
-
-    let channel = '';
-    try {
-      const orgResponse = await this.orgService.search({
-        filters: { isTenant: true }
-      });
-      const org = orgResponse?.data?.result?.response?.content?.[0];
-      if (org?.channel) {
-        channel = org.channel;
+    let did = contextProps?.did || '';
+    if (!did) {
+      try {
+        did = await deviceService.getHashedDeviceId();
+      } catch (error) {
+        console.warn('Failed to fetch device ID, using fallback:', error);
       }
-    } catch (error) {
-      console.warn('Failed to fetch channel from org service:', error);
     }
+
+    let channel = contextProps?.channel || '';
+    if (!channel) {
+      try {
+        const orgResponse = await this.orgService.search({
+          filters: { isTenant: true }
+        });
+        const org = orgResponse?.data?.result?.response?.content?.[0];
+        if (org?.channel) {
+          channel = org.channel;
+        }
+      } catch (error) {
+        console.warn('Failed to fetch channel from org service:', error);
+      }
+    }
+
+    const pdata = contextProps?.pdata || {
+      id: 'sunbird.app',
+      ver: '1.0.0',
+      pid: 'sunbird-app.contentplayer',
+    };
 
     const context = {
       mode: contextProps?.mode || 'play',
@@ -68,11 +78,7 @@ export class VideoPlayerService {
       did,
       uid,
       channel,
-      pdata: {
-        id: 'sunbird.app',
-        ver: '1.0.0',
-        pid: 'sunbird-app.contentplayer',
-      },
+      pdata,
       contextRollup: contextProps?.contextRollup || { l1: channel },
       cdata: contextProps?.cdata || [],
       timeDiff: 0,

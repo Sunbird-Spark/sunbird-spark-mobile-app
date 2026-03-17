@@ -5,6 +5,11 @@ import type { EpubPlayerEvent, EpubPlayerContextProps, EpubPlayerMetadata } from
 interface EpubPlayerProps {
   metadata: EpubPlayerMetadata;
   mode?: string;
+  channel?: string;
+  pdata?: { id: string; ver: string; pid: string };
+  did?: string;
+  sid?: string;
+  uid?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
@@ -15,6 +20,11 @@ interface EpubPlayerProps {
 export const EpubPlayer: React.FC<EpubPlayerProps> = ({
   metadata,
   mode,
+  channel,
+  pdata,
+  did,
+  sid,
+  uid,
   cdata,
   contextRollup,
   objectRollup,
@@ -25,16 +35,31 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
   const serviceRef = useRef<EpubPlayerService>(new EpubPlayerService());
 
   const contextProps = useMemo<EpubPlayerContextProps | undefined>(() => {
-    if (mode === undefined && cdata === undefined && contextRollup === undefined && objectRollup === undefined) {
+    if (
+      mode === undefined &&
+      channel === undefined &&
+      pdata === undefined &&
+      did === undefined &&
+      sid === undefined &&
+      uid === undefined &&
+      cdata === undefined &&
+      contextRollup === undefined &&
+      objectRollup === undefined
+    ) {
       return undefined;
     }
     return {
       ...(mode !== undefined && { mode }),
+      ...(channel !== undefined && { channel }),
+      ...(pdata !== undefined && { pdata }),
+      ...(did !== undefined && { did }),
+      ...(sid !== undefined && { sid }),
+      ...(uid !== undefined && { uid }),
       ...(cdata !== undefined && { cdata }),
       ...(contextRollup !== undefined && { contextRollup }),
       ...(objectRollup !== undefined && { objectRollup }),
     };
-  }, [mode, cdata, contextRollup, objectRollup]);
+  }, [mode, channel, pdata, did, sid, uid, cdata, contextRollup, objectRollup]);
 
   const handlePlayerEvent = useCallback((event: EpubPlayerEvent) => {
     onPlayerEvent?.(event);
