@@ -1,16 +1,19 @@
 import { getClient, ApiResponse } from '../lib/http-client';
+import { FormReadRequest, FormReadResponse } from '../types/formTypes';
 
 export class FormService {
-  public async read<T = any>(payload: any): Promise<ApiResponse<T>> {
-    try {
-      const response = await getClient().post<T>('/data/v1/form/read', payload, {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      });
-      return response;
-    } catch (error) {
-      console.error('FormService API Error:', error);
-      throw error;
-    }
+  public async formRead(
+    request: FormReadRequest
+  ): Promise<ApiResponse<FormReadResponse>> {
+    return getClient().post<FormReadResponse>('/data/v1/form/read', {
+      request: {
+        type: request.type,
+        subType: request.subType ?? '',
+        action: request.action,
+        component: request.component ?? '*',
+        rootOrgId: request.rootOrgId ?? '*',
+        framework: request.framework ?? '*',
+      },
+    });
   }
 }

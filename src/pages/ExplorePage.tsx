@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
-import { IonPage, IonHeader, IonToolbar, IonContent, IonModal, IonFooter, IonImg } from '@ionic/react';
+import React, { useState, useEffect, useRef, useMemo, useReducer } from 'react';
+import {
+    IonPage, IonHeader, IonToolbar, IonContent, IonModal,
+    IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher,
+    IonRefresherContent, IonSpinner,
+} from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
-import { useHistory } from 'react-router-dom';
+import { useContentSearch } from '../hooks/useContentSearch';
+import { useFormRead } from '../hooks/useFormRead';
+import useDebounce from '../hooks/useDebounce';
+import type { ContentSearchItem } from '../types/contentTypes';
+import type { ExploreFilterGroup, ExploreFilterOption, FilterState } from '../types/formTypes';
+import CollectionCard from '../components/content/CollectionCard';
+import ResourceCard from '../components/content/ResourceCard';
 import './ExplorePage.css';
+
 // ── Icons ──
 const FilterIcon = () => (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -16,219 +27,321 @@ const SearchIcon = () => (
     </svg>
 );
 
-// ── Mock Data ──
-const mockExploreItems = [
-    {
-        id: '1',
-        type: 'Course',
-        title: 'The AI Engineer Course 2026: Complete AI...',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard', // image top, text bottom
-    },
-    {
-        id: '2',
-        type: 'Textbook',
-        title: 'Data Engineering Foundation',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '3',
-        type: 'Course',
-        title: 'The AI Engineer Course 2026: Complete AI...',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '4',
-        type: 'Video',
-        title: 'Elm Partners with Sunbird to Build a Graduate Development Program',
-        linkText: 'Watch the Video →',
-        background: 'linear-gradient(180deg, rgba(26,163,184,0.7) 0%, rgba(6,103,122,0.9) 100%)',
-        backgroundImage: 'url(https://images.pexels.com/photos/8386433/pexels-photo-8386433.jpeg?auto=compress&cs=tinysrgb&w=600)',
-        layout: 'overlay', // text over image background
-    },
-    {
-        id: '5',
-        type: 'Epub',
-        title: 'Bitcoin Engineering Foundations',
-        linkText: 'View the Epub →',
-        background: 'linear-gradient(180deg, rgba(227,76,0,0.7) 0%, rgba(158,53,0,0.9) 100%)',
-        backgroundImage: 'url(https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=600)',
-        layout: 'overlay',
-    },
-    {
-        id: '6',
-        type: 'Textbook',
-        title: 'Data Engineering Foundation',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '7',
-        type: 'Course',
-        title: 'The AI Engineer Course 2026: Complete AI...',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '8',
-        type: 'Textbook',
-        title: 'Data Engineering Foundation',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '9',
-        type: 'PDF',
-        title: 'Data Engineering Foundations',
-        linkText: 'View the PDF →',
-        background: 'linear-gradient(180deg, rgba(124,77,255,0.7) 0%, rgba(62,27,155,0.9) 100%)',
-        backgroundImage: 'url(https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600)', // Added image behind PDF
-        layout: 'overlay',
-    },
-    {
-        id: '10',
-        type: 'Course',
-        title: 'The AI Engineer Course 2026: Complete AI...',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '11',
-        type: 'Video',
-        title: 'Elm Partners with Sunbird to Build a Graduate Development Program',
-        linkText: 'Watch the Video →',
-        background: 'linear-gradient(180deg, rgba(26,163,184,0.7) 0%, rgba(6,103,122,0.9) 100%)',
-        backgroundImage: 'url(https://images.pexels.com/photos/8386433/pexels-photo-8386433.jpeg?auto=compress&cs=tinysrgb&w=600)',
-        layout: 'overlay',
-    },
-    {
-        id: '12',
-        type: 'Textbook',
-        title: 'Data Engineering Foundation',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600',
-        layout: 'standard',
-    },
-    {
-        id: '13',
-        type: 'Epub',
-        title: 'Bitcoin Engineering Foundations',
-        linkText: 'View the Epub →',
-        background: 'linear-gradient(180deg, rgba(227,76,0,0.7) 0%, rgba(158,53,0,0.9) 100%)',
-        backgroundImage: 'url(https://images.pexels.com/photos/844124/pexels-photo-844124.jpeg?auto=compress&cs=tinysrgb&w=600)',
-        layout: 'overlay',
-    },
+const CloseIcon = () => (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M1 1L13 13M13 1L1 13" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+);
+
+// ── Helpers ──
+const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
+
+const SORT_OPTIONS = [
+    { label: 'Newest First', value: { lastUpdatedOn: 'desc' } },
+    { label: 'Oldest First', value: { lastUpdatedOn: 'asc' } },
 ];
 
-const ExplorePage: React.FC = () => {
-    const [showFilter, setShowFilter] = React.useState(false);
-    const [filterTab, setFilterTab] = React.useState('Collections');
-    const history = useHistory();
+const LIMIT = 9;
 
-    // We'll split the items into left and right columns for a masonry-like look
-    const leftCol = mockExploreItems.filter((_, i) => i % 2 === 0);
-    const rightCol = mockExploreItems.filter((_, i) => i % 2 !== 0);
+const getValues = (option: ExploreFilterOption): string[] =>
+    Array.isArray(option.value) ? option.value : option.value ? [option.value] : [];
 
-    const renderCard = (item: any) => {
-        if (item.layout === 'overlay') {
-            return (
-                <div
-                    key={item.id}
-                    className="explore-card overlay-card"
-                    onClick={() => history.push(`/video/${item.id}`)}
-                    style={{
-                        background: `${item.background}, ${item.backgroundImage}`,
-                        backgroundSize: 'cover',
-                        backgroundBlendMode: 'overlay',
-                        backgroundPosition: 'center'
-                    }}>
-                    <div className="card-badge bg-white-badge">
-                        {item.type}
-                    </div>
-                    <div className="overlay-content">
-                        <h3 className="overlay-title">{item.title}</h3>
-                        <span className="overlay-link">{item.linkText}</span>
-                    </div>
-                </div >
-            );
+// ── Pagination reducer ──
+interface PaginationState {
+    offset: number;
+    displayItems: ContentSearchItem[];
+    hasMore: boolean;
+}
+
+type PaginationAction =
+    | { type: 'RESET' }
+    | { type: 'LOAD_MORE' }
+    | { type: 'APPEND_ITEMS'; items: ContentSearchItem[]; isFirstPage: boolean };
+
+function paginationReducer(state: PaginationState, action: PaginationAction): PaginationState {
+    switch (action.type) {
+        case 'RESET':
+            return { offset: 0, displayItems: [], hasMore: true };
+        case 'LOAD_MORE':
+            return { ...state, offset: state.offset + LIMIT };
+        case 'APPEND_ITEMS': {
+            const newHasMore = action.items.length >= LIMIT;
+            if (action.isFirstPage) {
+                return { ...state, displayItems: action.items, hasMore: newHasMore };
+            }
+            const existingIds = new Set(state.displayItems.map((i) => i.identifier));
+            const uniqueNew = action.items.filter((i) => !existingIds.has(i.identifier));
+            return { ...state, displayItems: [...state.displayItems, ...uniqueNew], hasMore: newHasMore };
         }
+        default:
+            return state;
+    }
+}
 
-        return (
-            <div
-                key={item.id}
-                className="explore-card standard-card"
-                onClick={() => history.push(`/video/${item.id}`)}
-            >
-                <div className="card-image-wrap">
-                    <IonImg src={item.thumbnail} alt={item.title} className="card-image"  />
-                </div>
-                <div className="card-content">
-                    <div className="card-badge bg-yellow-badge">
-                        {item.type}
-                    </div>
-                    <h3 className="card-title">{item.title}</h3>
-                    <div className="card-meta">
-                        <span className="rating">{item.rating} <span className="star">★</span></span>
-                        <span className="dot">•</span>
-                        <span className="lessons">{item.lessons} Lessons</span>
-                    </div>
-                </div>
-            </div>
-        );
+// ── Component ──
+const ExplorePage: React.FC = () => {
+    // ── Search ──
+    const [showSearch, setShowSearch] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const debouncedQuery = useDebounce(searchQuery, 600);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // ── Filters & Sort (applied immediately on selection, like the portal) ──
+    const [filters, setFilters] = useState<FilterState>({});
+    const [sortBy, setSortBy] = useState<Record<string, string>>({ lastUpdatedOn: 'desc' });
+
+    // ── Filter Sheet state ──
+    const [showFilter, setShowFilter] = useState(false);
+    const [activeTab, setActiveTab] = useState<string>('');
+
+    // ── Pagination (reducer avoids setState-in-effect) ──
+    const [pagination, dispatch] = useReducer(paginationReducer, {
+        offset: 0,
+        displayItems: [],
+        hasMore: true,
+    });
+    const infiniteScrollRef = useRef<HTMLIonInfiniteScrollElement>(null);
+
+    // ── Form read for filter groups ──
+    const { data: formData, isLoading: isFormLoading } = useFormRead({
+        request: {
+            type: 'app',
+            subType: 'explorepage',
+            action: 'filters',
+            component: 'app',
+        },
+    });
+
+    const filterGroups: ExploreFilterGroup[] = useMemo(() => {
+        const rawData = formData?.data as unknown as Record<string, unknown> | undefined;
+        const rawForm = rawData?.form as Record<string, unknown> | undefined;
+        const filtersData = (rawForm?.data as Record<string, unknown>)?.filters;
+        return Array.isArray(filtersData) ? [...filtersData].sort((a, b) => a.index - b.index) : [];
+    }, [formData]);
+
+    // Derive the effective active tab: fall back to the first group when unset
+    const effectiveActiveTab = activeTab || (filterGroups.length > 0 ? filterGroups[0].id : '');
+
+    // ── Build active filters for content search ──
+    const activeFilters = useMemo(() => ({
+        objectType: ['Content', 'QuestionSet'],
+        ...Object.fromEntries(
+            Object.entries(filters).filter(([, values]) => values.length > 0)
+        ),
+    }), [filters]);
+
+    // ── Reset pagination when search params change ──
+    const searchParamsKey = useMemo(
+        () => `${debouncedQuery}|${JSON.stringify(activeFilters)}|${JSON.stringify(sortBy)}`,
+        [debouncedQuery, activeFilters, sortBy]
+    );
+
+    useEffect(() => {
+        dispatch({ type: 'RESET' });
+    }, [searchParamsKey]);
+
+    // ── Content search ──
+    const { data, isLoading: isQueryLoading, error: queryError, refetch } = useContentSearch({
+        request: {
+            limit: LIMIT,
+            offset: pagination.offset,
+            query: debouncedQuery,
+            sort_by: sortBy,
+            filters: activeFilters,
+        },
+    });
+
+    // ── Accumulate items as pages load ──
+    useEffect(() => {
+        if (!data) return;
+        const content = data.data?.content ?? [];
+        const questionSets = data.data?.QuestionSet ?? [];
+        const newItems = [...content, ...questionSets];
+
+        dispatch({
+            type: 'APPEND_ITEMS',
+            items: newItems,
+            isFirstPage: pagination.offset === 0,
+        });
+
+        infiniteScrollRef.current?.complete();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data]);
+
+    // ── Handlers ──
+    const handleLoadMore = () => {
+        if (pagination.hasMore && !isQueryLoading) {
+            dispatch({ type: 'LOAD_MORE' });
+        } else {
+            infiniteScrollRef.current?.complete();
+        }
     };
+
+    const handleRefresh = async (e: CustomEvent) => {
+        dispatch({ type: 'RESET' });
+        await refetch();
+        (e.target as HTMLIonRefresherElement).complete();
+    };
+
+    const handleSearchToggle = () => {
+        setShowSearch((prev) => {
+            if (!prev) setTimeout(() => searchInputRef.current?.focus(), 50);
+            return !prev;
+        });
+        if (showSearch) setSearchQuery('');
+    };
+
+    const handleOpenFilter = () => {
+        if (filterGroups.length > 0) setActiveTab(filterGroups[0].id);
+        setShowFilter(true);
+    };
+
+    const handleClearFilters = () => {
+        setFilters({});
+        setSortBy({ lastUpdatedOn: 'desc' });
+    };
+
+    const handleCheckboxChange = (option: ExploreFilterOption, checked: boolean) => {
+        const values = getValues(option);
+        setFilters((prev) => {
+            const current = prev[option.code] ?? [];
+            const updated = checked
+                ? [...new Set([...current, ...values])]
+                : current.filter((v) => !values.includes(v));
+            return { ...prev, [option.code]: updated };
+        });
+    };
+
+    const isChecked = (option: ExploreFilterOption): boolean => {
+        const values = getValues(option);
+        const current = filters[option.code] ?? [];
+        return values.every((v) => current.includes(v));
+    };
+
+    const getGroupItems = (group: ExploreFilterGroup): ExploreFilterOption[] =>
+        [...(group.options ?? group.list ?? [])].sort((a, b) => a.index - b.index);
+
+    // Split into masonry columns
+    const leftCol = pagination.displayItems.filter((_, i) => i % 2 === 0);
+    const rightCol = pagination.displayItems.filter((_, i) => i % 2 !== 0);
+
+    const isInitialLoading = isQueryLoading && pagination.offset === 0 && pagination.displayItems.length === 0;
+    const activeFilterCount = Object.values(filters).flat().length;
+
+    // ── Active filter tab group ──
+    const isSortTab = effectiveActiveTab === '__sort__';
+    const activeGroup = filterGroups.find((g) => g.id === effectiveActiveTab);
+
+    // All sidebar tabs = form groups + Sort By
+    const sidebarTabs = [
+        ...filterGroups.map((g) => ({ id: g.id, label: g.label })),
+        { id: '__sort__', label: 'Sort By' },
+    ];
 
     return (
         <IonPage>
             <IonHeader className="ion-no-border">
                 <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'env(safe-area-inset-top)', padding: '16px 16px', boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <h1 style={{ fontFamily: "'Rubik', sans-serif", fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
-                            Start Exploring
-                        </h1>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                            <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        {showSearch ? (
+                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-f0f0f0, #f0f0f0)', borderRadius: '8px', padding: '6px 10px' }}>
                                 <SearchIcon />
-                            </button>
-                            <button
-                                onClick={() => setShowFilter(true)}
-                                style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}
-                            >
-                                <FilterIcon />
-                            </button>
-                        </div>
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder="Search content..."
+                                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontFamily: "'Rubik', sans-serif", fontSize: '15px', color: 'var(--ion-color-dark, #222222)' }}
+                                />
+                                <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }}>
+                                    <CloseIcon />
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <h1 style={{ fontFamily: "'Rubik', sans-serif", fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, #222222)', margin: 0 }}>
+                                    Start Exploring
+                                </h1>
+                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                    <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
+                                        <SearchIcon />
+                                    </button>
+                                    <button
+                                        onClick={handleOpenFilter}
+                                        style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', position: 'relative' }}
+                                    >
+                                        <FilterIcon />
+                                        {activeFilterCount > 0 && (
+                                            <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--ion-color-primary)', color: 'white', borderRadius: '50%', width: '14px', height: '14px', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                                                {activeFilterCount}
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+                            </>
+                        )}
                     </div>
                 </IonToolbar>
             </IonHeader>
 
             <IonContent fullscreen style={{ '--background': 'rgb(244, 244, 244)' }}>
-                <div className="masonry-grid">
-                    <div className="masonry-col">
-                        {leftCol.map(renderCard)}
-                    </div>
-                    <div className="masonry-col">
-                        {rightCol.map(renderCard)}
-                    </div>
-                </div>
+                <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+                    <IonRefresherContent />
+                </IonRefresher>
 
-                {/* Bottom spacing for nav */}
+                {isInitialLoading && (
+                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                        <IonSpinner name="bubbles" color="primary" />
+                    </div>
+                )}
+
+                {queryError && pagination.displayItems.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
+                        <p style={{ marginBottom: '12px' }}>Failed to load content</p>
+                        <button
+                            onClick={() => refetch()}
+                            style={{ background: 'var(--ion-color-primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 20px', cursor: 'pointer', fontFamily: "'Rubik', sans-serif" }}
+                        >
+                            Retry
+                        </button>
+                    </div>
+                )}
+
+                {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (
+                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
+                        <p>No content found</p>
+                    </div>
+                )}
+
+                {pagination.displayItems.length > 0 && (
+                    <div className="masonry-grid">
+                        <div className="masonry-col">
+                            {leftCol.map((item) =>
+                                item.mimeType === COLLECTION_MIME_TYPE
+                                    ? <CollectionCard key={item.identifier} item={item} />
+                                    : <ResourceCard key={item.identifier} item={item} />
+                            )}
+                        </div>
+                        <div className="masonry-col">
+                            {rightCol.map((item) =>
+                                item.mimeType === COLLECTION_MIME_TYPE
+                                    ? <CollectionCard key={item.identifier} item={item} />
+                                    : <ResourceCard key={item.identifier} item={item} />
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 <div style={{ height: '100px' }} />
+
+                <IonInfiniteScroll
+                    ref={infiniteScrollRef}
+                    onIonInfinite={handleLoadMore}
+                    disabled={!pagination.hasMore || isInitialLoading}
+                >
+                    <IonInfiniteScrollContent loadingSpinner="bubbles" />
+                </IonInfiniteScroll>
             </IonContent>
 
             <BottomNavigation />
@@ -246,9 +359,7 @@ const ExplorePage: React.FC = () => {
                     <div className="filter-sheet-header">
                         <h2>Filters</h2>
                         <button onClick={() => setShowFilter(false)} className="close-btn">
-                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M1 1L13 13M13 1L1 13" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                            </svg>
+                            <CloseIcon />
                         </button>
                     </div>
 
@@ -256,49 +367,78 @@ const ExplorePage: React.FC = () => {
                     <div className="filter-sheet-body">
                         {/* Sidebar */}
                         <div className="filter-sidebar">
-                            {['Collections', 'Content Type', 'Categories', 'Sort By'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    className={`filter-tab ${filterTab === tab ? 'active' : ''}`}
-                                    onClick={() => setFilterTab(tab)}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
+                            {isFormLoading
+                                ? [1, 2, 3].map((n) => (
+                                    <div key={n} style={{ margin: '12px', height: '20px', background: '#e0e0e0', borderRadius: '4px', animationName: 'pulse', animationDuration: '1.5s', animationIterationCount: 'infinite' }} />
+                                ))
+                                : sidebarTabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        className={`filter-tab ${effectiveActiveTab === tab.id ? 'active' : ''}`}
+                                        onClick={() => setActiveTab(tab.id)}
+                                    >
+                                        {tab.label}
+                                    </button>
+                                ))
+                            }
                         </div>
 
                         {/* Options Pane */}
                         <div className="filter-options">
-                            {filterTab === 'Collections' && (
+                            {isSortTab && (
                                 <div className="checkbox-list">
-                                    {['Courses', 'Resources', 'Textbooks', 'Skills'].map((option) => (
-                                        <label key={option} className="checkbox-item">
-                                            <input type="checkbox" className="custom-checkbox" />
-                                            <span>{option}</span>
+                                    {SORT_OPTIONS.map((opt) => {
+                                        const isSelected = JSON.stringify(sortBy) === JSON.stringify(opt.value);
+                                        return (
+                                            <label key={opt.label} className="checkbox-item">
+                                                <input
+                                                    type="checkbox"
+                                                    className="custom-checkbox"
+                                                    checked={isSelected}
+                                                    onChange={() => setSortBy(opt.value)}
+                                                />
+                                                <span>{opt.label}</span>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {!isSortTab && activeGroup && (
+                                <div className="checkbox-list">
+                                    {getGroupItems(activeGroup).map((option) => (
+                                        <label key={option.id} className="checkbox-item">
+                                            <input
+                                                type="checkbox"
+                                                className="custom-checkbox"
+                                                checked={isChecked(option)}
+                                                onChange={(e) => handleCheckboxChange(option, e.target.checked)}
+                                            />
+                                            <span>{option.label}</span>
                                         </label>
                                     ))}
                                 </div>
                             )}
-                            {filterTab !== 'Collections' && (
-                                <div className="checkbox-list">
-                                    <p style={{ color: 'var(--ion-color-medium, var(--color-757575, #757575))', fontSize: '14px', margin: '4px 0' }}>Options for {filterTab}</p>
-                                </div>
+
+                            {!isSortTab && !activeGroup && !isFormLoading && (
+                                <p style={{ color: 'var(--ion-color-medium, #757575)', fontSize: '14px', margin: '4px 0' }}>
+                                    No options available
+                                </p>
                             )}
                         </div>
                     </div>
 
                     {/* Footer */}
                     <div className="filter-sheet-footer">
-                        <button className="clear-filters-btn" onClick={() => setShowFilter(false)}>
+                        <button className="clear-filters-btn" onClick={handleClearFilters}>
                             Clear Filters
                         </button>
                         <button className="apply-filters-btn" onClick={() => setShowFilter(false)}>
-                            Apply
+                            Close
                         </button>
                     </div>
                 </div>
             </IonModal>
-
         </IonPage>
     );
 };
