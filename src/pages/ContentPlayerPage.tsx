@@ -1,15 +1,16 @@
-import { useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
   IonToolbar,
-  IonTitle,
   IonContent,
   IonButtons,
-  IonBackButton,
+  IonIcon,
+  IonImg,
   IonSpinner,
 } from '@ionic/react';
 import { useParams, useHistory } from 'react-router-dom';
+import { shareSocialOutline, downloadOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
@@ -21,40 +22,56 @@ const QUML_MIME_TYPES = [
   'application/vnd.sunbird.question',
 ];
 
+const MOCK_RELATED_VIDEOS = [
+  { id: '1', title: 'The AI Engineer Course 2026: Complete AI...', rating: 4.5, views: '3k Views', thumbnail: 'https://images.pexels.com/photos/3153198/pexels-photo-3153198.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: '2', title: 'Data Engineering Foundations', rating: 4.5, views: '9k Views', thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: '3', title: 'The AI Engineer Course 2026: Complete AI...', rating: 4.5, views: '3k Views', thumbnail: 'https://images.pexels.com/photos/3153198/pexels-photo-3153198.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: '4', title: 'Data Engineering Foundations', rating: 4.5, views: '9k Views', thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: '5', title: 'The AI Engineer Course 2026: Complete AI...', rating: 4.5, views: '3k Views', thumbnail: 'https://images.pexels.com/photos/3153198/pexels-photo-3153198.jpeg?auto=compress&cs=tinysrgb&w=400' },
+];
+
+const MOCK_RELATED_CONTENT = [
+  { id: '1', title: 'The AI Engineer Course 2026: Complete AI Engine...', badge: 'Course', rating: 4.5, lessons: '25 Lessons', thumbnail: 'https://images.pexels.com/photos/9026290/pexels-photo-9026290.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: '2', title: 'Data Engineering Foundation', badge: 'Textbook', rating: 4.5, lessons: '25 Lessons', thumbnail: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400' },
+  { id: '3', title: 'Machine Learning Basics', badge: 'Course', rating: 4.3, lessons: '18 Lessons', thumbnail: 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=400' },
+];
+
 const ContentPlayerPage: React.FC = () => {
   const { contentId } = useParams<{ contentId: string }>();
   const history = useHistory();
+  const [isPlaying, setIsPlaying] = useState(false);
 
-  // First fetch content metadata to determine mimeType
   const { data, isLoading, error } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
 
-  // For QuML content, fetch hierarchy + questions via dedicated hook
   const {
     data: qumlData,
     isLoading: isQumlLoading,
     error: qumlError,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  // Use QuML data when applicable, otherwise standard content data
   const playerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
   const playerError = error || (isQumlContent ? qumlError : null);
   const mimeType = playerMetadata?.mimeType;
 
-  // Lock to landscape on mount, unlock on unmount
-  useEffect(() => {
+  const handlePlay = useCallback(() => {
+    setIsPlaying(true);
     ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
+  }, []);
+
+  const handleClosePlayer = useCallback(() => {
+    setIsPlaying(false);
+    ScreenOrientation.unlock().catch(() => {});
+  }, []);
+
+  // Unlock orientation on unmount
+  useEffect(() => {
     return () => {
       ScreenOrientation.unlock().catch(() => {});
     };
   }, []);
-
-  const handleBack = useCallback(() => {
-    ScreenOrientation.unlock().catch(() => {});
-    history.goBack();
-  }, [history]);
 
   const handlePlayerEvent = (event: any) => {
     console.log('[ContentPlayerPage] Player event:', event);
@@ -64,54 +81,143 @@ const ContentPlayerPage: React.FC = () => {
     console.log('[ContentPlayerPage] Telemetry event:', event);
   };
 
-  if (playerIsLoading) {
+  // ── Fullscreen player mode (landscape, no header) ──
+  if (isPlaying && playerMetadata && mimeType) {
     return (
-      <IonPage className="content-player-fullscreen">
-        <IonContent className="ion-padding ion-text-center">
-          <div className="content-player-loading">
+      <IonPage className="cp-fullscreen">
+        <IonContent scrollY={false}>
+          <button className="cp-close-btn" onClick={handleClosePlayer}>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+          </button>
+          <div className="cp-player-fullscreen-container">
+            <ContentPlayer
+              mimeType={mimeType}
+              metadata={playerMetadata}
+              onPlayerEvent={handlePlayerEvent}
+              onTelemetryEvent={handleTelemetryEvent}
+            />
+          </div>
+        </IonContent>
+      </IonPage>
+    );
+  }
+
+  // ── Detail view (portrait, with header) ──
+  return (
+    <IonPage className="cp-page">
+      <IonHeader className="ion-no-border">
+        <IonToolbar className="cp-toolbar">
+          <IonButtons slot="start">
+            <button className="cp-action-btn" onClick={() => history.goBack()}>
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </IonButtons>
+          <IonButtons slot="end" className="cp-header-actions">
+            <button className="cp-action-btn">
+              <IonIcon icon={downloadOutline} color="primary" />
+            </button>
+            <button className="cp-action-btn">
+              <IonIcon icon={shareSocialOutline} color="primary" />
+            </button>
+          </IonButtons>
+        </IonToolbar>
+      </IonHeader>
+
+      <IonContent fullscreen>
+        {playerIsLoading ? (
+          <div className="cp-loading">
             <IonSpinner name="crescent" />
           </div>
-        </IonContent>
-      </IonPage>
-    );
-  }
-
-  if (playerError || !playerMetadata || !mimeType) {
-    return (
-      <IonPage className="content-player-fullscreen">
-        <IonHeader>
-          <IonToolbar>
-            <IonButtons slot="start">
-              <IonBackButton defaultHref="/home" />
-            </IonButtons>
-            <IonTitle>Content Player</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent className="ion-padding">
-          <div className="content-player-error">
-            <p>{playerError ? `Failed to load content: ${playerError.message}` : 'No content data available. Please select content to play.'}</p>
+        ) : playerError || !playerMetadata || !mimeType ? (
+          <div className="cp-error">
+            <p>{playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}</p>
           </div>
-        </IonContent>
-      </IonPage>
-    );
-  }
+        ) : (
+          <div className="cp-container">
+            {/* Hero Section */}
+            <div className="cp-hero">
+              <div className="cp-meta">
+                <h1>{playerMetadata.name}</h1>
+                <div className="cp-meta-stats">
+                  <span className="cp-rating">4.5 <span className="cp-star">★</span></span>
+                  <span className="cp-dot">•</span>
+                  <span>25 Lessons</span>
+                </div>
+              </div>
 
-  return (
-    <IonPage className="content-player-fullscreen">
-      <IonContent scrollY={false}>
-        <button className="content-player-close-btn" onClick={handleBack}>
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
-        <div className="content-player-container">
-          <ContentPlayer
-            mimeType={mimeType}
-            metadata={playerMetadata}
-            onPlayerEvent={handlePlayerEvent}
-            onTelemetryEvent={handleTelemetryEvent}
-          />
-        </div>
+              {/* Thumbnail with play button */}
+              <div className="cp-player-area" onClick={handlePlay}>
+                <IonImg
+                  src={playerMetadata.appIcon || playerMetadata.posterImage || 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=800'}
+                  alt={playerMetadata.name}
+                  className="cp-thumbnail"
+                />
+                <div className="cp-play-button">
+                  <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="var(--ion-color-primary)" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            {/* Related Videos */}
+            <div className="cp-related-videos">
+              <h2>Related Videos</h2>
+              <div className="cp-rv-list">
+                {MOCK_RELATED_VIDEOS.map((video) => (
+                  <div key={video.id} className="cp-rv-card">
+                    <div className="cp-rv-thumb">
+                      <IonImg src={video.thumbnail} alt={video.title} className="cp-rv-img" />
+                      <div className="cp-rv-play">
+                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M8 4L0.5 8.33013L0.5 -0.330127L8 4Z" fill="var(--ion-color-primary)" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="cp-rv-info">
+                      <h3>{video.title}</h3>
+                      <div className="cp-meta-stats">
+                        <span className="cp-rating">{video.rating} <span className="cp-star">★</span></span>
+                        <span className="cp-dot">•</span>
+                        <span>{video.views}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Related Content */}
+            <div className="cp-related-content">
+              <div className="cp-section-header">
+                <h2>Related Content</h2>
+                <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M11.2687 3L6.31135 0.449666V5.55033L11.2687 3ZM0.90625 3.5H6.80709V2.5H0.90625V3.5Z" fill="var(--ion-color-primary)" />
+                </svg>
+              </div>
+              <div className="cp-horizontal-scroll">
+                {MOCK_RELATED_CONTENT.map((item) => (
+                  <div key={item.id} className="cp-content-card">
+                    <IonImg src={item.thumbnail} alt={item.title} className="cp-card-img" />
+                    <div className={`cp-card-badge ${item.badge === 'Textbook' ? 'cp-badge-textbook' : ''}`}>
+                      {item.badge}
+                    </div>
+                    <h3>{item.title}</h3>
+                    <div className="cp-meta-stats">
+                      <span className="cp-rating">{item.rating} <span className="cp-star">★</span></span>
+                      <span className="cp-dot">•</span>
+                      <span>{item.lessons}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </IonContent>
     </IonPage>
   );
