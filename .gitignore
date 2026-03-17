@@ -11,6 +11,7 @@ node_modules
 coverage
 dist
 public/assets
+public/content/assets
 dist-ssr
 *.local
 
