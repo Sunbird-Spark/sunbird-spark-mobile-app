@@ -233,10 +233,7 @@ describe('ExplorePage', () => {
       expect(screen.queryByTestId('ion-modal')).not.toBeInTheDocument();
 
       // The filter button is the second action button
-      const buttons = screen.getAllByRole('button');
-      // Find the button that contains the filter SVG - it's the second one
-      const filterBtn = buttons[1];
-      fireEvent.click(filterBtn);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
       expect(screen.getByText('Filters')).toBeInTheDocument();
@@ -251,8 +248,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       expect(screen.getByText('Category')).toBeInTheDocument();
       expect(screen.getByText('Medium')).toBeInTheDocument();
@@ -268,8 +264,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Default active tab is first group (Category)
       expect(screen.getByText('Course')).toBeInTheDocument();
@@ -285,8 +280,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Click Medium tab
       fireEvent.click(screen.getByText('Medium'));
@@ -302,8 +296,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Click Sort By
       fireEvent.click(screen.getByText('Sort By'));
@@ -320,8 +313,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Select a checkbox
       const checkbox = screen.getByLabelText('Course');
@@ -343,8 +335,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
 
       // Click Close button in footer
@@ -363,8 +354,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter modal
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Modal opens and shows skeleton placeholders instead of filter tabs
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
@@ -384,8 +374,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter and select an option
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       const checkbox = screen.getByLabelText('Course');
       fireEvent.click(checkbox);

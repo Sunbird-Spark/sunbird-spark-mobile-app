@@ -274,6 +274,7 @@ const ExplorePage: React.FC = () => {
                                     </button>
                                     <button
                                         onClick={handleOpenFilter}
+                                        aria-label="Open filters"
                                         style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <FilterIcon />
