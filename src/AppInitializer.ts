@@ -19,9 +19,8 @@ export class AppInitializer {
     }
 
     try {
-      // Initialize API client — after this, HTTP client is usable for queries
+      // Initialize API client
       await initializeApiClient();
-      this.initialized = true;
 
       // Initialize authentication service
       const authService = AppConsumerAuthService.getInstance();
@@ -29,16 +28,21 @@ export class AppInitializer {
 
       // Get Kong token and set it in HTTP client
       const kongToken = await authService.getAuthenticatedToken();
-
+      
       // Set Authorization header with device JWT from Kong
       // Note: X-Authenticated-User-Token is set separately after user login
       const httpClient = getClient();
       httpClient.updateHeaders([
         { key: 'Authorization', value: `Bearer ${kongToken}`, action: 'add' },
       ]);
+
+      this.initialized = true;
     } catch (error) {
       console.error('AppInitializer: Initialization failed:', error);
-
+      
+      // Ensure the application does not remain in a partially initialized state
+      this.initialized = false;
+      
       try {
         // Roll back any authorization headers that may have been set
         const httpClient = getClient();
@@ -49,7 +53,7 @@ export class AppInitializer {
         // If cleanup fails, log it but preserve the original initialization error
         console.error('AppInitializer: Failed to clean up after initialization error:', cleanupError);
       }
-
+      
       throw error;
     }
   }

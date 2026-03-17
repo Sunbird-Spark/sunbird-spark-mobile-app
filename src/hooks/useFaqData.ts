@@ -46,15 +46,18 @@ function topicToSlug(topic: string): string {
     .replace(/^-|-$/g, '');
 }
 
-function transformFaqJson(raw: RawFaqJson): FaqData {
+function transformFaqJson(raw: RawFaqJson, appName?: string): FaqData {
+  const replaceName = (text: string) =>
+    appName ? text.replace(/\{\{APP_NAME\}\}/g, appName) : text;
+
   return {
     categories: raw.categories.map((group: RawFaqCategory) => ({
-      title: group.name,
+      title: replaceName(group.name),
       slug: topicToSlug(group.name),
       faqCount: group.faqs.length,
       faqs: group.faqs.map((item: RawFaqItem) => ({
-        question: item.topic,
-        answer: item.description,
+        question: replaceName(item.topic),
+        answer: replaceName(item.description),
       })),
     })),
   };
@@ -64,12 +67,15 @@ export const useFaqData = (): UseFaqDataResult => {
   const settingQuery = useSystemSetting('appFaqURL');
   const faqUrl: string | undefined = settingQuery.data?.data?.response?.value;
 
+  const appNameQuery = useSystemSetting('sunbird');
+  const appName: string | undefined = appNameQuery.data?.data?.response?.value;
+
   const faqJsonQuery = useQuery<FaqData, Error>({
-    queryKey: ['faq-json', faqUrl],
+    queryKey: ['faq-json', faqUrl, appName],
     queryFn: async () => {
       const url = `${faqUrl!}/faq-en.json`;
       const res = await CapacitorHttp.get({ url });
-      return transformFaqJson(res.data as RawFaqJson);
+      return transformFaqJson(res.data as RawFaqJson, appName);
     },
     enabled: !!faqUrl,
   });

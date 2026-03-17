@@ -51,7 +51,15 @@ const HelpAndSupportPage: React.FC = () => {
     const [showToast, setShowToast] = useState(false);
 
     const { faqData, isLoading: faqLoading } = useFaqData();
-    const { data: formData } = useFormRead();
+    const { data: formData } = useFormRead({
+        request: {
+            type: 'dynamicform',
+            subType: 'support_v2',
+            action: 'get',
+            component: 'app',
+            rootOrgId: '*',
+        },
+    });
 
     const categories = faqData?.categories ?? [];
     const mostViewedFaqs = faqData?.categories.flatMap(c => c.faqs).slice(0, 4) ?? [];
