@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useReducer } from 'react';
 import {
     IonPage, IonHeader, IonToolbar, IonContent, IonModal,
     IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher,
@@ -46,6 +46,38 @@ const LIMIT = 9;
 const getValues = (option: ExploreFilterOption): string[] =>
     Array.isArray(option.value) ? option.value : option.value ? [option.value] : [];
 
+// ── Pagination reducer ──
+interface PaginationState {
+    offset: number;
+    displayItems: ContentSearchItem[];
+    hasMore: boolean;
+}
+
+type PaginationAction =
+    | { type: 'RESET' }
+    | { type: 'LOAD_MORE' }
+    | { type: 'APPEND_ITEMS'; items: ContentSearchItem[]; isFirstPage: boolean };
+
+function paginationReducer(state: PaginationState, action: PaginationAction): PaginationState {
+    switch (action.type) {
+        case 'RESET':
+            return { offset: 0, displayItems: [], hasMore: true };
+        case 'LOAD_MORE':
+            return { ...state, offset: state.offset + LIMIT };
+        case 'APPEND_ITEMS': {
+            const newHasMore = action.items.length >= LIMIT;
+            if (action.isFirstPage) {
+                return { ...state, displayItems: action.items, hasMore: newHasMore };
+            }
+            const existingIds = new Set(state.displayItems.map((i) => i.identifier));
+            const uniqueNew = action.items.filter((i) => !existingIds.has(i.identifier));
+            return { ...state, displayItems: [...state.displayItems, ...uniqueNew], hasMore: newHasMore };
+        }
+        default:
+            return state;
+    }
+}
+
 // ── Component ──
 const ExplorePage: React.FC = () => {
     // ── Search ──
@@ -62,10 +94,12 @@ const ExplorePage: React.FC = () => {
     const [showFilter, setShowFilter] = useState(false);
     const [activeTab, setActiveTab] = useState<string>('');
 
-    // ── Pagination ──
-    const [offset, setOffset] = useState(0);
-    const [displayItems, setDisplayItems] = useState<ContentSearchItem[]>([]);
-    const [hasMore, setHasMore] = useState(true);
+    // ── Pagination (reducer avoids setState-in-effect) ──
+    const [pagination, dispatch] = useReducer(paginationReducer, {
+        offset: 0,
+        displayItems: [],
+        hasMore: true,
+    });
     const infiniteScrollRef = useRef<HTMLIonInfiniteScrollElement>(null);
 
     // ── Form read for filter groups ──
@@ -79,16 +113,14 @@ const ExplorePage: React.FC = () => {
     });
 
     const filterGroups: ExploreFilterGroup[] = useMemo(() => {
-        const rawGroups = (formData?.data as any)?.form?.data?.filters;
-        return Array.isArray(rawGroups) ? [...rawGroups].sort((a, b) => a.index - b.index) : [];
+        const rawData = formData?.data as unknown as Record<string, unknown> | undefined;
+        const rawForm = rawData?.form as Record<string, unknown> | undefined;
+        const filtersData = (rawForm?.data as Record<string, unknown>)?.filters;
+        return Array.isArray(filtersData) ? [...filtersData].sort((a, b) => a.index - b.index) : [];
     }, [formData]);
 
-    // Set the initial active tab when groups load
-    useEffect(() => {
-        if (filterGroups.length > 0 && !activeTab) {
-            setActiveTab(filterGroups[0].id);
-        }
-    }, [filterGroups, activeTab]);
+    // Derive the effective active tab: fall back to the first group when unset
+    const effectiveActiveTab = activeTab || (filterGroups.length > 0 ? filterGroups[0].id : '');
 
     // ── Build active filters for content search ──
     const activeFilters = useMemo(() => ({
@@ -99,17 +131,20 @@ const ExplorePage: React.FC = () => {
     }), [filters]);
 
     // ── Reset pagination when search params change ──
+    const searchParamsKey = useMemo(
+        () => `${debouncedQuery}|${JSON.stringify(activeFilters)}|${JSON.stringify(sortBy)}`,
+        [debouncedQuery, activeFilters, sortBy]
+    );
+
     useEffect(() => {
-        setOffset(0);
-        setDisplayItems([]);
-        setHasMore(true);
-    }, [debouncedQuery, activeFilters, sortBy]);
+        dispatch({ type: 'RESET' });
+    }, [searchParamsKey]);
 
     // ── Content search ──
     const { data, isLoading: isQueryLoading, error: queryError, refetch } = useContentSearch({
         request: {
             limit: LIMIT,
-            offset,
+            offset: pagination.offset,
             query: debouncedQuery,
             sort_by: sortBy,
             filters: activeFilters,
@@ -118,40 +153,32 @@ const ExplorePage: React.FC = () => {
 
     // ── Accumulate items as pages load ──
     useEffect(() => {
-        const content = data?.data?.content ?? [];
-        const questionSets = data?.data?.QuestionSet ?? [];
+        if (!data) return;
+        const content = data.data?.content ?? [];
+        const questionSets = data.data?.QuestionSet ?? [];
         const newItems = [...content, ...questionSets];
 
-        if (data) {
-            if (newItems.length < LIMIT) setHasMore(false);
+        dispatch({
+            type: 'APPEND_ITEMS',
+            items: newItems,
+            isFirstPage: pagination.offset === 0,
+        });
 
-            if (offset === 0) {
-                setDisplayItems(newItems);
-            } else {
-                setDisplayItems((prev) => {
-                    const existingIds = new Set(prev.map((i) => i.identifier));
-                    return [...prev, ...newItems.filter((i) => !existingIds.has(i.identifier))];
-                });
-            }
-
-            // Signal IonInfiniteScroll that load is complete
-            infiniteScrollRef.current?.complete();
-        }
-    }, [data, offset]);
+        infiniteScrollRef.current?.complete();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [data]);
 
     // ── Handlers ──
     const handleLoadMore = () => {
-        if (hasMore && !isQueryLoading) {
-            setOffset((prev) => prev + LIMIT);
+        if (pagination.hasMore && !isQueryLoading) {
+            dispatch({ type: 'LOAD_MORE' });
         } else {
             infiniteScrollRef.current?.complete();
         }
     };
 
     const handleRefresh = async (e: CustomEvent) => {
-        setOffset(0);
-        setDisplayItems([]);
-        setHasMore(true);
+        dispatch({ type: 'RESET' });
         await refetch();
         (e.target as HTMLIonRefresherElement).complete();
     };
@@ -195,15 +222,15 @@ const ExplorePage: React.FC = () => {
         [...(group.options ?? group.list ?? [])].sort((a, b) => a.index - b.index);
 
     // Split into masonry columns
-    const leftCol = displayItems.filter((_, i) => i % 2 === 0);
-    const rightCol = displayItems.filter((_, i) => i % 2 !== 0);
+    const leftCol = pagination.displayItems.filter((_, i) => i % 2 === 0);
+    const rightCol = pagination.displayItems.filter((_, i) => i % 2 !== 0);
 
-    const isInitialLoading = isQueryLoading && offset === 0 && displayItems.length === 0;
+    const isInitialLoading = isQueryLoading && pagination.offset === 0 && pagination.displayItems.length === 0;
     const activeFilterCount = Object.values(filters).flat().length;
 
     // ── Active filter tab group ──
-    const isSortTab = activeTab === '__sort__';
-    const activeGroup = filterGroups.find((g) => g.id === activeTab);
+    const isSortTab = effectiveActiveTab === '__sort__';
+    const activeGroup = filterGroups.find((g) => g.id === effectiveActiveTab);
 
     // All sidebar tabs = form groups + Sort By
     const sidebarTabs = [
@@ -269,7 +296,7 @@ const ExplorePage: React.FC = () => {
                     </div>
                 )}
 
-                {queryError && displayItems.length === 0 && (
+                {queryError && pagination.displayItems.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
                         <p style={{ marginBottom: '12px' }}>Failed to load content</p>
                         <button
@@ -281,13 +308,13 @@ const ExplorePage: React.FC = () => {
                     </div>
                 )}
 
-                {!isInitialLoading && !queryError && displayItems.length === 0 && (
+                {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
                         <p>No content found</p>
                     </div>
                 )}
 
-                {displayItems.length > 0 && (
+                {pagination.displayItems.length > 0 && (
                     <div className="masonry-grid">
                         <div className="masonry-col">
                             {leftCol.map((item) =>
@@ -311,7 +338,7 @@ const ExplorePage: React.FC = () => {
                 <IonInfiniteScroll
                     ref={infiniteScrollRef}
                     onIonInfinite={handleLoadMore}
-                    disabled={!hasMore || isInitialLoading}
+                    disabled={!pagination.hasMore || isInitialLoading}
                 >
                     <IonInfiniteScrollContent loadingSpinner="bubbles" />
                 </IonInfiniteScroll>
@@ -347,7 +374,7 @@ const ExplorePage: React.FC = () => {
                                 : sidebarTabs.map((tab) => (
                                     <button
                                         key={tab.id}
-                                        className={`filter-tab ${activeTab === tab.id ? 'active' : ''}`}
+                                        className={`filter-tab ${effectiveActiveTab === tab.id ? 'active' : ''}`}
                                         onClick={() => setActiveTab(tab.id)}
                                     >
                                         {tab.label}
