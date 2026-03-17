@@ -46,7 +46,7 @@
     outline: none;
 }
 
-.search-text-input input {
+.search-text-input::part(native) {
     color: #222222 !important;
 }
 
