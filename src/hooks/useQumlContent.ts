@@ -47,7 +47,7 @@ export const useQumlContent = (
       const questionIds = collectQuestionIds(metadata);
 
       // Fetch full question data (with body, responseDeclaration, interactions, etc.)
-      let questionMap = new Map<string, any>();
+      const questionMap = new Map<string, any>();
       if (!_.isEmpty(questionIds)) {
         const listResp = await questionSetService.getQuestionList<any>(questionIds);
         const questions = _.get(listResp, 'data.questions') || _.get(listResp, 'data.result.questions', []);
