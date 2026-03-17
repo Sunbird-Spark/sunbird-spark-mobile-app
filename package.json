@@ -19,6 +19,7 @@
     "format:write": "prettier --write .",
     "snyk": "snyk code test",
     "snyk-auth": "snyk auth",
+    "livereload": "ionic cap run android --livereload --external",
     "postinstall": "node copy-assets.js"
   },
   "keywords": [],
