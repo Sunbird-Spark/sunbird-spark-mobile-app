@@ -12,7 +12,7 @@ export const useFormRead = (
 ): UseQueryResult<ApiResponse<FormReadResponse>, Error> => {
   const { request } = options;
   return useQuery({
-    queryKey: ['form-read', request],
+    queryKey: ['form-read', request.type, request.subType, request.action],
     queryFn: () => formService.formRead(request),
     enabled: AppInitializer.isInitialized(),
   });
