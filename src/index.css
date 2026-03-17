@@ -843,18 +843,22 @@ ion-tab-button:hover {
 }
 
 .resource-card {
-    flex: 0 0 auto;
-    width: 16.125rem;
-    height: 20.5rem;
     border-radius: 1.25rem;
     overflow: hidden;
     position: relative;
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
-    scroll-snap-align: start;
     cursor: pointer;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+}
+
+/* Carousel-specific: fixed size only when inside a horizontal scroll container */
+.resource-center-scroll .resource-card {
+    flex: 0 0 auto;
+    width: 16.125rem;
+    height: 20.5rem;
+    scroll-snap-align: start;
 }
 
 .resource-card-image {
