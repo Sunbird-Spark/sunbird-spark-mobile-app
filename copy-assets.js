@@ -64,6 +64,13 @@ try {
     fs.rmSync(assetsDir, { recursive: true, force: true });
   }
 
+  // Clean existing content/assets folder too
+  const contentAssetsDir = path.join(publicRoot, 'content', 'assets');
+  if (fs.existsSync(contentAssetsDir)) {
+    console.log('🧹 Cleaning existing content/assets folder...');
+    fs.rmSync(contentAssetsDir, { recursive: true, force: true });
+  }
+
   for (const player of players) {
     const packageRoot = path.join(__dirname, 'node_modules', player.package);
     const assetsSource = path.join(packageRoot, 'assets', player.assetDir);
@@ -73,20 +80,33 @@ try {
     fs.mkdirSync(assetsDest, { recursive: true });
     console.log(`📦 Copying ${player.name} files to public/assets/${player.assetDir}/...`);
     copyDirectory(assetsSource, assetsDest);
+
+    // Also copy to public/content/assets/ — some player web components
+    // resolve internal assets (e.g. viewer.html) at /content/assets/<player>/
+    const contentAssetsDest = path.join(publicRoot, 'content', 'assets', player.assetDir);
+    fs.mkdirSync(contentAssetsDest, { recursive: true });
+    console.log(`📦 Copying ${player.name} files to public/content/assets/${player.assetDir}/...`);
+    copyDirectory(assetsSource, contentAssetsDest);
   }
 
-  // Copy shared SVG icons to public/assets/ for components that expect them at /assets/*.svg
-  console.log('\n📦 Copying common icons to public/assets/...');
+  // Copy shared SVG icons to public/assets/ and public/content/assets/
+  // Players resolve icons at both /assets/*.svg and /content/assets/*.svg
+  console.log('\n📦 Copying common icons to public/assets/ and public/content/assets/...');
+  const iconDests = [
+    path.join(publicRoot, 'assets'),
+    path.join(publicRoot, 'content', 'assets'),
+  ];
+
   const pdfAssetsSource = path.join(
     __dirname,
     'node_modules/@project-sunbird/sunbird-pdf-player-web-component/assets/pdf-player'
   );
   const pdfIcons = fs.readdirSync(pdfAssetsSource).filter((file) => file.endsWith('.svg'));
   for (const icon of pdfIcons) {
-    fs.copyFileSync(
-      path.join(pdfAssetsSource, icon),
-      path.join(publicRoot, 'assets', icon)
-    );
+    for (const dest of iconDests) {
+      fs.mkdirSync(dest, { recursive: true });
+      fs.copyFileSync(path.join(pdfAssetsSource, icon), path.join(dest, icon));
+    }
   }
 
   const qumlAssetsIconsDir = path.join(
@@ -96,10 +116,10 @@ try {
   if (fs.existsSync(qumlAssetsIconsDir)) {
     const qumlIcons = fs.readdirSync(qumlAssetsIconsDir).filter((file) => file.endsWith('.svg'));
     for (const icon of qumlIcons) {
-      fs.copyFileSync(
-        path.join(qumlAssetsIconsDir, icon),
-        path.join(publicRoot, 'assets', icon)
-      );
+      for (const dest of iconDests) {
+        fs.mkdirSync(dest, { recursive: true });
+        fs.copyFileSync(path.join(qumlAssetsIconsDir, icon), path.join(dest, icon));
+      }
     }
   }
 
