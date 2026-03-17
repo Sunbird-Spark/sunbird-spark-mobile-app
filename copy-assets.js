@@ -57,18 +57,22 @@ function copyDirectory(src, dest) {
 }
 
 try {
-  // Clean existing assets folder to start fresh
-  const assetsDir = path.join(publicRoot, 'assets');
-  if (fs.existsSync(assetsDir)) {
-    console.log('🧹 Cleaning existing assets folder...');
-    fs.rmSync(assetsDir, { recursive: true, force: true });
+  // Clean only managed player subdirectories (not the entire assets folder)
+  console.log('🧹 Cleaning managed player asset directories...');
+  for (const player of players) {
+    for (const dir of [
+      path.join(publicRoot, 'assets', player.assetDir),
+      path.join(publicRoot, 'content', 'assets', player.assetDir),
+    ]) {
+      if (fs.existsSync(dir)) {
+        fs.rmSync(dir, { recursive: true, force: true });
+      }
+    }
   }
-
-  // Clean existing content/assets folder too
-  const contentAssetsDir = path.join(publicRoot, 'content', 'assets');
-  if (fs.existsSync(contentAssetsDir)) {
-    console.log('🧹 Cleaning existing content/assets folder...');
-    fs.rmSync(contentAssetsDir, { recursive: true, force: true });
+  // Clean libs directory (jQuery)
+  const libsDir = path.join(publicRoot, 'libs');
+  if (fs.existsSync(libsDir)) {
+    fs.rmSync(libsDir, { recursive: true, force: true });
   }
 
   for (const player of players) {
