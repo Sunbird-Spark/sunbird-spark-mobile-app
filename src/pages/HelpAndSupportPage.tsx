@@ -7,8 +7,11 @@ import {
     IonToolbar,
     IonButtons,
     IonModal,
+    IonToast,
 } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
+import { useFaqData } from '../hooks/useFaqData';
+import { useFormRead } from '../hooks/useFormRead';
 import './HelpAndSupportPage.css';
 
 /* ── Inline SVG Icons ── */
@@ -36,58 +39,6 @@ const ChevronDownIcon: React.FC = () => (
 
 /* ── Data ── */
 
-interface CategoryCard {
-    title: string;
-    description: string;
-    faqCount: number;
-    slug: string;
-}
-
-const categories: CategoryCard[] = [
-    {
-        title: 'Login',
-        description: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries',
-        faqCount: 10,
-        slug: 'login',
-    },
-    {
-        title: 'Profile',
-        description: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries',
-        faqCount: 5,
-        slug: 'profile',
-    },
-    {
-        title: 'Course & Certificates',
-        description: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries',
-        faqCount: 26,
-        slug: 'course-certificates',
-    },
-];
-
-interface FaqItem {
-    question: string;
-    answer: string;
-}
-
-const faqs: FaqItem[] = [
-    {
-        question: 'What kind of courses are available on this platform?',
-        answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-    },
-    {
-        question: 'What if I need help during the course?',
-        answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-    },
-    {
-        question: 'Are the courses accredited or do they offer certification?',
-        answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-    },
-    {
-        question: 'Can I learn in offline mode?',
-        answer: 'Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.',
-    },
-];
-
 /* ── Component ── */
 
 const HelpAndSupportPage: React.FC = () => {
@@ -97,6 +48,38 @@ const HelpAndSupportPage: React.FC = () => {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [selectedSubcategory, setSelectedSubcategory] = useState('');
     const [feedbackText, setFeedbackText] = useState('');
+    const [showToast, setShowToast] = useState(false);
+
+    const { faqData, isLoading: faqLoading } = useFaqData();
+    const { data: formData } = useFormRead({
+        request: {
+            type: 'dynamicform',
+            subType: 'support_v2',
+            action: 'get',
+            component: 'app',
+            rootOrgId: '*',
+        },
+    });
+
+    const categories = faqData?.categories ?? [];
+    const mostViewedFaqs = faqData?.categories.flatMap(c => c.faqs).slice(0, 4) ?? [];
+
+    const formFields = formData?.data?.form?.data?.fields;
+    const categoryField = formFields?.find((f: any) => f.code === 'category');
+    const subcategoryField = formFields?.find((f: any) => f.code === 'subcategory');
+
+    const reportCategories: { value: string; label: string }[] =
+        categoryField?.templateOptions?.options ?? [];
+
+    const reportSubcategories: { value: string; label: string }[] =
+        selectedCategory
+            ? (subcategoryField?.templateOptions?.options?.[selectedCategory] ?? [])
+            : [];
+
+    const handleCategoryChange = (value: string) => {
+        setSelectedCategory(value);
+        setSelectedSubcategory('');
+    };
 
     const toggleFaq = (index: number) => {
         setExpandedFaq(prev => (prev === index ? -1 : index));
@@ -123,6 +106,9 @@ const HelpAndSupportPage: React.FC = () => {
                     <h1 className="hs-hero-text">How can we assist you today?</h1>
 
                     {/* Category Cards */}
+                    {faqLoading ? (
+                        <div className="hs-loading">Loading...</div>
+                    ) : (
                     <div className="hs-category-cards">
                         {categories.map((cat, idx) => (
                             <div
@@ -133,7 +119,6 @@ const HelpAndSupportPage: React.FC = () => {
                             >
                                 <div className="hs-accent-bar" />
                                 <h2 className="hs-category-title">{cat.title}</h2>
-                                <p className="hs-category-desc">{cat.description}</p>
                                 <div className="hs-category-footer">
                                     <span className="hs-faq-count">{cat.faqCount} FAQ's</span>
                                     <span className="hs-arrow-icon">
@@ -143,31 +128,7 @@ const HelpAndSupportPage: React.FC = () => {
                             </div>
                         ))}
                     </div>
-
-                    {/* Most Viewed FAQ's */}
-                    <div className="hs-faq-section">
-                        <h2 className="hs-faq-section-title">Most Viewed FAQ's</h2>
-
-                        {faqs.map((faq, idx) => (
-                            <div className="hs-faq-item" key={idx}>
-                                <button
-                                    className="hs-faq-question"
-                                    onClick={() => toggleFaq(idx)}
-                                    aria-expanded={expandedFaq === idx}
-                                >
-                                    <span className="hs-faq-question-text">{faq.question}</span>
-                                    <span className={`hs-faq-chevron ${expandedFaq === idx ? 'expanded' : ''}`}>
-                                        <ChevronDownIcon />
-                                    </span>
-                                </button>
-                                {expandedFaq === idx && (
-                                    <div className="hs-faq-answer">
-                                        <p className="hs-faq-answer-text">{faq.answer}</p>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
-                    </div>
+                    )}
                 </div>
 
                 <BottomNavigation />
@@ -200,13 +161,12 @@ const HelpAndSupportPage: React.FC = () => {
                                 <select
                                     className="hs-modal-select"
                                     value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                    onChange={(e) => handleCategoryChange(e.target.value)}
                                 >
                                     <option value="" disabled>Select Category</option>
-                                    <option value="login">Login</option>
-                                    <option value="profile">Profile</option>
-                                    <option value="course">Course &amp; Certificates</option>
-                                    <option value="other">Other</option>
+                                    {reportCategories.map((cat) => (
+                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                    ))}
                                 </select>
                                 <svg className="hs-select-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
                                     <path d="M1 1L5 5L9 1" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -220,9 +180,9 @@ const HelpAndSupportPage: React.FC = () => {
                                     onChange={(e) => setSelectedSubcategory(e.target.value)}
                                 >
                                     <option value="" disabled>Select Subcategory</option>
-                                    <option value="bug">Bug Report</option>
-                                    <option value="feature">Feature Request</option>
-                                    <option value="general">General Inquiry</option>
+                                    {reportSubcategories.map((sub) => (
+                                        <option key={sub.value} value={sub.value}>{sub.label}</option>
+                                    ))}
                                 </select>
                                 <svg className="hs-select-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
                                     <path d="M1 1L5 5L9 1" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -240,12 +200,26 @@ const HelpAndSupportPage: React.FC = () => {
                     </IonContent>
 
                     <div className="hs-modal-footer">
-                        <button className="hs-modal-submit" onClick={() => setShowModal(false)}>
+                        <button className="hs-modal-submit" onClick={() => {
+                            setShowModal(false);
+                            setShowToast(true);
+                            setSelectedCategory('');
+                            setSelectedSubcategory('');
+                            setFeedbackText('');
+                        }}>
                             Submit Feedback
                         </button>
                     </div>
                 </IonPage>
             </IonModal>
+
+            <IonToast
+                isOpen={showToast}
+                onDidDismiss={() => setShowToast(false)}
+                message="Thanks for your feedback. We may not be able to respond to every suggestion, but your feedback helps make this application better for everyone."
+                duration={4000}
+                position="bottom"
+            />
         </IonPage>
     );
 };

@@ -49,10 +49,9 @@ const App: React.FC = () => {
   const isInitialized = useAppInitialized();
 
   useEffect(() => {
-    AppInitializer.init()
-      .catch((error) => {
-        console.error('App: Failed to initialize application:', error);
-      });
+    AppInitializer.init().catch((error) => {
+      console.error('App: Failed to initialize application:', error);
+    });
   }, []);
 
   if (!isInitialized) {
