@@ -9,10 +9,10 @@ const formService = new FormService();
 export const useFormRead = (
   options: UseFormReadOptions
 ): UseQueryResult<ApiResponse<FormReadResponse>, Error> => {
-  const { request, enabled = true } = options;
+  const { request } = options;
   return useQuery({
     queryKey: ['form-read', request],
     queryFn: () => formService.formRead(request),
-    enabled: enabled && AppInitializer.isInitialized(),
+    enabled: AppInitializer.isInitialized(),
   });
 };

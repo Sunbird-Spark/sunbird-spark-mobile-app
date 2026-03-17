@@ -164,6 +164,75 @@
     background: rgba(168, 82, 54, 0.12);
 }
 
+/* ── Feedback thank you ── */
+.fd-feedback-thanks {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-eeeeee, #eeeeee);
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ion-color-primary);
+}
+
+/* ── Feedback form (No flow) ── */
+.fd-feedback-form {
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-eeeeee, #eeeeee);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.fd-feedback-sorry {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ion-color-dark, #222222);
+    margin: 0;
+}
+
+.fd-feedback-improve {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 400;
+    color: var(--ion-color-medium, #757575);
+    margin: 0;
+}
+
+.fd-feedback-textarea {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    border: 1px solid var(--ion-color-step-150, #D4D4D4);
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.fd-feedback-textarea:focus {
+    border-color: var(--ion-color-primary);
+}
+
+.fd-feedback-submit {
+    align-self: flex-start;
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ion-color-light);
+    background: var(--ion-color-primary);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.fd-feedback-submit:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 @keyframes fd-slide-down {
     from {
         opacity: 0;
