@@ -1,6 +1,12 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import ExplorePage from './ExplorePage';
+
+// ── Mock react-router-dom ──
+let mockLocationSearch = '';
+vi.mock('react-router-dom', () => ({
+  useLocation: () => ({ search: mockLocationSearch }),
+}));
 
 // ── Mock Ionic components ──
 vi.mock('@ionic/react', () => ({
@@ -109,6 +115,7 @@ const mockFormData = {
 describe('ExplorePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocationSearch = '';
     (useContentSearch as any).mockReturnValue({ ...defaultSearchReturn });
     (useFormRead as any).mockReturnValue({ ...defaultFormReturn });
   });
@@ -347,7 +354,7 @@ describe('ExplorePage', () => {
       expect(screen.queryByTestId('ion-modal')).not.toBeInTheDocument();
     });
 
-    it('shows skeleton loaders when form data is loading', () => {
+    it('shows skeleton loaders in filter modal when form data is loading', () => {
       (useFormRead as any).mockReturnValue({
         data: undefined,
         isLoading: true,
@@ -355,9 +362,15 @@ describe('ExplorePage', () => {
 
       render(<ExplorePage />);
 
-      // Open filter - since no groups are loaded, we need to force open
-      // the filter is guarded by filterGroups.length > 0 check, so it won't open
-      // when form data isn't loaded. This is expected behavior.
+      // Open filter modal
+      const buttons = screen.getAllByRole('button');
+      fireEvent.click(buttons[1]);
+
+      // Modal opens and shows skeleton placeholders instead of filter tabs
+      expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
+      expect(screen.getByText('Filters')).toBeInTheDocument();
+      // No filter tab labels should be rendered
+      expect(screen.queryByText('Category')).not.toBeInTheDocument();
     });
   });
 
@@ -382,6 +395,27 @@ describe('ExplorePage', () => {
 
       // Badge should show count
       expect(screen.getByText('1')).toBeInTheDocument();
+    });
+  });
+
+  describe('URL query param', () => {
+    it('initializes search from ?query= URL param', () => {
+      mockLocationSearch = '?query=mathematics';
+
+      render(<ExplorePage />);
+
+      // Search input should be visible and populated
+      const input = screen.getByPlaceholderText('Search content...');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('mathematics');
+    });
+
+    it('does not show search input when no query param', () => {
+      mockLocationSearch = '';
+
+      render(<ExplorePage />);
+
+      expect(screen.queryByPlaceholderText('Search content...')).not.toBeInTheDocument();
     });
   });
 });
