@@ -154,7 +154,12 @@ const ContentPlayerPage: React.FC = () => {
               </div>
 
               {/* Thumbnail with play button */}
-              <div className="cp-player-area" onClick={handlePlay}>
+              <button
+                type="button"
+                className="cp-player-area"
+                onClick={handlePlay}
+                aria-label={`Play ${playerMetadata.name}`}
+              >
                 <IonImg
                   src={playerMetadata.appIcon || playerMetadata.posterImage || 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=800'}
                   alt={playerMetadata.name}
@@ -165,7 +170,7 @@ const ContentPlayerPage: React.FC = () => {
                     <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="var(--ion-color-primary)" />
                   </svg>
                 </div>
-              </div>
+              </button>
             </div>
 
             {/* Related Videos */}
