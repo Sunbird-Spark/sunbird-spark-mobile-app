@@ -123,11 +123,19 @@ try {
     }
   }
 
+  // Copy jQuery from node_modules to public/libs/
+  const libsDest = path.join(publicRoot, 'libs');
+  fs.mkdirSync(libsDest, { recursive: true });
+  const jquerySrc = path.join(__dirname, 'node_modules/jquery/dist/jquery.min.js');
+  fs.copyFileSync(jquerySrc, path.join(libsDest, 'jquery.min.js'));
+  console.log('📦 Copied jQuery to public/libs/jquery.min.js');
+
   console.log('\n✅ Assets consolidated successfully!');
   for (const player of players) {
     console.log(`📍 ${player.name}: public/assets/${player.assetDir}/`);
   }
   console.log(`📍 Common Icons: public/assets/*.svg`);
+  console.log(`📍 jQuery: public/libs/jquery.min.js`);
 } catch (error) {
   console.error('❌ Error consolidating assets:', error.message);
   process.exit(1);
