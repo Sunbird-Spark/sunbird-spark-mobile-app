@@ -58,7 +58,7 @@ const HelpAndSupportPage: React.FC = () => {
             action: 'get',
             component: 'app',
             rootOrgId: '*',
-        }
+        },
     });
 
     const categories = faqData?.categories ?? [];
