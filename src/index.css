@@ -853,14 +853,6 @@ ion-tab-button:hover {
     justify-content: space-between;
 }
 
-/* Carousel-specific: fixed size only when inside a horizontal scroll container */
-.resource-center-scroll .resource-card {
-    flex: 0 0 auto;
-    width: 16.125rem;
-    height: 20.5rem;
-    scroll-snap-align: start;
-}
-
 .resource-card-image {
     width: 100%;
     height: 100%;

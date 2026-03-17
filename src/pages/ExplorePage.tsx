@@ -74,7 +74,7 @@ const ExplorePage: React.FC = () => {
             type: 'portal',
             subType: 'explorepage',
             action: 'filters',
-            component: 'portal',
+            component: 'app',
         },
     });
 
