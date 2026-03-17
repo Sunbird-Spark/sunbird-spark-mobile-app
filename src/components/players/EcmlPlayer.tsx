@@ -49,6 +49,8 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
     let cancelled = false;
 
     const messageHandler = (event: MessageEvent) => {
+      // Only accept messages from our player iframe
+      if (event.source !== iframe.contentWindow) return;
       if (!event.data) return;
 
       const eventData = typeof event.data === 'string'
