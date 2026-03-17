@@ -1,6 +1,6 @@
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
 import { AppInitializer } from './AppInitializer';
 import Dashboard from './pages/Dashboard';
@@ -43,16 +43,10 @@ import CourseLearningPage from './pages/CourseLearningPage';
 setupIonicReact();
 
 const App: React.FC = () => {
-  const [, setReady] = useState(false);
-
   useEffect(() => {
-    AppInitializer.init()
-      .then(() => setReady(true))
-      .catch((error) => {
-        console.error('App: Failed to initialize application:', error);
-        // HTTP client is initialized before auth fails, so queries can still run
-        setReady(true);
-      });
+    AppInitializer.init().catch((error) => {
+      console.error('App: Failed to initialize application:', error);
+    });
   }, []);
 
   return (
