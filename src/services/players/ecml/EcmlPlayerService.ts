@@ -1,71 +1,14 @@
 import { EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
-import { deviceService } from '../../device';
-import { OrganizationService } from '../../OrganizationService';
+import { buildEcmlPlayerContext } from '../PlayerContextService';
 
 const PREVIEW_URL = '/content/preview/preview.html?webview=true';
 
 export class EcmlPlayerService {
-  private orgService = new OrganizationService();
-
   async createConfig(
     metadata: EcmlPlayerMetadata,
     contextProps?: EcmlPlayerContextProps
   ) {
-    const sid = `session-${Date.now()}`;
-    const uid = 'anonymous';
-
-    let did = '';
-    try {
-      did = await deviceService.getHashedDeviceId();
-    } catch (error) {
-      console.warn('Failed to fetch device ID, using fallback:', error);
-    }
-
-    let channel = '';
-    let hashTagId = '';
-    try {
-      const orgResponse = await this.orgService.search({
-        filters: { isTenant: true },
-      });
-      const org = orgResponse?.data?.result?.response?.content?.[0];
-      if (org?.channel) {
-        channel = org.channel;
-      }
-      if (org?.hashTagId) {
-        hashTagId = org.hashTagId;
-      }
-    } catch (error) {
-      console.warn('Failed to fetch channel from org service:', error);
-    }
-
-    const tags = hashTagId ? [hashTagId] : channel ? [channel] : [];
-
-    const pdata = {
-      id: 'sunbird.app',
-      ver: '1.0.0',
-      pid: 'sunbird-app.contentplayer',
-    };
-
-    const context = {
-      mode: contextProps?.mode || 'play',
-      partner: [],
-      sid,
-      did,
-      uid,
-      channel,
-      pdata,
-      contentId: metadata.identifier,
-      contextRollup: contextProps?.contextRollup || { l1: channel },
-      tags,
-      cdata: contextProps?.cdata || [],
-      timeDiff: 0,
-      objectRollup: contextProps?.objectRollup || {},
-      host: '',
-      endpoint: '/portal/data/v1/telemetry',
-      dims: tags,
-      app: [channel],
-      userData: { firstName: '', lastName: '' },
-    };
+    const context = await buildEcmlPlayerContext(metadata.identifier, contextProps);
 
     const config = {
       showEndPage: false,

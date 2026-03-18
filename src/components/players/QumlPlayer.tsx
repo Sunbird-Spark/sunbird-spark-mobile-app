@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { qumlPlayerService, QumlPlayerService } from '../../services/players/quml';
 import type { QumlPlayerEvent, QumlPlayerContextProps, QumlPlayerMetadata } from '../../services/players/quml/types';
 
@@ -14,7 +14,7 @@ interface QumlPlayerProps {
 
 const QumlPlayer: React.FC<QumlPlayerProps> = ({
   metadata,
-  mode = 'play',
+  mode,
   cdata,
   contextRollup,
   objectRollup,
@@ -23,16 +23,6 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerElementRef = useRef<HTMLElement | null>(null);
-
-  const contextProps = useMemo<QumlPlayerContextProps>(
-    () => ({
-      mode,
-      ...(cdata && { cdata }),
-      ...(contextRollup && { contextRollup }),
-      ...(objectRollup && { objectRollup }),
-    }),
-    [mode, cdata, contextRollup, objectRollup]
-  );
 
   const handlePlayerEvent = useCallback(
     (event: QumlPlayerEvent) => {
@@ -59,6 +49,13 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
         console.warn('[QumlPlayer] Metadata not available');
         return;
       }
+
+      const contextProps: QumlPlayerContextProps = {
+        mode: mode || 'play',
+        ...(cdata && { cdata }),
+        ...(contextRollup && { contextRollup }),
+        ...(objectRollup && { objectRollup }),
+      };
 
       try {
         const config = await qumlPlayerService.createConfig(metadata, contextProps);
@@ -87,7 +84,7 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
       }
       QumlPlayerService.unloadStyles();
     };
-  }, [metadata, contextProps, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
 
   return (
     <div

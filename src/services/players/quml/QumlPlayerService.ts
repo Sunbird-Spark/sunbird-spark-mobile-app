@@ -1,10 +1,8 @@
 import type { QumlPlayerConfig, QumlPlayerEvent, QumlPlayerContextProps, QumlPlayerMetadata } from './types';
-import { deviceService } from '../../device';
-import { OrganizationService } from '../../OrganizationService';
+import { buildPlayerContext } from '../PlayerContextService';
 
 export class QumlPlayerService {
   private eventHandlers = new WeakMap<HTMLElement, { player: (event: Event) => void; telemetry: (event: Event) => void }>();
-  private orgService = new OrganizationService();
   private static stylesLoaded = false;
   private static scriptLoaded = false;
   private static scriptLoading?: Promise<void>;
@@ -34,50 +32,8 @@ export class QumlPlayerService {
   ): Promise<QumlPlayerConfig> {
     await this.loadScript();
 
-    const sid = `session-${Date.now()}`;
-    const uid = 'anonymous';
-
-    let did = '';
-    try {
-      did = await deviceService.getHashedDeviceId();
-    } catch (error) {
-      console.warn('Failed to fetch device ID:', error);
-    }
-
-    let channel = '';
-    try {
-      const orgResponse = await this.orgService.search({
-        filters: { isTenant: true }
-      });
-      const org = orgResponse?.data?.result?.response?.content?.[0];
-      if (org?.channel) {
-        channel = org.channel;
-      }
-    } catch (error) {
-      console.warn('Failed to fetch channel from org service:', error);
-    }
-
-    const pdata = {
-      id: 'sunbird.app',
-      ver: '1.0.0',
-      pid: 'sunbird-app.contentplayer',
-    };
-
-    const context = {
-      mode: contextProps?.mode || 'play',
-      sid,
-      did,
-      uid,
-      channel,
-      pdata,
-      contextRollup: contextProps?.contextRollup || { l1: channel },
-      cdata: contextProps?.cdata || [],
-      timeDiff: 0,
-      objectRollup: contextProps?.objectRollup || {},
-      host: '',
-      endpoint: '',
-      userData: { firstName: '', lastName: '' },
-    };
+    const baseContext = await buildPlayerContext(contextProps);
+    const context = { ...baseContext, userData: { firstName: '', lastName: '' } };
 
     return { context, config: {}, metadata };
   }

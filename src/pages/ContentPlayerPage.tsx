@@ -1,20 +1,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  IonPage,
-  IonHeader,
-  IonToolbar,
-  IonContent,
   IonButtons,
+  IonContent,
+  IonHeader,
   IonIcon,
   IonImg,
-  IonSpinner,
+  IonPage,
+  IonToolbar,
 } from '@ionic/react';
 import { useParams, useHistory } from 'react-router-dom';
-import { shareSocialOutline, downloadOutline } from 'ionicons/icons';
+import { downloadOutline, shareSocialOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
 import { useQumlContent } from '../hooks/useQumlContent';
+import PageLoader from '../components/common/PageLoader';
 import './ContentPlayerPage.css';
 
 const QUML_MIME_TYPES = [
@@ -41,7 +41,7 @@ const ContentPlayerPage: React.FC = () => {
   const history = useHistory();
   const [isPlaying, setIsPlaying] = useState(false);
 
-  const { data, isLoading, error } = useContentRead(contentId);
+  const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
 
@@ -49,12 +49,20 @@ const ContentPlayerPage: React.FC = () => {
     data: qumlData,
     isLoading: isQumlLoading,
     error: qumlError,
+    refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
   const playerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
   const playerError = error || (isQumlContent ? qumlError : null);
   const mimeType = playerMetadata?.mimeType;
+
+  const handleRetry = useCallback(() => {
+    refetch();
+    if (isQumlContent) {
+      refetchQuml();
+    }
+  }, [refetch, refetchQuml, isQumlContent]);
 
   const handlePlay = useCallback(() => {
     setIsPlaying(true);
@@ -133,13 +141,12 @@ const ContentPlayerPage: React.FC = () => {
 
       <IonContent fullscreen>
         {playerIsLoading ? (
-          <div className="cp-loading">
-            <IonSpinner name="crescent" />
-          </div>
+          <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
-          <div className="cp-error">
-            <p>{playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}</p>
-          </div>
+          <PageLoader 
+            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'} 
+            onRetry={handleRetry}
+          />
         ) : (
           <div className="cp-container">
             {/* Hero Section */}

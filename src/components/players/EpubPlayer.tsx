@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { EpubPlayerService } from '../../services/players/epub';
 import type { EpubPlayerEvent, EpubPlayerContextProps, EpubPlayerMetadata } from '../../services/players/epub';
 
@@ -24,18 +24,6 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const serviceRef = useRef<EpubPlayerService>(new EpubPlayerService());
 
-  const contextProps = useMemo<EpubPlayerContextProps | undefined>(() => {
-    if (mode === undefined && cdata === undefined && contextRollup === undefined && objectRollup === undefined) {
-      return undefined;
-    }
-    return {
-      ...(mode !== undefined && { mode }),
-      ...(cdata !== undefined && { cdata }),
-      ...(contextRollup !== undefined && { contextRollup }),
-      ...(objectRollup !== undefined && { objectRollup }),
-    };
-  }, [mode, cdata, contextRollup, objectRollup]);
-
   const handlePlayerEvent = useCallback((event: EpubPlayerEvent) => {
     onPlayerEvent?.(event);
   }, [onPlayerEvent]);
@@ -50,6 +38,13 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
     const service = serviceRef.current;
     let playerElement: HTMLElement | null = null;
     let cancelled = false;
+
+    const contextProps: EpubPlayerContextProps = {
+      ...(mode !== undefined && { mode }),
+      ...(cdata !== undefined && { cdata }),
+      ...(contextRollup !== undefined && { contextRollup }),
+      ...(objectRollup !== undefined && { objectRollup }),
+    };
 
     const initPlayer = async () => {
       try {
@@ -77,7 +72,7 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata, contextProps, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
 
   return (
     <div
