@@ -44,43 +44,36 @@ export class VideoPlayerService {
     const sid = uuidv4();
     const uid = 'anonymous';
 
-    let did = contextProps?.did || '';
-    if (!did) {
-      try {
-        did = await deviceService.getHashedDeviceId();
-      } catch (error) {
-        console.warn('Failed to fetch device ID, using fallback:', error);
-      }
+    let did = '';
+    try {
+      did = await deviceService.getHashedDeviceId();
+    } catch (error) {
+      console.warn('Failed to fetch device ID, using fallback:', error);
     }
 
-    let channel = contextProps?.channel || '';
-    if (!channel) {
-      try {
-        const orgResponse = await this.orgService.search({
-          filters: { isTenant: true }
-        });
-        const org = orgResponse?.data?.result?.response?.content?.[0];
-        if (org?.channel) {
-          channel = org.channel;
-        }
-      } catch (error) {
-        console.warn('Failed to fetch channel from org service:', error);
+    let channel = '';
+    try {
+      const orgResponse = await this.orgService.search({
+        filters: { isTenant: true }
+      });
+      const org = orgResponse?.data?.result?.response?.content?.[0];
+      if (org?.channel) {
+        channel = org.channel;
       }
+    } catch (error) {
+      console.warn('Failed to fetch channel from org service:', error);
     }
 
-    let pdata = contextProps?.pdata;
-    if (!pdata) {
-      let producerId = 'sunbird.app';
-      let appVersion = '1.0.0';
-      try {
-        const config = await NativeConfigServiceInstance.load();
-        producerId = config.producerId || producerId;
-        appVersion = config.appVersion || appVersion;
-      } catch (error) {
-        console.warn('Failed to fetch native config, using fallback:', error);
-      }
-      pdata = { id: producerId, ver: appVersion, pid: 'sunbird-app.contentplayer' };
+    let producerId = 'sunbird.app';
+    let appVersion = '1.0.0';
+    try {
+      const config = await NativeConfigServiceInstance.load();
+      producerId = config.producerId || producerId;
+      appVersion = config.appVersion || appVersion;
+    } catch (error) {
+      console.warn('Failed to fetch native config, using fallback:', error);
     }
+    const pdata = { id: producerId, ver: appVersion, pid: 'sunbird-app.contentplayer' };
 
     const context = {
       mode: contextProps?.mode || 'play',

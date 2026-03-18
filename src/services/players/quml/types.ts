@@ -22,9 +22,6 @@ export interface QumlPlayerEvent {
 
 export interface QumlPlayerContextProps {
   mode?: string;
-  channel?: string;
-  pdata?: { id: string; ver: string; pid: string };
-  did?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
