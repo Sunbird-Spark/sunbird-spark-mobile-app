@@ -83,7 +83,7 @@ const SignInPage: React.FC = () => {
 
     try {
       // TODO: Wire to Keycloak API
-      console.log('Login attempt:', { email: trimmedEmail, password });
+      console.log('Login attempt:', { email: trimmedEmail });
     } catch (err) {
       setError(getLoginErrorMessage(err));
     } finally {
