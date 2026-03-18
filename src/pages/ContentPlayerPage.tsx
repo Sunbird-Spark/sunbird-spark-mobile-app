@@ -7,7 +7,6 @@ import {
   IonIcon,
   IonImg,
   IonPage,
-  IonSpinner,
   IonToolbar,
 } from '@ionic/react';
 import { useParams, useHistory } from 'react-router-dom';
@@ -17,6 +16,7 @@ import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
 import { usePlayerContext } from '../hooks/usePlayerContext';
 import { useQumlContent } from '../hooks/useQumlContent';
+import PageLoader from '../components/common/PageLoader';
 import './ContentPlayerPage.css';
 
 const QUML_MIME_TYPES = [
@@ -151,17 +151,12 @@ const ContentPlayerPage: React.FC = () => {
 
       <IonContent fullscreen>
         {playerIsLoading ? (
-          <div className="cp-loading">
-            <IonSpinner name="crescent" />
-          </div>
+          <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
-          <div className="cp-error">
-            <p>{playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}</p>
-            <IonButton fill="outline" color="primary" onClick={handleRetry}>
-              <IonIcon slot="start" icon={refreshOutline} />
-              Retry
-            </IonButton>
-          </div>
+          <PageLoader 
+            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'} 
+            onRetry={handleRetry}
+          />
         ) : (
           <div className="cp-container">
             {/* Hero Section */}
