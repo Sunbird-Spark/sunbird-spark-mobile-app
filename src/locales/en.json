@@ -46,5 +46,10 @@
   "viewAll": "View All",
   "featuredCourses": "Featured Courses",
   "browseCourses": "Browse Courses",
-  "complete": "Complete"
+  "complete": "Complete",
+  "faqSection": {
+    "heading": "Frequently asked questions",
+    "loading": "Loading FAQs...",
+    "error": "Could not load FAQs"
+  }
 }

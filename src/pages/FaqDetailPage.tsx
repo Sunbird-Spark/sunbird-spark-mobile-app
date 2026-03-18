@@ -85,7 +85,11 @@ const FaqDetailPage: React.FC = () => {
                                 </button>
                                 {expandedFaq === idx && (
                                     <div className="fd-faq-answer">
-                                        <p className="fd-faq-answer-text">{faq.answer}</p>
+                                        {/* Content is sanitized by useFaqData before reaching here. */}
+                        <div
+                          className="fd-faq-answer-text"
+                          dangerouslySetInnerHTML={{ __html: faq.answer }}
+                        />
 
                                         {feedback[idx] === 'yes' || feedback[idx] === 'submitted' ? (
                                             <div className="fd-feedback-thanks">
