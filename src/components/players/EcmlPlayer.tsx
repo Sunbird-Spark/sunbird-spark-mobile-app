@@ -102,7 +102,20 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
           if (cancelled) return;
           try {
             const contentWindow = iframe.contentWindow as any;
-            if (contentWindow && contentWindow.initializePreview) {
+            if (!contentWindow) return;
+
+            // Patch JSON.parse in the iframe to handle objects passed directly.
+            // The renderer's iframeEvent plugin calls JSON.parse() on telemetry
+            // event objects that are already JS objects (not strings), causing
+            // "[object Object]" is not valid JSON errors that break the event
+            // chain in Capacitor's WebView.
+            const originalParse = contentWindow.JSON.parse;
+            contentWindow.JSON.parse = function (text: any, reviver?: any) {
+              if (typeof text === 'object' && text !== null) return text;
+              return originalParse.call(contentWindow.JSON, text, reviver);
+            };
+            
+            if (contentWindow.initializePreview) {
               contentWindow.initializePreview(config);
             }
           } catch (error) {
