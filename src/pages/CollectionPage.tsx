@@ -18,14 +18,13 @@ import { BackIcon, SearchIcon, RightArrowIcon } from '../components/icons/Collec
 import CollectionOverview from '../components/collection/CollectionOverview';
 import CollectionAccordion from '../components/collection/CollectionAccordion';
 import RelatedContent from '../components/collection/RelatedContent';
-import { ContentPlayer } from '../components/players/ContentPlayer';
+import CollectionContentPlayer from '../components/collection/CollectionContentPlayer';
 import PageLoader from '../components/common/PageLoader';
 import './CollectionPage.css';
 
 // ── Component ──────────────────────────────────────────────────────────────
 const CollectionPage: React.FC = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
-  console.log(collectionId, "This is collection id");
   const router = useIonRouter();
   const location = useLocation<{ parentRoute?: string }>();
   const { isAuthenticated } = useAuth();
@@ -87,7 +86,7 @@ const CollectionPage: React.FC = () => {
   // Fullscreen player — replaces entire page (no header/footer)
   if (playingContentId) {
     return (
-      <ContentPlayer
+      <CollectionContentPlayer
         contentId={playingContentId}
         onClose={() => setPlayingContentId(null)}
       />
