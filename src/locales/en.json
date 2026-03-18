@@ -46,5 +46,27 @@
   "viewAll": "View All",
   "featuredCourses": "Featured Courses",
   "browseCourses": "Browse Courses",
-  "complete": "Complete"
+  "complete": "Complete",
+  "collection": {
+    "courseOverview": "Course Overview",
+    "collectionOverview": "Collection Overview",
+    "units": "Units",
+    "lessons": "Lessons",
+    "bestSuitedFor": "Best Suited For",
+    "courseCurriculum": "Course Curriculum",
+    "collectionCurriculum": "Collection Curriculum",
+    "relatedContent": "Related Content",
+    "faq": "Frequently asked questions",
+    "letsGetStarted": "Let's Get Started",
+    "joinTheCourse": "Join the Course",
+    "availableBatches": "Available Batches",
+    "selectBatch": "Select a Batch",
+    "selectBatchToStart": "Select a batch to start learning.",
+    "noBatchesAvailable": "No batches available for enrollment at the moment.",
+    "joinTheBatch": "Join The Batch",
+    "courseProgress": "Course Progress",
+    "batchStartedOn": "Batch started on",
+    "notFound": "Collection not found.",
+    "errorLoading": "Failed to load collection."
+  }
 }
