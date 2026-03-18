@@ -32,6 +32,10 @@
 		"classpath": "com.capacitorjs.plugins.preferences.PreferencesPlugin"
 	},
 	{
+		"pkg": "@capacitor/screen-orientation",
+		"classpath": "com.capacitorjs.plugins.screenorientation.ScreenOrientationPlugin"
+	},
+	{
 		"pkg": "@capacitor/splash-screen",
 		"classpath": "com.capacitorjs.plugins.splashscreen.SplashScreenPlugin"
 	},
@@ -55,7 +59,7 @@
 		"pkg": "capacitor-read-native-setting",
 		"classpath": "com.ingageco.readnativesetting.CapacitorReadNativeSetting"
 	},
-{
+	{
 		"pkg": "capacitor-secure-storage-plugin",
 		"classpath": "com.whitestein.securestorage.SecureStoragePluginPlugin"
 	}
