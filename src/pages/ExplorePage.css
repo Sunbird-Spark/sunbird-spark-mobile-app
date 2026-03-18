@@ -14,6 +14,13 @@
     overflow: hidden; /* prevent any card from bleeding into the adjacent column */
 }
 
+.masonry-col .collection-card,
+.masonry-col .resource-card {
+    width: 100%;
+    flex: unset;
+    scroll-snap-align: unset;
+}
+
 .explore-card {
     border-radius: 0.875rem;
     overflow: hidden;

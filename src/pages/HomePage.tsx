@@ -3,6 +3,7 @@ import {
   IonContent,
   IonHeader,
   IonPage,
+  IonSpinner,
 } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PublicWelcomeHeader } from '../components/home/PublicWelcomeHeader';
@@ -10,7 +11,6 @@ import { HeroSection } from '../components/home/HeroSection';
 import { StatsBar } from '../components/home/StatsBar';
 import { ContentCardCarousel, ContentCardItem } from '../components/home/ContentCardCarousel';
 import { CategoriesGrid } from '../components/home/CategoriesGrid';
-import { ResourceCenter } from '../components/home/ResourceCenter';
 import { FAQSection } from '../components/home/FAQSection';
 import { useAuth } from '../contexts/AuthContext';
 import { courses } from '../data/mockData';
@@ -19,26 +19,54 @@ import { LearningStatsGrid } from '../components/home/learning-started/LearningS
 import { ContinueLearningCard } from '../components/home/learning-started/ContinueLearningCard';
 import { PerformanceChart } from '../components/home/learning-started/PerformanceChart';
 import { InProgressContents } from '../components/home/learning-started/InProgressContents';
+import { useLandingPageConfig } from '../hooks/useLandingPageConfig';
+import { ContentSectionWrapper } from '../components/landing/ContentSectionWrapper';
+import { ResourcesSectionWrapper } from '../components/landing/ResourcesSectionWrapper';
 
-// Transform mock data into ContentCardItem format
-const toContentCardItems = (start: number, count: number): ContentCardItem[] => {
-  return courses.slice(start, start + count).map((c) => ({
-    id: c.id,
-    title: c.title,
-    thumbnail: c.thumbnail,
-    tag: 'Course',
-    rating: c.rating,
-    lessons: c.lessons,
-  }));
+// Transform mock data for authenticated view
+const recommendedItems: ContentCardItem[] = courses.slice(0, 4).map((c) => ({
+  id: c.id,
+  title: c.title,
+  thumbnail: c.thumbnail,
+  tag: 'Course',
+  rating: c.rating,
+  lessons: c.lessons,
+}));
+
+const CATEGORY_GRADIENTS = [
+  'var(--category-gradient-1)',
+  'var(--category-gradient-2)',
+  'var(--category-gradient-3)',
+  'var(--category-gradient-4)',
+];
+
+const renderSection = (section: any) => {
+  const key = section.id || section.index?.toString() || Math.random().toString();
+
+  switch (section.type) {
+    case 'content':
+      return <ContentSectionWrapper key={key} section={section} />;
+    case 'categories':
+      return (
+        <CategoriesGrid
+          key={key}
+          categories={(section.list || []).map((item: any, i: number) => ({
+            name: item.name || item.title || '',
+            gradient: item.gradient || CATEGORY_GRADIENTS[i % CATEGORY_GRADIENTS.length],
+          }))}
+          title={section.title || section.name}
+        />
+      );
+    case 'resources':
+      return <ResourcesSectionWrapper key={key} section={section} />;
+    default:
+      return null;
+  }
 };
-
-const mostPopularItems = toContentCardItems(0, 3);
-const mostViewedItems = toContentCardItems(1, 3);
-const trendingItems = toContentCardItems(2, 3);
-const recommendedItems = toContentCardItems(0, 4);
 
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
+  const { sections, isLoading } = useLandingPageConfig();
 
   return (
     <IonPage>
@@ -62,11 +90,15 @@ const HomePage: React.FC = () => {
           <>
             <HeroSection />
             <StatsBar />
-            <ContentCardCarousel title="Most Popular Content" items={mostPopularItems} />
-            <CategoriesGrid />
-            <ResourceCenter />
-            <ContentCardCarousel title="Most Viewed Content" items={mostViewedItems} />
-            <ContentCardCarousel title="Trending Content" items={trendingItems} />
+
+            {isLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+                <IonSpinner name="crescent" />
+              </div>
+            ) : (
+              sections.map(renderSection)
+            )}
+
             <FAQSection />
           </>
         )}

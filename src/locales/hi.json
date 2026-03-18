@@ -38,5 +38,10 @@
   "january2025": "जनवरी 2025",
   "logout": "लॉग आउट",
   "editProfile": "प्रोफ़ाइल संपादित करें",
-  "changePassword": "पासवर्ड बदलें"
+  "changePassword": "पासवर्ड बदलें",
+  "faqSection": {
+    "heading": "अक्सर पूछे जाने वाले प्रश्न",
+    "loading": "FAQ लोड हो रहे हैं...",
+    "error": "FAQ लोड नहीं हो सके"
+  }
 }

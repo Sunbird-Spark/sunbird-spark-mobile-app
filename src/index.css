@@ -383,7 +383,8 @@ ion-tab-button:hover {
 /* --- Hero Section --- */
 .hero-section {
     position: relative;
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.5rem 1rem 2rem;
+    margin-left: 0.9375rem;
     overflow: hidden;
     background: var(--ion-color-light);
 }
@@ -488,7 +489,7 @@ ion-tab-button:hover {
     background: var(--ion-color-light);
     border-radius: 1.25rem;
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
-    margin: -1rem 0.9375rem 1.5rem;
+    margin: -1rem 1rem 1.5rem;
     padding: 1.25rem 0.75rem;
     position: relative;
     z-index: 3;
@@ -541,7 +542,8 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.25rem;
+    padding: 0 1rem 0 0;
+    margin-left: 0.9375rem !important;
     margin-bottom: 1rem;
 }
 
@@ -566,7 +568,8 @@ ion-tab-button:hover {
     display: flex;
     gap: 1rem;
     overflow-x: auto;
-    padding: 0 1.25rem 0.5rem;
+    padding: 0 1rem 0.5rem 0;
+    margin-left: 0.9375rem !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -579,6 +582,7 @@ ion-tab-button:hover {
 .content-card {
     flex: 0 0 auto;
     width: 14rem;
+    margin: 0;
     background: var(--ion-color-light);
     border-radius: 0.875rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
@@ -672,7 +676,8 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.25rem;
+    padding: 0 1rem 0 0;
+    margin-left: 0.9375rem !important;
     margin-bottom: 1rem;
 }
 
@@ -697,7 +702,8 @@ ion-tab-button:hover {
     display: flex;
     gap: 0.75rem;
     overflow-x: auto;
-    padding: 0 1.25rem 0.5rem;
+    padding: 0 1rem 0.5rem 0;
+    margin-left: 0.9375rem !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -709,6 +715,7 @@ ion-tab-button:hover {
 
 .category-tile {
     flex: 0 0 auto;
+    margin: 0;
     width: 9.625rem;
     height: 8.6875rem;
     border-radius: 0.625rem;
@@ -800,7 +807,7 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0 1.25rem;
+    padding: 0 1rem;
     margin-bottom: 0.75rem;
 }
 
@@ -825,14 +832,15 @@ ion-tab-button:hover {
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: center;
-    margin: 0 1.25rem 1.25rem;
+    margin: 0 1rem 1.25rem;
 }
 
 .resource-center-scroll {
     display: flex;
     gap: 1rem;
     overflow-x: auto;
-    padding: 0 1.25rem 0.5rem;
+    padding: 0 1rem 0.5rem 0;
+    margin-left: 0.9375rem !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -921,7 +929,7 @@ ion-tab-button:hover {
 
 /* --- FAQ Section --- */
 .faq-section {
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.5rem 1rem 2rem;
 }
 
 .faq-heading {
@@ -1239,4 +1247,38 @@ ion-tab-button:hover {
 ion-header ion-toolbar[style*="background: var(--ion-color-light)"],
 ion-header ion-toolbar[style*="background: white"] {
     --color: var(--ion-color-dark, var(--color-222222, #222222));
+}
+
+/* --- Resources Masonry Grid --- */
+.resources-masonry-section {
+    padding: 0.5rem 0 1.5rem;
+}
+
+.resources-masonry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+}
+
+.resources-masonry-title {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
+    margin: 0;
+}
+
+.resources-masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0 1rem;
+}
+
+.resources-masonry-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }
