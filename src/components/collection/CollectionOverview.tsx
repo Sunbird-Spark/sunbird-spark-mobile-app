@@ -14,9 +14,9 @@ const CollectionOverview: React.FC<CollectionOverviewProps> = ({ collectionData,
       {/* Title + Lessons */}
       <div className="cp-title-section">
         <h1 className="cp-title">{collectionData.title}</h1>
-        <div className="cp-meta">
-          <span>{collectionData.lessons} {t('collection.lessons')}</span>
-        </div>
+        {collectionData.description && (
+          <p className="cp-description">{collectionData.description}</p>
+        )}
       </div>
 
       {/* Course Overview */}
@@ -34,9 +34,6 @@ const CollectionOverview: React.FC<CollectionOverviewProps> = ({ collectionData,
             <span>{collectionData.lessons} {t('collection.lessons')}</span>
           </div>
         </div>
-        {collectionData.description && (
-          <p className="cp-description">{collectionData.description}</p>
-        )}
       </div>
 
       {/* Best Suited For */}

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   IonButtons,
   IonContent,
@@ -7,10 +7,10 @@ import {
   IonImg,
   IonPage,
   IonToolbar,
+  useIonRouter,
 } from '@ionic/react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { downloadOutline, shareSocialOutline } from 'ionicons/icons';
-import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
 import { useQumlContent } from '../hooks/useQumlContent';
@@ -38,7 +38,8 @@ const MOCK_RELATED_CONTENT = [
 
 const ContentPlayerPage: React.FC = () => {
   const { contentId } = useParams<{ contentId: string }>();
-  const history = useHistory();
+  const location = useLocation<{ parentRoute?: string }>();
+  const router = useIonRouter();
   const [isPlaying, setIsPlaying] = useState(false);
 
   const { data, isLoading, error, refetch } = useContentRead(contentId);
@@ -66,53 +67,27 @@ const ContentPlayerPage: React.FC = () => {
 
   const handlePlay = useCallback(() => {
     setIsPlaying(true);
-    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
   }, []);
 
   const handleClosePlayer = useCallback(() => {
     setIsPlaying(false);
-    ScreenOrientation.unlock().catch(() => {});
   }, []);
 
-  // Unlock orientation on unmount
-  useEffect(() => {
-    return () => {
-      ScreenOrientation.unlock().catch(() => {});
-    };
-  }, []);
-
-  const handlePlayerEvent = (event: any) => {
-    console.log('[ContentPlayerPage] Player event:', event);
+  const handleBack = () => {
+    if (location.state?.parentRoute) {
+      router.push(location.state.parentRoute, 'back', 'pop');
+    } else {
+      router.goBack();
+    }
   };
 
-  const handleTelemetryEvent = (event: any) => {
-    console.log('[ContentPlayerPage] Telemetry event:', event);
-  };
-
-  // ── Fullscreen player mode (landscape, no header) ──
-  if (isPlaying && playerMetadata && mimeType) {
+  // ── Fullscreen player mode ──
+  if (isPlaying) {
     return (
-      <IonPage className="cp-fullscreen">
-        <IonContent scrollY={false}>
-          <button
-            className="cp-close-btn"
-            onClick={handleClosePlayer}
-            aria-label="Close player"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
-          <div className="cp-player-fullscreen-container">
-            <ContentPlayer
-              mimeType={mimeType}
-              metadata={playerMetadata}
-              onPlayerEvent={handlePlayerEvent}
-              onTelemetryEvent={handleTelemetryEvent}
-            />
-          </div>
-        </IonContent>
-      </IonPage>
+      <ContentPlayer
+        contentId={contentId}
+        onClose={handleClosePlayer}
+      />
     );
   }
 
@@ -122,7 +97,7 @@ const ContentPlayerPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="cp-toolbar">
           <IonButtons slot="start">
-            <button className="cp-action-btn" onClick={() => history.goBack()}>
+            <button className="cp-action-btn" onClick={handleBack}>
               <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
@@ -143,8 +118,8 @@ const ContentPlayerPage: React.FC = () => {
         {playerIsLoading ? (
           <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
-          <PageLoader 
-            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'} 
+          <PageLoader
+            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}
             onRetry={handleRetry}
           />
         ) : (

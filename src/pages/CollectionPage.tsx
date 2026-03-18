@@ -5,9 +5,8 @@ import {
   IonToolbar,
   IonContent,
   IonModal,
-  IonSpinner,
 } from '@ionic/react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useIonRouter } from '@ionic/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -19,6 +18,8 @@ import { BackIcon, SearchIcon, RightArrowIcon } from '../components/icons/Collec
 import CollectionOverview from '../components/collection/CollectionOverview';
 import CollectionAccordion from '../components/collection/CollectionAccordion';
 import RelatedContent from '../components/collection/RelatedContent';
+import { ContentPlayer } from '../components/players/ContentPlayer';
+import PageLoader from '../components/common/PageLoader';
 import './CollectionPage.css';
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -26,6 +27,7 @@ const CollectionPage: React.FC = () => {
   const { collectionId } = useParams<{ collectionId: string }>();
   console.log(collectionId, "This is collection id");
   const router = useIonRouter();
+  const location = useLocation<{ parentRoute?: string }>();
   const { isAuthenticated } = useAuth();
   const { t } = useLanguage();
 
@@ -46,6 +48,9 @@ const CollectionPage: React.FC = () => {
     // TODO: integrate enrollment check — for now treat authenticated as unenrolled
     return 'unenrolled';
   }, [isTrackable, isAuthenticated]);
+
+  // Player state
+  const [playingContentId, setPlayingContentId] = useState<string | null>(null);
 
   // Batch modal state
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
@@ -69,14 +74,33 @@ const CollectionPage: React.FC = () => {
     return faqData.categories.flatMap((cat) => cat.faqs);
   }, [faqData]);
 
+  const handleBack = () => {
+    if (location.state?.parentRoute) {
+      router.push(location.state.parentRoute, 'back', 'pop');
+    } else {
+      router.goBack();
+    }
+  };
+
   // ── Render ─────────────────────────────────────────────────────────────
+
+  // Fullscreen player — replaces entire page (no header/footer)
+  if (playingContentId) {
+    return (
+      <ContentPlayer
+        contentId={playingContentId}
+        onClose={() => setPlayingContentId(null)}
+      />
+    );
+  }
+
   return (
     <IonPage className="collection-page">
       {/* Header */}
       <IonHeader className="ion-no-border">
         <IonToolbar className="collection-page-header">
           <div className="collection-page-header-inner">
-            <button onClick={() => router.goBack()} className="collection-page-icon-btn">
+            <button onClick={handleBack} className="collection-page-icon-btn">
               <BackIcon />
             </button>
             <div className="collection-page-header-actions">
@@ -91,24 +115,17 @@ const CollectionPage: React.FC = () => {
       <IonContent fullscreen>
         {/* Loading */}
         {(isLoading || isQueryIdle) && (
-          <div className="collection-page-loading">
-            <IonSpinner name="crescent" color="primary" />
-            <p>{isQueryIdle ? 'Initializing…' : t('loading')}</p>
-          </div>
+          <PageLoader message={isQueryIdle ? 'Initializing…' : t('loading')} />
         )}
 
         {/* Error */}
         {!isLoading && !isQueryIdle && isError && (
-          <div className="collection-page-loading">
-            <p>{t('collection.errorLoading')}</p>
-          </div>
+          <PageLoader error={t('collection.errorLoading')} />
         )}
 
         {/* Not found */}
         {!isLoading && !isQueryIdle && !isError && !collectionData && (
-          <div className="collection-page-loading">
-            <p>{t('collection.notFound')}</p>
-          </div>
+          <PageLoader error={t('collection.notFound')} />
         )}
 
         {/* Main content */}
@@ -126,6 +143,7 @@ const CollectionPage: React.FC = () => {
               isCourse={isCourse}
               viewState={viewState}
               t={t}
+              onContentPlay={(id) => setPlayingContentId(id)}
             />
 
             <RelatedContent

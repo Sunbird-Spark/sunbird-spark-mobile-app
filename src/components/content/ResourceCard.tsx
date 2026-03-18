@@ -1,6 +1,6 @@
 import React from 'react';
 import { IonImg } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import type { ContentSearchItem } from '../../types/contentTypes';
 import './ContentCards.css';
 
@@ -38,13 +38,20 @@ const getMimeTypeLabel = (mimeType?: string): string => {
 
 const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
     const history = useHistory();
+    const location = useLocation<{ parentRoute?: string }>();
     const imageUrl = item.posterImage || item.appIcon || item.thumbnail || '';
     const viewLabel = getMimeTypeLabel(item.mimeType);
 
     return (
         <div
             className="resource-card"
-            onClick={() => history.push(`/content/${item.identifier}`)}
+            onClick={(e) => {
+                e.stopPropagation();
+                history.push({
+                    pathname: `/content/${item.identifier}`,
+                    state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
+                });
+            }}
         >
             {/* Image with overlay — mirrors CollectionCard structure */}
             <div className="resource-card-image-inner">

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal } from '@ionic/react';
+import { chevronDownOutline } from 'ionicons/icons';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
-import { VideoIcon, DocumentIcon, ChevronDownIcon, ChevronUpIcon } from '../icons/CollectionIcons';
+import { VideoIcon, DocumentIcon } from '../icons/CollectionIcons';
 
 const COLLECTION_MIME = 'application/vnd.ekstep.content-collection';
 
@@ -14,35 +15,11 @@ function isVideoMime(mimeType?: string): boolean {
   return !!mimeType && mimeType.toLowerCase().startsWith('video/');
 }
 
-const getCollectionIdentifiers = (nodes: HierarchyContentNode[]): string[] => {
-  let ids: string[] = [];
-  for (const node of nodes) {
-    if (isCollectionNode(node) && node.children?.length) {
-      ids.push(node.identifier);
-      ids.push(...getCollectionIdentifiers(node.children));
-    }
-  }
-  return ids;
-};
-
-const findNode = (nodes: HierarchyContentNode[], id: string): HierarchyContentNode | null => {
-  for (const node of nodes) {
-    if (node.identifier === id) return node;
-    if (node.children) {
-      const found = findNode(node.children, id);
-      if (found) return found;
-    }
-  }
-  return null;
-};
-
 // ── Recursive sub-unit content ──
 interface ExpandedUnitContentProps {
   nodes: HierarchyContentNode[];
   collectionId: string;
   viewState: 'anonymous' | 'unenrolled' | 'enrolled';
-  expandedUnits: Set<string>;
-  toggleUnit: (id: string) => void;
   onContentClick: (leafId: string) => void;
   t: (key: string) => string;
   depth?: number;
@@ -52,8 +29,6 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
   nodes,
   collectionId,
   viewState,
-  expandedUnits,
-  toggleUnit,
   onContentClick,
   t,
   depth = 0,
@@ -63,34 +38,24 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
   return (
     <div className={`cp-curriculum-nested ${depth > 0 ? 'cp-curriculum-nested-indented' : ''}`}>
       {nodes.map((node) => {
-        if (isCollectionNode(node) && node.children?.length) {
-          // Sub-unit: render as a collapsible sub-section
-          const isExpanded = expandedUnits.has(node.identifier);
+        if (isCollectionNode(node)) {
+          // Sub-unit: render as a section title without accordion
+          const childList = node.children ?? [];
           return (
             <div key={node.identifier} className="cp-curriculum-subunit">
-              <button
-                className="cp-curriculum-subunit-header"
-                onClick={() => toggleUnit(node.identifier)}
-              >
-                <span className="cp-curriculum-chevron">
-                  {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
-                </span>
+              <div className="cp-curriculum-subunit-label">
                 <span className="cp-curriculum-subunit-name">
                   {node.name ?? t('collection.untitled')}
                 </span>
-              </button>
-              {isExpanded && (
-                <ExpandedUnitContent
-                  nodes={node.children}
-                  collectionId={collectionId}
-                  viewState={viewState}
-                  expandedUnits={expandedUnits}
-                  toggleUnit={toggleUnit}
-                  onContentClick={onContentClick}
-                  t={t}
-                  depth={depth + 1}
-                />
-              )}
+              </div>
+              <ExpandedUnitContent
+                nodes={childList}
+                collectionId={collectionId}
+                viewState={viewState}
+                onContentClick={onContentClick}
+                t={t}
+                depth={depth + 1}
+              />
             </div>
           );
         }
@@ -101,7 +66,6 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
             key={node.identifier}
             className="cp-curriculum-item"
             onClick={() => onContentClick(node.identifier)}
-            style={{ cursor: viewState === 'anonymous' ? 'default' : 'pointer' }}
           >
             <div className="cp-curriculum-item-left">
               <span className="cp-curriculum-item-icon">
@@ -123,6 +87,7 @@ interface CollectionAccordionProps {
   isCourse: boolean;
   viewState: 'anonymous' | 'unenrolled' | 'enrolled';
   t: (key: string) => string;
+  onContentPlay?: (id: string) => void;
 }
 
 const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
@@ -131,88 +96,85 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
   isCourse,
   viewState,
   t,
+  onContentPlay,
 }) => {
-  const history = useHistory();
-  const [expandedUnits, setExpandedUnits] = useState<Set<string>>(() => {
-    const initial = new Set<string>();
-    if (children && children.length > 0) {
-      const firstUnit = children[0];
-      initial.add(firstUnit.identifier);
-      if (firstUnit.children) {
-        getCollectionIdentifiers(firstUnit.children).forEach(id => initial.add(id));
-      }
-    }
-    return initial;
-  });
-
-  const toggleUnit = (id: string) => {
-    setExpandedUnits((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-        const node = findNode(children ?? [], id);
-        if (node?.children) {
-          getCollectionIdentifiers(node.children).forEach(childId => next.add(childId));
-        }
-      }
-      return next;
-    });
-  };
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const handleContentClick = (leafId: string) => {
-    if (viewState !== 'anonymous') {
-      history.push(`/collection/${collectionId}/content/${leafId}`);
+    if (viewState === 'anonymous') {
+      setShowLoginPrompt(true);
+    } else {
+      onContentPlay?.(leafId);
     }
   };
+
+  const initialExpandedValue = children && children.length > 0 ? [children[0].identifier] : [];
 
   return (
     <div className="cp-curriculum-section">
       <h2 className="cp-curriculum-title">
-        {isCourse ? t('collection.courseCurriculum') : t('collection.collectionCurriculum')}
+        {isCourse ? 'Course' : 'Collection'} Curriculum
       </h2>
 
-      {(children ?? []).map((unit, unitIndex) => {
-        const isExpanded = expandedUnits.has(unit.identifier);
-
-        return (
-          <div key={unit.identifier} className="cp-curriculum-unit">
-            {/* Unit header */}
-            <button
-              className="cp-curriculum-unit-header"
-              onClick={() => toggleUnit(unit.identifier)}
-            >
-              <span className="cp-curriculum-chevron">
-                {isExpanded ? <ChevronUpIcon /> : <ChevronDownIcon />}
-              </span>
-              <div className="cp-curriculum-unit-info">
+      <IonAccordionGroup multiple={true} value={initialExpandedValue}>
+        {(children ?? []).map((unit, unitIndex) => (
+          <IonAccordion
+            key={unit.identifier}
+            value={unit.identifier}
+            className="cp-curriculum-unit"
+            toggleIconSlot="start"
+            toggleIcon={chevronDownOutline}
+          >
+            <IonItem slot="header" lines="none" className="cp-curriculum-unit-header-item">
+              <IonLabel className="ion-text-wrap">
                 <div className="cp-curriculum-unit-name">
                   {unit.name ?? `Unit ${unitIndex + 1}`}
                 </div>
                 {unit.description && (
                   <div className="cp-curriculum-subtitle">{unit.description}</div>
                 )}
-              </div>
-            </button>
+              </IonLabel>
+            </IonItem>
 
-            {/* Expanded content — recursive multi-level */}
-            {isExpanded && (
-              <div className="cp-curriculum-unit-content">
-                <ExpandedUnitContent
-                  nodes={unit.children ?? []}
-                  collectionId={collectionId}
-                  viewState={viewState}
-                  expandedUnits={expandedUnits}
-                  toggleUnit={toggleUnit}
-                  onContentClick={handleContentClick}
-                  t={t}
-                />
-              </div>
-            )}
-          </div>
-        );
-      })}
+            <div slot="content" className="cp-curriculum-unit-content">
+              <ExpandedUnitContent
+                nodes={unit.children ?? []}
+                collectionId={collectionId}
+                viewState={viewState}
+                onContentClick={handleContentClick}
+                t={t}
+              />
+            </div>
+          </IonAccordion>
+        ))}
+      </IonAccordionGroup>
+
+      {/* Login prompt for anonymous users */}
+      <IonModal
+        isOpen={showLoginPrompt}
+        onDidDismiss={() => setShowLoginPrompt(false)}
+        initialBreakpoint={0.25}
+        breakpoints={[0, 0.25]}
+        className="cp-login-prompt-modal"
+      >
+        <div className="cp-login-prompt-inner">
+          <h2 className="cp-login-prompt-title">
+            Unlock your learning.
+          </h2>
+          <p className="cp-login-prompt-subtitle">
+            Log in to begin your learning journey with us.
+          </p>
+          <button
+            className="cp-login-prompt-btn"
+            onClick={() => {
+              setShowLoginPrompt(false);
+              window.location.href = '/app/login?prompt=none';
+            }}
+          >
+            Login
+          </button>
+        </div>
+      </IonModal>
     </div>
   );
 };

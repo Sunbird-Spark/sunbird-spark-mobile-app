@@ -10,7 +10,7 @@
 /* ── Header ── */
 .collection-page-header {
   --background: var(--ion-color-light);
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
 }
 
@@ -151,7 +151,6 @@
    ══════════════════════════════════════════════════════════════ */
 .cp-curriculum-section {
   padding: 1.5rem 1rem 0.5rem;
-  margin-bottom: 0.5rem;
 }
 
 .cp-curriculum-title {
@@ -214,6 +213,15 @@
   line-height: 1.4;
 }
 
+/* Override default Ionic Accordion toggle icon styling */
+.cp-curriculum-unit .ion-accordion-toggle-icon {
+  color: var(--ion-color-primary) !important;
+  opacity: 1 !important;
+  margin-inline-end: 4px !important;
+  width: 20px;
+  height: 20px;
+}
+
 /* Expanded content area */
 .cp-curriculum-unit-content {
   padding: 0 0.75rem 0.75rem;
@@ -229,6 +237,7 @@
   border-radius: 0.625rem;
   box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.08);
   font-family: 'Rubik', sans-serif;
+  cursor: pointer;
 }
 
 .cp-curriculum-item:last-child {
@@ -280,8 +289,8 @@
 
 .cp-curriculum-subunit-name {
   font-size: 0.9375rem;
-  font-weight: 500;
-  color: var(--ion-color-dark, #333333);
+  font-weight: 600;
+  color: var(--ion-color-medium, #757575);
   line-height: 1.4;
 }
 
@@ -289,7 +298,7 @@
    3. RelatedContent — Horizontally scrollable cards
    ══════════════════════════════════════════════════════════════ */
 .cp-related-section {
-  padding: 1.5rem 0 1.5rem 1rem;
+  padding: 1rem 0 1rem 1rem;
   margin-bottom: 0.5rem;
 }
 
@@ -521,4 +530,58 @@
   gap: 0.5rem;
   cursor: pointer;
   padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
+/* ── Accordion inline-style replacements ── */
+.cp-curriculum-unit-header-item {
+  --background: transparent;
+  --padding-start: 0.5rem;
+  --inner-padding-end: 1rem;
+}
+
+.cp-curriculum-subunit-label {
+  padding: 0.625rem 0.5rem 0.25rem;
+}
+
+/* ── Login Prompt Modal ── */
+.cp-login-prompt-modal {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}
+
+.cp-login-prompt-modal::part(handle) {
+  background: transparent;
+  display: none;
+}
+
+.cp-login-prompt-inner {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.cp-login-prompt-title {
+  font-family: 'Rubik', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--ion-color-dark, #222222);
+}
+
+.cp-login-prompt-subtitle {
+  font-family: 'Rubik', sans-serif;
+  font-size: 0.9rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 1.5rem;
+}
+
+.cp-login-prompt-btn {
+  width: 100%;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: var(--ion-color-primary);
+  color: white;
+  font-family: 'Rubik', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
 }

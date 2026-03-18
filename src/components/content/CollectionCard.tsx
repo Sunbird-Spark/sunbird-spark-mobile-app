@@ -1,6 +1,6 @@
 import React from 'react';
 import { IonImg } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import type { ContentSearchItem } from '../../types/contentTypes';
 import './ContentCards.css';
 
@@ -17,6 +17,7 @@ const UserIcon = () => (
 
 const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     const history = useHistory();
+    const location = useLocation<{ parentRoute?: string }>();
     const imageUrl = item.posterImage || item.appIcon || item.thumbnail || '';
     const creator = item.creator ?? item.createdBy ?? 'Unknown';
     const lessons = item.leafNodesCount ?? 0;
@@ -25,7 +26,13 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     return (
         <div
             className="collection-card"
-            onClick={() => history.push(`/collection/${item.identifier}`)}
+            onClick={(e) => {
+                e.stopPropagation();
+                history.push({
+                    pathname: `/collection/${item.identifier}`,
+                    state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
+                });
+            }}
         >
             {/* Image */}
             <div className="collection-card-image-wrapper">
