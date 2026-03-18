@@ -1,0 +1,300 @@
+/* =============================================
+   Sign In Page — all styles
+   ============================================= */
+
+.sign-in-page {
+    --background: var(--ion-color-light);
+}
+
+/* ── Header with back button ── */
+.sign-in-header {
+    box-shadow: none;
+}
+
+.sign-in-page .sign-in-toolbar {
+    --background: var(--ion-color-light) !important;
+    --border-width: 0 !important;
+    --min-height: 2.75rem;
+}
+
+.sign-in-page .sign-in-toolbar .sign-in-back-btn {
+    color: var(--ion-color-primary) !important;
+    --color: var(--ion-color-primary) !important;
+}
+
+.sign-in-content {
+    --background: var(--ion-color-light);
+}
+
+/* ── Main container ── */
+.sign-in-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 3rem 1.5rem 2rem;
+    min-height: 100%;
+}
+
+/* ── Logo ── */
+.sign-in-logo {
+    height: 2.5rem;
+    width: auto;
+    object-fit: contain;
+    margin-bottom: 2rem;
+}
+
+/* ── Welcome heading ── */
+.sign-in-welcome {
+    font-family: 'Rubik', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ion-color-tertiary);
+    margin: 0 0 0.5rem;
+    text-align: center;
+}
+
+/* ── Subtitle ── */
+.sign-in-subtitle {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--ion-color-medium, #757575);
+    text-align: center;
+    line-height: 1.5;
+    margin: 0 0 2rem;
+}
+
+/* ── Error banner ── */
+.sign-in-error {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    background-color: #fef2f2;
+    color: var(--ion-color-danger, #eb445a);
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* ── Google Sign-In button ── */
+.sign-in-google-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.875rem 1rem;
+    border-radius: 999px;
+    border: 1px solid var(--ion-color-step-100, #e0e0e0);
+    background: var(--ion-color-light, #fff);
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--ion-color-dark, #222);
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    margin-bottom: 1.5rem;
+}
+
+.sign-in-google-btn:active {
+    background-color: #f5f5f5;
+}
+
+.sign-in-google-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.sign-in-google-btn svg {
+    flex-shrink: 0;
+}
+
+/* ── OR divider ── */
+.sign-in-divider {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    margin-bottom: 1.5rem;
+}
+
+.sign-in-divider-line {
+    flex: 1;
+    height: 1px;
+    background-color: var(--ion-color-step-100, #e0e0e0);
+}
+
+.sign-in-divider-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ion-color-medium, #999);
+}
+
+/* ── Form wrapper ── */
+.sign-in-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+/* ── Form group (label + input) ── */
+.sign-in-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.sign-in-label {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ion-color-dark, #333);
+}
+
+/* ── Input fields ── */
+.sign-in-input {
+    width: 100%;
+    height: 3rem;
+    padding: 0 1rem;
+    border: 1px solid var(--ion-color-step-100, #e0e0e0);
+    border-radius: 999px;
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--ion-color-dark, #333);
+    background-color: var(--ion-color-light, #fff);
+    outline: none;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease;
+}
+
+.sign-in-input::placeholder {
+    color: var(--ion-color-medium, #999);
+    font-weight: 400;
+}
+
+.sign-in-input:focus {
+    border-color: var(--ion-color-primary);
+}
+
+.sign-in-input:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* ── Password wrapper (input + eye icon) ── */
+.sign-in-password-wrapper {
+    position: relative;
+}
+
+.sign-in-password-wrapper .sign-in-input {
+    padding-right: 3rem;
+}
+
+.sign-in-eye-btn {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ion-color-medium, #999);
+    font-size: 1.25rem;
+}
+
+.sign-in-eye-btn ion-icon {
+    font-size: 1.25rem;
+    color: var(--ion-color-medium, #999);
+}
+
+/* ── Forgot password link ── */
+.sign-in-forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -0.5rem;
+}
+
+.sign-in-forgot-btn {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+}
+
+.sign-in-forgot-btn:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+/* ── Login button ── */
+.sign-in-login-btn {
+    width: 100%;
+    height: 3.125rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--ion-color-primary);
+    color: #fff;
+    font-family: 'Rubik', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, opacity 0.2s ease;
+    margin-top: 0.25rem;
+}
+
+.sign-in-login-btn:active {
+    background: var(--ion-color-primary-shade);
+}
+
+.sign-in-login-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+.sign-in-login-btn ion-spinner {
+    color: #fff;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* ── Register text ── */
+.sign-in-register-text {
+    font-family: 'Rubik', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--ion-color-dark, #666);
+    text-align: center;
+    line-height: 1.5;
+    margin-top: 0.5rem;
+}
+
+.sign-in-register-link {
+    font-family: 'Rubik', sans-serif;
+    font-weight: 600;
+    color: var(--ion-color-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: inherit;
+}
+
+.sign-in-register-link:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
