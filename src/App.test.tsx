@@ -27,6 +27,9 @@ vi.mock('@ionic/react', () => ({
   IonButtons: ({ children }: any) => <div data-testid="ion-buttons">{children}</div>,
   IonButton: ({ children }: any) => <button data-testid="ion-button">{children}</button>,
   IonAvatar: ({ children }: any) => <div data-testid="ion-avatar">{children}</div>,
+  IonBackButton: ({ defaultHref }: any) => <button data-testid="ion-back-button" data-href={defaultHref}>Back</button>,
+  IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
+  IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   setupIonicReact: vi.fn(),
 }));
 
@@ -42,7 +45,8 @@ vi.mock('react-router-dom', () => ({
   ),
   Redirect: ({ from, to, exact }: any) => <div data-testid={`redirect-${to}`}>Redirect</div>,
   useLocation: () => ({ pathname: '/' }),
-  useHistory: () => ({ push: vi.fn() }),
+  useHistory: () => ({ push: vi.fn(), goBack: vi.fn() }),
+  useParams: () => ({ contentId: 'do_mock_001' }),
 }));
 
 // Mock ionicons with all required icons
@@ -133,6 +137,10 @@ vi.mock('./pages/CourseLearningPage', () => ({
   default: () => <div data-testid="course-learning-page">Course Learning Page</div>,
 }));
 
+vi.mock('./pages/ContentPlayerPage', () => ({
+  default: () => <div data-testid="content-player-page">Content Player Page</div>,
+}));
+
 // Mock CSS imports
 vi.mock('@ionic/react/css/core.css', () => ({}));
 vi.mock('@ionic/react/css/normalize.css', () => ({}));
@@ -177,7 +185,18 @@ vi.mock('./AppInitializer', () => ({
   AppInitializer: {
     init: vi.fn().mockResolvedValue(undefined),
     isInitialized: vi.fn().mockReturnValue(true),
+    subscribe: vi.fn().mockReturnValue(() => {}),
   },
+}));
+
+// Mock useAppInitialized to always return true so routes render
+vi.mock('./hooks/useAppInitialized', () => ({
+  useAppInitialized: () => true,
+}));
+
+// Mock PageLoader
+vi.mock('./components/common/PageLoader', () => ({
+  default: () => <div data-testid="page-loader">Loading...</div>,
 }));
 
 describe('App', () => {
@@ -201,6 +220,7 @@ describe('App', () => {
     expect(screen.getByTestId('route-/dashboard')).toBeInTheDocument();
     expect(screen.getByTestId('route-/explore')).toBeInTheDocument();
     expect(screen.getByTestId('route-/search')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/content/:contentId')).toBeInTheDocument();
   });
 
   it('renders redirect component', () => {

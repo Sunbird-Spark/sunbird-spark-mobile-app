@@ -1,125 +1,154 @@
-import React from 'react';
-import { IonPage, IonHeader, IonToolbar, IonContent, IonImg, IonInput } from '@ionic/react';
+import React, { useState } from 'react';
+import {
+    IonPage, IonHeader, IonToolbar, IonContent, IonInput, IonSpinner,
+} from '@ionic/react';
 import { useHistory } from 'react-router-dom';
+import { useContentSearch } from '../hooks/useContentSearch';
+import useDebounce from '../hooks/useDebounce';
+import { ContentSearchItem } from '../types/contentTypes';
+import CollectionCard from '../components/content/CollectionCard';
+import ResourceCard from '../components/content/ResourceCard';
 import './SearchPage.css';
 
-// ── Icons ──
-const BackIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15.41 16.59L10.83 12L15.41 7.41L14 6L8 12L14 18L15.41 16.59Z" fill="var(--ion-color-primary)" />
-    </svg>
-);
+// ── Constants ──
+const PREVIEW_LIMIT = 3;
+const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
+// ── Icons ──
 const SearchInputIcon = () => (
     <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
         <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
     </svg>
 );
 
-// ── Mock Data ──
-const mockRecommendedItems = [
-    {
-        id: '1',
-        type: 'Course',
-        title: 'The AI Engineer Course 2026: Complete AI...',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=600',
-    },
-    {
-        id: '2',
-        type: 'Textbook',
-        title: 'Data Engineering Foundation',
-        rating: 4.5,
-        lessons: 25,
-        thumbnail: 'https://images.pexels.com/photos/1181244/pexels-photo-1181244.jpeg?auto=compress&cs=tinysrgb&w=600',
-    }
-];
+const ClearIcon = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="var(--ion-color-medium, #757575)" />
+    </svg>
+);
+
+const ArrowRightIcon = () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12" />
+        <polyline points="12 5 19 12 12 19" />
+    </svg>
+);
 
 const SearchPage: React.FC = () => {
     const history = useHistory();
+    const [searchQuery, setSearchQuery] = useState('');
+    const debouncedQuery = useDebounce(searchQuery.trim(), 600);
 
-    const handleBackClick = () => {
+    const { data, isLoading, error } = useContentSearch({
+        request: debouncedQuery ? {
+            query: debouncedQuery,
+            limit: PREVIEW_LIMIT,
+            filters: {
+                status: ['Live'],
+            },
+        } : undefined,
+        enabled: !!debouncedQuery,
+    });
+
+    const results = data?.data?.content || [];
+    const totalCount = data?.data?.count || 0;
+
+    const handleCancel = () => {
         if (history.length > 1) {
             history.goBack();
         } else {
-            history.push('/home'); // Fallback route
+            history.push('/home');
         }
     };
 
-    const renderCard = (item: { id: string; type: string; title: string; rating: number; lessons: number; thumbnail: string }) => {
-        // Reuse similar structure from ExplorePage.tsx for recommended cards
-        return (
-            <div
-                key={item.id}
-                className="search-explore-card standard-card"
-                onClick={() => history.push(`/video/${item.id}`)}
-            >
-                <div className="card-image-wrap">
-                    <IonImg src={item.thumbnail} alt={item.title} className="card-image" />
-                </div>
-                <div className="card-content">
-                    <div className="card-badge bg-yellow-badge">
-                        {item.type}
-                    </div>
-                    <h3 className="card-title">{item.title}</h3>
-                    <div className="card-meta">
-                        <span className="rating">{item.rating} <span className="star">★</span></span>
-                        <span className="dot">•</span>
-                        <span className="lessons">{item.lessons} Lessons</span>
-                    </div>
-                </div>
-            </div>
-        );
+    const handleClear = () => {
+        setSearchQuery('');
+    };
+
+    const handleViewAllResults = () => {
+        history.push(`/explore?query=${encodeURIComponent(debouncedQuery)}`);
+    };
+
+    const renderResultCard = (item: ContentSearchItem) => {
+        if (item.mimeType === COLLECTION_MIME_TYPE) {
+            return <CollectionCard key={item.identifier} item={item} />;
+        }
+        return <ResourceCard key={item.identifier} item={item} />;
     };
 
     return (
         <IonPage>
             <IonHeader className="ion-no-border">
-                <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'env(safe-area-inset-top)', padding: '16px 16px', boxShadow: 'none' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button
-                            onClick={handleBackClick}
-                            style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                            aria-label="Go Back"
-                        >
-                            <BackIcon />
+                <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'env(safe-area-inset-top)', padding: '12px 16px', boxShadow: 'none' }}>
+                    <div className="search-header">
+                        <div className="search-input-box">
+                            <SearchInputIcon />
+                            <IonInput
+                                type="text"
+                                className="search-text-input"
+                                placeholder="Search courses, textbooks..."
+                                value={searchQuery}
+                                onIonInput={(e) => setSearchQuery(e.detail.value || '')}
+                                autoFocus
+                            />
+                            {searchQuery && (
+                                <button className="search-clear-btn" onClick={handleClear} aria-label="Clear search">
+                                    <ClearIcon />
+                                </button>
+                            )}
+                        </div>
+                        <button className="search-cancel-btn" onClick={handleCancel}>
+                            Cancel
                         </button>
-                        <h1 style={{ fontFamily: "'Rubik', sans-serif", fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
-                            Search for Content
-                        </h1>
                     </div>
                 </IonToolbar>
             </IonHeader>
 
             <IonContent fullscreen style={{ '--background': 'var(--ion-color-light)' }}>
                 <div className="search-container">
-                    {/* Search Input Bar */}
-                    <div className="search-input-wrapper">
-                        <div className="search-input-box">
-                            {/* We could use an input field here, but based on the design screenshot, 
-                                it looks like an active text input area with a cursor line. */}
-                            <IonInput
-                                type="text"
-                                className="search-text-input"
-                                autoFocus
-                                placeholder=""
-                            />
+                    {/* Loading State */}
+                    {isLoading && (
+                        <div className="search-loading">
+                            <IonSpinner name="crescent" />
+                            <span>Searching...</span>
                         </div>
-                    </div>
+                    )}
 
-                    {/* Recommended Section */}
-                    <div className="recommended-section">
-                        <h2 className="recommended-title">Recommended</h2>
-                        <div className="recommended-grid">
-                            <div className="masonry-col">
-                                {renderCard(mockRecommendedItems[0])}
-                            </div>
-                            <div className="masonry-col">
-                                {renderCard(mockRecommendedItems[1])}
-                            </div>
+                    {/* Error State */}
+                    {error && (
+                        <div className="search-error">
+                            <p>Search failed: {error.message}</p>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Search Results */}
+                    {debouncedQuery && !isLoading && !error && results.length > 0 && (
+                        <div className="search-results-section">
+                            <h2 className="search-results-heading">
+                                Results for &quot;{debouncedQuery}&quot;
+                            </h2>
+                            <div className="search-results-row">
+                                {results.map(renderResultCard)}
+                            </div>
+                            {totalCount > PREVIEW_LIMIT && (
+                                <button className="search-view-all" onClick={handleViewAllResults}>
+                                    View All Results <ArrowRightIcon />
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* No Results */}
+                    {debouncedQuery && !isLoading && !error && results.length === 0 && (
+                        <p className="search-no-results">No results for &quot;{debouncedQuery}&quot;</p>
+                    )}
+
+                    {/* Default State */}
+                    {!debouncedQuery && !isLoading && (
+                        <div className="recommended-section">
+                            <h2 className="recommended-title">Search for courses, textbooks, and more</h2>
+                        </div>
+                    )}
                 </div>
             </IonContent>
         </IonPage>

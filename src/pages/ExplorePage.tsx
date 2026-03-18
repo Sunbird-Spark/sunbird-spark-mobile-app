@@ -4,6 +4,7 @@ import {
     IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher,
     IonRefresherContent, IonSpinner,
 } from '@ionic/react';
+import { useLocation } from 'react-router-dom';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useFormRead } from '../hooks/useFormRead';
@@ -80,11 +81,21 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
 
 // ── Component ──
 const ExplorePage: React.FC = () => {
+    // ── Read query param from URL ──
+    const location = useLocation();
+    const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);
+
     // ── Search ──
-    const [showSearch, setShowSearch] = useState(false);
-    const [searchQuery, setSearchQuery] = useState('');
+    const [showSearch, setShowSearch] = useState(!!urlQuery);
+    const [searchQuery, setSearchQuery] = useState(urlQuery);
     const debouncedQuery = useDebounce(searchQuery, 600);
     const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // Keep search state in sync with URL query parameter so deep-linking works
+    useEffect(() => {
+        setShowSearch(!!urlQuery);
+        setSearchQuery(urlQuery);
+    }, [urlQuery]);
 
     // ── Filters & Sort (applied immediately on selection, like the portal) ──
     const [filters, setFilters] = useState<FilterState>({});
@@ -269,6 +280,7 @@ const ExplorePage: React.FC = () => {
                                     </button>
                                     <button
                                         onClick={handleOpenFilter}
+                                        aria-label="Open filters"
                                         style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <FilterIcon />

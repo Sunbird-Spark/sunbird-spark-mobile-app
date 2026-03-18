@@ -1,6 +1,12 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import ExplorePage from './ExplorePage';
+
+// ── Mock react-router-dom ──
+let mockLocationSearch = '';
+vi.mock('react-router-dom', () => ({
+  useLocation: () => ({ search: mockLocationSearch }),
+}));
 
 // ── Mock Ionic components ──
 vi.mock('@ionic/react', () => ({
@@ -109,6 +115,7 @@ const mockFormData = {
 describe('ExplorePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockLocationSearch = '';
     (useContentSearch as any).mockReturnValue({ ...defaultSearchReturn });
     (useFormRead as any).mockReturnValue({ ...defaultFormReturn });
   });
@@ -226,10 +233,7 @@ describe('ExplorePage', () => {
       expect(screen.queryByTestId('ion-modal')).not.toBeInTheDocument();
 
       // The filter button is the second action button
-      const buttons = screen.getAllByRole('button');
-      // Find the button that contains the filter SVG - it's the second one
-      const filterBtn = buttons[1];
-      fireEvent.click(filterBtn);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
       expect(screen.getByText('Filters')).toBeInTheDocument();
@@ -244,8 +248,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       expect(screen.getByText('Category')).toBeInTheDocument();
       expect(screen.getByText('Medium')).toBeInTheDocument();
@@ -261,8 +264,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Default active tab is first group (Category)
       expect(screen.getByText('Course')).toBeInTheDocument();
@@ -278,8 +280,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Click Medium tab
       fireEvent.click(screen.getByText('Medium'));
@@ -295,8 +296,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Click Sort By
       fireEvent.click(screen.getByText('Sort By'));
@@ -313,8 +313,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       // Select a checkbox
       const checkbox = screen.getByLabelText('Course');
@@ -336,8 +335,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
 
       // Click Close button in footer
@@ -347,7 +345,7 @@ describe('ExplorePage', () => {
       expect(screen.queryByTestId('ion-modal')).not.toBeInTheDocument();
     });
 
-    it('shows skeleton loaders when form data is loading', () => {
+    it('shows skeleton loaders in filter modal when form data is loading', () => {
       (useFormRead as any).mockReturnValue({
         data: undefined,
         isLoading: true,
@@ -355,9 +353,14 @@ describe('ExplorePage', () => {
 
       render(<ExplorePage />);
 
-      // Open filter - since no groups are loaded, we need to force open
-      // the filter is guarded by filterGroups.length > 0 check, so it won't open
-      // when form data isn't loaded. This is expected behavior.
+      // Open filter modal
+      fireEvent.click(screen.getByLabelText('Open filters'));
+
+      // Modal opens and shows skeleton placeholders instead of filter tabs
+      expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
+      expect(screen.getByText('Filters')).toBeInTheDocument();
+      // No filter tab labels should be rendered
+      expect(screen.queryByText('Category')).not.toBeInTheDocument();
     });
   });
 
@@ -371,8 +374,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter and select an option
-      const buttons = screen.getAllByRole('button');
-      fireEvent.click(buttons[1]);
+      fireEvent.click(screen.getByLabelText('Open filters'));
 
       const checkbox = screen.getByLabelText('Course');
       fireEvent.click(checkbox);
@@ -382,6 +384,27 @@ describe('ExplorePage', () => {
 
       // Badge should show count
       expect(screen.getByText('1')).toBeInTheDocument();
+    });
+  });
+
+  describe('URL query param', () => {
+    it('initializes search from ?query= URL param', () => {
+      mockLocationSearch = '?query=mathematics';
+
+      render(<ExplorePage />);
+
+      // Search input should be visible and populated
+      const input = screen.getByPlaceholderText('Search content...');
+      expect(input).toBeInTheDocument();
+      expect(input).toHaveValue('mathematics');
+    });
+
+    it('does not show search input when no query param', () => {
+      mockLocationSearch = '';
+
+      render(<ExplorePage />);
+
+      expect(screen.queryByPlaceholderText('Search content...')).not.toBeInTheDocument();
     });
   });
 });
