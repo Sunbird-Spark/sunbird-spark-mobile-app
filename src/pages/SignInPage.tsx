@@ -187,7 +187,13 @@ const SignInPage: React.FC = () => {
           </div>
 
           {/* Form */}
-          <div className="sign-in-form">
+          <form
+            className="sign-in-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleLogin();
+            }}
+          >
             {/* Email / Mobile Number */}
             <div className="sign-in-form-group">
               <label className="sign-in-label" htmlFor="sign-in-email">Email ID / Mobile Number</label>
@@ -240,7 +246,7 @@ const SignInPage: React.FC = () => {
 
             {/* Login Button */}
             <button
-              onClick={handleLogin}
+              type="submit"
               disabled={!isFormValid || loading}
               className="sign-in-login-btn"
             >
@@ -260,7 +266,7 @@ const SignInPage: React.FC = () => {
               </button>
               <br />to continue.
             </p>
-          </div>
+          </form>
         </div>
       </IonContent>
 
