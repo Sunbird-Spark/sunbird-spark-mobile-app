@@ -12,13 +12,13 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCollection } from '../hooks/useCollection';
 import { useContentSearch } from '../hooks/useContentSearch';
-import { useFaqData } from '../hooks/useFaqData';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { BackIcon, SearchIcon, RightArrowIcon } from '../components/icons/CollectionIcons';
 import CollectionOverview from '../components/collection/CollectionOverview';
 import CollectionAccordion from '../components/collection/CollectionAccordion';
 import RelatedContent from '../components/collection/RelatedContent';
 import CollectionContentPlayer from '../components/collection/CollectionContentPlayer';
+import FAQSection from '../components/home/FAQSection';
 import PageLoader from '../components/common/PageLoader';
 import './CollectionPage.css';
 
@@ -65,13 +65,6 @@ const CollectionPage: React.FC = () => {
     () => mapSearchContentToRelatedContentItems(searchData?.data?.content, collectionData?.id, 3),
     [searchData, collectionData?.id]
   );
-
-  // FAQ data
-  const { faqData } = useFaqData();
-  const allFaqs = useMemo(() => {
-    if (!faqData?.categories) return [];
-    return faqData.categories.flatMap((cat) => cat.faqs);
-  }, [faqData]);
 
   const handleBack = () => {
     if (location.state?.parentRoute) {
@@ -149,6 +142,8 @@ const CollectionPage: React.FC = () => {
               items={relatedItems}
               t={t}
             />
+
+            <FAQSection />
 
             {/* Bottom padding for sticky CTA */}
             <div style={{ height: '80px' }} />

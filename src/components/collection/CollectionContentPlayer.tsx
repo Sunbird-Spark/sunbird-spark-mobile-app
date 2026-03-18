@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { IonPage, IonContent } from '@ionic/react';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../players/ContentPlayer';
@@ -20,8 +20,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   contentId,
   onClose,
 }) => {
-  const [isLandscapeLocked, setIsLandscapeLocked] = useState(false);
-
   const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
@@ -40,9 +38,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   // Lock to landscape on mount
   useEffect(() => {
-    ScreenOrientation.lock({ orientation: 'landscape' })
-      .then(() => setIsLandscapeLocked(true))
-      .catch(() => {});
+    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
 
     return () => {
       ScreenOrientation.unlock().catch(() => {});
