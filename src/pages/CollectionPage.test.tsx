@@ -3,13 +3,15 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import CollectionPage from './CollectionPage';
 
 // ── Mock Ionic components ──
+const mockRouterPush = vi.fn();
+const mockRouterGoBack = vi.fn();
 vi.mock('@ionic/react', () => ({
   IonPage: ({ children, className }: any) => <div data-testid="ion-page" className={className}>{children}</div>,
   IonHeader: ({ children }: any) => <div data-testid="ion-header">{children}</div>,
   IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
   IonContent: ({ children }: any) => <div data-testid="ion-content">{children}</div>,
   IonModal: ({ isOpen, children }: any) => (isOpen ? <div data-testid="ion-modal">{children}</div> : null),
-  IonSpinner: () => <div data-testid="ion-spinner" />,
+  useIonRouter: () => ({ push: mockRouterPush, goBack: mockRouterGoBack }),
 }));
 
 // ── Mock CSS ──
@@ -38,19 +40,28 @@ vi.mock('../components/collection/RelatedContent', () => ({
     <div data-testid="related-content">{items.length} items</div>
   ),
 }));
-vi.mock('../components/collection/CollectionFAQ', () => ({
-  default: ({ faqs }: any) => (
-    <div data-testid="collection-faq">{faqs.length} faqs</div>
+vi.mock('../components/home/FAQSection', () => ({
+  default: () => <div data-testid="faq-section" />,
+  FAQSection: () => <div data-testid="faq-section" />,
+}));
+vi.mock('../components/collection/CollectionContentPlayer', () => ({
+  default: ({ contentId, onClose }: any) => (
+    <div data-testid="collection-content-player">{contentId}</div>
+  ),
+}));
+vi.mock('../components/common/PageLoader', () => ({
+  default: ({ message, error, onRetry }: any) => (
+    <div data-testid="page-loader">
+      {message && <><div data-testid="ion-spinner" /><span>{message}</span></>}
+      {error && <><span>{error}</span>{onRetry && <button onClick={onRetry}>Retry</button>}</>}
+    </div>
   ),
 }));
 
 // ── Mock hooks ──
-const mockPush = vi.fn();
-const mockGoBack = vi.fn();
-
 vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: mockPush, goBack: mockGoBack }),
   useParams: () => ({ collectionId: 'do_test_123' }),
+  useLocation: () => ({ pathname: '/collection/do_test_123', state: undefined }),
 }));
 
 const mockCollectionReturn = {
@@ -72,10 +83,6 @@ vi.mock('../services/relatedContentMapper', () => ({
   mapSearchContentToRelatedContentItems: vi.fn(() => []),
 }));
 
-vi.mock('../hooks/useFaqData', () => ({
-  useFaqData: vi.fn(() => ({ faqData: undefined })),
-}));
-
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: vi.fn(() => ({ isAuthenticated: false })),
 }));
@@ -88,7 +95,6 @@ vi.mock('../contexts/LanguageContext', () => ({
 
 import { useCollection } from '../hooks/useCollection';
 import { useContentSearch } from '../hooks/useContentSearch';
-import { useFaqData } from '../hooks/useFaqData';
 import { useAuth } from '../contexts/AuthContext';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 
@@ -109,7 +115,6 @@ describe('CollectionPage', () => {
     vi.clearAllMocks();
     (useCollection as any).mockReturnValue({ ...mockCollectionReturn });
     (useContentSearch as any).mockReturnValue({ data: undefined });
-    (useFaqData as any).mockReturnValue({ faqData: undefined });
     (useAuth as any).mockReturnValue({ isAuthenticated: false });
   });
 
@@ -185,6 +190,7 @@ describe('CollectionPage', () => {
       render(<CollectionPage />);
       expect(screen.getByTestId('collection-overview')).toBeInTheDocument();
       expect(screen.getByTestId('collection-accordion')).toBeInTheDocument();
+      expect(screen.getByTestId('faq-section')).toBeInTheDocument();
     });
 
     it('passes isCourse=true for Course primaryCategory', () => {
@@ -235,41 +241,19 @@ describe('CollectionPage', () => {
     });
   });
 
-  describe('FAQ data', () => {
-    it('passes flattened faqs from all categories', () => {
-      (useCollection as any).mockReturnValue({
-        data: mockCollectionData,
-        isLoading: false,
-        isError: false,
-        fetchStatus: 'idle',
-      });
-      (useFaqData as any).mockReturnValue({
-        faqData: {
-          categories: [
-            { faqs: [{ question: 'Q1', answer: 'A1' }] },
-            { faqs: [{ question: 'Q2', answer: 'A2' }, { question: 'Q3', answer: 'A3' }] },
-          ],
-        },
-      });
-
-      render(<CollectionPage />);
-      expect(screen.getByTestId('collection-faq')).toHaveTextContent('3 faqs');
-    });
-  });
-
   describe('navigation', () => {
-    it('calls history.goBack on back button click', () => {
+    it('calls router.goBack on back button click', () => {
       render(<CollectionPage />);
       const buttons = screen.getAllByRole('button');
       fireEvent.click(buttons[0]); // Back button
-      expect(mockGoBack).toHaveBeenCalled();
+      expect(mockRouterGoBack).toHaveBeenCalled();
     });
 
     it('navigates to search on search button click', () => {
       render(<CollectionPage />);
       const buttons = screen.getAllByRole('button');
       fireEvent.click(buttons[1]); // Search button
-      expect(mockPush).toHaveBeenCalledWith('/search');
+      expect(mockRouterPush).toHaveBeenCalledWith('/search', 'forward', 'push');
     });
   });
 

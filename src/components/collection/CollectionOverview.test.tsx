@@ -38,11 +38,9 @@ describe('CollectionOverview', () => {
     expect(screen.getByText('Test Course Title')).toBeInTheDocument();
   });
 
-  it('renders lessons count in title and overview sections', () => {
+  it('renders lessons count in overview section', () => {
     render(<CollectionOverview collectionData={baseData} isCourse={true} t={mockT} />);
-    // "10 Lessons" appears in both title meta and overview meta
-    const matches = screen.getAllByText('10 Lessons');
-    expect(matches).toHaveLength(2);
+    expect(screen.getByText('10 Lessons')).toBeInTheDocument();
   });
 
   it('renders "Course Overview" heading when isCourse is true', () => {

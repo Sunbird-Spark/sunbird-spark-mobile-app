@@ -3,18 +3,46 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import CollectionAccordion from './CollectionAccordion';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 
+// Mock Ionic components
+let accordionGroupValue: string[] = [];
+vi.mock('@ionic/react', () => ({
+  IonAccordionGroup: ({ children, multiple, value }: any) => {
+    accordionGroupValue = value ?? [];
+    return <div data-testid="accordion-group">{children}</div>;
+  },
+  IonAccordion: ({ children, value, className }: any) => {
+    const isExpanded = accordionGroupValue.includes(value);
+    return (
+      <div data-testid={`accordion-${value}`} data-expanded={isExpanded} className={className}>
+        {children}
+      </div>
+    );
+  },
+  IonItem: ({ children, slot, className }: any) => (
+    <div data-testid="ion-item" data-slot={slot} className={className}>{children}</div>
+  ),
+  IonLabel: ({ children, className }: any) => (
+    <div data-testid="ion-label" className={className}>{children}</div>
+  ),
+  IonModal: ({ children, isOpen, onDidDismiss }: any) => {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="ion-modal">
+        {children}
+      </div>
+    );
+  },
+}));
+
+// Mock ionicons
+vi.mock('ionicons/icons', () => ({
+  chevronDownOutline: 'chevron-down-outline',
+}));
+
 // Mock icons
 vi.mock('../icons/CollectionIcons', () => ({
   VideoIcon: ({ size }: any) => <span data-testid="video-icon" data-size={size} />,
   DocumentIcon: ({ size }: any) => <span data-testid="document-icon" data-size={size} />,
-  ChevronDownIcon: () => <span data-testid="chevron-down" />,
-  ChevronUpIcon: () => <span data-testid="chevron-up" />,
-}));
-
-// Mock react-router-dom
-const mockPush = vi.fn();
-vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: mockPush }),
 }));
 
 const mockT = (key: string) => {
@@ -46,8 +74,11 @@ const mockChildren: HierarchyContentNode[] = [
 ];
 
 describe('CollectionAccordion', () => {
+  const mockOnContentPlay = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
+    accordionGroupValue = [];
   });
 
   it('renders "Course Curriculum" title when isCourse is true', () => {
@@ -89,103 +120,13 @@ describe('CollectionAccordion', () => {
     expect(screen.getByText('Unit 1')).toBeInTheDocument();
   });
 
-  it('shows chevron-down by default (collapsed)', () => {
+  it('renders leaf content items within units', () => {
     render(
       <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
     );
-    const downs = screen.getAllByTestId('chevron-down');
-    expect(downs).toHaveLength(2);
-    expect(screen.queryByTestId('chevron-up')).not.toBeInTheDocument();
-  });
-
-  it('does not show leaf items when collapsed', () => {
-    render(
-      <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-    );
-    expect(screen.queryByText('Introduction')).not.toBeInTheDocument();
-  });
-
-  describe('expanding/collapsing', () => {
-    it('expands a unit on click and shows leaf items', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-
-      expect(screen.getByText('Introduction')).toBeInTheDocument();
-      expect(screen.getByText('Overview PDF')).toBeInTheDocument();
-      expect(screen.getByTestId('chevron-up')).toBeInTheDocument();
-    });
-
-    it('collapses a unit on second click', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      expect(screen.getByText('Introduction')).toBeInTheDocument();
-
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      expect(screen.queryByText('Introduction')).not.toBeInTheDocument();
-    });
-  });
-
-  describe('icon rendering', () => {
-    it('shows video icon for video mime types', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      expect(screen.getByTestId('video-icon')).toBeInTheDocument();
-    });
-
-    it('shows document icon for non-video mime types', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      expect(screen.getByTestId('document-icon')).toBeInTheDocument();
-    });
-
-    it('passes size=22 to leaf icons', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      expect(screen.getByTestId('video-icon')).toHaveAttribute('data-size', '22');
-      expect(screen.getByTestId('document-icon')).toHaveAttribute('data-size', '22');
-    });
-  });
-
-  describe('navigation', () => {
-    it('navigates to content page on leaf click when enrolled', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      fireEvent.click(screen.getByText('Introduction'));
-
-      expect(mockPush).toHaveBeenCalledWith('/collection/do_1/content/leaf-1');
-    });
-
-    it('navigates on leaf click when unenrolled', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="unenrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      fireEvent.click(screen.getByText('Introduction'));
-
-      expect(mockPush).toHaveBeenCalledWith('/collection/do_1/content/leaf-1');
-    });
-
-    it('does NOT navigate on leaf click when anonymous', () => {
-      render(
-        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Week 1: Basics'));
-      fireEvent.click(screen.getByText('Introduction'));
-
-      expect(mockPush).not.toHaveBeenCalled();
-    });
+    expect(screen.getByText('Introduction')).toBeInTheDocument();
+    expect(screen.getByText('Overview PDF')).toBeInTheDocument();
+    expect(screen.getByText('Deep Dive')).toBeInTheDocument();
   });
 
   it('handles empty children array', () => {
@@ -193,6 +134,78 @@ describe('CollectionAccordion', () => {
       <CollectionAccordion children={[]} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
     );
     expect(screen.getByText('Course Curriculum')).toBeInTheDocument();
+  });
+
+  it('sets first unit as initially expanded', () => {
+    render(
+      <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+    );
+    // accordionGroupValue is set by the mock — first child should be in the value
+    expect(accordionGroupValue).toContain('unit-1');
+  });
+
+  describe('icon rendering', () => {
+    it('shows video icon for video mime types', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      const videoIcons = screen.getAllByTestId('video-icon');
+      expect(videoIcons.length).toBeGreaterThan(0);
+    });
+
+    it('shows document icon for non-video mime types', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      expect(screen.getByTestId('document-icon')).toBeInTheDocument();
+    });
+
+    it('passes size=22 to leaf icons', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      const videoIcons = screen.getAllByTestId('video-icon');
+      expect(videoIcons[0]).toHaveAttribute('data-size', '22');
+      expect(screen.getByTestId('document-icon')).toHaveAttribute('data-size', '22');
+    });
+  });
+
+  describe('content play', () => {
+    it('calls onContentPlay on leaf click when enrolled', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+    });
+
+    it('calls onContentPlay on leaf click when unenrolled', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="unenrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+    });
+
+    it('does NOT call onContentPlay on leaf click when anonymous — shows login prompt instead', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+
+      expect(mockOnContentPlay).not.toHaveBeenCalled();
+      expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
+      expect(screen.getByText('Unlock your learning.')).toBeInTheDocument();
+    });
+
+    it('shows login button in anonymous login prompt', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+
+      expect(screen.getByText('Login')).toBeInTheDocument();
+    });
   });
 
   describe('multi-level nesting', () => {
@@ -215,56 +228,32 @@ describe('CollectionAccordion', () => {
       },
     ];
 
-    it('shows sub-unit as collapsible section when parent is expanded', () => {
+    it('renders sub-unit as a section label with nested leaves visible', () => {
       render(
         <CollectionAccordion children={nested} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
       );
-      fireEvent.click(screen.getByText('Unit 1'));
-
-      // Sub-unit shows as a collapsible header, not a leaf
+      // Sub-unit rendered as section title
       expect(screen.getByText('Sub Unit A')).toBeInTheDocument();
-      // Direct leaf is visible
+      // Direct leaf visible
       expect(screen.getByText('Direct Leaf')).toBeInTheDocument();
-      // Deep leaf is NOT visible until sub-unit is expanded
-      expect(screen.queryByText('Deep Leaf Content')).not.toBeInTheDocument();
-    });
-
-    it('expands sub-unit to show deeply nested leaves', () => {
-      render(
-        <CollectionAccordion children={nested} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      // Expand top-level unit
-      fireEvent.click(screen.getByText('Unit 1'));
-      // Expand sub-unit
-      fireEvent.click(screen.getByText('Sub Unit A'));
-
+      // Deep leaf visible (sub-units are flat sections, not collapsible)
       expect(screen.getByText('Deep Leaf Content')).toBeInTheDocument();
     });
 
-    it('collapses sub-unit independently of parent', () => {
+    it('calls onContentPlay for deep leaf content on click', () => {
       render(
-        <CollectionAccordion children={nested} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+        <CollectionAccordion children={nested} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
       );
-      fireEvent.click(screen.getByText('Unit 1'));
-      fireEvent.click(screen.getByText('Sub Unit A'));
-      expect(screen.getByText('Deep Leaf Content')).toBeInTheDocument();
-
-      // Collapse sub-unit
-      fireEvent.click(screen.getByText('Sub Unit A'));
-      expect(screen.queryByText('Deep Leaf Content')).not.toBeInTheDocument();
-      // Parent still expanded
-      expect(screen.getByText('Direct Leaf')).toBeInTheDocument();
-    });
-
-    it('navigates to deep leaf content on click', () => {
-      render(
-        <CollectionAccordion children={nested} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
-      );
-      fireEvent.click(screen.getByText('Unit 1'));
-      fireEvent.click(screen.getByText('Sub Unit A'));
       fireEvent.click(screen.getByText('Deep Leaf Content'));
+      expect(mockOnContentPlay).toHaveBeenCalledWith('deep-leaf');
+    });
 
-      expect(mockPush).toHaveBeenCalledWith('/collection/do_1/content/deep-leaf');
+    it('calls onContentPlay for direct leaf on click', () => {
+      render(
+        <CollectionAccordion children={nested} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Direct Leaf'));
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-direct');
     });
   });
 });

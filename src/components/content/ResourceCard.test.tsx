@@ -16,7 +16,11 @@ vi.mock('react-router-dom', () => ({
   useHistory: () => ({
     push: mockPush,
   }),
+  useLocation: () => ({ pathname: '/explore', state: undefined }),
 }));
+
+// Mock CSS import
+vi.mock('./ContentCards.css', () => ({}));
 
 describe('ResourceCard', () => {
   const mockItem: ContentSearchItem = {
@@ -109,7 +113,7 @@ describe('ResourceCard', () => {
       render(<ResourceCard item={mockItem} />);
       const card = document.querySelector('.resource-card')!;
       fireEvent.click(card);
-      expect(mockPush).toHaveBeenCalledWith('/content/do_12345');
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/content/do_12345' }));
     });
 
     it('navigates with correct identifier', () => {
@@ -117,7 +121,7 @@ describe('ResourceCard', () => {
       render(<ResourceCard item={item} />);
       const card = document.querySelector('.resource-card')!;
       fireEvent.click(card);
-      expect(mockPush).toHaveBeenCalledWith('/content/do_99999');
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/content/do_99999' }));
     });
   });
 

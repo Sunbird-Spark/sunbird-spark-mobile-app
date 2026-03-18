@@ -12,6 +12,7 @@ vi.mock('../icons/CollectionIcons', () => ({
 const mockPush = vi.fn();
 vi.mock('react-router-dom', () => ({
   useHistory: () => ({ push: mockPush }),
+  useLocation: () => ({ pathname: '/explore', state: undefined }),
 }));
 
 // Mock child cards
@@ -48,11 +49,6 @@ describe('RelatedContent', () => {
   it('renders the Related Content title', () => {
     render(<RelatedContent items={mockItems} t={mockT} />);
     expect(screen.getByText('Related Content')).toBeInTheDocument();
-  });
-
-  it('renders the right arrow icon', () => {
-    render(<RelatedContent items={mockItems} t={mockT} />);
-    expect(screen.getByTestId('right-arrow-icon')).toBeInTheDocument();
   });
 
   it('renders CollectionCard for collection cardType items', () => {
