@@ -28,7 +28,7 @@ const GoogleIcon: React.FC = () => (
 const getLoginErrorMessage = (err: unknown): string => {
   if (err instanceof Error) {
     const msg = err.message.toLowerCase();
-    if (msg.includes('invalid_grant')) return 'Invalid email or password';
+    if (msg.includes('invalid_grant')) return 'Invalid email/mobile number or password';
     if (msg.includes('account') && msg.includes('disabled')) return 'Your account has been disabled';
     if (msg.includes('network') || msg.includes('timeout') || msg.includes('fetch'))
       return 'Unable to connect. Please try again';
