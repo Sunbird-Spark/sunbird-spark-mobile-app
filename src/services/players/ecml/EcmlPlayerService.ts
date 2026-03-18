@@ -1,6 +1,8 @@
+import { v4 as uuidv4 } from 'uuid';
 import { EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
 import { deviceService } from '../../device';
 import { OrganizationService } from '../../OrganizationService';
+import { NativeConfigServiceInstance } from '../../NativeConfigService';
 
 const PREVIEW_URL = '/content/preview/preview.html?webview=true';
 
@@ -11,8 +13,8 @@ export class EcmlPlayerService {
     metadata: EcmlPlayerMetadata,
     contextProps?: EcmlPlayerContextProps
   ) {
-    const sid = contextProps?.sid || `session-${Date.now()}`;
-    const uid = contextProps?.uid || 'anonymous';
+    const sid = uuidv4();
+    const uid = 'anonymous';
 
     let did = contextProps?.did || '';
     if (!did) {
@@ -44,11 +46,19 @@ export class EcmlPlayerService {
 
     const tags = hashTagId ? [hashTagId] : channel ? [channel] : [];
 
-    const pdata = contextProps?.pdata || {
-      id: 'sunbird.app',
-      ver: '1.0.0',
-      pid: 'sunbird-app.contentplayer',
-    };
+    let pdata = contextProps?.pdata;
+    if (!pdata) {
+      let producerId = 'sunbird.app';
+      let appVersion = '1.0.0';
+      try {
+        const config = await NativeConfigServiceInstance.load();
+        producerId = config.producerId || producerId;
+        appVersion = config.appVersion || appVersion;
+      } catch (error) {
+        console.warn('Failed to fetch native config, using fallback:', error);
+      }
+      pdata = { id: producerId, ver: appVersion, pid: 'sunbird-app.contentplayer' };
+    }
 
     const context = {
       mode: contextProps?.mode || 'play',

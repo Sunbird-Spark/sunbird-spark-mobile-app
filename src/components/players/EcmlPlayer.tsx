@@ -1,15 +1,10 @@
-import React, { useEffect, useRef, useMemo } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { EcmlPlayerService } from '../../services/players/ecml';
 import type { EcmlPlayerEvent, EcmlPlayerContextProps, EcmlPlayerMetadata } from '../../services/players/ecml';
 
 interface EcmlPlayerProps {
   metadata: EcmlPlayerMetadata;
   mode?: string;
-  channel?: string;
-  pdata?: { id: string; ver: string; pid: string };
-  did?: string;
-  sid?: string;
-  uid?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
@@ -20,11 +15,6 @@ interface EcmlPlayerProps {
 export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
   metadata,
   mode,
-  channel,
-  pdata,
-  did,
-  sid,
-  uid,
   cdata,
   contextRollup,
   objectRollup,
@@ -38,33 +28,6 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
   useEffect(() => { onPlayerEventRef.current = onPlayerEvent; }, [onPlayerEvent]);
   const onTelemetryEventRef = useRef(onTelemetryEvent);
   useEffect(() => { onTelemetryEventRef.current = onTelemetryEvent; }, [onTelemetryEvent]);
-
-  const contextProps = useMemo<EcmlPlayerContextProps | undefined>(() => {
-    if (
-      mode === undefined &&
-      channel === undefined &&
-      pdata === undefined &&
-      did === undefined &&
-      sid === undefined &&
-      uid === undefined &&
-      cdata === undefined &&
-      contextRollup === undefined &&
-      objectRollup === undefined
-    ) {
-      return undefined;
-    }
-    return {
-      ...(mode !== undefined && { mode }),
-      ...(channel !== undefined && { channel }),
-      ...(pdata !== undefined && { pdata }),
-      ...(did !== undefined && { did }),
-      ...(sid !== undefined && { sid }),
-      ...(uid !== undefined && { uid }),
-      ...(cdata !== undefined && { cdata }),
-      ...(contextRollup !== undefined && { contextRollup }),
-      ...(objectRollup !== undefined && { objectRollup }),
-    };
-  }, [mode, channel, pdata, did, sid, uid, cdata, contextRollup, objectRollup]);
 
   useEffect(() => {
     const iframe = iframeRef.current;
@@ -120,6 +83,13 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
 
     iframe.addEventListener('renderer:telemetry:event', telemetryCustomEventHandler);
 
+    const contextProps: EcmlPlayerContextProps = {
+      ...(mode !== undefined && { mode }),
+      ...(cdata !== undefined && { cdata }),
+      ...(contextRollup !== undefined && { contextRollup }),
+      ...(objectRollup !== undefined && { objectRollup }),
+    };
+
     const initPlayer = async () => {
       try {
         const config = await service.createConfig(metadata, contextProps);
@@ -156,7 +126,7 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
         iframe.onload = null;
       }
     };
-  }, [metadata, contextProps]);
+  }, [metadata]);
 
   return (
     <iframe

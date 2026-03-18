@@ -6,6 +6,7 @@ export type NativeConfig = {
   mobileAppKey: string;
   mobileAppSecret: string;
   producerId: string;
+  appVersion: string;
 };
 
 class NativeConfigService {
@@ -26,13 +27,15 @@ class NativeConfigService {
       const mobileAppKey = (await CapacitorReadNativeSetting.read({ key: 'mobile_app_key' })).value ?? '';
       const mobileAppSecret = (await CapacitorReadNativeSetting.read({ key: 'mobile_app_secret' })).value ?? '';
       const producerId = (await CapacitorReadNativeSetting.read({ key: 'producer_id' })).value ?? '';
+      const appVersion = (await CapacitorReadNativeSetting.read({ key: 'app_version' })).value ?? '';
 
       this.config = {
         baseUrl,
         mobileAppConsumer,
         mobileAppKey,
         mobileAppSecret,
-        producerId
+        producerId,
+        appVersion,
       };
 
       return this.config;
@@ -43,7 +46,8 @@ class NativeConfigService {
         mobileAppConsumer: '',
         mobileAppKey: '',
         mobileAppSecret: '',
-        producerId: ''
+        producerId: '',
+        appVersion: '',
       };
 
       return this.config;

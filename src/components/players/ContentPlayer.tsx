@@ -25,11 +25,6 @@ interface ContentPlayerProps {
   mimeType: string;
   metadata: any;
   mode?: string;
-  channel?: string;
-  pdata?: { id: string; ver: string; pid: string };
-  did?: string;
-  sid?: string;
-  uid?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
@@ -41,11 +36,6 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   mimeType,
   metadata,
   mode,
-  channel,
-  pdata,
-  did,
-  sid,
-  uid,
   cdata,
   contextRollup,
   objectRollup,
@@ -70,11 +60,6 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
       <PlayerComponent
         metadata={metadata}
         mode={mode}
-        channel={channel}
-        pdata={pdata}
-        did={did}
-        sid={sid}
-        uid={uid}
         cdata={cdata}
         contextRollup={contextRollup}
         objectRollup={objectRollup}

@@ -1,15 +1,10 @@
-import React, { useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { VideoPlayerService } from '../../services/players/video';
 import type { VideoPlayerEvent, VideoPlayerContextProps, VideoPlayerMetadata } from '../../services/players/video';
 
 interface VideoPlayerProps {
   metadata: VideoPlayerMetadata;
   mode?: string;
-  channel?: string;
-  pdata?: { id: string; ver: string; pid: string };
-  did?: string;
-  sid?: string;
-  uid?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
@@ -20,11 +15,6 @@ interface VideoPlayerProps {
 export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   metadata,
   mode,
-  channel,
-  pdata,
-  did,
-  sid,
-  uid,
   cdata,
   contextRollup,
   objectRollup,
@@ -33,33 +23,6 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const serviceRef = useRef<VideoPlayerService>(new VideoPlayerService());
-
-  const contextProps = useMemo<VideoPlayerContextProps | undefined>(() => {
-    if (
-      mode === undefined &&
-      channel === undefined &&
-      pdata === undefined &&
-      did === undefined &&
-      sid === undefined &&
-      uid === undefined &&
-      cdata === undefined &&
-      contextRollup === undefined &&
-      objectRollup === undefined
-    ) {
-      return undefined;
-    }
-    return {
-      ...(mode !== undefined && { mode }),
-      ...(channel !== undefined && { channel }),
-      ...(pdata !== undefined && { pdata }),
-      ...(did !== undefined && { did }),
-      ...(sid !== undefined && { sid }),
-      ...(uid !== undefined && { uid }),
-      ...(cdata !== undefined && { cdata }),
-      ...(contextRollup !== undefined && { contextRollup }),
-      ...(objectRollup !== undefined && { objectRollup }),
-    };
-  }, [mode, channel, pdata, did, sid, uid, cdata, contextRollup, objectRollup]);
 
   const handlePlayerEvent = useCallback((event: VideoPlayerEvent) => {
     onPlayerEvent?.(event);
@@ -75,6 +38,13 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
     const service = serviceRef.current;
     let playerElement: HTMLElement | null = null;
     let cancelled = false;
+
+    const contextProps: VideoPlayerContextProps = {
+      ...(mode !== undefined && { mode }),
+      ...(cdata !== undefined && { cdata }),
+      ...(contextRollup !== undefined && { contextRollup }),
+      ...(objectRollup !== undefined && { objectRollup }),
+    };
 
     const initPlayer = async () => {
       try {
@@ -102,7 +72,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata, contextProps, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
 
   return (
     <div

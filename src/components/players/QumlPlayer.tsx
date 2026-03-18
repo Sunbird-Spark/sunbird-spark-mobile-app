@@ -1,15 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { qumlPlayerService, QumlPlayerService } from '../../services/players/quml';
 import type { QumlPlayerEvent, QumlPlayerContextProps, QumlPlayerMetadata } from '../../services/players/quml/types';
 
 interface QumlPlayerProps {
   metadata: QumlPlayerMetadata;
   mode?: string;
-  channel?: string;
-  pdata?: { id: string; ver: string; pid: string };
-  did?: string;
-  sid?: string;
-  uid?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
   objectRollup?: Record<string, any>;
@@ -19,12 +14,7 @@ interface QumlPlayerProps {
 
 const QumlPlayer: React.FC<QumlPlayerProps> = ({
   metadata,
-  mode = 'play',
-  channel,
-  pdata,
-  did,
-  sid,
-  uid,
+  mode,
   cdata,
   contextRollup,
   objectRollup,
@@ -33,21 +23,6 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerElementRef = useRef<HTMLElement | null>(null);
-
-  const contextProps = useMemo<QumlPlayerContextProps>(
-    () => ({
-      mode,
-      ...(channel !== undefined && { channel }),
-      ...(pdata !== undefined && { pdata }),
-      ...(did !== undefined && { did }),
-      ...(sid !== undefined && { sid }),
-      ...(uid !== undefined && { uid }),
-      ...(cdata && { cdata }),
-      ...(contextRollup && { contextRollup }),
-      ...(objectRollup && { objectRollup }),
-    }),
-    [mode, channel, pdata, did, sid, uid, cdata, contextRollup, objectRollup],
-  );
 
   const handlePlayerEvent = useCallback(
     (event: QumlPlayerEvent) => {
@@ -74,6 +49,13 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
         console.warn('[QumlPlayer] Metadata not available');
         return;
       }
+
+      const contextProps: QumlPlayerContextProps = {
+        mode: mode || 'play',
+        ...(cdata && { cdata }),
+        ...(contextRollup && { contextRollup }),
+        ...(objectRollup && { objectRollup }),
+      };
 
       try {
         const config = await qumlPlayerService.createConfig(metadata, contextProps);
@@ -102,7 +84,7 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
       }
       QumlPlayerService.unloadStyles();
     };
-  }, [metadata, contextProps, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
 
   return (
     <div

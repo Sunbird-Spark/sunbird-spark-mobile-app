@@ -3,8 +3,6 @@ export interface VideoPlayerContextProps {
   channel?: string;
   pdata?: { id: string; ver: string; pid: string };
   did?: string;
-  sid?: string;
-  uid?: string;
   cdata?: any[];
   contextRollup?: {
     l1: string;

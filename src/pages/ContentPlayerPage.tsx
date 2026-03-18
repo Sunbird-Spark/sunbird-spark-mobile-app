@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  IonButton,
   IonButtons,
   IonContent,
   IonHeader,
@@ -10,11 +9,10 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import { useParams, useHistory } from 'react-router-dom';
-import { downloadOutline, refreshOutline, shareSocialOutline } from 'ionicons/icons';
+import { downloadOutline, shareSocialOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
-import { usePlayerContext } from '../hooks/usePlayerContext';
 import { useQumlContent } from '../hooks/useQumlContent';
 import PageLoader from '../components/common/PageLoader';
 import './ContentPlayerPage.css';
@@ -53,8 +51,6 @@ const ContentPlayerPage: React.FC = () => {
     error: qumlError,
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
-
-  const { context: playerContext } = usePlayerContext();
 
   const playerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
@@ -111,12 +107,6 @@ const ContentPlayerPage: React.FC = () => {
             <ContentPlayer
               mimeType={mimeType}
               metadata={playerMetadata}
-              channel={playerContext.channel}
-              pdata={playerContext.pdata}
-              did={playerContext.did}
-              sid={playerContext.sid}
-              uid={playerContext.uid}
-              contextRollup={{ l1: playerContext.channel }}
               onPlayerEvent={handlePlayerEvent}
               onTelemetryEvent={handleTelemetryEvent}
             />
