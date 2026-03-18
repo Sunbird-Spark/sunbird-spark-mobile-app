@@ -190,8 +190,9 @@ const SignInPage: React.FC = () => {
           <div className="sign-in-form">
             {/* Email / Mobile Number */}
             <div className="sign-in-form-group">
-              <label className="sign-in-label">Email ID / Mobile Number</label>
+              <label className="sign-in-label" htmlFor="sign-in-email">Email ID / Mobile Number</label>
               <input
+                id="sign-in-email"
                 type="text"
                 placeholder="Enter Email ID / Mobile Number"
                 value={email}
@@ -203,9 +204,10 @@ const SignInPage: React.FC = () => {
 
             {/* Password */}
             <div className="sign-in-form-group">
-              <label className="sign-in-label">Password</label>
+              <label className="sign-in-label" htmlFor="sign-in-password">Password</label>
               <div className="sign-in-password-wrapper">
                 <input
+                  id="sign-in-password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Enter Password"
                   value={password}
