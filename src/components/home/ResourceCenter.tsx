@@ -1,7 +1,7 @@
 import React from 'react';
 import { IonCard } from '@ionic/react';
 
-interface ResourceItem {
+export interface ResourceItem {
     id: string;
     title: string;
     gradient: string;
@@ -9,29 +9,11 @@ interface ResourceItem {
     actionLabel: string;
 }
 
-const resources: ResourceItem[] = [
-    {
-        id: 'r1',
-        title: 'Elm Partners with Sunbird to Build a Graduate Development Program',
-        gradient: 'linear-gradient(135deg, var(--color-1a2980, #1A2980) 0%, var(--color-26d0ce, #26D0CE) 100%)',
-        tag: 'Video',
-        actionLabel: 'View The Video',
-    },
-    {
-        id: 'r2',
-        title: 'Bitcoin Engineering Foundations',
-        gradient: 'linear-gradient(135deg, var(--color-ff416c, #FF416C) 0%, var(--color-ff4b2b, #FF4B2B) 100%)',
-        tag: 'Epub',
-        actionLabel: 'View the Epub',
-    },
-    {
-        id: 'r3',
-        title: 'Data Engineering Foundations',
-        gradient: 'linear-gradient(135deg, var(--color-4b6cb7, #4b6cb7) 0%, var(--color-182848, #182848) 100%)',
-        tag: 'Video',
-        actionLabel: 'View The PDF',
-    },
-];
+interface ResourceCenterProps {
+    resources: ResourceItem[];
+    title?: string;
+    subtitle?: string;
+}
 
 const ArrowIcon = () => (
     <svg width="14" height="9" viewBox="0 0 14 9" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -39,18 +21,20 @@ const ArrowIcon = () => (
     </svg>
 );
 
-export const ResourceCenter: React.FC = () => {
+export const ResourceCenter: React.FC<ResourceCenterProps> = ({ resources, title, subtitle }) => {
+    if (resources.length === 0) return null;
+
     return (
         <section className="resource-center-section">
             {/* Header with lines */}
             <div className="resource-center-label-row">
                 <span className="resource-center-line" />
-                <span className="resource-center-label">Resource Center</span>
+                <span className="resource-center-label">{title || 'Resource Center'}</span>
                 <span className="resource-center-line" />
             </div>
 
             <h2 className="resource-center-heading">
-                Stay ahead. What's next starts here.
+                {subtitle || "Stay ahead. What's next starts here."}
             </h2>
 
             {/* Cards carousel */}

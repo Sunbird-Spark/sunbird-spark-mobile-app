@@ -68,5 +68,10 @@
     "batchStartedOn": "Batch started on",
     "notFound": "Collection not found.",
     "errorLoading": "Failed to load collection."
+  },
+  "faqSection": {
+    "heading": "Frequently asked questions",
+    "loading": "Loading FAQs...",
+    "error": "Could not load FAQs"
   }
 }

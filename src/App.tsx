@@ -36,6 +36,7 @@ import '@ionic/react/css/text-transformation.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import './theme/overrides.css';
 import VideoContentPage from './pages/VideoContentPage';
 import SearchPage from './pages/SearchPage';
 import CourseDetailsPage from './pages/CourseDetailsPage';

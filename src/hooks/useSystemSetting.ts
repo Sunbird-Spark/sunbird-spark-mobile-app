@@ -10,5 +10,7 @@ export const useSystemSetting = (id: string): UseQueryResult<ApiResponse<any>, E
     queryKey: ['system-setting', id],
     queryFn: () => systemSettingService.read(id),
     enabled: !!id && AppInitializer.isInitialized(),
+    staleTime: Infinity,
+    gcTime: 3600000,
   });
 };
