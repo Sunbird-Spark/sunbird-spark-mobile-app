@@ -16,6 +16,7 @@ export const LanguageSelector: React.FC = () => {
 
     const handleLanguageChange = (lang: typeof LANGUAGE_CONFIG[0]) => {
         i18n.changeLanguage(lang.code);
+        localStorage.setItem('appLanguage', lang.code);
         setIsOpen(false);
     };
 
