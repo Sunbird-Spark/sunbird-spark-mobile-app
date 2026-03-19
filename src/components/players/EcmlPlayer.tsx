@@ -37,8 +37,9 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
     let cancelled = false;
 
     const messageHandler = (event: MessageEvent) => {
-      // Only accept messages from our player iframe
+      // Only accept messages from our player iframe at the same origin
       if (event.source !== iframe.contentWindow) return;
+      if (event.origin !== window.location.origin) return;
       if (!event.data) return;
 
       const eventData = typeof event.data === 'string'
@@ -105,7 +106,7 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
           // This avoids cross-origin contentWindow access issues in Capacitor.
           iframe.contentWindow?.postMessage(
             { __ecmlPlayerConfig: true, config },
-            '*'
+            window.location.origin
           );
         };
 
