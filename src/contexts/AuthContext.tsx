@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { loginWithCredentials } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
@@ -24,7 +23,6 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const AUTH_HEADER_KEY = 'X-Authenticated-User-Token';
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const queryClient = useQueryClient();
 
   // Initialize state directly from UserService (already initialized by AppInitializer)
   const [isAuthenticated, setIsAuthenticated] = useState(() => userService.isLoggedIn());
@@ -66,9 +64,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(currentUserId);
     setIsAuthenticated(true);
 
-    // Invalidate cached profile so useUser refetches fresh from server
-    await queryClient.invalidateQueries({ queryKey: ['user-profile', currentUserId] });
-  }, [queryClient]);
+  }, []);
 
   const completeTnC = useCallback(() => {
     setTncDismissed(true);
