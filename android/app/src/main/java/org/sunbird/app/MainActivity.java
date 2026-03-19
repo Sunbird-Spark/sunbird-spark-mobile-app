@@ -31,7 +31,9 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
 
         String baseUrl = getString(R.string.base_url).replace("\"", "");
-        Log.d(TAG, "Setting up WebView interceptor, baseUrl: " + baseUrl);
+        if (BuildConfig.DEBUG) {
+             Log.d(TAG, "Setting up WebView interceptor, baseUrl: " + baseUrl);
+        }
 
         getBridge().setWebViewClient(new BridgeWebViewClient(getBridge()) {
             @Override
@@ -50,10 +52,14 @@ public class MainActivity extends BridgeActivity {
                         if (path.startsWith(proxyPath)) {
                             String query = request.getUrl().getQuery();
                             String targetUrl = baseUrl + path + (query != null ? "?" + query : "");
-                            Log.d(TAG, "Intercepting: " + path);
+                            if (BuildConfig.DEBUG) {
+                                 Log.d(TAG, "Intercepting: " + path);
+                            }
                             WebResourceResponse response = proxyRequest(targetUrl, request);
                             if (response != null) {
-                                Log.d(TAG, "OK " + response.getStatusCode() + ": " + path);
+                                if (BuildConfig.DEBUG) {
+                                     Log.d(TAG, "OK " + response.getStatusCode() + ": " + path);
+                                }
                                 return response;
                             }
                             Log.e(TAG, "Proxy failed, falling back to default: " + path);
