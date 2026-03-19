@@ -95,7 +95,10 @@
         }
 
         // Listen for config from parent via postMessage.
+        // Validate source and origin to prevent config injection from other frames.
         window.addEventListener('message', function handler(event) {
+            if (event.source !== window.parent) return;
+            if (event.origin !== window.location.origin) return;
             var data = event.data;
             if (!data || !data.__ecmlPlayerConfig) return;
             window.removeEventListener('message', handler);
