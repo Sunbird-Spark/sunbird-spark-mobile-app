@@ -14,13 +14,16 @@ import {
 } from '@ionic/react';
 import { close } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTnCAccept } from '../hooks/useTnC';
+import PageLoader from '../components/common/PageLoader';
 import './TermsAndConditionsPage.css';
 
 const TermsAndConditionsPage: React.FC = () => {
   const { tncData, completeTnC } = useAuth();
   const history = useHistory();
+  const { t } = useTranslation();
 
   const acceptTnC = useTnCAccept();
 
@@ -48,7 +51,7 @@ const TermsAndConditionsPage: React.FC = () => {
       completeTnC();
       history.replace('/home');
     } catch {
-      setErrorMessage('Unable to record your acceptance. Please try again later.');
+      setErrorMessage(t('tnc.acceptFailed'));
       setShowError(true);
     }
   };
@@ -69,59 +72,58 @@ const TermsAndConditionsPage: React.FC = () => {
     <IonPage className="tnc-page">
       <IonHeader className="tnc-header ion-no-border">
         <IonToolbar className="tnc-toolbar">
-          <IonTitle className="tnc-title">Terms And Conditions</IonTitle>
+          <IonTitle className="tnc-title">{t('tnc.title')}</IonTitle>
           <IonButtons slot="end">
             <IonButton onClick={handleClose} className="tnc-close-btn">
               <IonIcon slot="icon-only" icon={close} />
             </IonButton>
           </IonButtons>
         </IonToolbar>
-
       </IonHeader>
 
       <IonContent fullscreen className="tnc-content">
         {loading && (
-          <div className="tnc-loading">
-            <IonSpinner name="crescent" />
-          </div>
+          <PageLoader message={t('loading')} />
         )}
 
         <iframe
           title="Terms and Conditions"
           src={tncData.url}
-          className="tnc-iframe"
+          className={`tnc-iframe ${loading ? 'tnc-iframe--hidden' : ''}`}
           onLoad={handleIframeLoad}
         />
       </IonContent>
 
-      <IonFooter className="tnc-footer ion-no-border">
-        <div className="tnc-footer-inner">
-          <label className="tnc-checkbox-row">
-            <input
-              type="checkbox"
-              checked={termsAgreed}
-              onChange={(e) => setTermsAgreed(e.target.checked)}
-              className="tnc-checkbox"
-            />
-            <span className="tnc-checkbox-label">
-              I understand &amp; accept the <strong>SUNBIRD</strong> Terms of Use
-            </span>
-          </label>
+      {!loading && (
+        <IonFooter className="tnc-footer ion-no-border">
+          <div className="tnc-footer-inner">
+            <label className="tnc-checkbox-row">
+              <input
+                type="checkbox"
+                checked={termsAgreed}
+                onChange={(e) => setTermsAgreed(e.target.checked)}
+                className="tnc-checkbox"
+              />
+              <span className="tnc-checkbox-label">
+                {t('tnc.iAgree')}
+              </span>
+            </label>
 
-          <button
-            className="tnc-accept-btn"
-            disabled={!termsAgreed || acceptTnC.isPending}
-            onClick={handleAccept}
-          >
-            {acceptTnC.isPending ? <IonSpinner name="crescent" /> : 'Continue'}
-          </button>
-        </div>
-      </IonFooter>
+            <button
+              className="tnc-accept-btn"
+              disabled={!termsAgreed || acceptTnC.isPending}
+              onClick={handleAccept}
+            >
+              {acceptTnC.isPending ? <IonSpinner name="crescent" /> : t('tnc.continue')}
+            </button>
+          </div>
+        </IonFooter>
+      )}
 
       <IonAlert
         isOpen={showError}
         onDidDismiss={handleErrorDismiss}
-        header="Error"
+        header={t('tnc.error')}
         message={errorMessage}
         buttons={['OK']}
       />

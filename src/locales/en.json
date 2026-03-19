@@ -76,12 +76,9 @@
   },
   "tnc": {
     "title": "Terms And Conditions",
-    "iAgree": "I agree to the Terms and Conditions",
+    "iAgree": "I understand & accept the SUNBIRD Terms of Use",
     "continue": "Continue",
     "acceptFailed": "Unable to record your acceptance. Please try again later.",
-    "termsOfUse": "Terms of use",
-    "privacyPolicy": "Privacy Policy",
-    "contentPolicy": "Content Policy",
     "error": "Error"
   }
 }

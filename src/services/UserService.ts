@@ -2,9 +2,6 @@ import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { decodeJwt } from 'jose';
 import type { AuthTokens, AuthSession } from '../auth/types';
 import { getClient, ApiResponse } from '../lib/http-client';
-import type { UserProfile } from '../types/userTypes';
-
-export type { UserProfile };
 
 const STORAGE_KEY = 'USER_ACCOUNT';
 
