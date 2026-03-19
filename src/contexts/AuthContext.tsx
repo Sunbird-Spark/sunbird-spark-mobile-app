@@ -1,25 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { loginWithCredentials } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
-
-const AUTH_HEADER_KEY = 'X-Authenticated-User-Token';
-
-const setUserTokenHeader = (token: string) => {
-  try {
-    getClient().updateHeaders([{ key: AUTH_HEADER_KEY, value: token, action: 'add' }]);
-  } catch {
-    // HTTP client may not be initialized in test environment
-  }
-};
-
-const clearUserTokenHeader = () => {
-  try {
-    getClient().updateHeaders([{ key: AUTH_HEADER_KEY, value: '', action: 'remove' }]);
-  } catch {
-    // HTTP client may not be initialized in test environment
-  }
-};
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -29,24 +11,16 @@ interface AuthContextType {
   /** Real login — calls Keycloak via backend */
   loginWithCredentials: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  sessionLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+const AUTH_HEADER_KEY = 'X-Authenticated-User-Token';
 
-  // Sync React state with UserService (already initialized by AppInitializer)
-  useEffect(() => {
-    if (userService.isLoggedIn()) {
-      setUserId(userService.getUserId());
-      setIsAuthenticated(true);
-    }
-    setSessionLoading(false);
-  }, []);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Initialize state directly from UserService (already initialized by AppInitializer)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => userService.isLoggedIn());
+  const [userId, setUserId] = useState(() => userService.getUserId());
 
   // Demo toggle (keeps backward compat with existing code)
   const login = useCallback(() => setIsAuthenticated(true), []);
@@ -56,14 +30,29 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const tokens = await loginWithCredentials(email, password);
     await userService.saveAccount(tokens, 'keycloak');
 
-    setUserTokenHeader(userService.getAccessToken()!);
+    try {
+      getClient().updateHeaders([
+        { key: AUTH_HEADER_KEY, value: userService.getAccessToken()!, action: 'add' },
+      ]);
+    } catch {
+      // HTTP client may not be initialized in test environment
+    }
+
     setUserId(userService.getUserId());
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(async () => {
     await userService.clearAccount();
-    clearUserTokenHeader();
+
+    try {
+      getClient().updateHeaders([
+        { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
+      ]);
+    } catch {
+      // HTTP client may not be initialized in test environment
+    }
+
     setUserId(null);
     setIsAuthenticated(false);
   }, []);
@@ -76,7 +65,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         loginWithCredentials: handleLoginWithCredentials,
         logout,
-        sessionLoading,
       }}
     >
       {children}
