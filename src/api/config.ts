@@ -12,14 +12,20 @@ let isRefreshing = false;
  * If refresh fails (including 3x 500 retries), clears session.
  */
 const handle401 = async () => {
-  // Only attempt refresh if user is logged in and not already refreshing
-  if (!userService.getRefreshToken() || isRefreshing) return;
+  if (isRefreshing) return;
+
+  const refreshToken = userService.getRefreshToken();
+  const accessToken = userService.getAccessToken();
+
+  // If tokens are missing or partial, clear the corrupt session
+  if (!refreshToken || !accessToken) {
+    await userService.clearAccount();
+    return;
+  }
 
   isRefreshing = true;
 
   try {
-    const refreshToken = userService.getRefreshToken()!;
-    const accessToken = userService.getAccessToken()!;
 
     const tokens = await refreshAccessToken(refreshToken, accessToken);
 
