@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { decodeJwt } from 'jose';
 import { loginWithCredentials } from '../auth/keycloakApi';
-import { saveSession, getSession, clearSession } from '../auth/tokenStorage';
+import { userService } from '../services/UserService';
+import { getClient } from '../lib/http-client';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -25,9 +25,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     (async () => {
       try {
-        const session = await getSession();
-        if (session) {
-          setUserId(session.userId);
+        await userService.init();
+        if (userService.isLoggedIn()) {
+          setUserId(userService.getUserId());
           setIsAuthenticated(true);
         }
       } catch {
@@ -44,31 +44,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Real login via backend
   const handleLoginWithCredentials = useCallback(async (email: string, password: string) => {
     const tokens = await loginWithCredentials(email, password);
+    await userService.saveAccount(tokens, 'keycloak');
 
-    // Decode userId from access_token JWT sub claim
-    const payload = decodeJwt(tokens.access_token);
-    const sub = payload.sub as string;
-    if (!sub) {
-      throw new Error('LOGIN_FAILED');
+    // Set user token header on HTTP client for subsequent API calls
+    try {
+      const httpClient = getClient();
+      httpClient.updateHeaders([
+        { key: 'X-Authenticated-User-Token', value: userService.getAccessToken()!, action: 'add' },
+      ]);
+    } catch {
+      // HTTP client may not be initialized in test environment
     }
 
-    const expiresAt = payload.exp
-      ? payload.exp * 1000
-      : Date.now() + 3600 * 1000;
-
-    await saveSession({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token ?? '',
-      userId: sub,
-      expires_at: expiresAt,
-    });
-
-    setUserId(sub);
+    setUserId(userService.getUserId());
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(async () => {
-    await clearSession();
+    await userService.clearAccount();
+
+    // Remove user token header
+    try {
+      const httpClient = getClient();
+      httpClient.updateHeaders([
+        { key: 'X-Authenticated-User-Token', value: '', action: 'remove' },
+      ]);
+    } catch {
+      // HTTP client may not be initialized in test environment
+    }
+
     setUserId(null);
     setIsAuthenticated(false);
   }, []);

@@ -1,6 +1,7 @@
 import { initializeApiClient } from './api/config';
 import { AppConsumerAuthService } from './services/AppConsumerAuthService';
 import { getClient } from './lib/http-client';
+import { userService } from './services/UserService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -31,11 +32,18 @@ export class AppInitializer {
       const kongToken = await authService.getAuthenticatedToken();
       
       // Set Authorization header with device JWT from Kong
-      // Note: X-Authenticated-User-Token is set separately after user login
       const httpClient = getClient();
       httpClient.updateHeaders([
         { key: 'Authorization', value: `Bearer ${kongToken}`, action: 'add' },
       ]);
+
+      // Recover user session and set user token header if logged in
+      await userService.init();
+      if (userService.isLoggedIn()) {
+        httpClient.updateHeaders([
+          { key: 'X-Authenticated-User-Token', value: userService.getAccessToken()!, action: 'add' },
+        ]);
+      }
 
       this.initialized = true;
       this.notifyListeners();

@@ -35,3 +35,64 @@ export const loginWithCredentials = async (
 
   return data as AuthTokens;
 };
+
+const MAX_REFRESH_RETRIES = 3;
+
+/**
+ * Calls POST /mobile/auth/v1/refresh/token on the backend.
+ *
+ * Request:
+ *   Header: Authorization — current bearer token
+ *   Body:   { refresh_token }
+ *
+ * Response: Sunbird envelope → result.data contains new tokens
+ *
+ * Retries up to 3 times on 500 errors. Throws on all other failures.
+ */
+export const refreshAccessToken = async (
+  refreshToken: string,
+  accessToken: string,
+): Promise<AuthTokens> => {
+  const config = await NativeConfigServiceInstance.load();
+  const baseUrl = config.baseUrl;
+
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= MAX_REFRESH_RETRIES; attempt++) {
+    const data = await httpService.post<any>(
+      `${baseUrl}/mobile/auth/v1/refresh/token`,
+      { refresh_token: refreshToken },
+      { Authorization: `Bearer ${accessToken}` },
+    );
+
+    // Success — backend returns Sunbird envelope with result.data containing tokens
+    const tokens = data?.result?.data;
+    if (tokens?.access_token) {
+      return {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        id_token: tokens.id_token,
+      };
+    }
+
+    // Check if it's a server error (500) — retry
+    const responseCode = data?.responseCode;
+    const isServerError = responseCode === 'SERVER_ERROR';
+
+    if (isServerError && attempt < MAX_REFRESH_RETRIES) {
+      console.warn(`Token refresh attempt ${attempt} failed with SERVER_ERROR, retrying...`);
+      lastError = new Error(data?.params?.errmsg || 'Token refresh failed');
+      continue;
+    }
+
+    // Client error or final server error — don't retry
+    const errMsg = data?.params?.errmsg || data?.params?.err || 'Token refresh failed';
+    const err = new Error(errMsg);
+    (err as any).code = data?.params?.err || 'REFRESH_FAILED';
+    (err as any).isServerError = isServerError;
+    throw err;
+  }
+
+  // Should not reach here, but safety net
+  throw lastError || new Error('Token refresh failed');
+};
