@@ -209,6 +209,25 @@ vi.mock('./components/common/PageLoader', () => ({
   default: () => <div data-testid="page-loader">Loading...</div>,
 }));
 
+// Mock AuthContext so TnCGuard doesn't crash
+vi.mock('./contexts/AuthContext', () => ({
+  useAuth: () => ({
+    isAuthenticated: false,
+    userId: null,
+    login: vi.fn(),
+    loginWithCredentials: vi.fn(),
+    logout: vi.fn(),
+    needsTnC: false,
+    tncData: null,
+    completeTnC: vi.fn(),
+  }),
+}));
+
+// Mock TermsAndConditionsPage
+vi.mock('./pages/TermsAndConditionsPage', () => ({
+  default: () => <div data-testid="tnc-page">TnC Page</div>,
+}));
+
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);

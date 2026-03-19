@@ -1,4 +1,6 @@
+import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi } from 'vitest';
 import { AuthProvider, useAuth } from './AuthContext';
 
@@ -15,6 +17,37 @@ vi.mock('capacitor-secure-storage-plugin', () => ({
 vi.mock('../auth/keycloakApi', () => ({
   loginWithCredentials: vi.fn(),
 }));
+
+// Mock useUser hook to avoid real API calls
+vi.mock('../hooks/useUser', () => ({
+  useUser: () => ({ data: null, isLoading: false, error: null }),
+}));
+
+// Mock UserService
+vi.mock('../services/UserService', () => ({
+  userService: {
+    isLoggedIn: () => false,
+    getUserId: () => null,
+    getAccessToken: () => null,
+    clearAccount: vi.fn().mockResolvedValue(undefined),
+    saveAccount: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// Mock http-client
+vi.mock('../lib/http-client', () => ({
+  getClient: () => ({
+    updateHeaders: vi.fn(),
+  }),
+}));
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+const wrapper = ({ children }: { children: React.ReactNode }) => (
+  <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+);
 
 // Test component to use the AuthContext
 const TestComponent = () => {
@@ -40,7 +73,8 @@ describe('AuthContext', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
+      { wrapper },
     );
 
     expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
@@ -50,7 +84,8 @@ describe('AuthContext', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
+      { wrapper },
     );
 
     fireEvent.click(screen.getByTestId('login-btn'));
@@ -61,7 +96,8 @@ describe('AuthContext', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
+      { wrapper },
     );
 
     // First login
@@ -90,7 +126,8 @@ describe('AuthContext', () => {
     render(
       <AuthProvider>
         <TestComponent />
-      </AuthProvider>
+      </AuthProvider>,
+      { wrapper },
     );
 
     // Initial state
