@@ -108,7 +108,9 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
     }
   };
 
-  const initialExpandedValue = children && children.length > 0 ? [children[0].identifier] : [];
+  const [expandedValues, setExpandedValues] = useState<string[]>(
+    children && children.length > 0 ? [children[0].identifier] : []
+  );
 
   return (
     <div className="cp-curriculum-section">
@@ -116,7 +118,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
         {isCourse ? 'Course' : 'Collection'} Curriculum
       </h2>
 
-      <IonAccordionGroup multiple={true} value={initialExpandedValue}>
+      <IonAccordionGroup multiple={true} value={expandedValues} onIonChange={(event) => setExpandedValues(event.detail.value as string[])}>
         {(children ?? []).map((unit, unitIndex) => (
           <IonAccordion
             key={unit.identifier}
