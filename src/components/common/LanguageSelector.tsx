@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IonPopover } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
@@ -16,9 +16,12 @@ export const LanguageSelector: React.FC = () => {
 
     const currentLang = languages.find(l => l.code === i18n.language) ?? languages[0];
 
+    useEffect(() => {
+        document.documentElement.dir = currentLang.dir;
+    }, [currentLang.dir]);
+
     const handleLanguageChange = (lang: typeof languages[0]) => {
         i18n.changeLanguage(lang.code);
-        document.documentElement.dir = lang.dir;
         setIsOpen(false);
     };
 
