@@ -19,29 +19,26 @@ class UserService {
 
   /**
    * Load account from secure storage on app start.
-   * If the token is expired, clears the account (user must re-login).
+   * Keeps the account even if access_token is expired — the refresh_token
+   * (valid ~30 days) can still recover the session via the 401 refresh flow.
    */
   async init(): Promise<void> {
     try {
       const { value } = await SecureStoragePlugin.get({ key: STORAGE_KEY });
       if (!value) return;
 
-      const account: AuthSession = JSON.parse(value);
-
-      if (account.expires_at <= Date.now()) {
-        await this.clearAccount();
-        return;
-      }
-
-      this.account = account;
+      this.account = JSON.parse(value);
     } catch {
       this.account = null;
     }
   }
 
-  /** Check if user is currently logged in with a valid (non-expired) token */
+  /** Check if user has an active session (may need token refresh if expired) */
   isLoggedIn(): boolean {
-    return this.account !== null && this.account.expires_at > Date.now();
+    if (!this.account) return false;
+    // User is logged in as long as we have tokens — even if access_token is expired,
+    // the refresh_token can recover the session via the 401 refresh flow
+    return !!this.account.access_token && !!this.account.refresh_token;
   }
 
   /** Get access token (or null if not logged in) */

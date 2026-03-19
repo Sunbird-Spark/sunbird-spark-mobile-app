@@ -21,21 +21,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [userId, setUserId] = useState<string | null>(null);
   const [sessionLoading, setSessionLoading] = useState(true);
 
-  // Recover session on mount
+  // Sync React state with UserService (already initialized by AppInitializer)
   useEffect(() => {
-    (async () => {
-      try {
-        await userService.init();
-        if (userService.isLoggedIn()) {
-          setUserId(userService.getUserId());
-          setIsAuthenticated(true);
-        }
-      } catch {
-        // No saved session — stay logged out
-      } finally {
-        setSessionLoading(false);
-      }
-    })();
+    if (userService.isLoggedIn()) {
+      setUserId(userService.getUserId());
+      setIsAuthenticated(true);
+    }
+    setSessionLoading(false);
   }, []);
 
   // Demo toggle (keeps backward compat with existing code)
@@ -43,8 +35,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Real login via backend
   const handleLoginWithCredentials = useCallback(async (email: string, password: string) => {
+    console.log('[Auth] Login attempt for:', email);
     const tokens = await loginWithCredentials(email, password);
     await userService.saveAccount(tokens, 'keycloak');
+    console.log('[Auth] Login success — userId:', userService.getUserId());
 
     // Set user token header on HTTP client for subsequent API calls
     try {
@@ -61,7 +55,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const logout = useCallback(async () => {
+    console.log('[Auth] Logout called');
     await userService.clearAccount();
+    console.log('[Auth] Session cleared');
 
     // Remove user token header
     try {
