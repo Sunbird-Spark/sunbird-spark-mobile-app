@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
 import { buildEcmlPlayerContext } from '../PlayerContextService';
 
@@ -42,9 +43,7 @@ export class EcmlPlayerService {
       context,
       config,
       metadata,
-      ...(metadata.body && Object.keys(metadata.body).length > 0
-        ? { data: metadata.body }
-        : {}),
+      data: !_.isEmpty(metadata.body) ? metadata.body : {},
     };
   }
 
