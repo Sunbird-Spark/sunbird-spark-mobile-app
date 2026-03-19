@@ -26,7 +26,7 @@
 }
 
 .my-learning-page .ml-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     text-align: left;
@@ -71,7 +71,7 @@
     background: none;
     border: none;
     text-align: left;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -128,7 +128,7 @@
     display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 2.25rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     width: fit-content;
@@ -148,7 +148,7 @@
 
 /* ── Course title ── */
 .ml-course-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -158,7 +158,7 @@
 
 /* ── Due date ── */
 .ml-due-date {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.75rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -178,7 +178,7 @@
 }
 
 .ml-progress-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -221,7 +221,7 @@
     border: none;
     cursor: pointer;
     padding: 0;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-primary);

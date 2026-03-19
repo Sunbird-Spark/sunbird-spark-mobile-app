@@ -13,7 +13,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   const { t, i18n } = useTranslation();
 
   const dir = i18n.dir() as 'ltr' | 'rtl';
-  
+
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
   };

@@ -37,7 +37,7 @@
     width: 100%;
     border: none;
     background: transparent;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.9375rem;
     color: #222222 !important;
     --color: #222222 !important;
@@ -67,7 +67,7 @@
 .search-cancel-btn {
     background: none;
     border: none;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-primary);
@@ -83,7 +83,7 @@
     justify-content: center;
     gap: 0.5rem;
     padding: 2rem 0;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
 }
@@ -92,7 +92,7 @@
 .search-error {
     padding: 1rem;
     text-align: center;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-danger, #eb445a);
 }
@@ -103,7 +103,7 @@
 }
 
 .search-results-heading {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -141,7 +141,7 @@
     padding: 1rem 0;
     background: none;
     border: none;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-primary);
@@ -157,7 +157,7 @@
 .search-no-results {
     padding: 2rem 1rem;
     text-align: center;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
     margin: 0;
@@ -169,7 +169,7 @@
 }
 
 .recommended-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));

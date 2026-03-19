@@ -27,7 +27,7 @@
 }
 
 .personal-details-page .pd-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     text-align: left;
@@ -67,7 +67,7 @@
 }
 
 .pd-label {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -79,7 +79,7 @@
     border: 1px solid var(--color-d7d7d7, #d7d7d7);
     border-radius: 0.5rem;
     padding: 0 0.75rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -157,7 +157,7 @@
     height: 3.4375rem;
     background: var(--ion-color-primary);
     color: var(--ion-color-light);
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     text-align: center;
@@ -201,7 +201,7 @@
 
 /* "Enter the code" */
 .otp-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -211,7 +211,7 @@
 
 /* Subtitle */
 .otp-subtitle {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -222,7 +222,7 @@
 
 /* "OTP is valid for 30 minutes" */
 .otp-validity {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -244,7 +244,7 @@
     border: 1px solid var(--ion-color-primary);
     border-radius: 0.25rem;
     text-align: center;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -268,14 +268,14 @@
 }
 
 .otp-timer {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .otp-resend {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-primary);

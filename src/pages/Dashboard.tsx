@@ -1,5 +1,4 @@
 import {
-  IonButtons,
   IonCard,
   IonCardContent,
   IonCardHeader,
@@ -14,7 +13,7 @@ import {
   IonToolbar,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import { AppHeader } from '../components/layout/AppHeader';
 import { MobileLayout } from '../components/layout/MobileLayout';
 
 const Dashboard: React.FC = () => {
@@ -22,14 +21,7 @@ const Dashboard: React.FC = () => {
   return (
     <IonPage>
       <MobileLayout>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>{t('dashboardTitle')}</IonTitle>
-            <IonButtons slot="end">
-              <LanguageSwitcher />
-            </IonButtons>
-          </IonToolbar>
-        </IonHeader>
+        <AppHeader title={t('dashboard')} />
         <IonContent fullscreen>
           <IonHeader collapse="condense">
             <IonToolbar>

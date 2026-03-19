@@ -25,7 +25,7 @@
 }
 
 .dc-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     text-align: left;
@@ -116,7 +116,7 @@
     display: inline-block;
     padding: 0.25rem 0.75rem;
     border-radius: 2.25rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     width: fit-content;
@@ -136,7 +136,7 @@
 
 /* ── Course title ── */
 .dc-course-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -146,7 +146,7 @@
 
 /* ── Due date ── */
 .dc-due-date {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.75rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -166,7 +166,7 @@
 }
 
 .dc-progress-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-222222, #222222));

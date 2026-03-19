@@ -1,23 +1,19 @@
 import React from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar } from '@ionic/react';
-import { MobileLayout } from '../components/layout/MobileLayout';
+import { IonContent, IonPage } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
+import { AppHeader } from '../components/layout/AppHeader';
 
 const DownloadsPage: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <IonPage>
-      <MobileLayout>
-        <IonHeader>
-          <IonToolbar>
-            <IonTitle>Downloads</IonTitle>
-          </IonToolbar>
-        </IonHeader>
-        <IonContent fullscreen>
-          <div className="ion-padding">
-            <h1>Downloads Page</h1>
-            <p>Downloaded content will appear here.</p>
-          </div>
-        </IonContent>
-      </MobileLayout>
+      <AppHeader title={t('downloads')} />
+      <IonContent fullscreen>
+        <div className="ion-padding">
+          <h1>Downloads Page</h1>
+          <p>Downloaded content will appear here.</p>
+        </div>
+      </IonContent>
     </IonPage>
   );
 };

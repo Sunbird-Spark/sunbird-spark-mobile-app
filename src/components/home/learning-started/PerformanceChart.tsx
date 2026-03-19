@@ -1,6 +1,5 @@
 import React from 'react';
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+import { useTranslation } from 'react-i18next';
 
 // Normalized data points (0–1 scale, representing relative activity)
 const dataPoints = [0.25, 0.45, 0.30, 0.55, 0.42, 0.75];
@@ -17,6 +16,12 @@ const plotY = (value: number) =>
   CHART_HEIGHT - PADDING_Y - value * (CHART_HEIGHT - PADDING_Y * 2);
 
 export const PerformanceChart: React.FC = () => {
+  const { t } = useTranslation();
+  const months = [
+    t('months.jan'), t('months.feb'), t('months.mar'),
+    t('months.apr'), t('months.may'), t('months.jun'),
+  ];
+
   const pathD = dataPoints
     .map((v, i) => `${i === 0 ? 'M' : 'L'} ${plotX(i)} ${plotY(v)}`)
     .join(' ');
@@ -47,16 +52,16 @@ export const PerformanceChart: React.FC = () => {
         }}>
           <div>
             <p style={{
-              fontFamily: "'Rubik', sans-serif",
+              fontFamily: 'var(--ion-font-family)',
               fontSize: '16px',
               fontWeight: 500,
               color: 'rgb(17, 17, 17)',
               margin: '0 0 4px 0',
             }}>
-              Performance
+              {t('performance')}
             </p>
             <p style={{
-              fontFamily: "'Rubik', sans-serif",
+              fontFamily: 'var(--ion-font-family)',
               fontSize: '18px',
               fontWeight: 600,
               color: 'rgb(17, 17, 17)',
@@ -66,7 +71,7 @@ export const PerformanceChart: React.FC = () => {
             </p>
           </div>
           <p style={{
-            fontFamily: "'Rubik', sans-serif",
+            fontFamily: 'var(--ion-font-family)',
             fontSize: '10px',
             fontWeight: 400,
             color: 'rgb(119, 119, 119)',
@@ -75,7 +80,7 @@ export const PerformanceChart: React.FC = () => {
             textAlign: 'right',
             lineHeight: 1.4,
           }}>
-            Your productivity is 40% higher as compared to last month
+            {t('productivityHigher')}
           </p>
         </div>
 
@@ -124,7 +129,7 @@ export const PerformanceChart: React.FC = () => {
         }}>
           {months.map((month) => (
             <span key={month} style={{
-              fontFamily: "'Rubik', sans-serif",
+              fontFamily: 'var(--ion-font-family)',
               fontSize: '12px',
               fontWeight: 400,
               color: 'rgb(38, 38, 38)',
