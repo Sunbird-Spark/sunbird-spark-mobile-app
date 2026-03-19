@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal } from '@ionic/react';
+import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal, useIonRouter } from '@ionic/react';
 import { chevronDownOutline } from 'ionicons/icons';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import { VideoIcon, DocumentIcon } from '../icons/CollectionIcons';
@@ -98,6 +98,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
   t,
   onContentPlay,
 }) => {
+  const router = useIonRouter();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const handleContentClick = (leafId: string) => {
@@ -170,7 +171,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
             className="cp-login-prompt-btn"
             onClick={() => {
               setShowLoginPrompt(false);
-              window.location.href = '/app/login?prompt=none';
+              router.push('/sign-in', 'forward', 'push');
             }}
           >
             Login
