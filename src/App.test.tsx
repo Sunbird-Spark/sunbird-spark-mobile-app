@@ -142,6 +142,10 @@ vi.mock('./pages/ContentPlayerPage', () => ({
   default: () => <div data-testid="content-player-page">Content Player Page</div>,
 }));
 
+vi.mock('./pages/SignInPage', () => ({
+  default: () => <div data-testid="sign-in-page">Sign In Page</div>,
+}));
+
 vi.mock('./pages/CollectionPage', () => ({
   default: () => <div data-testid="collection-page">Collection Page</div>,
 }));
