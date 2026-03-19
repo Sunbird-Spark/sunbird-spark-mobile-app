@@ -3,7 +3,7 @@ import path from 'path';
 import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(() => ({
   server: {
     host: '::',
     port: 8080,
@@ -14,4 +14,4 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-});
+}));
