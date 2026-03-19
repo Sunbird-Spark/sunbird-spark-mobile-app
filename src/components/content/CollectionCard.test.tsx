@@ -16,6 +16,7 @@ vi.mock('react-router-dom', () => ({
   useHistory: () => ({
     push: mockPush,
   }),
+  useLocation: () => ({ pathname: '/explore', state: undefined }),
 }));
 
 // Mock CSS import
@@ -144,7 +145,7 @@ describe('CollectionCard', () => {
       render(<CollectionCard item={mockItem} />);
       const card = document.querySelector('.collection-card')!;
       fireEvent.click(card);
-      expect(mockPush).toHaveBeenCalledWith('/collection/do_12345');
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/collection/do_12345' }));
     });
 
     it('navigates with the correct identifier', () => {
@@ -152,7 +153,7 @@ describe('CollectionCard', () => {
       render(<CollectionCard item={item} />);
       const card = document.querySelector('.collection-card')!;
       fireEvent.click(card);
-      expect(mockPush).toHaveBeenCalledWith('/collection/do_99999');
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/collection/do_99999' }));
     });
   });
 });

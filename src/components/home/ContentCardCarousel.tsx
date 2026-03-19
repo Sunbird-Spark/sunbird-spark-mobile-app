@@ -47,6 +47,7 @@ export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title,
                         onClick={() => history.push(`/courses/${item.id}`)}
                         role="button"
                         tabIndex={0}
+                        style={{ margin: 0 }}
                     >
                         <div className="content-card-image-wrapper">
                             <img

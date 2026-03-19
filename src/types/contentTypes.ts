@@ -25,6 +25,20 @@ export interface ContentSearchItem {
   contentType?: string;
   framework?: string;
   leafNodesCount?: number;
+  visibility?: string;
+  parent?: string;
+}
+
+export interface RelatedContentItem {
+  identifier: string;
+  name: string;
+  appIcon: string;
+  posterImage: string;
+  mimeType?: string;
+  primaryCategory?: string;
+  cardType: 'collection' | 'resource';
+  leafNodesCount?: number;
+  creator: string;
 }
 
 export interface ContentSearchResponse {

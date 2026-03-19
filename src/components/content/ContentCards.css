@@ -8,6 +8,9 @@
     box-shadow: 0.125rem 0.125rem 1.25rem 0 rgba(0, 0, 0, 0.09);
     cursor: pointer;
     transition: box-shadow 0.2s ease;
+    flex: 0 0 auto;
+    width: 14rem;
+    scroll-snap-align: start;
 }
 
 .collection-card:active {
@@ -100,6 +103,43 @@
     cursor: pointer;
     transition: box-shadow 0.2s ease;
     background-color: #2d2d2d;
+    flex: 0 0 auto;
+    width: 10rem;
+    scroll-snap-align: start;
+}
+
+/* In home-page content carousels, match the CollectionCard width (14rem) */
+.content-carousel-scroll .resource-card {
+    width: 14rem;
+}
+
+/* Carousel wrapper: fixed 328px (20.5rem) height for resource center carousel */
+.resource-card-carousel-wrapper {
+    flex: 0 0 auto;
+    height: 20.5rem;
+    width: 15.375rem;
+    scroll-snap-align: start;
+    position: relative;
+}
+
+.resource-card-carousel-wrapper > .resource-card {
+    height: 100%;
+    width: 100%;
+    aspect-ratio: unset;
+    flex: unset;
+}
+
+/* Masonry wrapper: parent sets height, card fills it */
+.resource-card-masonry-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.resource-card-masonry-wrapper > .resource-card {
+    height: 100%;
+    width: 100%;
+    aspect-ratio: unset;
+    flex: unset;
 }
 
 .resource-card:active {

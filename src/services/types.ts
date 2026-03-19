@@ -5,5 +5,6 @@ export interface FormReadRequest {
     action: string;
     component: string;
     rootOrgId: string;
+    framework?: string;
   };
 }

@@ -13,6 +13,7 @@ import type { ContentSearchItem } from '../types/contentTypes';
 import type { ExploreFilterGroup, ExploreFilterOption, FilterState } from '../types/formTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
+import PageLoader from '../components/common/PageLoader';
 import './ExplorePage.css';
 
 // ── Icons ──
@@ -303,21 +304,11 @@ const ExplorePage: React.FC = () => {
                 </IonRefresher>
 
                 {isInitialLoading && (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-                        <IonSpinner name="bubbles" color="primary" />
-                    </div>
+                    <PageLoader message="Loading..." />
                 )}
 
                 {queryError && pagination.displayItems.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
-                        <p style={{ marginBottom: '12px' }}>Failed to load content</p>
-                        <button
-                            onClick={() => refetch()}
-                            style={{ background: 'var(--ion-color-primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 20px', cursor: 'pointer', fontFamily: "'Rubik', sans-serif" }}
-                        >
-                            Retry
-                        </button>
-                    </div>
+                    <PageLoader error="Failed to load content" onRetry={() => refetch()} />
                 )}
 
                 {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (

@@ -36,6 +36,16 @@ vi.mock('../components/layout/BottomNavigation', () => ({
 // ── Mock CSS ──
 vi.mock('./ExplorePage.css', () => ({}));
 
+// ── Mock PageLoader ──
+vi.mock('../components/common/PageLoader', () => ({
+  default: ({ message, error, onRetry }: any) => (
+    <div data-testid="page-loader">
+      {message && <><div data-testid="ion-spinner" /><span>{message}</span></>}
+      {error && <><span>{error}</span>{onRetry && <button onClick={onRetry}>Retry</button>}</>}
+    </div>
+  ),
+}));
+
 // ── Mock child cards ──
 vi.mock('../components/content/CollectionCard', () => ({
   default: ({ item }: any) => <div data-testid="collection-card">{item.name}</div>,

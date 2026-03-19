@@ -133,6 +133,31 @@ vi.mock('../components/home/FAQSection', () => ({
   FAQSection: () => <div data-testid="faq-section">FAQ Section</div>,
 }));
 
+// Mock landing section wrappers
+vi.mock('../components/landing/ContentSectionWrapper', () => ({
+  ContentSectionWrapper: ({ section }: any) => (
+    <div data-testid="content-card-carousel" data-title={section.title}>{section.title}</div>
+  ),
+}));
+vi.mock('../components/landing/ResourcesSectionWrapper', () => ({
+  ResourcesSectionWrapper: () => <div data-testid="resource-center">Resource Center</div>,
+}));
+
+// Mock useLandingPageConfig
+vi.mock('../hooks/useLandingPageConfig', () => ({
+  useLandingPageConfig: () => ({
+    sections: [
+      { id: '1', type: 'content', index: 1, title: 'Most Popular Content' },
+      { id: '2', type: 'content', index: 2, title: 'Most Viewed Content' },
+      { id: '3', type: 'content', index: 3, title: 'Trending Content' },
+      { id: '4', type: 'categories', index: 4, title: 'Categories', list: [] },
+      { id: '5', type: 'resources', index: 5, title: 'Resource Center' },
+    ],
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
 // Mock data
 vi.mock('../data/mockData', () => ({
   getFeaturedCourses: () => [

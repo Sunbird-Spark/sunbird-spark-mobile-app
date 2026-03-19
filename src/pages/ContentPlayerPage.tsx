@@ -66,18 +66,18 @@ const ContentPlayerPage: React.FC = () => {
 
   const handlePlay = useCallback(() => {
     setIsPlaying(true);
-    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
+    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => { });
   }, []);
 
   const handleClosePlayer = useCallback(() => {
     setIsPlaying(false);
-    ScreenOrientation.unlock().catch(() => {});
+    ScreenOrientation.unlock().catch(() => { });
   }, []);
 
   // Unlock orientation on unmount
   useEffect(() => {
     return () => {
-      ScreenOrientation.unlock().catch(() => {});
+      ScreenOrientation.unlock().catch(() => { });
     };
   }, []);
 
@@ -143,8 +143,8 @@ const ContentPlayerPage: React.FC = () => {
         {playerIsLoading ? (
           <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
-          <PageLoader 
-            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'} 
+          <PageLoader
+            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}
             onRetry={handleRetry}
           />
         ) : (

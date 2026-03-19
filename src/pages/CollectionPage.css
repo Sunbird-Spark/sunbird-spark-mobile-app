@@ -1,0 +1,565 @@
+/* ── Page Background ── */
+.collection-page {
+  --background: #f4f4f4;
+}
+
+.collection-page ion-content {
+  --background: #f4f4f4;
+}
+
+/* ── Header ── */
+.collection-page-header {
+  --background: var(--ion-color-light);
+  padding: 0.5rem 1rem;
+  box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+}
+
+.collection-page-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collection-page-header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.collection-page-icon-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Loading / Error ── */
+.collection-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  gap: 1rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   1. CollectionOverview — Title + Overview + Best Suited
+      Single white card block
+   ══════════════════════════════════════════════════════════════ */
+.cp-overview-wrapper {
+  background: white;
+  margin-bottom: 0.5rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* ── Title Section (inside overview wrapper) ── */
+.cp-title-section {
+  padding: 1.5rem 1rem 1rem;
+}
+
+.cp-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.cp-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+/* ── Overview section (inside overview wrapper) ── */
+.cp-overview-section {
+  padding: 1rem 1rem;
+}
+
+/* ── Best Suited section (inside overview wrapper) ── */
+.cp-best-suited-section {
+  padding: 1rem 1rem 1.5rem;
+}
+
+/* ── Shared section title ── */
+.cp-section-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--ion-color-dark, #000000);
+  margin: 0 0 1rem 0;
+}
+
+/* ── Course Overview meta ── */
+.cp-overview-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-dark, #000000);
+}
+
+.cp-overview-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cp-description {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Check List (Best Suited For) ── */
+.cp-check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cp-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+.cp-check-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. CollectionAccordion — Course Curriculum
+      Title on gray bg, each unit is a separate white card
+   ══════════════════════════════════════════════════════════════ */
+.cp-curriculum-section {
+  padding: 1.5rem 1rem 0.5rem;
+}
+
+.cp-curriculum-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #000000);
+  margin: 0 0 1rem 0;
+}
+
+/* Each unit = separate white rounded card */
+.cp-curriculum-unit {
+  background: white;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+/* Unit header: chevron left, title right */
+.cp-curriculum-unit-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cp-curriculum-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.125rem;
+}
+
+.cp-curriculum-unit-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-curriculum-unit-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #111111);
+  line-height: 1.4;
+}
+
+.cp-curriculum-subtitle {
+  font-size: 0.8125rem;
+  color: var(--ion-color-medium, #757575);
+  font-weight: 400;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Override default Ionic Accordion toggle icon styling */
+.cp-curriculum-unit .ion-accordion-toggle-icon {
+  color: var(--ion-color-primary) !important;
+  opacity: 1 !important;
+  margin-inline-end: 4px !important;
+  width: 20px;
+  height: 20px;
+}
+
+/* Expanded content area */
+.cp-curriculum-unit-content {
+  padding: 0 0.75rem 0.75rem;
+}
+
+.cp-curriculum-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.5rem;
+  background: white;
+  border-radius: 0.625rem;
+  box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.cp-curriculum-item:last-child {
+  margin-bottom: 0;
+}
+
+.cp-curriculum-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cp-curriculum-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cp-curriculum-item-title {
+  font-size: 0.875rem;
+  color: var(--ion-color-dark, #222222);
+  line-height: 1.4;
+}
+
+/* Nested sub-units (multi-level accordion) */
+.cp-curriculum-nested-indented {
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid #e8e8e8;
+}
+
+.cp-curriculum-subunit {
+  margin-bottom: 0.5rem;
+}
+
+.cp-curriculum-subunit-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cp-curriculum-subunit-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ion-color-medium, #757575);
+  line-height: 1.4;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. RelatedContent — Horizontally scrollable cards
+   ══════════════════════════════════════════════════════════════ */
+.cp-related-section {
+  padding: 1rem 0 1rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cp-related-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #000000);
+  margin: 0;
+}
+
+.cp-related-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--ion-color-primary);
+  padding-right: 1rem;
+}
+
+.cp-related-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  padding-right: 1rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cp-related-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cp-related-card-wrapper {
+  min-width: 14rem;
+  width: 14rem;
+  flex-shrink: 0;
+}
+
+/* Consistent card height inside related scroll */
+.cp-related-card-wrapper .collection-card {
+  height: 100%;
+}
+
+.cp-related-card-wrapper .resource-card {
+  height: 100%;
+  aspect-ratio: auto;
+  min-height: 16rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. CollectionFAQ — Title on gray bg, each accordion is a white card
+   ══════════════════════════════════════════════════════════════ */
+.cp-faq-section {
+  padding: 1.5rem 1rem 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.cp-faq-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #000000);
+  margin: 0 0 1rem 0;
+}
+
+.cp-faq-group {
+  margin-bottom: 0;
+}
+
+.cp-faq-accordion {
+  background: white;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--ion-color-step-150, #e0e0e0);
+  border-radius: 0.75rem;
+}
+
+.cp-faq-accordion:last-child {
+  margin-bottom: 0;
+}
+
+.cp-faq-header {
+  --background: transparent;
+  --color: var(--ion-color-dark, #000000);
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.cp-faq-content {
+  padding: 0 1rem 1rem 1rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  line-height: 1.6;
+}
+
+/* ── Bottom CTA ── */
+.cp-bottom-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--ion-color-primary);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 100;
+  padding-bottom: calc(0.2rem + env(safe-area-inset-bottom));
+  cursor: pointer;
+  color: white;
+}
+
+.cp-bottom-cta-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+}
+
+/* ── Batch Modal ── */
+.cp-batch-modal {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}
+
+.cp-batch-modal::part(handle) {
+  background: transparent;
+  display: none;
+}
+
+.cp-batch-modal-inner {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--ion-color-light);
+}
+
+.cp-batch-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 1.5rem 0.5rem 1.5rem;
+}
+
+.cp-batch-modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0;
+}
+
+.cp-batch-modal-close {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-batch-modal-content {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+  flex-grow: 1;
+}
+
+.cp-batch-modal-subtitle {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+}
+
+.cp-batch-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.cp-batch-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--ion-color-light);
+  border: 1px solid var(--ion-color-step-150, #D4D4D4);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-size: 1rem;
+  color: var(--ion-color-dark, #222222);
+  cursor: pointer;
+}
+
+.cp-batch-select:focus {
+  outline: none;
+  border-color: var(--ion-color-primary);
+}
+
+.cp-batch-select-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.cp-batch-modal-cta-wrap {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.cp-batch-modal-cta {
+  background: var(--ion-color-primary);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+}
+
+/* ── Accordion inline-style replacements ── */
+.cp-curriculum-unit-header-item {
+  --background: transparent;
+  --padding-start: 0.5rem;
+  --inner-padding-end: 1rem;
+}
+
+.cp-curriculum-subunit-label {
+  padding: 0.625rem 0.5rem 0.25rem;
+}
+
+/* ── Login Prompt Modal ── */
+.cp-login-prompt-modal {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}
+
+.cp-login-prompt-modal::part(handle) {
+  background: transparent;
+  display: none;
+}
+
+.cp-login-prompt-inner {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.cp-login-prompt-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--ion-color-dark, #222222);
+}
+
+.cp-login-prompt-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 1.5rem;
+}
+
+.cp-login-prompt-btn {
+  width: 100%;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: var(--ion-color-primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
