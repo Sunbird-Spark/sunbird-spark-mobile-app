@@ -13,6 +13,8 @@ import {
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
 import { useNetwork } from '../providers/NetworkProvider';
+import { useAuth } from '../contexts/AuthContext';
+import { useHistory } from 'react-router-dom';
 import './SignInPage.css';
 
 const GoogleIcon: React.FC = () => (
@@ -27,10 +29,19 @@ const GoogleIcon: React.FC = () => (
 /** Map API/Google errors to user-facing messages */
 const getLoginErrorMessage = (err: unknown): string => {
   if (err instanceof Error) {
+    const code = (err as any).code as string | undefined;
     const msg = err.message.toLowerCase();
-    if (msg.includes('invalid_grant')) return 'Invalid email/mobile number or password';
-    if (msg.includes('account') && msg.includes('disabled')) return 'Your account has been disabled';
-    if (msg.includes('network') || msg.includes('timeout') || msg.includes('fetch'))
+
+    // Backend error codes from /mobile/keycloak/login
+    if (code === 'INVALID_CREDENTIALS' || msg.includes('invalid_grant'))
+      return 'Invalid email/mobile number or password';
+    if (code === 'USER_ACCOUNT_BLOCKED' || (msg.includes('account') && msg.includes('blocked')))
+      return 'Your account has been blocked. Please contact admin';
+    if (code === 'LOGIN_FAILED')
+      return 'Login failed. Please try again';
+
+    // Network errors
+    if (msg.includes('network') || msg.includes('timeout') || msg.includes('fetch') || msg.includes('unable to connect'))
       return 'Unable to connect. Please try again';
   }
   return 'Something went wrong. Please try again';
@@ -56,6 +67,8 @@ const SignInPage: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
 
   const { isOffline } = useNetwork();
+  const { loginWithCredentials } = useAuth();
+  const history = useHistory();
   const wasOffline = useRef(false);
 
   useEffect(() => {
@@ -82,8 +95,8 @@ const SignInPage: React.FC = () => {
     const trimmedEmail = email.trim();
 
     try {
-      // TODO: Wire to Keycloak API
-      console.log('Login attempt:', { email: trimmedEmail });
+      await loginWithCredentials(trimmedEmail, password);
+      history.replace('/home');
     } catch (err) {
       setError(getLoginErrorMessage(err));
     } finally {
