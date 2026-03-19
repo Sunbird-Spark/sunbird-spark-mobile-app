@@ -3,6 +3,24 @@ import { loginWithCredentials } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
 
+const AUTH_HEADER_KEY = 'X-Authenticated-User-Token';
+
+const setUserTokenHeader = (token: string) => {
+  try {
+    getClient().updateHeaders([{ key: AUTH_HEADER_KEY, value: token, action: 'add' }]);
+  } catch {
+    // HTTP client may not be initialized in test environment
+  }
+};
+
+const clearUserTokenHeader = () => {
+  try {
+    getClient().updateHeaders([{ key: AUTH_HEADER_KEY, value: '', action: 'remove' }]);
+  } catch {
+    // HTTP client may not be initialized in test environment
+  }
+};
+
 interface AuthContextType {
   isAuthenticated: boolean;
   userId: string | null;
@@ -35,40 +53,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Real login via backend
   const handleLoginWithCredentials = useCallback(async (email: string, password: string) => {
-    console.log('[Auth] Login attempt for:', email);
     const tokens = await loginWithCredentials(email, password);
     await userService.saveAccount(tokens, 'keycloak');
-    console.log('[Auth] Login success — userId:', userService.getUserId());
 
-    // Set user token header on HTTP client for subsequent API calls
-    try {
-      const httpClient = getClient();
-      httpClient.updateHeaders([
-        { key: 'X-Authenticated-User-Token', value: userService.getAccessToken()!, action: 'add' },
-      ]);
-    } catch {
-      // HTTP client may not be initialized in test environment
-    }
-
+    setUserTokenHeader(userService.getAccessToken()!);
     setUserId(userService.getUserId());
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(async () => {
-    console.log('[Auth] Logout called');
     await userService.clearAccount();
-    console.log('[Auth] Session cleared');
-
-    // Remove user token header
-    try {
-      const httpClient = getClient();
-      httpClient.updateHeaders([
-        { key: 'X-Authenticated-User-Token', value: '', action: 'remove' },
-      ]);
-    } catch {
-      // HTTP client may not be initialized in test environment
-    }
-
+    clearUserTokenHeader();
     setUserId(null);
     setIsAuthenticated(false);
   }, []);
