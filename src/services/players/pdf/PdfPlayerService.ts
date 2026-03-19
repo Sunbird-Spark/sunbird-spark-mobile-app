@@ -35,7 +35,7 @@ export class PdfPlayerService {
 
     const context = await buildPlayerContext(contextProps);
 
-    return { context, config: {}, metadata };
+    return { context, config: { baseURL: '' }, metadata };
   }
 
   private async fetchStyles(): Promise<string> {

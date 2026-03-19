@@ -41,6 +41,7 @@ import VideoContentPage from './pages/VideoContentPage';
 import SearchPage from './pages/SearchPage';
 import CourseDetailsPage from './pages/CourseDetailsPage';
 import CollectionDetailsPage from './pages/CollectionDetailsPage';
+import CollectionPage from './pages/CollectionPage';
 import CourseLearningPage from './pages/CourseLearningPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
 
@@ -114,6 +115,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/collection-details">
             <CollectionDetailsPage />
+          </Route>
+          <Route exact path="/collection/:collectionId">
+            <CollectionPage />
           </Route>
           <Route exact path="/course-learning">
             <CourseLearningPage />

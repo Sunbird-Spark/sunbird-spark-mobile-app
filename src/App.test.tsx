@@ -31,6 +31,7 @@ vi.mock('@ionic/react', () => ({
   IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   setupIonicReact: vi.fn(),
+  useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
 
 // Mock Ionic React Router
@@ -141,6 +142,10 @@ vi.mock('./pages/ContentPlayerPage', () => ({
   default: () => <div data-testid="content-player-page">Content Player Page</div>,
 }));
 
+vi.mock('./pages/CollectionPage', () => ({
+  default: () => <div data-testid="collection-page">Collection Page</div>,
+}));
+
 // Mock CSS imports
 vi.mock('@ionic/react/css/core.css', () => ({}));
 vi.mock('@ionic/react/css/normalize.css', () => ({}));
@@ -153,6 +158,7 @@ vi.mock('@ionic/react/css/text-transformation.css', () => ({}));
 vi.mock('@ionic/react/css/flex-utils.css', () => ({}));
 vi.mock('@ionic/react/css/display.css', () => ({}));
 vi.mock('./theme/variables.css', () => ({}));
+vi.mock('./theme/overrides.css', () => ({}));
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
