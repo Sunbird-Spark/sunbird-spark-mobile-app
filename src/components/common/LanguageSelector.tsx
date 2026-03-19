@@ -1,26 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { IonPopover } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-
-const languages = [
-    { code: 'en', name: 'English', dir: 'ltr' },
-    { code: 'fr', name: 'French', dir: 'ltr' },
-    { code: 'pt', name: 'Portuguese', dir: 'ltr' },
-    { code: 'ar', name: 'Arabic', dir: 'rtl' },
-];
+import { LANGUAGE_CONFIG } from '../../config/languages';
 
 export const LanguageSelector: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [triggerEvent, setTriggerEvent] = useState<Event | undefined>(undefined);
     const { i18n } = useTranslation();
 
-    const currentLang = languages.find(l => l.code === i18n.language) ?? languages[0];
+    const currentLang = LANGUAGE_CONFIG.find(l => l.code === i18n.language) ?? LANGUAGE_CONFIG[0];
 
     useEffect(() => {
         document.documentElement.dir = currentLang.dir;
     }, [currentLang.dir]);
 
-    const handleLanguageChange = (lang: typeof languages[0]) => {
+    const handleLanguageChange = (lang: typeof LANGUAGE_CONFIG[0]) => {
         i18n.changeLanguage(lang.code);
         setIsOpen(false);
     };
@@ -61,7 +55,7 @@ export const LanguageSelector: React.FC = () => {
                 }}
             >
                 <div style={{ padding: '8px 0', background: 'var(--ion-color-light)' }}>
-                    {languages.map((lang) => (
+                    {LANGUAGE_CONFIG.map((lang) => (
                         <button
                             key={lang.code}
                             onClick={() => handleLanguageChange(lang)}
@@ -79,7 +73,7 @@ export const LanguageSelector: React.FC = () => {
                                 transition: 'background 0.2s',
                             }}
                         >
-                            {lang.name}
+                            {lang.label}
                         </button>
                     ))}
                 </div>

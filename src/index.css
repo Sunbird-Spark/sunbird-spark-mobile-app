@@ -106,7 +106,7 @@
 
 @layer base {
     :root {
-        /* Font — overridden dynamically by LanguageContext */
+        /* Default application font family */
         --ion-font-family: 'Rubik', sans-serif;
 
         /* Brand Palette CSS Variables for Tailwind */

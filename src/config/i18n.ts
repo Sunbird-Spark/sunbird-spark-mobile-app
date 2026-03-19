@@ -16,7 +16,7 @@ const resources = {
 
 i18n.use(initReactI18next).init({
   resources,
-  lng: 'en', // default — LanguageContext overrides on mount from Preferences
+  lng: 'en', // default language
   fallbackLng: 'en',
   interpolation: {
     escapeValue: false,

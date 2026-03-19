@@ -139,5 +139,14 @@
     "apr": "أبريل",
     "may": "مايو",
     "jun": "يونيو"
-  }
+  },
+
+  "dashboardOverview": "نظرة عامة على لوحة التحكم",
+  "dashboardDescription": "اطلع على ملخص المقاييس الرئيسية ونشاطك الأخير.",
+  "totalStudents": "إجمالي الطلاب",
+  "studentsEnrolled": "طالب مسجل",
+  "activeSessions": "الجلسات النشطة",
+  "ongoingSessions": "جلسات جارية",
+  "completionRate": "معدل الإكمال",
+  "averageCompletion": "متوسط الإكمال"
 }
