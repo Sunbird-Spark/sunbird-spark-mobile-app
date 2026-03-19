@@ -1,6 +1,10 @@
 import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { decodeJwt } from 'jose';
 import type { AuthTokens, AuthSession } from '../auth/types';
+import { getClient, ApiResponse } from '../lib/http-client';
+import type { UserProfile } from '../types/userTypes';
+
+export type { UserProfile };
 
 const STORAGE_KEY = 'USER_ACCOUNT';
 
@@ -78,6 +82,9 @@ class UserService {
       throw new Error('LOGIN_FAILED');
     }
 
+    // Keycloak sub format: "f:cassandrafederationid:UUID" — extract the UUID
+    const extractedUserId = sub.includes(':') ? sub.split(':').pop()! : sub;
+
     const expiresAt = payload.exp
       ? payload.exp * 1000
       : Date.now() + 3600 * 1000;
@@ -86,7 +93,7 @@ class UserService {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token ?? '',
       id_token: tokens.id_token,
-      userId: sub,
+      userId: extractedUserId,
       expires_at: expiresAt,
       loginProvider: provider,
     };
@@ -107,6 +114,18 @@ class UserService {
       // Ignore storage errors
     }
     this.account = null;
+  }
+
+  /** Fetch user profile from server */
+  async userRead(userId: string): Promise<ApiResponse<any>> {
+    return getClient().get(
+      `/user/v5/read/${userId}?fields=promptTnC,tncLatestVersion,tncLatestVersionUrl`
+    );
+  }
+
+  /** Accept TnC for the given version */
+  async acceptTnC(request: { version: string; userId?: string }): Promise<ApiResponse<any>> {
+    return getClient().post('/user/v1/tnc/accept', { request });
   }
 }
 

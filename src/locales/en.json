@@ -73,5 +73,15 @@
     "heading": "Frequently asked questions",
     "loading": "Loading FAQs...",
     "error": "Could not load FAQs"
+  },
+  "tnc": {
+    "title": "Terms And Conditions",
+    "iAgree": "I agree to the Terms and Conditions",
+    "continue": "Continue",
+    "acceptFailed": "Unable to record your acceptance. Please try again later.",
+    "termsOfUse": "Terms of use",
+    "privacyPolicy": "Privacy Policy",
+    "contentPolicy": "Content Policy",
+    "error": "Error"
   }
 }
