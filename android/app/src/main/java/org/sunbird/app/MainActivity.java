@@ -36,6 +36,13 @@ public class MainActivity extends BridgeActivity {
         getBridge().setWebViewClient(new BridgeWebViewClient(getBridge()) {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                // Skip non-GET requests — shouldInterceptRequest cannot access
+                // the request body, so POST/PUT/PATCH would proxy an empty body.
+                String method = request.getMethod();
+                if (method != null && !method.equalsIgnoreCase("GET")) {
+                    return super.shouldInterceptRequest(view, request);
+                }
+
                 String path = request.getUrl().getPath();
 
                 if (path != null) {
