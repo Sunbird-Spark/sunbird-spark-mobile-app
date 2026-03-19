@@ -1,8 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface StatTile {
   value: string;
   label: string;
+  labelKey: string;
   tileBg: string;
   iconBg: string;
   icon: React.ReactNode;
@@ -39,31 +41,31 @@ const CertificateIcon = ({ color }: { color: string }) => (
   </svg>
 );
 
-const stats: StatTile[] = [
+const statConfigs = [
   {
     value: '30',
-    label: 'Total Contents',
+    labelKey: 'totalContents',
     tileBg: 'var(--ion-color-secondary)',
     iconBg: 'rgb(61, 143, 167)',
     icon: <ListIcon color="var(--ion-color-light)" />,
   },
   {
     value: '05',
-    label: 'Contents in Progress',
+    labelKey: 'contentsInProgress',
     tileBg: 'var(--ion-color-primary-tint)',
     iconBg: 'rgb(176, 102, 36)',
     icon: <InProgressIcon color="var(--ion-color-light)" />,
   },
   {
     value: '13',
-    label: 'Contents Completed',
+    labelKey: 'contentsCompleted',
     tileBg: 'rgb(102, 166, 130)',
     iconBg: 'rgb(49, 134, 86)',
     icon: <CheckIcon color="var(--ion-color-light)" />,
   },
   {
     value: '06',
-    label: 'Certifications Earned',
+    labelKey: 'certificationsEarned',
     tileBg: 'var(--ion-color-medium)',
     iconBg: 'rgb(116, 76, 101)',
     icon: <CertificateIcon color="var(--ion-color-light)" />,
@@ -71,6 +73,9 @@ const stats: StatTile[] = [
 ];
 
 export const LearningStatsGrid: React.FC = () => {
+  const { t } = useTranslation();
+  const stats: StatTile[] = statConfigs.map(s => ({ ...s, label: t(s.labelKey) }));
+
   return (
     <div style={{
       display: 'grid',
@@ -80,7 +85,7 @@ export const LearningStatsGrid: React.FC = () => {
     }}>
       {stats.map((stat) => (
         <div
-          key={stat.label}
+          key={stat.labelKey}
           style={{
             backgroundColor: stat.tileBg,
             borderRadius: '16px',
@@ -99,7 +104,7 @@ export const LearningStatsGrid: React.FC = () => {
           }}>
             {/* Value */}
             <p style={{
-              fontFamily: "'Rubik', sans-serif",
+              fontFamily: 'var(--ion-font-family)',
               fontSize: '24px',
               fontWeight: 600,
               color: 'var(--ion-color-light)',
@@ -126,7 +131,7 @@ export const LearningStatsGrid: React.FC = () => {
 
           {/* Label */}
           <p style={{
-            fontFamily: "'Rubik', sans-serif",
+            fontFamily: 'var(--ion-font-family)',
             fontSize: '14px',
             fontWeight: 400,
             color: 'var(--ion-color-light)',

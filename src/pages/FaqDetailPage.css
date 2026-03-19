@@ -42,7 +42,7 @@
 
 /* ── Section title ── */
 .fd-section-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -83,7 +83,7 @@
 }
 
 .fd-faq-question-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -112,7 +112,7 @@
 }
 
 .fd-faq-answer-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -130,7 +130,7 @@
 }
 
 .fd-feedback-label {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -140,7 +140,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     padding: 0.25rem 0.5rem;
@@ -168,7 +168,7 @@
 .fd-feedback-thanks {
     padding-top: 0.75rem;
     border-top: 1px solid var(--color-eeeeee, #eeeeee);
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-primary);
@@ -184,7 +184,7 @@
 }
 
 .fd-feedback-sorry {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-dark, #222222);
@@ -192,7 +192,7 @@
 }
 
 .fd-feedback-improve {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.8125rem;
     font-weight: 400;
     color: var(--ion-color-medium, #757575);
@@ -200,7 +200,7 @@
 }
 
 .fd-feedback-textarea {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     border: 1px solid var(--ion-color-step-150, #D4D4D4);
     border-radius: 0.5rem;
@@ -216,7 +216,7 @@
 
 .fd-feedback-submit {
     align-self: flex-start;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-light);
