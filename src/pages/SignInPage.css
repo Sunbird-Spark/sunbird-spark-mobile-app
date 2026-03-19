@@ -45,7 +45,7 @@
 
 /* ── Welcome heading ── */
 .sign-in-welcome {
-    font-family: 'Rubik', sans-serif;
+
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--ion-color-tertiary);
@@ -55,7 +55,7 @@
 
 /* ── Subtitle ── */
 .sign-in-subtitle {
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, #757575);
@@ -71,7 +71,7 @@
     border-radius: 0.5rem;
     background-color: #fef2f2;
     color: var(--ion-color-danger, #eb445a);
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     text-align: center;
     margin-bottom: 1rem;
@@ -88,7 +88,7 @@
     border-radius: 999px;
     border: 1px solid var(--ion-color-step-100, #e0e0e0);
     background: var(--ion-color-light, #fff);
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.9375rem;
     font-weight: 600;
     color: var(--ion-color-dark, #222);
@@ -126,7 +126,7 @@
 }
 
 .sign-in-divider-text {
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-medium, #999);
@@ -148,7 +148,7 @@
 }
 
 .sign-in-label {
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--ion-color-dark, #333);
@@ -161,7 +161,7 @@
     padding: 0 1rem;
     border: 1px solid var(--ion-color-step-100, #e0e0e0);
     border-radius: 999px;
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-dark, #333);
@@ -223,7 +223,7 @@
 }
 
 .sign-in-forgot-btn {
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     font-weight: 600;
     color: var(--ion-color-primary);
@@ -246,7 +246,7 @@
     border: none;
     background: var(--ion-color-primary);
     color: #fff;
-    font-family: 'Rubik', sans-serif;
+
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -274,7 +274,7 @@
 
 /* ── Register text ── */
 .sign-in-register-text {
-    font-family: 'Rubik', sans-serif;
+
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-dark, #666);
@@ -284,7 +284,7 @@
 }
 
 .sign-in-register-link {
-    font-family: 'Rubik', sans-serif;
+
     font-weight: 600;
     color: var(--ion-color-primary);
     background: none;
