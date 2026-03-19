@@ -36,9 +36,9 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-// Mock LanguageSwitcher
-vi.mock('../components/LanguageSwitcher', () => ({
-  default: () => <div data-testid="language-switcher">Language Switcher</div>,
+// Mock AppHeader
+vi.mock('../components/layout/AppHeader', () => ({
+  AppHeader: ({ title }: any) => <div data-testid="app-header">{title}</div>,
 }));
 
 // Mock BottomNavigation
@@ -110,15 +110,14 @@ describe('Dashboard Component', () => {
     expect(dashboardTitles.length).toBeGreaterThan(0);
   });
 
-  it('renders the condensed header title', () => {
+  it('renders the header with dashboard title', () => {
     render(<Dashboard />);
-    const dashboardTitles = screen.getAllByText('Dashboard');
-    expect(dashboardTitles.length).toBe(2); // One in header, one in condensed header
+    expect(screen.getByTestId('app-header')).toHaveTextContent('Dashboard');
   });
 
-  it('renders language switcher', () => {
+  it('renders app header', () => {
     render(<Dashboard />);
-    expect(screen.getByTestId('language-switcher')).toBeInTheDocument();
+    expect(screen.getByTestId('app-header')).toBeInTheDocument();
   });
 
   it('renders welcome card', () => {

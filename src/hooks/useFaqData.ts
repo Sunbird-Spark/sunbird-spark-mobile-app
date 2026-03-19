@@ -58,11 +58,12 @@ export interface UseFaqDataResult {
 
 /* ── Helpers ── */
 
-function topicToSlug(topic: string): string {
-  return topic
+function topicToSlug(topic: string, fallback?: string): string {
+  const slug = topic
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
+  return slug || fallback || 'category';
 }
 
 /**
@@ -113,9 +114,9 @@ function transformFaqJson(raw: RawFaqJson, appName?: string): FaqData {
   const replaceName = (text: string) =>
     appName ? text.replace(/\{\{APP_NAME\}\}/g, appName) : text;
 
-  const categories: FaqCategory[] = (raw.categories ?? []).map((group: RawFaqCategory) => ({
+  const categories: FaqCategory[] = (raw.categories ?? []).map((group: RawFaqCategory, index: number) => ({
     title: replaceName(group.name),
-    slug: topicToSlug(group.name),
+    slug: topicToSlug(group.name, `category-${index}`),
     faqCount: group.faqs.length,
     faqs: group.faqs.map((item: RawFaqItem) => ({
       question: replaceName(item.topic),

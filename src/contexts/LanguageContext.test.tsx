@@ -20,13 +20,13 @@ vi.mock('react-i18next', () => ({
 // Test component to use the LanguageContext
 const TestComponent = () => {
   const { t, dir, changeLanguage } = useLanguage();
-  
+
   return (
     <div>
       <div data-testid="translation">{t('test.key')}</div>
       <div data-testid="direction">{dir}</div>
-      <button 
-        data-testid="change-lang-btn" 
+      <button
+        data-testid="change-lang-btn"
         onClick={() => changeLanguage('hi')}
       >
         Change Language
@@ -47,7 +47,7 @@ describe('LanguageContext', () => {
         <TestComponent />
       </LanguageProvider>
     );
-    
+
     expect(screen.getByTestId('translation')).toHaveTextContent('test.key');
     expect(mockT).toHaveBeenCalledWith('test.key');
   });
@@ -58,19 +58,19 @@ describe('LanguageContext', () => {
         <TestComponent />
       </LanguageProvider>
     );
-    
+
     expect(screen.getByTestId('direction')).toHaveTextContent('ltr');
   });
 
   it('provides RTL direction when appropriate', () => {
     mockDir.mockReturnValue('rtl');
-    
+
     render(
       <LanguageProvider>
         <TestComponent />
       </LanguageProvider>
     );
-    
+
     expect(screen.getByTestId('direction')).toHaveTextContent('rtl');
   });
 
@@ -80,7 +80,7 @@ describe('LanguageContext', () => {
         <TestComponent />
       </LanguageProvider>
     );
-    
+
     fireEvent.click(screen.getByTestId('change-lang-btn'));
     expect(mockChangeLanguage).toHaveBeenCalledWith('hi');
   });
@@ -88,11 +88,11 @@ describe('LanguageContext', () => {
   it('throws error when useLanguage is used outside LanguageProvider', () => {
     // Mock console.error to avoid noise in test output
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    
+
     expect(() => {
       render(<TestComponent />);
     }).toThrow('useLanguage must be used within LanguageProvider');
-    
+
     consoleSpy.mockRestore();
   });
 
@@ -102,10 +102,10 @@ describe('LanguageContext', () => {
         <TestComponent />
       </LanguageProvider>
     );
-    
+
     fireEvent.click(screen.getByTestId('change-lang-btn'));
     expect(mockChangeLanguage).toHaveBeenCalledWith('hi');
-    
+
     // Test multiple calls by clicking again
     fireEvent.click(screen.getByTestId('change-lang-btn'));
     expect(mockChangeLanguage).toHaveBeenCalledTimes(2);

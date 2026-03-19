@@ -1,5 +1,6 @@
 import React from 'react';
 import { IonSpinner } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 import { useContentSearch } from '../../hooks/useContentSearch';
 import type { ContentSearchItem } from '../../types/contentTypes';
 import ResourceCard from '../content/ResourceCard';
@@ -9,6 +10,7 @@ interface ResourcesSectionWrapperProps {
 }
 
 export const ResourcesSectionWrapper: React.FC<ResourcesSectionWrapperProps> = ({ section }) => {
+  const { t } = useTranslation();
   const sectionRequest = section?.criteria?.request || {};
   const mergedFilters = {
     ...sectionRequest.filters,
@@ -25,8 +27,8 @@ export const ResourcesSectionWrapper: React.FC<ResourcesSectionWrapperProps> = (
     },
   });
 
-  const title = section.title || section.name || 'Resource Center';
-  const subtitle = section.subtitle || "Stay ahead. What's next starts here.";
+  const title = section.title || section.name || t('resourceCenter');
+  const subtitle = section.subtitle || t('resourceCenterSubtitle');
   const content: ContentSearchItem[] = data?.data?.content || [];
 
   if (isLoading) {

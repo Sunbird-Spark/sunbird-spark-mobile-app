@@ -1,5 +1,6 @@
 import React from 'react';
 import { IonCard } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 
 export interface ResourceItem {
     id: string;
@@ -22,6 +23,7 @@ const ArrowIcon = () => (
 );
 
 export const ResourceCenter: React.FC<ResourceCenterProps> = ({ resources, title, subtitle }) => {
+    const { t } = useTranslation();
     if (resources.length === 0) return null;
 
     return (
@@ -29,12 +31,12 @@ export const ResourceCenter: React.FC<ResourceCenterProps> = ({ resources, title
             {/* Header with lines */}
             <div className="resource-center-label-row">
                 <span className="resource-center-line" />
-                <span className="resource-center-label">{title || 'Resource Center'}</span>
+                <span className="resource-center-label">{title || t('resourceCenter')}</span>
                 <span className="resource-center-line" />
             </div>
 
             <h2 className="resource-center-heading">
-                {subtitle || "Stay ahead. What's next starts here."}
+                {subtitle || t('resourceCenterSubtitle')}
             </h2>
 
             {/* Cards carousel */}
