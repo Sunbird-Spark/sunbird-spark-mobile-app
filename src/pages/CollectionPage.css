@@ -43,7 +43,6 @@
   justify-content: center;
   min-height: 40vh;
   gap: 1rem;
-  font-family: 'Rubik', sans-serif;
   color: var(--ion-color-medium, #757575);
 }
 
@@ -63,7 +62,6 @@
 }
 
 .cp-title {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ion-color-dark, #222222);
@@ -75,7 +73,6 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: 'Rubik', sans-serif;
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
 }
@@ -92,7 +89,6 @@
 
 /* ── Shared section title ── */
 .cp-section-title {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.125rem;
   font-weight: 500;
   color: var(--ion-color-dark, #000000);
@@ -105,7 +101,6 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
-  font-family: 'Rubik', sans-serif;
   font-size: 0.875rem;
   color: var(--ion-color-dark, #000000);
 }
@@ -117,7 +112,6 @@
 }
 
 .cp-description {
-  font-family: 'Rubik', sans-serif;
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
   line-height: 1.5;
@@ -136,7 +130,6 @@
   align-items: flex-start;
   gap: 0.75rem;
   margin-bottom: 1rem;
-  font-family: 'Rubik', sans-serif;
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
 }
@@ -154,7 +147,6 @@
 }
 
 .cp-curriculum-title {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ion-color-dark, #000000);
@@ -180,7 +172,6 @@
   border: none;
   cursor: pointer;
   text-align: left;
-  font-family: 'Rubik', sans-serif;
 }
 
 .cp-curriculum-chevron {
@@ -236,7 +227,6 @@
   background: white;
   border-radius: 0.625rem;
   box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.08);
-  font-family: 'Rubik', sans-serif;
   cursor: pointer;
 }
 
@@ -284,7 +274,6 @@
   border: none;
   cursor: pointer;
   text-align: left;
-  font-family: 'Rubik', sans-serif;
 }
 
 .cp-curriculum-subunit-name {
@@ -303,7 +292,6 @@
 }
 
 .cp-related-title {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ion-color-dark, #000000);
@@ -359,7 +347,6 @@
 }
 
 .cp-faq-title {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ion-color-dark, #000000);
@@ -388,14 +375,12 @@
   --padding-end: 1rem;
   --padding-top: 1rem;
   --padding-bottom: 1rem;
-  font-family: 'Rubik', sans-serif;
   font-size: 0.9375rem;
   font-weight: 500;
 }
 
 .cp-faq-content {
   padding: 0 1rem 1rem 1rem;
-  font-family: 'Rubik', sans-serif;
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
   line-height: 1.6;
@@ -420,7 +405,6 @@
 }
 
 .cp-bottom-cta-text {
-  font-family: 'Rubik', sans-serif;
   font-size: 1rem;
   font-weight: 500;
   color: white;
@@ -452,7 +436,6 @@
 }
 
 .cp-batch-modal-header h2 {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ion-color-dark, #222222);
@@ -475,7 +458,6 @@
 }
 
 .cp-batch-modal-subtitle {
-  font-family: 'Rubik', sans-serif;
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
   margin: 0 0 1.5rem 0;
@@ -495,7 +477,6 @@
   border: 1px solid var(--ion-color-step-150, #D4D4D4);
   border-radius: 0.75rem;
   padding: 1rem;
-  font-family: 'Rubik', sans-serif;
   font-size: 1rem;
   color: var(--ion-color-dark, #222222);
   cursor: pointer;
@@ -559,7 +540,6 @@
 }
 
 .cp-login-prompt-title {
-  font-family: 'Rubik', sans-serif;
   font-size: 1.25rem;
   font-weight: 700;
   margin: 0 0 0.5rem;
@@ -567,7 +547,6 @@
 }
 
 .cp-login-prompt-subtitle {
-  font-family: 'Rubik', sans-serif;
   font-size: 0.9rem;
   color: var(--ion-color-medium, #757575);
   margin: 0 0 1.5rem;
@@ -580,7 +559,6 @@
   border: none;
   background: var(--ion-color-primary);
   color: white;
-  font-family: 'Rubik', sans-serif;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
