@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { decodeJwt } from 'jose';
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { loginWithCredentials } from '../auth/keycloakApi';
-import { saveSession, getSession, clearSession } from '../auth/tokenStorage';
+import { userService } from '../services/UserService';
+import { getClient } from '../lib/http-client';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -11,32 +11,16 @@ interface AuthContextType {
   /** Real login — calls Keycloak via backend */
   loginWithCredentials: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  sessionLoading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [sessionLoading, setSessionLoading] = useState(true);
+const AUTH_HEADER_KEY = 'X-Authenticated-User-Token';
 
-  // Recover session on mount
-  useEffect(() => {
-    (async () => {
-      try {
-        const session = await getSession();
-        if (session) {
-          setUserId(session.userId);
-          setIsAuthenticated(true);
-        }
-      } catch {
-        // No saved session — stay logged out
-      } finally {
-        setSessionLoading(false);
-      }
-    })();
-  }, []);
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // Initialize state directly from UserService (already initialized by AppInitializer)
+  const [isAuthenticated, setIsAuthenticated] = useState(() => userService.isLoggedIn());
+  const [userId, setUserId] = useState(() => userService.getUserId());
 
   // Demo toggle (keeps backward compat with existing code)
   const login = useCallback(() => setIsAuthenticated(true), []);
@@ -44,31 +28,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Real login via backend
   const handleLoginWithCredentials = useCallback(async (email: string, password: string) => {
     const tokens = await loginWithCredentials(email, password);
+    await userService.saveAccount(tokens, 'keycloak');
 
-    // Decode userId from access_token JWT sub claim
-    const payload = decodeJwt(tokens.access_token);
-    const sub = payload.sub as string;
-    if (!sub) {
-      throw new Error('LOGIN_FAILED');
+    try {
+      getClient().updateHeaders([
+        { key: AUTH_HEADER_KEY, value: userService.getAccessToken()!, action: 'add' },
+      ]);
+    } catch {
+      // HTTP client may not be initialized in test environment
     }
 
-    const expiresAt = payload.exp
-      ? payload.exp * 1000
-      : Date.now() + 3600 * 1000;
-
-    await saveSession({
-      access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token ?? '',
-      userId: sub,
-      expires_at: expiresAt,
-    });
-
-    setUserId(sub);
+    setUserId(userService.getUserId());
     setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(async () => {
-    await clearSession();
+    await userService.clearAccount();
+
+    try {
+      getClient().updateHeaders([
+        { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
+      ]);
+    } catch {
+      // HTTP client may not be initialized in test environment
+    }
+
     setUserId(null);
     setIsAuthenticated(false);
   }, []);
@@ -81,7 +65,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         loginWithCredentials: handleLoginWithCredentials,
         logout,
-        sessionLoading,
       }}
     >
       {children}
