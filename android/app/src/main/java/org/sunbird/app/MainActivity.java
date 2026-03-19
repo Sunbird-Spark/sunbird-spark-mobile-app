@@ -47,10 +47,10 @@ public class MainActivity extends BridgeActivity {
                             WebResourceResponse response = proxyRequest(targetUrl, request);
                             if (response != null) {
                                 Log.d(TAG, "OK " + response.getStatusCode() + ": " + path);
-                            } else {
-                                Log.e(TAG, "FAILED: " + path);
+                                return response;
                             }
-                            return response;
+                            Log.e(TAG, "Proxy failed, falling back to default: " + path);
+                            return super.shouldInterceptRequest(view, request);
                         }
                     }
                 }
