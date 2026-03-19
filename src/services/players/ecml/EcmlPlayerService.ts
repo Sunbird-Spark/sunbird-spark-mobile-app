@@ -1,7 +1,7 @@
 import { EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
 import { buildEcmlPlayerContext } from '../PlayerContextService';
 
-const PREVIEW_URL = '/content/preview/preview.html?webview=true';
+const PREVIEW_URL = '/content-player/preview.html?webview=true';
 
 export class EcmlPlayerService {
   async createConfig(
@@ -42,7 +42,9 @@ export class EcmlPlayerService {
       context,
       config,
       metadata,
-      data: metadata.body || {},
+      ...(metadata.body && Object.keys(metadata.body).length > 0
+        ? { data: metadata.body }
+        : {}),
     };
   }
 
