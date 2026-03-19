@@ -284,6 +284,20 @@ describe('CollectionPage', () => {
       expect(screen.getByText('collection.letsGetStarted')).toBeInTheDocument();
     });
 
+    it('navigates to sign-in on "Let\'s Get Started" click in anonymous viewState', () => {
+      (useAuth as any).mockReturnValue({ isAuthenticated: false });
+      (useCollection as any).mockReturnValue({
+        data: { ...mockCollectionData, trackable: { enabled: 'Yes' } },
+        isLoading: false,
+        isError: false,
+        fetchStatus: 'idle',
+      });
+
+      render(<CollectionPage />);
+      fireEvent.click(screen.getByText('collection.letsGetStarted'));
+      expect(mockRouterPush).toHaveBeenCalledWith('/sign-in', 'forward', 'push');
+    });
+
     it('shows unenrolled viewState for trackable collection when authenticated', () => {
       (useAuth as any).mockReturnValue({ isAuthenticated: true });
       (useCollection as any).mockReturnValue({

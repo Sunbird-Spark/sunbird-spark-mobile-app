@@ -1,5 +1,4 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import CollectionAccordion from './CollectionAccordion';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
