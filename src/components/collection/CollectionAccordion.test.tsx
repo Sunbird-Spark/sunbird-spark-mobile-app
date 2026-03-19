@@ -32,6 +32,9 @@ vi.mock('@ionic/react', () => ({
       </div>
     );
   },
+  useIonRouter: () => ({
+    push: vi.fn(),
+  }),
 }));
 
 // Mock ionicons

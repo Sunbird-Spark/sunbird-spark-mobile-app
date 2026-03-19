@@ -158,8 +158,7 @@ const CollectionPage: React.FC = () => {
         <div
           className="cp-bottom-cta"
           onClick={() => {
-            // In a mobile app, this would trigger the login flow
-            window.location.href = '/app/login?prompt=none';
+            router.push('/sign-in', 'forward', 'push');
           }}
         >
           <span className="cp-bottom-cta-text">{t('collection.letsGetStarted')}</span>
