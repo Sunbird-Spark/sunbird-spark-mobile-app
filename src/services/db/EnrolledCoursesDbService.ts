@@ -26,6 +26,15 @@ export interface EnrolledCourse {
   status: CourseStatus;
 }
 
+interface EnrolledCourseRow {
+  course_id: string;
+  user_id: string;
+  details: string;
+  enrolled_on: number;
+  progress: number;
+  status: string;
+}
+
 export class EnrolledCoursesDbService {
   constructor(private db: DatabaseService) {}
 
@@ -50,7 +59,7 @@ export class EnrolledCoursesDbService {
   }
 
   async getByUser(userId: string): Promise<EnrolledCourse[]> {
-    const rows = await this.db.select<any>('enrolled_courses', {
+    const rows = await this.db.select<EnrolledCourseRow>('enrolled_courses', {
       where: { eq: { user_id: userId } },
       orderBy: [{ column: 'enrolled_on', direction: 'DESC' }],
     });
@@ -58,7 +67,7 @@ export class EnrolledCoursesDbService {
   }
 
   async getByStatus(userId: string, status: CourseStatus): Promise<EnrolledCourse[]> {
-    const rows = await this.db.select<any>('enrolled_courses', {
+    const rows = await this.db.select<EnrolledCourseRow>('enrolled_courses', {
       where: { eq: { user_id: userId, status } },
       orderBy: [{ column: 'enrolled_on', direction: 'DESC' }],
     });
@@ -88,7 +97,7 @@ export class EnrolledCoursesDbService {
     await this.db.delete('enrolled_courses', { eq: { user_id: userId } });
   }
 
-  private rowToCourse(row: any): EnrolledCourse {
+  private rowToCourse(row: EnrolledCourseRow): EnrolledCourse {
     let details: EnrolledCourseDetails = { courseId: row.course_id, name: '' };
     try {
       details = JSON.parse(row.details);

@@ -162,6 +162,52 @@ describe('DatabaseService', () => {
     });
   });
 
+  // ── column guard ───────────────────────────────────────────────────────────
+
+  describe('column guard (assertColumn)', () => {
+    it('throws on invalid column name in WHERE eq', async () => {
+      const svc = getInitializedService();
+      await expect(svc.select('users', { where: { eq: { '1=1; DROP TABLE users; --': 'x' } } }))
+        .rejects.toThrow('Invalid column name');
+    });
+
+    it('throws on invalid column name in WHERE lt', async () => {
+      const svc = getInitializedService();
+      await expect(svc.select('telemetry', { where: { lt: { 'col name': 1 } } }))
+        .rejects.toThrow('Invalid column name');
+    });
+
+    it('throws on invalid column name in WHERE in', async () => {
+      const svc = getInitializedService();
+      await expect(svc.select('telemetry', { where: { in: { 'bad-col': ['a'] } } }))
+        .rejects.toThrow('Invalid column name');
+    });
+
+    it('throws on invalid column name in orderBy', async () => {
+      const svc = getInitializedService();
+      await expect(svc.select('users', { orderBy: [{ column: 'col; DROP TABLE users;' }] }))
+        .rejects.toThrow('Invalid column name');
+    });
+
+    it('throws on invalid column name in insert data', async () => {
+      const svc = getInitializedService();
+      await expect(svc.insert('users', { 'bad col': 'x' }))
+        .rejects.toThrow('Invalid column name');
+    });
+
+    it('throws on invalid column name in update data', async () => {
+      const svc = getInitializedService();
+      await expect(svc.update('users', { 'bad col': 'x' }, { eq: { id: '1' } }))
+        .rejects.toThrow('Invalid column name');
+    });
+
+    it('allows valid snake_case column names', async () => {
+      const svc = getInitializedService();
+      await expect(svc.select('users', { where: { eq: { user_id: '1', created_on: 0 } } }))
+        .resolves.not.toThrow();
+    });
+  });
+
   // ── SELECT ─────────────────────────────────────────────────────────────────
 
   describe('select', () => {

@@ -43,7 +43,8 @@ export class UserDbService {
   }
 
   async getById(id: string): Promise<User | null> {
-    const rows = await this.db.select<any>('users', {
+    interface UserRow { id: string; details: UserDetails; user_type: string; created_on: number; }
+    const rows = await this.db.select<UserRow>('users', {
       where: { eq: { id } },
     });
     return rows.length > 0 ? this.rowToUser(rows[0]) : null;
@@ -70,10 +71,10 @@ export class UserDbService {
     await this.db.delete('users', { eq: { id } });
   }
 
-  private rowToUser(row: any): User {
+  private rowToUser(row: { id: string; details: UserDetails; user_type: string; created_on: number }): User {
     let details: UserDetails = {};
     try {
-      details = JSON.parse(row.details);
+      details = typeof row.details === 'string' ? JSON.parse(row.details as unknown as string) : row.details;
     } catch {
       details = {};
     }

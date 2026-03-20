@@ -20,6 +20,15 @@ function assertTable(table: string): void {
   }
 }
 
+// Only alphanumeric + underscore; prevents injection via identifier interpolation.
+const COLUMN_REGEX = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
+
+function assertColumn(col: string): void {
+  if (!COLUMN_REGEX.test(col)) {
+    throw new Error(`[DatabaseService] Invalid column name: "${col}"`);
+  }
+}
+
 // ── Query building types ─────────────────────────────────────────────────────
 
 export interface WhereClause {
@@ -169,7 +178,7 @@ export class DatabaseService {
     if (clause) sql += ` ${clause}`;
     if (config?.orderBy?.length) {
       const order = config.orderBy
-        .map(o => `${o.column} ${o.direction ?? 'ASC'}`)
+        .map(o => { assertColumn(o.column); return `${o.column} ${o.direction ?? 'ASC'}`; })
         .join(', ');
       sql += ` ORDER BY ${order}`;
     }
@@ -191,8 +200,10 @@ export class DatabaseService {
   ): Promise<void> {
     assertTable(table);
     const db = this.getDb();
-    const cols = Object.keys(data).join(', ');
-    const placeholders = Object.keys(data).map(() => '?').join(', ');
+    const keys = Object.keys(data);
+    keys.forEach(assertColumn);
+    const cols = keys.join(', ');
+    const placeholders = keys.map(() => '?').join(', ');
     const values = Object.values(data);
     const conflictClause = conflict !== 'ABORT' ? ` OR ${conflict}` : '';
     await db.run(
@@ -209,7 +220,7 @@ export class DatabaseService {
   ): Promise<void> {
     assertTable(table);
     const db = this.getDb();
-    const setCols = Object.keys(data).map(col => `${col} = ?`).join(', ');
+    const setCols = Object.keys(data).map(col => { assertColumn(col); return `${col} = ?`; }).join(', ');
     const setParams = Object.values(data);
     const { clause, params } = this.buildWhere(where);
     if (!clause) throw new Error('[DatabaseService] UPDATE requires a WHERE clause');
@@ -243,24 +254,28 @@ export class DatabaseService {
 
     if (where.eq) {
       for (const [col, val] of Object.entries(where.eq)) {
+        assertColumn(col);
         parts.push(`${col} = ?`);
         params.push(val);
       }
     }
     if (where.lt) {
       for (const [col, val] of Object.entries(where.lt)) {
+        assertColumn(col);
         parts.push(`${col} < ?`);
         params.push(val);
       }
     }
     if (where.gt) {
       for (const [col, val] of Object.entries(where.gt)) {
+        assertColumn(col);
         parts.push(`${col} > ?`);
         params.push(val);
       }
     }
     if (where.in) {
       for (const [col, vals] of Object.entries(where.in)) {
+        assertColumn(col);
         const placeholders = vals.map(() => '?').join(', ');
         parts.push(`${col} IN (${placeholders})`);
         params.push(...vals);

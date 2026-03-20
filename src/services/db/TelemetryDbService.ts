@@ -37,7 +37,7 @@ export class TelemetryDbService {
   }
 
   async getPending(limit = 100): Promise<TelemetryEvent[]> {
-    const rows = await this.db.select<any>('telemetry', {
+    const rows = await this.db.select<TelemetryEvent>('telemetry', {
       where: { eq: { synced: 0 } },
       orderBy: [
         { column: 'priority', direction: 'DESC' },
@@ -45,14 +45,7 @@ export class TelemetryDbService {
       ],
       limit,
     });
-    return rows.map(row => ({
-      event_id: row.event_id,
-      event: row.event,
-      event_type: row.event_type,
-      timestamp: row.timestamp,
-      priority: row.priority,
-      synced: row.synced,
-    }));
+    return rows;
   }
 
   async markSynced(eventIds: string[]): Promise<void> {
