@@ -74,7 +74,7 @@ const TermsAndConditionsPage: React.FC = () => {
         <IonToolbar className="tnc-toolbar">
           <IonTitle className="tnc-title">{t('tnc.title')}</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={handleClose} className="tnc-close-btn">
+            <IonButton onClick={handleClose} className="tnc-close-btn" aria-label="Close">
               <IonIcon slot="icon-only" icon={close} />
             </IonButton>
           </IonButtons>

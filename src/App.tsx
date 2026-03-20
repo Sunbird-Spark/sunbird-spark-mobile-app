@@ -1,7 +1,7 @@
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { useEffect } from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { AppInitializer } from './AppInitializer';
 import { useAppInitialized } from './hooks/useAppInitialized';
@@ -53,8 +53,9 @@ setupIonicReact();
 /** Redirects to /terms-and-conditions when TnC is pending after login */
 const TnCGuard: React.FC = () => {
   const { needsTnC } = useAuth();
+  const location = useLocation();
 
-  if (needsTnC) {
+  if (needsTnC && location.pathname !== '/terms-and-conditions') {
     return <Redirect to="/terms-and-conditions" />;
   }
   return null;
