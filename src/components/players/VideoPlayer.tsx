@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { VideoPlayerService } from '../../services/players/video';
 import type { VideoPlayerEvent, VideoPlayerContextProps, VideoPlayerMetadata } from '../../services/players/video';
 
@@ -24,13 +24,12 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const serviceRef = useRef<VideoPlayerService>(new VideoPlayerService());
 
-  const handlePlayerEvent = useCallback((event: VideoPlayerEvent) => {
-    onPlayerEvent?.(event);
-  }, [onPlayerEvent]);
-
-  const handleTelemetryEvent = useCallback((event: any) => {
-    onTelemetryEvent?.(event);
-  }, [onTelemetryEvent]);
+  // Store callbacks in refs so the player init useEffect doesn't re-run
+  // when callback identities change (e.g. after content state updates).
+  const onPlayerEventRef = useRef(onPlayerEvent);
+  useEffect(() => { onPlayerEventRef.current = onPlayerEvent; }, [onPlayerEvent]);
+  const onTelemetryEventRef = useRef(onTelemetryEvent);
+  useEffect(() => { onTelemetryEventRef.current = onTelemetryEvent; }, [onTelemetryEvent]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -44,6 +43,14 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       ...(cdata !== undefined && { cdata }),
       ...(contextRollup !== undefined && { contextRollup }),
       ...(objectRollup !== undefined && { objectRollup }),
+    };
+
+    const handlePlayerEvent = (event: VideoPlayerEvent) => {
+      onPlayerEventRef.current?.(event);
+    };
+
+    const handleTelemetryEvent = (event: any) => {
+      onTelemetryEventRef.current?.(event);
     };
 
     const initPlayer = async () => {
@@ -72,7 +79,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata]);
 
   return (
     <div

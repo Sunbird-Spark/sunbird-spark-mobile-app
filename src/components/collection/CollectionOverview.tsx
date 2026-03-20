@@ -6,9 +6,11 @@ interface CollectionOverviewProps {
   collectionData: CollectionData;
   isCourse: boolean;
   t: (key: string) => string;
+  hideBestSuited?: boolean;
+  children?: React.ReactNode;
 }
 
-const CollectionOverview: React.FC<CollectionOverviewProps> = ({ collectionData, isCourse, t }) => {
+const CollectionOverview: React.FC<CollectionOverviewProps> = ({ collectionData, isCourse, t, hideBestSuited, children }) => {
   return (
     <div className="cp-overview-wrapper">
       {/* Title + Lessons */}
@@ -37,7 +39,7 @@ const CollectionOverview: React.FC<CollectionOverviewProps> = ({ collectionData,
       </div>
 
       {/* Best Suited For */}
-      {collectionData.audience.length > 0 && (
+      {!hideBestSuited && collectionData.audience.length > 0 && (
         <div className="cp-best-suited-section">
           <h2 className="cp-section-title">{t('collection.bestSuitedFor')}</h2>
           <ul className="cp-check-list">
@@ -50,6 +52,9 @@ const CollectionOverview: React.FC<CollectionOverviewProps> = ({ collectionData,
           </ul>
         </div>
       )}
+
+      {/* Optional extra content (e.g. progress section for enrolled view) */}
+      {children}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { qumlPlayerService, QumlPlayerService } from '../../services/players/quml';
 import type { QumlPlayerEvent, QumlPlayerContextProps, QumlPlayerMetadata } from '../../services/players/quml/types';
 
@@ -24,25 +24,26 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const playerElementRef = useRef<HTMLElement | null>(null);
 
-  const handlePlayerEvent = useCallback(
-    (event: QumlPlayerEvent) => {
-      onPlayerEvent?.(event);
-    },
-    [onPlayerEvent]
-  );
-
-  const handleTelemetryEvent = useCallback(
-    (event: any) => {
-      onTelemetryEvent?.(event);
-    },
-    [onTelemetryEvent]
-  );
+  // Store callbacks in refs so the player init useEffect doesn't re-run
+  // when callback identities change (e.g. after content state updates).
+  const onPlayerEventRef = useRef(onPlayerEvent);
+  useEffect(() => { onPlayerEventRef.current = onPlayerEvent; }, [onPlayerEvent]);
+  const onTelemetryEventRef = useRef(onTelemetryEvent);
+  useEffect(() => { onTelemetryEventRef.current = onTelemetryEvent; }, [onTelemetryEvent]);
 
   useEffect(() => {
     if (!containerRef.current) return;
 
     let playerElement: HTMLElement | null = null;
     let cancelled = false;
+
+    const handlePlayerEvent = (event: QumlPlayerEvent) => {
+      onPlayerEventRef.current?.(event);
+    };
+
+    const handleTelemetryEvent = (event: any) => {
+      onTelemetryEventRef.current?.(event);
+    };
 
     const initializePlayer = async () => {
       if (!metadata) {
@@ -84,7 +85,7 @@ const QumlPlayer: React.FC<QumlPlayerProps> = ({
       }
       QumlPlayerService.unloadStyles();
     };
-  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata]);
 
   return (
     <div

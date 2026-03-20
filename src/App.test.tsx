@@ -130,13 +130,6 @@ vi.mock('./pages/CourseDetailsPage', () => ({
   default: () => <div data-testid="course-details-page">Course Details Page</div>,
 }));
 
-vi.mock('./pages/CollectionDetailsPage', () => ({
-  default: () => <div data-testid="collection-details-page">Collection Details Page</div>,
-}));
-
-vi.mock('./pages/CourseLearningPage', () => ({
-  default: () => <div data-testid="course-learning-page">Course Learning Page</div>,
-}));
 
 vi.mock('./pages/ContentPlayerPage', () => ({
   default: () => <div data-testid="content-player-page">Content Player Page</div>,
