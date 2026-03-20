@@ -1,10 +1,5 @@
 import React from 'react';
-
-interface StatItem {
-    value: string;
-    label: string;
-    icon: React.ReactNode;
-}
+import { useTranslation } from 'react-i18next';
 
 const BookIcon = () => (
     <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -30,21 +25,23 @@ const CertificateIcon = () => (
     </svg>
 );
 
-const stats: StatItem[] = [
-    { value: '500+', label: 'Courses', icon: <BookIcon /> },
-    { value: '50K+', label: 'Active Learners', icon: <LearnersIcon /> },
-    { value: '200+', label: 'Certifications', icon: <CertificateIcon /> },
-];
-
 export const StatsBar: React.FC = () => {
+    const { t } = useTranslation();
+
+    const stats = [
+        { value: '500+', labelKey: 'courses', icon: <BookIcon /> },
+        { value: '50K+', labelKey: 'activeLearners', icon: <LearnersIcon /> },
+        { value: '200+', labelKey: 'certifications', icon: <CertificateIcon /> },
+    ];
+
     return (
         <div className="stats-bar">
             {stats.map((stat, index) => (
-                <React.Fragment key={stat.label}>
+                <React.Fragment key={stat.labelKey}>
                     <div className="stats-item">
                         <div className="stats-icon">{stat.icon}</div>
                         <div className="stats-value">{stat.value}</div>
-                        <div className="stats-label">{stat.label}</div>
+                        <div className="stats-label">{t(stat.labelKey)}</div>
                     </div>
                     {index < stats.length - 1 && <div className="stats-divider" />}
                 </React.Fragment>

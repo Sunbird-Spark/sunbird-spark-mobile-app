@@ -18,7 +18,7 @@
 }
 
 .course-learning-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -30,7 +30,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
     margin-bottom: 1.5rem;
@@ -63,14 +63,14 @@
 
 .progress-percentage {
     margin: 0;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .progress-date {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.75rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
 }
@@ -87,7 +87,7 @@
 }
 
 .toggle-label {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.75rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
     margin-right: 0.75rem;
@@ -135,7 +135,7 @@
     --padding-end: 1.25rem;
     --padding-top: 1.25rem;
     --padding-bottom: 1.25rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
 }
@@ -157,7 +157,7 @@
     border-radius: 0.625rem;
     box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(168, 82, 54, 0.1);
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
 }
 
 .curriculum-item-left {
@@ -200,7 +200,7 @@
 }
 
 .info-card-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -208,7 +208,7 @@
 }
 
 .info-card-desc {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
     line-height: 1.5;
@@ -223,7 +223,7 @@
 }
 
 .info-card-date {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.75rem;
     color: var(--ion-color-medium-tint, var(--color-bdbdbd, #BDBDBD));
 }
@@ -232,7 +232,7 @@
 .btn-primary {
     background: var(--ion-color-primary);
     color: white;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
     padding: 0.75rem 1.5rem;
@@ -244,7 +244,7 @@
 .btn-link {
     background: transparent;
     color: var(--ion-color-primary);
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 600;
     border: none;

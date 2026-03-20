@@ -5,6 +5,7 @@ import {
   IonPage,
   IonSpinner,
 } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PublicWelcomeHeader } from '../components/home/PublicWelcomeHeader';
 import { HeroSection } from '../components/home/HeroSection';
@@ -67,6 +68,7 @@ const renderSection = (section: any) => {
 const HomePage: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const { sections, isLoading } = useLandingPageConfig();
+  const { t } = useTranslation();
 
   return (
     <IonPage>
@@ -83,7 +85,7 @@ const HomePage: React.FC = () => {
             <ContinueLearningCard />
             <PerformanceChart />
             <InProgressContents />
-            <ContentCardCarousel title="Recommended Content" items={recommendedItems} />
+            <ContentCardCarousel title={t('recommendedContent')} items={recommendedItems} />
           </>
         ) : (
           /* ── Public Home View ── */

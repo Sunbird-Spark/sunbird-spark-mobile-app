@@ -1,19 +1,18 @@
 import React, { useState } from 'react';
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonToolbar, IonImg
+  IonImg
 } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { ContentCardCarousel, ContentCardItem } from '../components/home/ContentCardCarousel';
 import { courses as allCourses, getInProgressCourses } from '../data/mockData';
-import { LanguageSelector } from '../components/common/LanguageSelector';
+import { useTranslation } from 'react-i18next';
+import { AppHeader } from '../components/layout/AppHeader';
 
 // ── Design tokens ──────────────────────────────────────────────────────────
 const BRICK = 'var(--ion-color-primary)';
 const ORANGE = 'var(--ion-color-primary-tint)';
-const FONT = "'Rubik', sans-serif";
 
 // ── SVG icons ──────────────────────────────────────────────────────────────
 const BellIcon = () => (
@@ -36,7 +35,7 @@ const ProgressBar: React.FC<{ progress: number; color?: string }> = ({ progress,
 );
 
 // ── Concentric donut chart ─────────────────────────────────────────────────
-const DonutChart: React.FC = () => {
+const DonutChart: React.FC<{ hrsLabel: string }> = ({ hrsLabel }) => {
   const size = 133;
   const cx = size / 2;
   const cy = size / 2;
@@ -76,11 +75,11 @@ const DonutChart: React.FC = () => {
         transform={`rotate(-90 ${cx} ${cy})`}
       />
       {/* Center text */}
-      <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--ion-color-dark, var(--color-222222, #222222))" fontFamily={FONT} fontSize="20" fontWeight="700">
+      <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--ion-color-dark, var(--color-222222, #222222))" style={{ fontFamily: 'var(--ion-font-family)' }} fontSize="20" fontWeight="700">
         130
       </text>
-      <text x={cx} y={cy + 14} textAnchor="middle" fill="rgb(100,100,100)" fontFamily={FONT} fontSize="10" fontWeight="400">
-        Hrs
+      <text x={cx} y={cy + 14} textAnchor="middle" fill="rgb(100,100,100)" style={{ fontFamily: 'var(--ion-font-family)' }} fontSize="10" fontWeight="400">
+        {hrsLabel}
       </text>
     </svg>
   );
@@ -117,7 +116,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
           border: `1px solid ${badgeBorder}`,
           borderRadius: '36px',
           padding: '3px 10px',
-          fontFamily: FONT,
           fontSize: '12px',
           fontWeight: 400,
           color: 'var(--ion-color-dark, var(--color-000000, #000000))',
@@ -126,7 +124,6 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
           {badgeLabel}
         </span>
         <p style={{
-          fontFamily: FONT,
           fontSize: '14px',
           fontWeight: 500,
           color: 'var(--ion-color-dark, var(--color-222222, #222222))',
@@ -144,7 +141,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
         <div style={{ flex: 1 }}>
           <ProgressBar progress={progress} />
         </div>
-        <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>
+        <span style={{ fontSize: '12px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>
           {progress}%
         </span>
       </div>
@@ -153,7 +150,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, bad
 );
 
 // ── Types ──────────────────────────────────────────────────────────────────
-type Tab = 'Active Courses' | 'Completed' | 'Upcoming' | 'Paused';
+type Tab = 'activeCourses' | 'completed' | 'upcoming' | 'paused';
 
 const upcomingClasses = [
   {
@@ -174,7 +171,8 @@ const upcomingClasses = [
 
 // ── Page ───────────────────────────────────────────────────────────────────
 const MyLearningPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('Active Courses');
+  const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
+  const { t } = useTranslation();
 
   const inProgressCourses = getInProgressCourses();
   const completedCourses = allCourses.filter(c => c.enrolled && c.progress === 100);
@@ -189,44 +187,18 @@ const MyLearningPage: React.FC = () => {
     lessons: c.lessons,
   }));
 
-  const tabs: Tab[] = ['Active Courses', 'Completed', 'Upcoming', 'Paused'];
+  const tabs: Tab[] = ['activeCourses', 'completed', 'upcoming', 'paused'];
 
   return (
     <IonPage>
-      {/* ── Header ── */}
-      <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--border-width': '0', '--padding-start': '0', '--padding-end': '0' } as React.CSSProperties}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
-            <h1 style={{ fontFamily: FONT, fontSize: '20px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
-              My Learning
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  position: 'relative',
-                }}
-                aria-label="Notifications"
-              >
-                <BellIcon />
-              </button>
-              <LanguageSelector />
-            </div>
-          </div>
-        </IonToolbar>
-      </IonHeader>
+      <AppHeader title={t('myLearning')} />
 
       <IonContent fullscreen>
         {/* ── Courses heading ── */}
         <div style={{ padding: '8px 16px' }}>
           <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))' }}>
-              Courses
+            <span style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))' }}>
+              {t('courses')}
             </span>
             <ChevronDownIcon />
           </button>
@@ -252,25 +224,24 @@ const MyLearningPage: React.FC = () => {
                 marginBottom: '-1px',
                 backgroundColor: 'transparent',
                 color: activeTab === tab ? BRICK : 'rgb(130, 130, 130)',
-                fontFamily: FONT,
                 fontSize: '14px',
                 fontWeight: activeTab === tab ? 600 : 400,
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
               }}
             >
-              {tab}
+              {t(tab)}
             </button>
           ))}
         </div>
 
         {/* ── Active Courses tab ── */}
-        {activeTab === 'Active Courses' && (
+        {activeTab === 'activeCourses' && (
           <>
             {/* Upcoming Classes */}
             <div style={{ padding: '0 16px 12px' }}>
-              <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 12px 0' }}>
-                Upcoming Classes
+              <h3 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 12px 0' }}>
+                {t('upcomingClasses')}
               </h3>
               <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px' }}>
                 {upcomingClasses.map(cls => (
@@ -287,15 +258,15 @@ const MyLearningPage: React.FC = () => {
                       alignItems: 'flex-start',
                     }}
                   >
-                    <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0, paddingTop: '1px' }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0, paddingTop: '1px' }}>
                       {cls.time}
                     </span>
                     <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.15)', flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 4px 0', lineHeight: 1.3 }}>
+                      <p style={{ fontSize: '13px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 4px 0', lineHeight: 1.3 }}>
                         {cls.title}
                       </p>
-                      <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 400, color: 'rgb(100,100,100)', margin: 0, lineHeight: 1.3 }}>
+                      <p style={{ fontSize: '11px', fontWeight: 400, color: 'rgb(100,100,100)', margin: 0, lineHeight: 1.3 }}>
                         {cls.subtitle}
                       </p>
                     </div>
@@ -312,7 +283,7 @@ const MyLearningPage: React.FC = () => {
                   thumbnail={course.thumbnail}
                   title={course.title}
                   progress={course.progress}
-                  badgeLabel="Course"
+                  badgeLabel={t('courses')}
                   badgeBg="rgb(255, 241, 199)"
                   badgeBorder={ORANGE}
                 />
@@ -328,23 +299,22 @@ const MyLearningPage: React.FC = () => {
                 border: `1px solid ${BRICK}`,
                 backgroundColor: 'transparent',
                 color: BRICK,
-                fontFamily: FONT,
                 fontSize: '14px',
                 fontWeight: 500,
                 cursor: 'pointer',
               }}>
-                View More Courses
+                {t('viewMoreCourses')}
               </button>
             </div>
           </>
         )}
 
         {/* ── Completed tab ── */}
-        {activeTab === 'Completed' && (
+        {activeTab === 'completed' && (
           <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {completedCourses.length === 0 ? (
-              <p style={{ fontFamily: FONT, fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
-                No completed courses yet.
+              <p style={{ fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
+                {t('noCompletedCourses')}
               </p>
             ) : (
               completedCourses.map(course => (
@@ -353,7 +323,7 @@ const MyLearningPage: React.FC = () => {
                   thumbnail={course.thumbnail}
                   title={course.title}
                   progress={100}
-                  badgeLabel="Completed"
+                  badgeLabel={t('completed')}
                   badgeBg="rgb(220, 242, 226)"
                   badgeBorder="rgb(49, 134, 86)"
                 />
@@ -362,31 +332,38 @@ const MyLearningPage: React.FC = () => {
           </div>
         )}
 
-        {/* ── Upcoming / Paused tabs ── */}
-        {(activeTab === 'Upcoming' || activeTab === 'Paused') && (
-          <p style={{ fontFamily: FONT, fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
-            No {activeTab.toLowerCase()} courses yet.
+        {/* ── Upcoming tab ── */}
+        {activeTab === 'upcoming' && (
+          <p style={{ fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
+            {t('noUpcomingCourses')}
+          </p>
+        )}
+
+        {/* ── Paused tab ── */}
+        {activeTab === 'paused' && (
+          <p style={{ fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
+            {t('noPausedCourses')}
           </p>
         )}
 
         {/* ── Total Hrs Spent ── */}
         <div style={{ padding: '16px' }}>
           <div style={{ backgroundColor: 'rgb(255, 241, 199)', borderRadius: '20px', padding: '16px' }}>
-            <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 16px 0' }}>
-              Total Hrs Spent
+            <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 16px 0' }}>
+              {t('totalHrsSpent')}
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <DonutChart />
+              <DonutChart hrsLabel={t('hrs')} />
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 {[
-                  { label: 'Courses', value: '72 Hrs', color: BRICK },
-                  { label: 'Assessments', value: '38 Hrs', color: ORANGE },
-                  { label: 'Practice', value: '20 Hrs', color: 'rgb(102, 166, 130)' },
+                  { label: t('courses'), value: `72 ${t('hrs')}`, color: BRICK },
+                  { label: t('assessments'), value: `38 ${t('hrs')}`, color: ORANGE },
+                  { label: t('practice'), value: `20 ${t('hrs')}`, color: 'rgb(102, 166, 130)' },
                 ].map(stat => (
                   <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{ width: '32px', height: '8px', borderRadius: '4px', backgroundColor: stat.color, flexShrink: 0 }} />
-                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flex: 1 }}>{stat.label}</span>
-                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>{stat.value}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flex: 1 }}>{stat.label}</span>
+                    <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>{stat.value}</span>
                   </div>
                 ))}
               </div>
@@ -395,7 +372,7 @@ const MyLearningPage: React.FC = () => {
         </div>
 
         {/* ── Recommended Content ── */}
-        <ContentCardCarousel title="Recommended Content" items={recommendedItems} />
+        <ContentCardCarousel title={t('recommendedContent')} items={recommendedItems} />
 
         {/* Bottom spacing */}
         <div style={{ height: '100px' }} />

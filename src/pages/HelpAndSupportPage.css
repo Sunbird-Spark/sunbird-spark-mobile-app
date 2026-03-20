@@ -19,7 +19,7 @@
 }
 
 .help-support-page .hs-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -50,7 +50,7 @@
 
 /* ── Hero section ── */
 .hs-hero-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.5rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -86,7 +86,7 @@
 }
 
 .hs-category-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -94,7 +94,7 @@
 }
 
 .hs-category-desc {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -110,7 +110,7 @@
 }
 
 .hs-faq-count {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -135,7 +135,7 @@
 }
 
 .hs-faq-section-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -168,7 +168,7 @@
 }
 
 .hs-faq-question-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -196,7 +196,7 @@
 }
 
 .hs-faq-answer-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -233,7 +233,7 @@
 }
 
 .hs-modal-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -270,7 +270,7 @@
     border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.5rem;
     padding: 0.875rem 1rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
     outline: none;
@@ -298,7 +298,7 @@
     border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.5rem;
     padding: 0.875rem 1rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     color: var(--ion-color-dark, var(--color-000000, #000000));
     outline: none;
@@ -320,7 +320,7 @@
     border: none;
     border-radius: 0;
     padding: 1.125rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
