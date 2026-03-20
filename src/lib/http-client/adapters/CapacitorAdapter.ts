@@ -39,11 +39,18 @@ export class CapacitorAdapter extends BaseClient {
   private async request<T>(requestFn: () => Promise<any>): Promise<ApiResponse<T>> {
     try {
       const response = await requestFn();
-      return this.mapResponse(response);
+      const mapped = this.mapResponse<T>(response);
+      if (mapped.status >= 400) {
+        this.onResponse(mapped);
+        throw mapped;
+      }
+      return mapped;
     } catch (error: any) {
-      // If the error already looks like an HTTP response (e.g., 4xx/5xx), normalize it
+      // If the error already looks like an HTTP response (e.g., 4xx/5xx), run status handler and throw
       if (error && typeof error === 'object' && 'status' in error) {
-        return this.mapResponse(error);
+        const mapped = error.data !== undefined ? error : this.mapResponse(error);
+        this.onResponse(mapped);
+        throw mapped;
       }
       throw error;
     }

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BaseClient } from './BaseClient';
-import { ApiResponse, HttpClientConfig } from './types';
+import { ApiResponse, HttpClientConfig, HeaderOperation } from './types';
 
 // Mock implementation of BaseClient for testing
 class MockBaseClient extends BaseClient {
@@ -52,6 +52,9 @@ class MockBaseClient extends BaseClient {
     return response;
   }
 
+  public updateHeaders(_headers: HeaderOperation[]): void {
+    // no-op for tests
+  }
 }
 
 describe('BaseClient', () => {
@@ -264,6 +267,170 @@ describe('BaseClient', () => {
 
       // The test verifies that methods can be called with headers without throwing
       expect(true).toBe(true);
+    });
+  });
+
+  describe('responseInterceptor', () => {
+    it('should call interceptor on 401 and return retried response', async () => {
+      const successResponse: ApiResponse<any> = { data: { ok: true }, status: 200, headers: {} };
+      const interceptor = vi.fn(async (_response, retry) => {
+        return retry();
+      });
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      const response401: ApiResponse<any> = { data: { error: 'Unauthorized' }, status: 401, headers: {} };
+      // First call returns 401, retry returns 200
+      let callCount = 0;
+      clientWithInterceptor['_get'] = async function <T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+        callCount++;
+        if (callCount === 1) return response401 as ApiResponse<T>;
+        return successResponse as ApiResponse<T>;
+      };
+
+      const result = await clientWithInterceptor.get('/data');
+
+      expect(interceptor).toHaveBeenCalled();
+      expect(result).toBe(successResponse);
+    });
+
+    it('should call interceptor on 403', async () => {
+      const interceptor = vi.fn(async (response) => response);
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      const response403: ApiResponse<any> = { data: { error: 'Forbidden' }, status: 403, headers: {} };
+      clientWithInterceptor.setMockResponse('GET', '/admin', response403);
+
+      await clientWithInterceptor.get('/admin');
+
+      expect(interceptor).toHaveBeenCalledWith(response403, expect.any(Function), '/admin');
+    });
+
+    it('should NOT call interceptor on 200', async () => {
+      const interceptor = vi.fn(async (response) => response);
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      const response200: ApiResponse<any> = { data: { ok: true }, status: 200, headers: {} };
+      clientWithInterceptor.setMockResponse('GET', '/data', response200);
+
+      await clientWithInterceptor.get('/data');
+
+      expect(interceptor).not.toHaveBeenCalled();
+    });
+
+    it('should NOT call interceptor on 500', async () => {
+      const interceptor = vi.fn(async (response) => response);
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      const response500: ApiResponse<any> = { data: { error: 'Server Error' }, status: 500, headers: {} };
+      clientWithInterceptor.setMockResponse('GET', '/error', response500);
+
+      await clientWithInterceptor.get('/error');
+
+      expect(interceptor).not.toHaveBeenCalled();
+    });
+
+    it('should pass URL to interceptor', async () => {
+      const interceptor = vi.fn(async (response) => response);
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      const response401: ApiResponse<any> = { data: {}, status: 401, headers: {} };
+      clientWithInterceptor.setMockResponse('GET', '/my-endpoint', response401);
+
+      await clientWithInterceptor.get('/my-endpoint');
+
+      expect(interceptor).toHaveBeenCalledWith(response401, expect.any(Function), '/my-endpoint');
+    });
+
+    it('should return original response when interceptor does not retry', async () => {
+      const interceptor = vi.fn(async (response) => response);
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      const response401: ApiResponse<any> = { data: { error: 'Unauthorized' }, status: 401, headers: {} };
+      clientWithInterceptor.setMockResponse('GET', '/data', response401);
+
+      const result = await clientWithInterceptor.get('/data');
+
+      expect(result).toBe(response401);
+    });
+
+    it('retry should bypass interceptor (no infinite loop)', async () => {
+      let interceptorCallCount = 0;
+      const interceptor = vi.fn(async (_response, retry) => {
+        interceptorCallCount++;
+        // Always retry — if interceptor ran on retry, this would loop forever
+        return retry();
+      });
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      // Both first call and retry return 401
+      const response401: ApiResponse<any> = { data: { error: 'Unauthorized' }, status: 401, headers: {} };
+      clientWithInterceptor.setMockResponse('GET', '/data', response401);
+
+      await clientWithInterceptor.get('/data');
+
+      // Interceptor should only be called ONCE (not on retry)
+      expect(interceptorCallCount).toBe(1);
+    });
+
+    it('should work with POST requests', async () => {
+      const successResponse: ApiResponse<any> = { data: { created: true }, status: 201, headers: {} };
+      const interceptor = vi.fn(async (_response, retry) => retry());
+
+      const clientWithInterceptor = new MockBaseClient({
+        responseInterceptor: interceptor,
+      });
+
+      let callCount = 0;
+      clientWithInterceptor['_post'] = async function <T>(): Promise<ApiResponse<T>> {
+        callCount++;
+        if (callCount === 1) return { data: {}, status: 401, headers: {} } as ApiResponse<T>;
+        return successResponse as ApiResponse<T>;
+      };
+
+      const result = await clientWithInterceptor.post('/data', { name: 'test' });
+
+      expect(interceptor).toHaveBeenCalled();
+      expect(result).toBe(successResponse);
+    });
+
+    it('should still call status handlers when interceptor is present', async () => {
+      const statusHandler = vi.fn();
+      const interceptor = vi.fn(async (response) => response);
+
+      const clientWithBoth = new MockBaseClient({
+        statusHandlers: { 401: statusHandler },
+        responseInterceptor: interceptor,
+      });
+
+      const response401: ApiResponse<any> = { data: {}, status: 401, headers: {} };
+      clientWithBoth.setMockResponse('GET', '/data', response401);
+
+      await clientWithBoth.get('/data');
+
+      // Both should be called
+      expect(statusHandler).toHaveBeenCalledWith(response401);
+      expect(interceptor).toHaveBeenCalled();
     });
   });
 });

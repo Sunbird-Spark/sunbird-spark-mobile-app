@@ -149,7 +149,7 @@ describe('CapacitorAdapter', () => {
       });
     });
 
-    it('should handle HTTP errors as responses', async () => {
+    it('should throw on 4xx/5xx HTTP errors', async () => {
       const errorResponse = {
         data: { error: 'Not found' },
         status: 404,
@@ -158,8 +158,7 @@ describe('CapacitorAdapter', () => {
 
       (CapacitorHttp.get as any).mockRejectedValue(errorResponse);
 
-      const result = await adapter.get('/test');
-      expect(result).toEqual(errorResponse);
+      await expect(adapter.get('/test')).rejects.toMatchObject({ status: 404 });
     });
 
     it('should throw non-HTTP errors', async () => {
@@ -278,7 +277,7 @@ describe('CapacitorAdapter', () => {
   });
 
   describe('headers management', () => {
-    it('should trigger status handler on specific status', async () => {
+    it('should trigger status handler on specific status and throw', async () => {
       const handler = vi.fn();
       adapter = new CapacitorAdapter({
         baseURL: 'http://test.com',
@@ -291,8 +290,8 @@ describe('CapacitorAdapter', () => {
         headers: {},
       });
 
-      const result = await adapter.get('/test');
-      expect(handler).toHaveBeenCalledWith(result);
+      await expect(adapter.get('/test')).rejects.toMatchObject({ status: 403 });
+      expect(handler).toHaveBeenCalled();
     });
 
     it('should clean headers by removing null values', async () => {
