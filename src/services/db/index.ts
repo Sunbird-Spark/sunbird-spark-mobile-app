@@ -1,7 +1,6 @@
 export { databaseService } from './DatabaseService';
 export type { WhereClause, SelectConfig } from './DatabaseService';
 export { keyValueDbService, KVKey } from './KeyValueDbService';
-export type { KVKey as KVKeyType } from './KeyValueDbService';
 export { userDbService } from './UserDbService';
 export type { UserDetails } from './UserDbService';
 export { configDbService, CONFIG_TTL_MS } from './ConfigDbService';

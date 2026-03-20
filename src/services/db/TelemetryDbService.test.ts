@@ -11,6 +11,7 @@ function makeMockDb() {
     update: vi.fn().mockResolvedValue(undefined),
     delete: vi.fn().mockResolvedValue(undefined),
     count: vi.fn().mockResolvedValue(0),
+    transaction: vi.fn().mockImplementation(async (fn: () => Promise<void>) => fn()),
   } as unknown as DatabaseService;
 }
 
@@ -68,6 +69,12 @@ describe('TelemetryDbService', () => {
     it('is a no-op for empty array', async () => {
       await svc.insertBatch([]);
       expect(db.insert).not.toHaveBeenCalled();
+      expect(db.transaction).not.toHaveBeenCalled();
+    });
+
+    it('wraps inserts in a transaction', async () => {
+      await svc.insertBatch([makeEvent()]);
+      expect(db.transaction).toHaveBeenCalledOnce();
     });
 
     it('calls insert for each event', async () => {

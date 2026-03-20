@@ -1,5 +1,5 @@
 import { DatabaseService, databaseService } from './DatabaseService';
-import { KVKey, keyValueDbService } from './KeyValueDbService';
+import { KeyValueDbService, KVKey, keyValueDbService } from './KeyValueDbService';
 
 export type UserType = 'GUEST' | 'GOOGLE';
 
@@ -24,7 +24,10 @@ export interface User {
 }
 
 export class UserDbService {
-  constructor(private db: DatabaseService) {}
+  constructor(
+    private db: DatabaseService,
+    private kv: KeyValueDbService,
+  ) {}
 
   async upsert(user: User): Promise<void> {
     await this.db.insert(
@@ -47,7 +50,7 @@ export class UserDbService {
   }
 
   async getActive(): Promise<User | null> {
-    const userId = await keyValueDbService.get(KVKey.LAST_ACTIVE_USER_ID);
+    const userId = await this.kv.get(KVKey.LAST_ACTIVE_USER_ID);
     if (!userId) return null;
     return this.getById(userId);
   }
@@ -83,4 +86,4 @@ export class UserDbService {
   }
 }
 
-export const userDbService = new UserDbService(databaseService);
+export const userDbService = new UserDbService(databaseService, keyValueDbService);

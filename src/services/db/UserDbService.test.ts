@@ -1,25 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserDbService, type User } from './UserDbService';
 import { DatabaseService } from './DatabaseService';
-import { KVKey } from './KeyValueDbService';
+import { KeyValueDbService, KVKey } from './KeyValueDbService';
 
 // ── Mocks ────────────────────────────────────────────────────────────────────
 
 vi.mock('./DatabaseService', () => ({ DatabaseService: vi.fn(), databaseService: {} }));
-
-// vi.hoisted ensures this fn is available before the hoisted vi.mock call
-const mockKvGet = vi.hoisted(() => vi.fn());
-
-vi.mock('./KeyValueDbService', () => ({
-  KVKey: {
-    APP_LANGUAGE: 'app_language',
-    ONBOARDING_COMPLETED: 'onboarding_completed',
-    LAST_ACTIVE_USER_ID: 'last_active_user_id',
-    TELEMETRY_SYNC_LAST_RUN: 'telemetry_sync_last_run',
-    ACTIVE_CHANNEL_ID: 'active_channel_id',
-  },
-  keyValueDbService: { get: mockKvGet },
-}));
 
 function makeMockDb() {
   return {
@@ -29,6 +15,12 @@ function makeMockDb() {
     delete: vi.fn().mockResolvedValue(undefined),
     count: vi.fn().mockResolvedValue(0),
   } as unknown as DatabaseService;
+}
+
+function makeMockKv() {
+  return {
+    get: vi.fn().mockResolvedValue(null),
+  } as unknown as KeyValueDbService;
 }
 
 const sampleUser: User = {
@@ -42,12 +34,13 @@ const sampleUser: User = {
 
 describe('UserDbService', () => {
   let db: DatabaseService;
+  let kv: KeyValueDbService;
   let svc: UserDbService;
 
   beforeEach(() => {
     db = makeMockDb();
-    svc = new UserDbService(db);
-    mockKvGet.mockResolvedValue(null);
+    kv = makeMockKv();
+    svc = new UserDbService(db, kv);
   });
 
   // ── upsert ─────────────────────────────────────────────────────────────────
@@ -103,17 +96,17 @@ describe('UserDbService', () => {
 
   describe('getActive', () => {
     it('returns null when no active user ID in KV store', async () => {
-      mockKvGet.mockResolvedValue(null);
+      vi.mocked(kv.get).mockResolvedValue(null);
       expect(await svc.getActive()).toBeNull();
     });
 
     it('fetches by the ID stored in KV store', async () => {
-      mockKvGet.mockResolvedValue('user-1');
+      vi.mocked(kv.get).mockResolvedValue('user-1');
       vi.mocked(db.select).mockResolvedValue([
         { id: 'user-1', details: '{}', user_type: 'GOOGLE', created_on: 1000 },
       ]);
       const user = await svc.getActive();
-      expect(mockKvGet).toHaveBeenCalledWith(KVKey.LAST_ACTIVE_USER_ID);
+      expect(kv.get).toHaveBeenCalledWith(KVKey.LAST_ACTIVE_USER_ID);
       expect(user?.id).toBe('user-1');
     });
   });

@@ -51,6 +51,7 @@ describe('DatabaseService', () => {
     vi.clearAllMocks();
     mockConn.query.mockResolvedValue({ values: [] });
     mockConn.run.mockResolvedValue(undefined);
+    mockConn.execute.mockResolvedValue(undefined);
   });
 
   // ── Singleton ──────────────────────────────────────────────────────────────
@@ -126,6 +127,38 @@ describe('DatabaseService', () => {
     it('returns the connection when initialized', () => {
       const svc = getInitializedService();
       expect(svc.getDb()).toBe(mockConn);
+    });
+  });
+
+  // ── table guard ────────────────────────────────────────────────────────────
+
+  describe('table guard (assertTable)', () => {
+    it('throws on unknown table in select', async () => {
+      const svc = getInitializedService();
+      await expect(svc.select('unknown_table')).rejects.toThrow('Unknown table: "unknown_table"');
+    });
+
+    it('throws on unknown table in insert', async () => {
+      const svc = getInitializedService();
+      await expect(svc.insert('bad_table', { id: 1 })).rejects.toThrow('Unknown table: "bad_table"');
+    });
+
+    it('throws on unknown table in update', async () => {
+      const svc = getInitializedService();
+      await expect(svc.update('bad_table', { x: 1 }, { eq: { id: '1' } })).rejects.toThrow('Unknown table: "bad_table"');
+    });
+
+    it('throws on unknown table in delete', async () => {
+      const svc = getInitializedService();
+      await expect(svc.delete('bad_table')).rejects.toThrow('Unknown table: "bad_table"');
+    });
+
+    it('allows all known tables', async () => {
+      const svc = getInitializedService();
+      const tables = ['key_value', 'users', 'telemetry', 'enrolled_courses', 'configs'];
+      for (const table of tables) {
+        await expect(svc.select(table)).resolves.not.toThrow();
+      }
     });
   });
 
@@ -304,6 +337,12 @@ describe('DatabaseService', () => {
         [1, 'e1', 'e2']
       );
     });
+
+    it('throws when WHERE clause is empty', async () => {
+      const svc = getInitializedService();
+      await expect(svc.update('users', { details: '{}' }, {}))
+        .rejects.toThrow('[DatabaseService] UPDATE requires a WHERE clause');
+    });
   });
 
   // ── DELETE ─────────────────────────────────────────────────────────────────
@@ -348,6 +387,30 @@ describe('DatabaseService', () => {
       expect(mockConn.query).toHaveBeenCalledWith(
         'SELECT COUNT(*) as count FROM telemetry WHERE synced = ?', [0]
       );
+    });
+  });
+
+  // ── transaction ────────────────────────────────────────────────────────────
+
+  describe('transaction', () => {
+    it('executes BEGIN and COMMIT around the callback', async () => {
+      const svc = getInitializedService();
+      const fn = vi.fn().mockResolvedValue('result');
+      const result = await svc.transaction(fn);
+      expect(mockConn.execute).toHaveBeenCalledWith('BEGIN;');
+      expect(fn).toHaveBeenCalledOnce();
+      expect(mockConn.execute).toHaveBeenCalledWith('COMMIT;');
+      expect(result).toBe('result');
+    });
+
+    it('executes ROLLBACK and rethrows when callback throws', async () => {
+      const svc = getInitializedService();
+      const err = new Error('insert failed');
+      const fn = vi.fn().mockRejectedValue(err);
+      await expect(svc.transaction(fn)).rejects.toThrow('insert failed');
+      expect(mockConn.execute).toHaveBeenCalledWith('BEGIN;');
+      expect(mockConn.execute).toHaveBeenCalledWith('ROLLBACK;');
+      expect(mockConn.execute).not.toHaveBeenCalledWith('COMMIT;');
     });
   });
 

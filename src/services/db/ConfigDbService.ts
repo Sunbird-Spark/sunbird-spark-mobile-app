@@ -41,7 +41,13 @@ export class ConfigDbService {
   }
 
   async getByType(configType: ConfigType): Promise<ConfigEntry[]> {
-    const rows = await this.db.select<any>(
+    interface ConfigRow {
+      config_key: string;
+      config_type: string;
+      data: string;
+      fetched_on: number;
+    }
+    const rows = await this.db.select<ConfigRow>(
       'configs',
       { where: { eq: { config_type: configType } } }
     );

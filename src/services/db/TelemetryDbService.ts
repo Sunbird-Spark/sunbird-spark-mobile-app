@@ -28,9 +28,12 @@ export class TelemetryDbService {
   }
 
   async insertBatch(events: TelemetryEvent[]): Promise<void> {
-    for (const event of events) {
-      await this.insert(event);
-    }
+    if (events.length === 0) return;
+    await this.db.transaction(async () => {
+      for (const event of events) {
+        await this.insert(event);
+      }
+    });
   }
 
   async getPending(limit = 100): Promise<TelemetryEvent[]> {

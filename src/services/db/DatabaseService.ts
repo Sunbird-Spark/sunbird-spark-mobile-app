@@ -4,6 +4,22 @@ import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacito
 const DB_NAME = 'sunbird_spark';
 const SCHEMA_VERSION = 1;
 
+// ── Allowlisted identifiers (guards against SQL injection via identifiers) ────
+
+const ALLOWED_TABLES = new Set([
+  'key_value',
+  'users',
+  'telemetry',
+  'enrolled_courses',
+  'configs',
+]);
+
+function assertTable(table: string): void {
+  if (!ALLOWED_TABLES.has(table)) {
+    throw new Error(`[DatabaseService] Unknown table: "${table}"`);
+  }
+}
+
 // ── Query building types ─────────────────────────────────────────────────────
 
 export interface WhereClause {
@@ -25,32 +41,31 @@ export interface SelectConfig {
   limit?: number;
 }
 
-const CREATE_TABLES_SQL = `
-CREATE TABLE IF NOT EXISTS key_value (
+// ── Schema ───────────────────────────────────────────────────────────────────
+// Explicit array avoids fragile ';' splitting that would break on trigger bodies.
+
+const SCHEMA_STATEMENTS = [
+  `CREATE TABLE IF NOT EXISTS key_value (
   key        TEXT PRIMARY KEY,
   value      TEXT NOT NULL,
   updated_at INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS users (
+)`,
+  `CREATE TABLE IF NOT EXISTS users (
   id          TEXT PRIMARY KEY,
   details     TEXT NOT NULL,
   user_type   TEXT NOT NULL DEFAULT 'GUEST',
   created_on  INTEGER NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS telemetry (
+)`,
+  `CREATE TABLE IF NOT EXISTS telemetry (
   event_id    TEXT PRIMARY KEY,
   event       TEXT NOT NULL,
   event_type  TEXT NOT NULL,
   timestamp   INTEGER NOT NULL,
   priority    INTEGER NOT NULL DEFAULT 1,
   synced      INTEGER NOT NULL DEFAULT 0
-);
-
-CREATE INDEX IF NOT EXISTS idx_telemetry_pending ON telemetry(synced, timestamp);
-
-CREATE TABLE IF NOT EXISTS enrolled_courses (
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_telemetry_pending ON telemetry(synced, timestamp)`,
+  `CREATE TABLE IF NOT EXISTS enrolled_courses (
   course_id     TEXT NOT NULL,
   user_id       TEXT NOT NULL,
   details       TEXT NOT NULL,
@@ -58,19 +73,16 @@ CREATE TABLE IF NOT EXISTS enrolled_courses (
   progress      INTEGER NOT NULL DEFAULT 0,
   status        TEXT NOT NULL DEFAULT 'active',
   PRIMARY KEY (course_id, user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_enrolled_courses_user ON enrolled_courses(user_id);
-
-CREATE TABLE IF NOT EXISTS configs (
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_enrolled_courses_user ON enrolled_courses(user_id)`,
+  `CREATE TABLE IF NOT EXISTS configs (
   config_key    TEXT PRIMARY KEY,
   config_type   TEXT NOT NULL,
   data          TEXT NOT NULL,
   fetched_on    INTEGER NOT NULL
-);
-
-CREATE INDEX IF NOT EXISTS idx_configs_type ON configs(config_type);
-`;
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_configs_type ON configs(config_type)`,
+];
 
 export class DatabaseService {
   private static instance: DatabaseService;
@@ -112,7 +124,7 @@ export class DatabaseService {
       await this.applyVersionGuard();
 
       this.initialized = true;
-      console.log('[DatabaseService] initialized, version=' + SCHEMA_VERSION);
+      console.debug('[DatabaseService] initialized, version=' + SCHEMA_VERSION);
     } catch (error) {
       console.error('[DatabaseService] initialization failed:', error);
       this.db = null;
@@ -128,10 +140,27 @@ export class DatabaseService {
     return this.db;
   }
 
+  // ── Transactions ────────────────────────────────────────────────────────────
+
+  /** Wrap multiple operations in a single SQLite transaction. */
+  async transaction<T>(fn: () => Promise<T>): Promise<T> {
+    const db = this.getDb();
+    await db.execute('BEGIN;');
+    try {
+      const result = await fn();
+      await db.execute('COMMIT;');
+      return result;
+    } catch (err) {
+      await db.execute('ROLLBACK;');
+      throw err;
+    }
+  }
+
   // ── Generic CRUD ───────────────────────────────────────────────────────────
 
   /** SELECT rows from a table. Returns typed row objects. */
   async select<T = Record<string, any>>(table: string, config?: SelectConfig): Promise<T[]> {
+    assertTable(table);
     const db = this.getDb();
     const cols = config?.columns?.join(', ') ?? '*';
     const { clause, params } = this.buildWhere(config?.where);
@@ -160,6 +189,7 @@ export class DatabaseService {
     data: Record<string, any>,
     conflict: 'REPLACE' | 'IGNORE' | 'ABORT' = 'ABORT'
   ): Promise<void> {
+    assertTable(table);
     const db = this.getDb();
     const cols = Object.keys(data).join(', ');
     const placeholders = Object.keys(data).map(() => '?').join(', ');
@@ -177,15 +207,18 @@ export class DatabaseService {
     data: Record<string, any>,
     where: WhereClause
   ): Promise<void> {
+    assertTable(table);
     const db = this.getDb();
     const setCols = Object.keys(data).map(col => `${col} = ?`).join(', ');
     const setParams = Object.values(data);
     const { clause, params } = this.buildWhere(where);
+    if (!clause) throw new Error('[DatabaseService] UPDATE requires a WHERE clause');
     await db.run(`UPDATE ${table} SET ${setCols} ${clause}`, [...setParams, ...params]);
   }
 
   /** DELETE rows matching `where`. Omit `where` to delete all rows. */
   async delete(table: string, where?: WhereClause): Promise<void> {
+    assertTable(table);
     const db = this.getDb();
     const { clause, params } = this.buildWhere(where);
     await db.run(`DELETE FROM ${table}${clause ? ` ${clause}` : ''}`, params);
@@ -193,6 +226,7 @@ export class DatabaseService {
 
   /** SELECT COUNT(*) matching optional `where`. */
   async count(table: string, where?: WhereClause): Promise<number> {
+    // assertTable is called inside select()
     const rows = await this.select<{ count: number }>(table, {
       columns: ['COUNT(*) as count'],
       where,
@@ -250,12 +284,7 @@ export class DatabaseService {
 
   private async runSchema(): Promise<void> {
     const db = this.db!;
-    const statements = CREATE_TABLES_SQL
-      .split(';')
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-
-    for (const stmt of statements) {
+    for (const stmt of SCHEMA_STATEMENTS) {
       await db.execute(stmt + ';');
     }
   }
@@ -270,6 +299,13 @@ export class DatabaseService {
     const currentVersion = rows.length > 0 ? parseInt(rows[0].value, 10) : 0;
 
     if (currentVersion < SCHEMA_VERSION) {
+      // ── Run migrations ────────────────────────────────────────────────────
+      // TODO: Add ALTER TABLE / data migrations here whenever SCHEMA_VERSION is
+      // bumped. Execute each migration inside its own version guard so it runs
+      // exactly once per install. Example:
+      //   if (currentVersion < 2) {
+      //     await db.execute('ALTER TABLE telemetry ADD COLUMN source TEXT;');
+      //   }
       const now = Date.now();
       await db.run(
         'INSERT OR REPLACE INTO key_value (key, value, updated_at) VALUES (?, ?, ?)',
@@ -279,4 +315,6 @@ export class DatabaseService {
   }
 }
 
+// Importing this module is side-effect-free: getInstance() only allocates the
+// SQLiteConnection wrapper — no I/O occurs until initialize() is called.
 export const databaseService = DatabaseService.getInstance();

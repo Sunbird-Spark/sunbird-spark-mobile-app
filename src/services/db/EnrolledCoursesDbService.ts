@@ -31,20 +31,22 @@ export class EnrolledCoursesDbService {
 
   async upsertBatch(courses: EnrolledCourse[]): Promise<void> {
     if (courses.length === 0) return;
-    for (const course of courses) {
-      await this.db.insert(
-        'enrolled_courses',
-        {
-          course_id: course.course_id,
-          user_id: course.user_id,
-          details: JSON.stringify(course.details),
-          enrolled_on: course.enrolled_on,
-          progress: course.progress,
-          status: course.status,
-        },
-        'REPLACE'
-      );
-    }
+    await this.db.transaction(async () => {
+      for (const course of courses) {
+        await this.db.insert(
+          'enrolled_courses',
+          {
+            course_id: course.course_id,
+            user_id: course.user_id,
+            details: JSON.stringify(course.details),
+            enrolled_on: course.enrolled_on,
+            progress: course.progress,
+            status: course.status,
+          },
+          'REPLACE'
+        );
+      }
+    });
   }
 
   async getByUser(userId: string): Promise<EnrolledCourse[]> {
