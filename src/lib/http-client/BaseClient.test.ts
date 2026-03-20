@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { BaseClient } from './BaseClient';
-import { ApiResponse, HttpClientConfig } from './types';
+import { ApiResponse, HttpClientConfig, HeaderOperation } from './types';
 
 // Mock implementation of BaseClient for testing
 class MockBaseClient extends BaseClient {
@@ -52,7 +52,7 @@ class MockBaseClient extends BaseClient {
     return response;
   }
 
-  public updateHeaders(): void {
+  public updateHeaders(_headers: HeaderOperation[]): void {
     // no-op for tests
   }
 }
