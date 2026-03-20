@@ -76,7 +76,9 @@ vi.mock('../components/content/ResourceCard', () => ({
   default: ({ item }: any) => <div data-testid="resource-card">{item.name}</div>,
 }));
 
-// Mock hooks
+// Mock hooks — configurable via mockEnrollmentData
+let mockEnrollmentData: any = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
+
 vi.mock('../hooks/useLandingPageConfig', () => ({
   useLandingPageConfig: () => ({
     sections: [
@@ -100,26 +102,15 @@ vi.mock('../hooks/useFormRead', () => ({
 }));
 
 vi.mock('../hooks/useUserEnrollment', () => ({
-  useUserEnrollmenList: () => ({
-    data: undefined,
-    isLoading: false,
-    error: null,
-    refetch: vi.fn(),
-  }),
+  useUserEnrollmenList: () => mockEnrollmentData,
 }));
 
 vi.mock('../hooks/useUserCertificates', () => ({
-  useUserCertificates: () => ({
-    data: undefined,
-    isLoading: false,
-  }),
+  useUserCertificates: () => ({ data: undefined, isLoading: false }),
 }));
 
 vi.mock('../hooks/useContentSearch', () => ({
-  useContentSearch: () => ({
-    data: undefined,
-    isLoading: false,
-  }),
+  useContentSearch: () => ({ data: undefined, isLoading: false }),
 }));
 
 // Mock AuthContext
@@ -149,12 +140,26 @@ const renderHomePage = () =>
     </QueryClientProvider>
   );
 
+const makeCourse = (overrides: any = {}) => ({
+  batchId: 'batch-1',
+  userId: 'user-1',
+  courseId: 'course-1',
+  collectionId: 'col-1',
+  courseName: 'Test Course',
+  completionPercentage: 50,
+  status: 1,
+  ...overrides,
+});
+
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthContext.isAuthenticated = false;
     mockAuthContext.userId = null;
+    mockEnrollmentData = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
   });
+
+  // --- Public view ---
 
   it('renders without crashing', () => {
     renderHomePage();
@@ -203,6 +208,8 @@ describe('HomePage', () => {
     expect(screen.getByTestId('ion-content')).toHaveAttribute('data-fullscreen', 'true');
   });
 
+  // --- Authenticated, no enrollments (pre-enrollment) ---
+
   it('renders greeting when authenticated with no enrollments', () => {
     mockAuthContext.isAuthenticated = true;
     mockAuthContext.userId = 'user-1';
@@ -216,5 +223,114 @@ describe('HomePage', () => {
     mockAuthContext.userId = 'user-1';
     renderHomePage();
     expect(screen.queryByTestId('hero-section')).not.toBeInTheDocument();
+  });
+
+  it('renders FAQ section in pre-enrollment view', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    renderHomePage();
+    expect(screen.getByTestId('faq-section')).toBeInTheDocument();
+  });
+
+  // --- Authenticated, with enrollments (post-enrollment) ---
+
+  it('renders stats grid and continue learning when enrolled', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: { data: { courses: [makeCourse()] } },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+  });
+
+  it('hides in-progress contents when only 1 in-progress course', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: { data: { courses: [makeCourse({ completionPercentage: 50 })] } },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+    expect(screen.queryByTestId('in-progress-contents')).not.toBeInTheDocument();
+  });
+
+  it('shows in-progress contents when 2+ in-progress courses', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: {
+        data: {
+          courses: [
+            makeCourse({ completionPercentage: 30, courseId: 'c1', collectionId: 'col1' }),
+            makeCourse({ completionPercentage: 60, courseId: 'c2', collectionId: 'col2' }),
+          ],
+        },
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+    expect(screen.getByTestId('in-progress-contents')).toBeInTheDocument();
+  });
+
+  it('shows in-progress contents when all courses are completed (fallback)', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: {
+        data: {
+          courses: [
+            makeCourse({ completionPercentage: 100, status: 2 }),
+          ],
+        },
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    // 0 in-progress !== 1, so InProgressContents renders (shows completed fallback)
+    expect(screen.getByTestId('in-progress-contents')).toBeInTheDocument();
+  });
+
+  it('does not render FAQ section in post-enrollment view', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: { data: { courses: [makeCourse()] } },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.queryByTestId('faq-section')).not.toBeInTheDocument();
+  });
+
+  // --- Loading/error states ---
+
+  it('shows spinner when enrollment is loading', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = { data: undefined, isLoading: true, error: null, refetch: vi.fn() };
+    renderHomePage();
+    expect(screen.getByTestId('ion-spinner')).toBeInTheDocument();
+  });
+
+  it('shows error state when enrollment fails', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = { data: undefined, isLoading: false, error: new Error('fail'), refetch: vi.fn() };
+    renderHomePage();
+    expect(screen.getByText('error')).toBeInTheDocument();
   });
 });

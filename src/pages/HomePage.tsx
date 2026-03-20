@@ -163,7 +163,7 @@ const HomePage: React.FC = () => {
   const certificationsEarned = Array.isArray((certData?.data as any)) ? (certData?.data as any).length : 0;
 
   // Stats computation
-  const coursesInProgress = enrolledCourses.filter(c => c.status === 1).length;
+  const coursesInProgress = enrolledCourses.filter(c => (c.completionPercentage ?? 0) < 100).length;
   const coursesCompleted = enrolledCourses.filter(c => c.status === 2).length;
   const enrolledCourseIds = enrolledCourses.map(c => c.collectionId || c.courseId || '').filter(Boolean);
 
@@ -209,7 +209,9 @@ const HomePage: React.FC = () => {
                   certificationsEarned={certificationsEarned}
                 />
                 <ContinueLearningCard courses={enrolledCourses} />
-                <InProgressContents courses={enrolledCourses} />
+                {coursesInProgress !== 1 && (
+                  <InProgressContents courses={enrolledCourses} />
+                )}
                 <RecommendedContentSection enrolledCourseIds={enrolledCourseIds} />
               </>
             )}
