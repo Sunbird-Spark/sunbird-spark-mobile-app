@@ -1,6 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { getInProgressCourses } from '../../../data/mockData';
+import { useHistory } from 'react-router-dom';
+import type { TrackableCollection } from '../../../types/collectionTypes';
+
+interface InProgressContentsProps {
+  courses: TrackableCollection[];
+}
 
 interface ContentBadgeProps {
   label: string;
@@ -25,13 +30,11 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({ label }) => (
 );
 
 interface ProgressBarProps {
-  progress: number; // 0–100
-  totalWidth?: number;
+  progress: number;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
   <div style={{ position: 'relative', width: '151px', flexShrink: 0 }}>
-    {/* Track */}
     <div style={{
       width: '100%',
       height: '6px',
@@ -39,7 +42,6 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
       borderRadius: '10px',
       overflow: 'hidden',
     }}>
-      {/* Fill */}
       <div style={{
         width: `${progress}%`,
         height: '100%',
@@ -50,12 +52,18 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
   </div>
 );
 
-export const InProgressContents: React.FC = () => {
+export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses }) => {
   const { t } = useTranslation();
-  const inProgressCourses = getInProgressCourses();
+  const history = useHistory();
 
-  // Extend the list for display – show each course twice to match the design's 4-item list
-  const displayCourses = [...inProgressCourses, ...inProgressCourses].slice(0, 4);
+  const inProgressCourses = courses.filter(c => (c.completionPercentage ?? 0) < 100);
+  const completedCourses = courses.filter(c => (c.completionPercentage ?? 0) >= 100);
+
+  // Show in-progress courses if available, otherwise show completed courses
+  const displayCourses = inProgressCourses.length > 0 ? inProgressCourses : completedCourses;
+  const sectionTitle = inProgressCourses.length > 0 ? t('inProgressCourses') : t('completedCourses');
+
+  if (displayCourses.length === 0) return null;
 
   return (
     <section style={{ padding: '0 16px 16px' }}>
@@ -66,32 +74,37 @@ export const InProgressContents: React.FC = () => {
         color: 'var(--ion-color-dark, var(--color-222222, #222222))',
         margin: '0 0 12px 0',
       }}>
-        {t('inProgressContents')}
+        {sectionTitle}
       </h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {displayCourses.map((course, idx) => {
-          const isTextbook = idx % 2 === 1;
-          const badgeLabel = isTextbook ? t('textbook') : t('course');
+        {displayCourses.map((course) => {
+          const collectionId = course.collectionId || course.courseId;
+          const badge = (course as any).content?.primaryCategory || t('course');
+          const title = course.courseName || (course as any).content?.name || 'Untitled Course';
+          const thumbnail = (course as any).content?.posterImage
+            || (course as any).content?.appIcon
+            || '';
+          const progress = course.completionPercentage ?? 0;
 
           return (
             <div
-              key={`${course.id}-${idx}`}
+              key={collectionId || course.batchId}
+              onClick={() => collectionId && history.push(`/collection/${collectionId}`)}
               style={{
-                backgroundColor: 'var(--ion-color-light)',
+                backgroundColor: '#ffffff',
                 borderRadius: '16px',
-                boxShadow: '2px 2px 20px rgba(0, 0, 0, 0.09)',
+                boxShadow: '2px 2px 20px 0px #00000017',
                 padding: '14px',
                 display: 'flex',
                 flexDirection: 'row',
                 gap: '12px',
                 alignItems: 'flex-start',
+                cursor: 'pointer',
               }}
             >
-              {/* Left: text content */}
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <ContentBadge label={badgeLabel} />
-
+                <ContentBadge label={badge} />
                 <p style={{
                   fontFamily: 'var(--ion-font-family)',
                   fontSize: '16px',
@@ -100,16 +113,10 @@ export const InProgressContents: React.FC = () => {
                   margin: 0,
                   lineHeight: 1.3,
                 }}>
-                  {course.title}
+                  {title}
                 </p>
-
-                {/* Progress row */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}>
-                  <ProgressBar progress={course.progress} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <ProgressBar progress={progress} />
                   <span style={{
                     fontFamily: 'var(--ion-font-family)',
                     fontSize: '14px',
@@ -117,12 +124,11 @@ export const InProgressContents: React.FC = () => {
                     color: 'var(--ion-color-dark, var(--color-222222, #222222))',
                     flexShrink: 0,
                   }}>
-                    {course.progress}%
+                    {progress}%
                   </span>
                 </div>
               </div>
 
-              {/* Right: thumbnail */}
               <div style={{
                 width: '70px',
                 height: '70px',
@@ -130,15 +136,13 @@ export const InProgressContents: React.FC = () => {
                 borderRadius: '10px',
                 overflow: 'hidden',
               }}>
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
+                {thumbnail && (
+                  <img
+                    src={thumbnail}
+                    alt={title}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                )}
               </div>
             </div>
           );

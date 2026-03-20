@@ -1,13 +1,11 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-interface StatTile {
-  value: string;
-  label: string;
-  labelKey: string;
-  tileBg: string;
-  iconBg: string;
-  icon: React.ReactNode;
+interface LearningStatsGridProps {
+  totalCourses: number;
+  coursesInProgress: number;
+  coursesCompleted: number;
+  certificationsEarned: number;
 }
 
 const ListIcon = ({ color }: { color: string }) => (
@@ -41,40 +39,46 @@ const CertificateIcon = ({ color }: { color: string }) => (
   </svg>
 );
 
-const statConfigs = [
-  {
-    value: '30',
-    labelKey: 'totalContents',
-    tileBg: 'var(--ion-color-secondary)',
-    iconBg: 'rgb(61, 143, 167)',
-    icon: <ListIcon color="var(--ion-color-light)" />,
-  },
-  {
-    value: '05',
-    labelKey: 'contentsInProgress',
-    tileBg: 'var(--ion-color-primary-tint)',
-    iconBg: 'rgb(176, 102, 36)',
-    icon: <InProgressIcon color="var(--ion-color-light)" />,
-  },
-  {
-    value: '13',
-    labelKey: 'contentsCompleted',
-    tileBg: 'rgb(102, 166, 130)',
-    iconBg: 'rgb(49, 134, 86)',
-    icon: <CheckIcon color="var(--ion-color-light)" />,
-  },
-  {
-    value: '06',
-    labelKey: 'certificationsEarned',
-    tileBg: 'var(--ion-color-medium)',
-    iconBg: 'rgb(116, 76, 101)',
-    icon: <CertificateIcon color="var(--ion-color-light)" />,
-  },
-];
+const pad = (n: number): string => String(n).padStart(2, '0');
 
-export const LearningStatsGrid: React.FC = () => {
+export const LearningStatsGrid: React.FC<LearningStatsGridProps> = ({
+  totalCourses,
+  coursesInProgress,
+  coursesCompleted,
+  certificationsEarned,
+}) => {
   const { t } = useTranslation();
-  const stats: StatTile[] = statConfigs.map(s => ({ ...s, label: t(s.labelKey) }));
+
+  const stats = [
+    {
+      value: pad(totalCourses),
+      labelKey: 'totalCourses',
+      tileBg: 'var(--ion-color-secondary)',
+      iconBg: 'rgb(61, 143, 167)',
+      icon: <ListIcon color="var(--ion-color-light)" />,
+    },
+    {
+      value: pad(coursesInProgress),
+      labelKey: 'coursesInProgress',
+      tileBg: 'var(--ion-color-primary-tint)',
+      iconBg: 'rgb(176, 102, 36)',
+      icon: <InProgressIcon color="var(--ion-color-light)" />,
+    },
+    {
+      value: pad(coursesCompleted),
+      labelKey: 'coursesCompleted',
+      tileBg: 'rgb(102, 166, 130)',
+      iconBg: 'rgb(49, 134, 86)',
+      icon: <CheckIcon color="var(--ion-color-light)" />,
+    },
+    {
+      value: pad(certificationsEarned),
+      labelKey: 'certificationsEarned',
+      tileBg: 'var(--ion-color-medium)',
+      iconBg: 'rgb(116, 76, 101)',
+      icon: <CertificateIcon color="var(--ion-color-light)" />,
+    },
+  ];
 
   return (
     <div style={{
@@ -96,13 +100,11 @@ export const LearningStatsGrid: React.FC = () => {
             minHeight: '105px',
           }}
         >
-          {/* Top row: value + icon */}
           <div style={{
             display: 'flex',
             alignItems: 'flex-start',
             justifyContent: 'space-between',
           }}>
-            {/* Value */}
             <p style={{
               fontFamily: 'var(--ion-font-family)',
               fontSize: '24px',
@@ -113,8 +115,6 @@ export const LearningStatsGrid: React.FC = () => {
             }}>
               {stat.value}
             </p>
-
-            {/* Icon container — top-right */}
             <div style={{
               backgroundColor: stat.iconBg,
               borderRadius: '8px',
@@ -128,8 +128,6 @@ export const LearningStatsGrid: React.FC = () => {
               {stat.icon}
             </div>
           </div>
-
-          {/* Label */}
           <p style={{
             fontFamily: 'var(--ion-font-family)',
             fontSize: '14px',
@@ -138,7 +136,7 @@ export const LearningStatsGrid: React.FC = () => {
             margin: 0,
             lineHeight: 1.2,
           }}>
-            {stat.label}
+            {t(stat.labelKey)}
           </p>
         </div>
       ))}
