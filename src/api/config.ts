@@ -1,58 +1,115 @@
-import { init } from '../lib/http-client';
+import { init, getClient } from '../lib/http-client';
 import { CapacitorAdapter } from '../lib/http-client/adapters/CapacitorAdapter';
 import { NativeConfigServiceInstance } from '../services/NativeConfigService';
+import { AppConsumerAuthService } from '../services/AppConsumerAuthService';
 import { userService } from '../services/UserService';
 import { refreshAccessToken } from '../auth/keycloakApi';
+import type { ResponseInterceptor } from '../lib/http-client/types';
 
-let isRefreshing = false;
+const REFRESH_TIMEOUT_MS = 10_000;
+const AUTH_HEADER_KEY = 'X-Authenticated-User-Token';
+
+/** URLs that should never trigger the interceptor (prevents infinite recursion) */
+const isAuthEndpoint = (url: string): boolean =>
+  url.includes('/refresh/token') || url.includes('/consumer/mobile_device');
+
+let refreshPromise: Promise<boolean> | null = null;
 
 /**
- * Handles 401 responses by attempting a token refresh.
- * If refresh succeeds, updates stored tokens and HTTP headers.
- * If refresh fails (including 3x 500 retries), clears session.
+ * Attempts to refresh expired tokens. Returns true if any token was refreshed.
+ * - Kong token: refreshed on both 401 and 403 (gateway-level rejection)
+ * - User token: refreshed on 401 only (403 = genuine permission issue)
  */
-const handle401 = async () => {
-  if (isRefreshing) return;
+const doTokenRefresh = async (status: number): Promise<boolean> => {
+  let didRefresh = false;
+  const authService = AppConsumerAuthService.getInstance();
 
-  const refreshToken = userService.getRefreshToken();
-  const accessToken = userService.getAccessToken();
-
-  // If tokens are missing or partial, clear the corrupt session
-  if (!refreshToken || !accessToken) {
-    await userService.clearAccount();
-    return;
+  // Step 1: Refresh Kong token if expired (handles both 401 and 403)
+  if (!authService.isCurrentTokenValid()) {
+    try {
+      const newKongToken = await authService.getAuthenticatedToken();
+      getClient().updateHeaders([
+        { key: 'Authorization', value: `Bearer ${newKongToken}`, action: 'add' },
+      ]);
+      didRefresh = true;
+    } catch {
+      // Kong refresh failed — can't reach backend at all
+      return false;
+    }
   }
 
-  isRefreshing = true;
+  // Step 2: Refresh user token only on 401 (not 403 — 403 is a permission issue)
+  if (status === 401) {
+    const refreshToken = userService.getRefreshToken();
+    const accessToken = userService.getAccessToken();
+
+    if (refreshToken && accessToken && userService.isTokenExpired()) {
+      try {
+        const tokens = await refreshAccessToken(refreshToken, accessToken);
+        await userService.saveAccount(tokens, userService.getLoginProvider() ?? 'keycloak');
+        getClient().updateHeaders([
+          { key: AUTH_HEADER_KEY, value: tokens.access_token, action: 'add' },
+        ]);
+        didRefresh = true;
+      } catch {
+        // User token refresh failed — clear session
+        await userService.clearAccount();
+        try {
+          getClient().updateHeaders([
+            { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
+          ]);
+        } catch {
+          // Ignore
+        }
+        return false;
+      }
+    }
+  }
+
+  return didRefresh;
+};
+
+/** Wraps doTokenRefresh with a timeout to prevent hanging */
+const doTokenRefreshWithTimeout = (status: number): Promise<boolean> => {
+  return Promise.race([
+    doTokenRefresh(status),
+    new Promise<boolean>((resolve) =>
+      setTimeout(() => resolve(false), REFRESH_TIMEOUT_MS),
+    ),
+  ]);
+};
+
+/**
+ * Async response interceptor for 401/403.
+ * - Determines which token expired
+ * - Refreshes the correct token(s)
+ * - Replays the original request if a refresh happened
+ * - Skips auth endpoints to prevent infinite recursion
+ */
+const responseInterceptor: ResponseInterceptor = async (response, retry, url) => {
+  // Never intercept auth endpoints (prevents recursion)
+  if (isAuthEndpoint(url)) return response;
+
+  const authService = AppConsumerAuthService.getInstance();
+
+  // 403 with valid Kong token = genuine permission issue, don't intercept
+  if (response.status === 403 && authService.isCurrentTokenValid()) {
+    return response;
+  }
+
+  // If already refreshing, wait for the existing refresh to complete
+  if (refreshPromise) {
+    const success = await refreshPromise;
+    return success ? retry() : response;
+  }
+
+  refreshPromise = doTokenRefreshWithTimeout(response.status);
 
   try {
-
-    const tokens = await refreshAccessToken(refreshToken, accessToken);
-
-    // Save new tokens — preserve the original login provider
-    await userService.saveAccount(tokens, userService.getLoginProvider() ?? 'keycloak');
-
-    // Update HTTP header with new access token
-    const { getClient } = await import('../lib/http-client');
-    const httpClient = getClient();
-    httpClient.updateHeaders([
-      { key: 'X-Authenticated-User-Token', value: tokens.access_token, action: 'add' },
-    ]);
-  } catch (err) {
-    await userService.clearAccount();
-
-    // Remove user token header
-    try {
-      const { getClient } = await import('../lib/http-client');
-      const httpClient = getClient();
-      httpClient.updateHeaders([
-        { key: 'X-Authenticated-User-Token', value: '', action: 'remove' },
-      ]);
-    } catch {
-      // Ignore
-    }
+    const didRefresh = await refreshPromise;
+    return didRefresh ? retry() : response;
   } finally {
-    isRefreshing = false;
+    refreshPromise = null;
   }
 };
 
@@ -68,14 +125,7 @@ export const initializeApiClient = async () => {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      statusHandlers: {
-        401: () => {
-          handle401();
-        },
-        403: () => {
-          console.log('Access denied');
-        },
-      },
+      responseInterceptor,
     })
   );
 };

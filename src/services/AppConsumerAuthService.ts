@@ -234,6 +234,13 @@ export class AppConsumerAuthService {
     }
   }
 
+  /** Check if the current device/app JWT is still valid */
+  isCurrentTokenValid(): boolean {
+    if (this.deviceJwt && this.isTokenValid(this.deviceJwt)) return true;
+    if (this.appJwt && this.isTokenValid(this.appJwt)) return true;
+    return false;
+  }
+
   getHttpClient(): IHttpClient {
     return this.httpClient;
   }
