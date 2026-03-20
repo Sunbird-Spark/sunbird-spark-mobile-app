@@ -12,11 +12,19 @@ export interface HeaderOperation {
 
 export type StatusHandlerConfig = Record<number, (res: ApiResponse<any>) => void>;
 
+/** Async interceptor that can inspect a response and optionally retry the request */
+export type ResponseInterceptor = (
+  response: ApiResponse<any>,
+  retry: () => Promise<ApiResponse<any>>,
+  url: string,
+) => Promise<ApiResponse<any>>;
+
 export interface HttpClientConfig {
   baseURL?: string;
   apiPrefix?: string;
   defaultHeaders?: Record<string, string>;
   statusHandlers?: StatusHandlerConfig;
+  responseInterceptor?: ResponseInterceptor;
 }
 
 export interface IHttpClient {
