@@ -17,14 +17,16 @@ let refreshPromise: Promise<boolean> | null = null;
 
 /**
  * Attempts to refresh expired tokens. Returns true if any token was refreshed.
- * - Kong token: refreshed on both 401 and 403 (gateway-level rejection)
- * - User token: refreshed on 401 only (403 = genuine permission issue)
+ * Refreshes whichever tokens are expired — status-agnostic so concurrent
+ * 401s and 403s sharing the same refreshPromise all get fully refreshed.
+ * The 403 early-exit guard in the interceptor already prevents genuine
+ * permission 403s from reaching here.
  */
-const doTokenRefresh = async (status: number): Promise<boolean> => {
+const doTokenRefresh = async (): Promise<boolean> => {
   let didRefresh = false;
   const authService = AppConsumerAuthService.getInstance();
 
-  // Step 1: Refresh Kong token if expired (handles both 401 and 403)
+  // Step 1: Refresh Kong token if expired
   if (!authService.isCurrentTokenValid()) {
     try {
       const newKongToken = await authService.getAuthenticatedToken();
@@ -38,31 +40,29 @@ const doTokenRefresh = async (status: number): Promise<boolean> => {
     }
   }
 
-  // Step 2: Refresh user token only on 401 (not 403 — 403 is a permission issue)
-  if (status === 401) {
-    const refreshToken = userService.getRefreshToken();
-    const accessToken = userService.getAccessToken();
+  // Step 2: Refresh user token if expired
+  const refreshToken = userService.getRefreshToken();
+  const accessToken = userService.getAccessToken();
 
-    if (refreshToken && accessToken && userService.isTokenExpired()) {
+  if (refreshToken && accessToken && userService.isTokenExpired()) {
+    try {
+      const tokens = await refreshAccessToken(refreshToken, accessToken);
+      await userService.saveAccount(tokens, userService.getLoginProvider() ?? 'keycloak');
+      getClient().updateHeaders([
+        { key: AUTH_HEADER_KEY, value: tokens.access_token, action: 'add' },
+      ]);
+      didRefresh = true;
+    } catch {
+      // User token refresh failed — clear session
+      await userService.clearAccount();
       try {
-        const tokens = await refreshAccessToken(refreshToken, accessToken);
-        await userService.saveAccount(tokens, userService.getLoginProvider() ?? 'keycloak');
         getClient().updateHeaders([
-          { key: AUTH_HEADER_KEY, value: tokens.access_token, action: 'add' },
+          { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
         ]);
-        didRefresh = true;
       } catch {
-        // User token refresh failed — clear session
-        await userService.clearAccount();
-        try {
-          getClient().updateHeaders([
-            { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
-          ]);
-        } catch {
-          // Ignore
-        }
-        return false;
+        // Ignore
       }
+      return false;
     }
   }
 
@@ -70,13 +70,13 @@ const doTokenRefresh = async (status: number): Promise<boolean> => {
 };
 
 /** Wraps doTokenRefresh with a timeout to prevent hanging */
-const doTokenRefreshWithTimeout = (status: number): Promise<boolean> => {
+const doTokenRefreshWithTimeout = (): Promise<boolean> => {
   let timeoutId: ReturnType<typeof setTimeout>;
   const timeoutPromise = new Promise<boolean>((resolve) => {
     timeoutId = setTimeout(() => resolve(false), REFRESH_TIMEOUT_MS);
   });
   return Promise.race([
-    doTokenRefresh(status).finally(() => clearTimeout(timeoutId)),
+    doTokenRefresh().finally(() => clearTimeout(timeoutId)),
     timeoutPromise,
   ]);
 };
@@ -105,7 +105,7 @@ const responseInterceptor: ResponseInterceptor = async (response, retry, url) =>
     return success ? retry() : response;
   }
 
-  refreshPromise = doTokenRefreshWithTimeout(response.status);
+  refreshPromise = doTokenRefreshWithTimeout();
 
   try {
     const didRefresh = await refreshPromise;
