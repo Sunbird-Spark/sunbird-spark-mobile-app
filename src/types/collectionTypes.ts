@@ -60,3 +60,37 @@ export interface BatchListItem {
   enrollmentType?: string;
   createdBy?: string;
 }
+
+export interface TrackableCollection {
+  courseId?: string;
+  contentId?: string;
+  collectionId?: string;
+  courseName?: string;
+  batchId: string;
+  userId: string;
+  completionPercentage?: number;
+  progress?: number;
+  leafNodesCount?: number;
+  status?: number;
+  enrolledDate?: string;
+  completedOn?: string;
+  batch?: {
+    identifier: string;
+    name?: string;
+    startDate?: string;
+    endDate?: string;
+    createdBy?: string;
+    status?: number;
+  };
+  issuedCertificates?: {
+    identifier: string;
+    lastIssuedOn?: string;
+    name?: string;
+    templateUrl?: string;
+  }[];
+  contentStatus?: Record<string, number>;
+}
+
+export interface CourseEnrollmentResponse {
+  courses?: TrackableCollection[];
+}
