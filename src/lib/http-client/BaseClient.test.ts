@@ -284,7 +284,6 @@ describe('BaseClient', () => {
       const response401: ApiResponse<any> = { data: { error: 'Unauthorized' }, status: 401, headers: {} };
       // First call returns 401, retry returns 200
       let callCount = 0;
-      const originalGet = clientWithInterceptor['_get'].bind(clientWithInterceptor);
       clientWithInterceptor['_get'] = async function <T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
         callCount++;
         if (callCount === 1) return response401 as ApiResponse<T>;
