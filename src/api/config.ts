@@ -71,11 +71,13 @@ const doTokenRefresh = async (status: number): Promise<boolean> => {
 
 /** Wraps doTokenRefresh with a timeout to prevent hanging */
 const doTokenRefreshWithTimeout = (status: number): Promise<boolean> => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  const timeoutPromise = new Promise<boolean>((resolve) => {
+    timeoutId = setTimeout(() => resolve(false), REFRESH_TIMEOUT_MS);
+  });
   return Promise.race([
-    doTokenRefresh(status),
-    new Promise<boolean>((resolve) =>
-      setTimeout(() => resolve(false), REFRESH_TIMEOUT_MS),
-    ),
+    doTokenRefresh(status).finally(() => clearTimeout(timeoutId)),
+    timeoutPromise,
   ]);
 };
 
