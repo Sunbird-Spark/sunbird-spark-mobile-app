@@ -19,7 +19,7 @@ vi.mock('../AppInitializer', () => ({
   },
 }));
 
-import { useUserEnrollmenList } from './useUserEnrollment';
+import { useUserEnrollmentList } from './useUserEnrollment';
 import { AppInitializer } from '../AppInitializer';
 
 const createWrapper = () => {
@@ -52,7 +52,7 @@ const mockEnrollmentResponse = {
   headers: {},
 };
 
-describe('useUserEnrollmenList', () => {
+describe('useUserEnrollmentList', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(AppInitializer.isInitialized).mockReturnValue(true);
@@ -62,7 +62,7 @@ describe('useUserEnrollmenList', () => {
     mockGetUserEnrollments.mockResolvedValue(mockEnrollmentResponse);
 
     const { result } = renderHook(
-      () => useUserEnrollmenList('user_001'),
+      () => useUserEnrollmentList('user_001'),
       { wrapper: createWrapper() }
     );
 
@@ -79,7 +79,7 @@ describe('useUserEnrollmenList', () => {
     mockGetUserEnrollments.mockResolvedValue(mockEnrollmentResponse);
 
     renderHook(
-      () => useUserEnrollmenList('user_002'),
+      () => useUserEnrollmentList('user_002'),
       { wrapper: createWrapper() }
     );
 
@@ -92,7 +92,7 @@ describe('useUserEnrollmenList', () => {
     mockGetUserEnrollments.mockRejectedValue(new Error('Enrollment fetch failed'));
 
     const { result } = renderHook(
-      () => useUserEnrollmenList('user_001'),
+      () => useUserEnrollmentList('user_001'),
       { wrapper: createWrapper() }
     );
 
@@ -105,7 +105,7 @@ describe('useUserEnrollmenList', () => {
 
   it('should not fetch when userId is null', () => {
     const { result } = renderHook(
-      () => useUserEnrollmenList(null),
+      () => useUserEnrollmentList(null),
       { wrapper: createWrapper() }
     );
 
@@ -115,7 +115,7 @@ describe('useUserEnrollmenList', () => {
 
   it('should not fetch when enabled option is false', () => {
     const { result } = renderHook(
-      () => useUserEnrollmenList('user_001', { enabled: false }),
+      () => useUserEnrollmentList('user_001', { enabled: false }),
       { wrapper: createWrapper() }
     );
 
@@ -127,7 +127,7 @@ describe('useUserEnrollmenList', () => {
     vi.mocked(AppInitializer.isInitialized).mockReturnValue(false);
 
     const { result } = renderHook(
-      () => useUserEnrollmenList('user_001'),
+      () => useUserEnrollmentList('user_001'),
       { wrapper: createWrapper() }
     );
 
@@ -139,7 +139,7 @@ describe('useUserEnrollmenList', () => {
     mockGetUserEnrollments.mockResolvedValue(mockEnrollmentResponse);
 
     const { result } = renderHook(
-      () => useUserEnrollmenList('user_001'),
+      () => useUserEnrollmentList('user_001'),
       { wrapper: createWrapper() }
     );
 
