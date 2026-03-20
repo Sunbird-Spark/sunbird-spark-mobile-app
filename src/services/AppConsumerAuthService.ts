@@ -234,10 +234,11 @@ export class AppConsumerAuthService {
     }
   }
 
-  /** Check if the current device/app JWT is still valid */
+  /** Check if the current device/app JWT is still valid.
+   *  Mirrors getAuthenticatedToken() precedence — deviceJwt takes priority. */
   isCurrentTokenValid(): boolean {
-    if (this.deviceJwt && this.isTokenValid(this.deviceJwt)) return true;
-    if (this.appJwt && this.isTokenValid(this.appJwt)) return true;
+    if (this.deviceJwt) return this.isTokenValid(this.deviceJwt);
+    if (this.appJwt) return this.isTokenValid(this.appJwt);
     return false;
   }
 
