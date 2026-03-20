@@ -2,6 +2,8 @@ import { initializeApiClient } from './api/config';
 import { AppConsumerAuthService } from './services/AppConsumerAuthService';
 import { getClient } from './lib/http-client';
 import { userService } from './services/UserService';
+import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
+import { SystemSettingService } from './services/SystemSettingService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -43,6 +45,19 @@ export class AppInitializer {
         httpClient.updateHeaders([
           { key: 'X-Authenticated-User-Token', value: userService.getAccessToken()!, action: 'add' },
         ]);
+      }
+
+      // Initialize Google Sign-In plugin (non-blocking — don't fail app init)
+      try {
+        const systemSettings = new SystemSettingService();
+        const response = await systemSettings.read<any>('googleClientId');
+        // CapacitorAdapter extracts `result` → data is `{ response: { value: "..." } }`
+        const clientId = response.data?.response?.value ?? response.data?.value;
+        if (clientId && typeof clientId === 'string') {
+          await socialLoginService.initGoogle(clientId);
+        }
+      } catch {
+        // Google Sign-In init failed — Google login will be unavailable
       }
 
       this.initialized = true;

@@ -36,6 +36,45 @@ export const loginWithCredentials = async (
   return data as AuthTokens;
 };
 
+/**
+ * Calls POST /mobile/google/auth/android on the backend.
+ * Sends the Google ID token + emailId. Backend verifies token with Google,
+ * finds/creates the Sunbird user, and returns Keycloak session tokens.
+ */
+export const loginWithGoogleToken = async (
+  idToken: string,
+  emailId: string,
+): Promise<AuthTokens> => {
+  const config = await NativeConfigServiceInstance.load();
+  const baseUrl = config.baseUrl;
+
+  const data = await httpService.post<any>(
+    `${baseUrl}/mobile/google/auth/android`,
+    { emailId },
+    { 'X-GOOGLE-ID-TOKEN': idToken },
+  );
+
+  // Backend returns { error, msg } on failure
+  if (data && typeof data === 'object' && 'error' in data && data.error) {
+    const err = new Error(data.msg || data.error_msg || 'Google sign-in failed');
+    (err as any).code = data.error;
+    throw err;
+  }
+
+  // Backend returns { msg } without error field for some failures
+  if (data && typeof data === 'object' && 'msg' in data && !('access_token' in data)) {
+    const err = new Error(data.msg || 'Google sign-in failed');
+    throw err;
+  }
+
+  // Verify we got tokens
+  if (!data || typeof data !== 'object' || !('access_token' in data)) {
+    throw new Error('Google sign-in failed');
+  }
+
+  return data as AuthTokens;
+};
+
 const MAX_REFRESH_RETRIES = 3;
 
 /**

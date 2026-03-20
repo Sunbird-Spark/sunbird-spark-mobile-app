@@ -67,7 +67,7 @@ const SignInPage: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
 
   const { isOffline } = useNetwork();
-  const { loginWithCredentials } = useAuth();
+  const { loginWithCredentials, loginWithGoogle } = useAuth();
   const history = useHistory();
   const wasOffline = useRef(false);
 
@@ -128,11 +128,18 @@ const SignInPage: React.FC = () => {
     setLoading(true);
 
     try {
-      // TODO: Wire to Google Sign-In plugin
-      console.log('Google sign-in clicked');
+      await loginWithGoogle();
+      history.replace('/home');
     } catch (err) {
       if (!isGoogleCancelError(err)) {
-        setError('Google sign-in failed');
+        const code = err instanceof Error ? (err as any).code : undefined;
+        if (code === 'USER_NAME_NOT_PRESENT') {
+          setError('Google sign-in failed due to your Google security settings');
+        } else if (code === 'USER_ACCOUNT_BLOCKED') {
+          setError('Your account has been blocked. Please contact admin');
+        } else {
+          setError('Google sign-in failed');
+        }
       }
     } finally {
       setLoading(false);
