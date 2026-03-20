@@ -1,13 +1,12 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import './LearningStatsGrid.css';
 
-interface StatTile {
-  value: string;
-  label: string;
-  labelKey: string;
-  tileBg: string;
-  iconBg: string;
-  icon: React.ReactNode;
+interface LearningStatsGridProps {
+  totalCourses: number;
+  coursesInProgress: number;
+  coursesCompleted: number;
+  certificationsEarned: number;
 }
 
 const ListIcon = ({ color }: { color: string }) => (
@@ -41,105 +40,62 @@ const CertificateIcon = ({ color }: { color: string }) => (
   </svg>
 );
 
-const statConfigs = [
-  {
-    value: '30',
-    labelKey: 'totalContents',
-    tileBg: 'var(--ion-color-secondary)',
-    iconBg: 'rgb(61, 143, 167)',
-    icon: <ListIcon color="var(--ion-color-light)" />,
-  },
-  {
-    value: '05',
-    labelKey: 'contentsInProgress',
-    tileBg: 'var(--ion-color-primary-tint)',
-    iconBg: 'rgb(176, 102, 36)',
-    icon: <InProgressIcon color="var(--ion-color-light)" />,
-  },
-  {
-    value: '13',
-    labelKey: 'contentsCompleted',
-    tileBg: 'rgb(102, 166, 130)',
-    iconBg: 'rgb(49, 134, 86)',
-    icon: <CheckIcon color="var(--ion-color-light)" />,
-  },
-  {
-    value: '06',
-    labelKey: 'certificationsEarned',
-    tileBg: 'var(--ion-color-medium)',
-    iconBg: 'rgb(116, 76, 101)',
-    icon: <CertificateIcon color="var(--ion-color-light)" />,
-  },
-];
+const pad = (n: number): string => String(n).padStart(2, '0');
 
-export const LearningStatsGrid: React.FC = () => {
+export const LearningStatsGrid: React.FC<LearningStatsGridProps> = ({
+  totalCourses,
+  coursesInProgress,
+  coursesCompleted,
+  certificationsEarned,
+}) => {
   const { t } = useTranslation();
-  const stats: StatTile[] = statConfigs.map(s => ({ ...s, label: t(s.labelKey) }));
+
+  const stats = [
+    {
+      value: pad(totalCourses),
+      labelKey: 'totalCourses',
+      tileBg: 'var(--ion-color-secondary)',
+      iconBg: 'rgb(61, 143, 167)',
+      icon: <ListIcon color="var(--ion-color-light)" />,
+    },
+    {
+      value: pad(coursesInProgress),
+      labelKey: 'coursesInProgress',
+      tileBg: 'var(--ion-color-primary-tint)',
+      iconBg: 'rgb(176, 102, 36)',
+      icon: <InProgressIcon color="var(--ion-color-light)" />,
+    },
+    {
+      value: pad(coursesCompleted),
+      labelKey: 'coursesCompleted',
+      tileBg: 'rgb(102, 166, 130)',
+      iconBg: 'rgb(49, 134, 86)',
+      icon: <CheckIcon color="var(--ion-color-light)" />,
+    },
+    {
+      value: pad(certificationsEarned),
+      labelKey: 'certificationsEarned',
+      tileBg: 'var(--ion-color-medium)',
+      iconBg: 'rgb(116, 76, 101)',
+      icon: <CertificateIcon color="var(--ion-color-light)" />,
+    },
+  ];
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '12px',
-      padding: '12px 16px',
-    }}>
+    <div className="stats-grid">
       {stats.map((stat) => (
         <div
           key={stat.labelKey}
-          style={{
-            backgroundColor: stat.tileBg,
-            borderRadius: '16px',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            minHeight: '105px',
-          }}
+          className="stats-grid__tile"
+          style={{ backgroundColor: stat.tileBg }}
         >
-          {/* Top row: value + icon */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-          }}>
-            {/* Value */}
-            <p style={{
-              fontFamily: 'var(--ion-font-family)',
-              fontSize: '24px',
-              fontWeight: 600,
-              color: 'var(--ion-color-light)',
-              margin: 0,
-              lineHeight: 1,
-            }}>
-              {stat.value}
-            </p>
-
-            {/* Icon container — top-right */}
-            <div style={{
-              backgroundColor: stat.iconBg,
-              borderRadius: '8px',
-              width: '33px',
-              height: '33px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
+          <div className="stats-grid__top-row">
+            <p className="stats-grid__value">{stat.value}</p>
+            <div className="stats-grid__icon" style={{ backgroundColor: stat.iconBg }}>
               {stat.icon}
             </div>
           </div>
-
-          {/* Label */}
-          <p style={{
-            fontFamily: 'var(--ion-font-family)',
-            fontSize: '14px',
-            fontWeight: 400,
-            color: 'var(--ion-color-light)',
-            margin: 0,
-            lineHeight: 1.2,
-          }}>
-            {stat.label}
-          </p>
+          <p className="stats-grid__label">{t(stat.labelKey)}</p>
         </div>
       ))}
     </div>

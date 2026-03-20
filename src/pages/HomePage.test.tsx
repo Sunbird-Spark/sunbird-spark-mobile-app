@@ -1,149 +1,84 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HomePage from './HomePage';
 
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
-  IonButton: ({ children, onClick, fill, size, className }: any) => (
-    <button
-      data-testid="ion-button"
-      onClick={onClick}
-      data-fill={fill}
-      data-size={size}
-      className={className}
-    >
-      {children}
-    </button>
-  ),
   IonContent: ({ children, fullscreen }: any) => (
-    <div data-testid="ion-content" data-fullscreen={fullscreen}>
-      {children}
-    </div>
+    <div data-testid="ion-content" data-fullscreen={fullscreen}>{children}</div>
   ),
-  IonHeader: ({ children, collapse }: any) => (
-    <div data-testid="ion-header" data-collapse={collapse}>
-      {children}
-    </div>
-  ),
-  IonIcon: ({ icon, slot }: any) => (
-    <span data-testid="ion-icon" data-icon={icon} data-slot={slot} />
-  ),
+  IonHeader: ({ children }: any) => <div data-testid="ion-header">{children}</div>,
   IonPage: ({ children }: any) => <div data-testid="ion-page">{children}</div>,
-  IonTitle: ({ children, size }: any) => (
-    <h1 data-testid="ion-title" data-size={size}>{children}</h1>
-  ),
   IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
-  IonButtons: ({ children }: any) => <div data-testid="ion-buttons">{children}</div>,
-  IonAvatar: ({ children }: any) => <div data-testid="ion-avatar">{children}</div>,
-  IonGrid: ({ children }: any) => <div data-testid="ion-grid">{children}</div>,
-  IonRow: ({ children }: any) => <div data-testid="ion-row">{children}</div>,
-  IonCol: ({ children }: any) => <div data-testid="ion-col">{children}</div>,
+  IonSpinner: () => <div data-testid="ion-spinner">Loading...</div>,
 }));
 
 // Mock react-router-dom
-const mockPush = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useHistory: () => ({
-    push: mockPush,
-  }),
+  useHistory: () => ({ push: vi.fn() }),
   useLocation: () => ({ pathname: '/' }),
-}));
-
-// Mock ionicons
-vi.mock('ionicons/icons', () => ({
-  chevronForward: 'chevron-forward-icon',
-  chevronBack: 'chevron-back-icon',
-  home: 'home-icon',
-  homeOutline: 'home-outline-icon',
-  bookOutline: 'book-outline-icon',
-  qrCodeOutline: 'qr-code-outline-icon',
-  downloadOutline: 'download-outline-icon',
-  personOutline: 'person-outline-icon',
-  searchOutline: 'search-outline-icon',
-  helpCircleOutline: 'help-circle-outline-icon',
-  logIn: 'log-in-icon',
-  person: 'person-icon',
-  notifications: 'notifications-icon',
 }));
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
-      const translations: Record<string, string> = {
-        welcome: 'Welcome',
-        home: 'Home',
-        quickActions: 'Quick Actions',
-        viewStudents: 'View Students',
-        trackProgress: 'Track Progress',
-        continueLearning: 'Continue Learning',
-        viewAll: 'View All',
-        featuredCourses: 'Featured Courses',
-        browseCourses: 'Browse Courses',
-      };
-      return translations[key] || key;
-    },
+    t: (key: string) => key,
     i18n: { dir: () => 'ltr' },
   }),
 }));
 
-// Mock LanguageSwitcher
-vi.mock('../components/LanguageSwitcher', () => ({
-  default: () => <div data-testid="language-switcher">Language Switcher</div>,
-}));
-
-// Mock PublicWelcomeHeader to avoid transitive IonPopover dependency from LanguageSelector
+// Mock components
 vi.mock('../components/home/PublicWelcomeHeader', () => ({
   PublicWelcomeHeader: () => <div data-testid="ion-toolbar">Public Welcome Header</div>,
 }));
-
-// Mock BottomNavigation to avoid transitive icon dependency issues
 vi.mock('../components/layout/BottomNavigation', () => ({
   BottomNavigation: () => <div data-testid="bottom-navigation">Bottom Navigation</div>,
 }));
-
-// Mock CourseCard
-vi.mock('../components/courses/CourseCard', () => ({
-  default: ({ course, variant }: any) => (
-    <div data-testid="course-card" data-variant={variant} data-course-id={course.id}>
-      {course.title}
-    </div>
-  ),
-}));
-
-// Mock new section components
 vi.mock('../components/home/HeroSection', () => ({
   HeroSection: () => <div data-testid="hero-section">Hero Section</div>,
 }));
 vi.mock('../components/home/StatsBar', () => ({
   StatsBar: () => <div data-testid="stats-bar">Stats Bar</div>,
 }));
-vi.mock('../components/home/ContentCardCarousel', () => ({
-  ContentCardCarousel: ({ title }: any) => (
-    <div data-testid="content-card-carousel" data-title={title}>{title}</div>
-  ),
-}));
 vi.mock('../components/home/CategoriesGrid', () => ({
   CategoriesGrid: () => <div data-testid="categories-grid">Categories Grid</div>,
-}));
-vi.mock('../components/home/ResourceCenter', () => ({
-  ResourceCenter: () => <div data-testid="resource-center">Resource Center</div>,
 }));
 vi.mock('../components/home/FAQSection', () => ({
   FAQSection: () => <div data-testid="faq-section">FAQ Section</div>,
 }));
-
-// Mock landing section wrappers
 vi.mock('../components/landing/ContentSectionWrapper', () => ({
   ContentSectionWrapper: ({ section }: any) => (
-    <div data-testid="content-card-carousel" data-title={section.title}>{section.title}</div>
+    <div data-testid="content-section" data-title={section.title}>{section.title}</div>
   ),
 }));
 vi.mock('../components/landing/ResourcesSectionWrapper', () => ({
-  ResourcesSectionWrapper: () => <div data-testid="resource-center">Resource Center</div>,
+  ResourcesSectionWrapper: () => <div data-testid="resource-section">Resource Section</div>,
+}));
+vi.mock('../components/home/learning-started/LearningGreeting', () => ({
+  LearningGreeting: ({ enrolledCount }: any) => (
+    <div data-testid="learning-greeting" data-enrolled={enrolledCount}>Greeting</div>
+  ),
+}));
+vi.mock('../components/home/learning-started/LearningStatsGrid', () => ({
+  LearningStatsGrid: () => <div data-testid="learning-stats-grid">Stats Grid</div>,
+}));
+vi.mock('../components/home/learning-started/ContinueLearningCard', () => ({
+  ContinueLearningCard: () => <div data-testid="continue-learning-card">Continue Learning</div>,
+}));
+vi.mock('../components/home/learning-started/InProgressContents', () => ({
+  InProgressContents: () => <div data-testid="in-progress-contents">In Progress</div>,
+}));
+vi.mock('../components/content/CollectionCard', () => ({
+  default: ({ item }: any) => <div data-testid="collection-card">{item.name}</div>,
+}));
+vi.mock('../components/content/ResourceCard', () => ({
+  default: ({ item }: any) => <div data-testid="resource-card">{item.name}</div>,
 }));
 
-// Mock useLandingPageConfig
+// Mock hooks — configurable via mockEnrollmentData
+let mockEnrollmentData: any = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
+
 vi.mock('../hooks/useLandingPageConfig', () => ({
   useLandingPageConfig: () => ({
     sections: [
@@ -158,94 +93,244 @@ vi.mock('../hooks/useLandingPageConfig', () => ({
   }),
 }));
 
-// Mock data
-vi.mock('../data/mockData', () => ({
-  getFeaturedCourses: () => [
-    { id: 1, title: 'React Basics', description: 'Learn React', featured: true },
-    { id: 2, title: 'TypeScript', description: 'Learn TypeScript', featured: true },
-  ],
-  getInProgressCourses: () => [
-    { id: 3, title: 'Advanced React', description: 'Advanced concepts', progress: 45 },
-  ],
-  courses: [
-    { id: '1', title: 'JavaScript', description: 'JS fundamentals', thumbnail: '', rating: 4.5, lessons: 20 },
-    { id: '2', title: 'CSS', description: 'Styling basics', thumbnail: '', rating: 4.3, lessons: 15 },
-    { id: '3', title: 'HTML', description: 'Web structure', thumbnail: '', rating: 4.7, lessons: 12 },
-    { id: '4', title: 'React', description: 'React basics', thumbnail: '', rating: 4.8, lessons: 25 },
-    { id: '5', title: 'Node', description: 'Node basics', thumbnail: '', rating: 4.6, lessons: 18 },
-  ],
-  currentUser: {
-    id: 'user-1',
-    name: 'Test User',
-    email: 'test@example.com',
-    avatar: 'https://example.com/avatar.jpg',
-  },
+vi.mock('../hooks/useFormRead', () => ({
+  useFormRead: () => ({
+    data: { data: { form: { data: { sections: [] } } } },
+    isLoading: false,
+    isError: false,
+  }),
+}));
+
+vi.mock('../hooks/useUserEnrollment', () => ({
+  useUserEnrollmenList: () => mockEnrollmentData,
+}));
+
+vi.mock('../hooks/useUserCertificates', () => ({
+  useUserCertificates: () => ({ data: undefined, isLoading: false }),
+}));
+
+vi.mock('../hooks/useContentSearch', () => ({
+  useContentSearch: () => ({ data: undefined, isLoading: false }),
 }));
 
 // Mock AuthContext
 const mockAuthContext = {
   isAuthenticated: false,
+  userId: null as string | null,
   login: vi.fn(),
   logout: vi.fn(),
+  loginWithCredentials: vi.fn(),
+  needsTnC: false,
+  tncData: null,
+  completeTnC: vi.fn(),
 };
 
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => mockAuthContext,
 }));
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false } },
+});
+
+const renderHomePage = () =>
+  render(
+    <QueryClientProvider client={queryClient}>
+      <HomePage />
+    </QueryClientProvider>
+  );
+
+const makeCourse = (overrides: any = {}) => ({
+  batchId: 'batch-1',
+  userId: 'user-1',
+  courseId: 'course-1',
+  collectionId: 'col-1',
+  courseName: 'Test Course',
+  completionPercentage: 50,
+  status: 1,
+  ...overrides,
+});
+
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuthContext.isAuthenticated = false;
+    mockAuthContext.userId = null;
+    mockEnrollmentData = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
   });
 
+  // --- Public view ---
+
   it('renders without crashing', () => {
-    render(<HomePage />);
+    renderHomePage();
     expect(screen.getByTestId('ion-page')).toBeInTheDocument();
   });
 
   it('renders page structure correctly', () => {
-    render(<HomePage />);
+    renderHomePage();
     expect(screen.getByTestId('ion-header')).toBeInTheDocument();
     expect(screen.getByTestId('ion-content')).toBeInTheDocument();
   });
 
-  it('renders hero section', () => {
-    render(<HomePage />);
+  it('renders hero section when not authenticated', () => {
+    renderHomePage();
     expect(screen.getByTestId('hero-section')).toBeInTheDocument();
   });
 
-  it('renders stats bar', () => {
-    render(<HomePage />);
+  it('renders stats bar when not authenticated', () => {
+    renderHomePage();
     expect(screen.getByTestId('stats-bar')).toBeInTheDocument();
   });
 
-  it('renders content card carousels', () => {
-    render(<HomePage />);
-    const carousels = screen.getAllByTestId('content-card-carousel');
-    expect(carousels).toHaveLength(3);
-    expect(carousels[0]).toHaveAttribute('data-title', 'Most Popular Content');
-    expect(carousels[1]).toHaveAttribute('data-title', 'Most Viewed Content');
-    expect(carousels[2]).toHaveAttribute('data-title', 'Trending Content');
+  it('renders landing page sections when not authenticated', () => {
+    renderHomePage();
+    const sections = screen.getAllByTestId('content-section');
+    expect(sections).toHaveLength(3);
   });
 
-  it('renders categories grid', () => {
-    render(<HomePage />);
+  it('renders categories grid when not authenticated', () => {
+    renderHomePage();
     expect(screen.getByTestId('categories-grid')).toBeInTheDocument();
   });
 
-  it('renders resource center', () => {
-    render(<HomePage />);
-    expect(screen.getByTestId('resource-center')).toBeInTheDocument();
+  it('renders resource section when not authenticated', () => {
+    renderHomePage();
+    expect(screen.getByTestId('resource-section')).toBeInTheDocument();
   });
 
-  it('renders FAQ section', () => {
-    render(<HomePage />);
+  it('renders FAQ section when not authenticated', () => {
+    renderHomePage();
     expect(screen.getByTestId('faq-section')).toBeInTheDocument();
   });
 
   it('renders fullscreen content', () => {
-    render(<HomePage />);
+    renderHomePage();
     expect(screen.getByTestId('ion-content')).toHaveAttribute('data-fullscreen', 'true');
+  });
+
+  // --- Authenticated, no enrollments (pre-enrollment) ---
+
+  it('renders greeting when authenticated with no enrollments', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    renderHomePage();
+    expect(screen.getByTestId('learning-greeting')).toBeInTheDocument();
+    expect(screen.getByTestId('learning-greeting')).toHaveAttribute('data-enrolled', '0');
+  });
+
+  it('does not render hero section when authenticated', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    renderHomePage();
+    expect(screen.queryByTestId('hero-section')).not.toBeInTheDocument();
+  });
+
+  it('renders FAQ section in pre-enrollment view', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    renderHomePage();
+    expect(screen.getByTestId('faq-section')).toBeInTheDocument();
+  });
+
+  // --- Authenticated, with enrollments (post-enrollment) ---
+
+  it('renders stats grid and continue learning when enrolled', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: { data: { courses: [makeCourse()] } },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+    expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+  });
+
+  it('hides in-progress contents when only 1 in-progress course', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: { data: { courses: [makeCourse({ completionPercentage: 50 })] } },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+    expect(screen.queryByTestId('in-progress-contents')).not.toBeInTheDocument();
+  });
+
+  it('shows in-progress contents when 2+ in-progress courses', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: {
+        data: {
+          courses: [
+            makeCourse({ completionPercentage: 30, courseId: 'c1', collectionId: 'col1' }),
+            makeCourse({ completionPercentage: 60, courseId: 'c2', collectionId: 'col2' }),
+          ],
+        },
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+    expect(screen.getByTestId('in-progress-contents')).toBeInTheDocument();
+  });
+
+  it('shows in-progress contents when all courses are completed (fallback)', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: {
+        data: {
+          courses: [
+            makeCourse({ completionPercentage: 100, status: 2 }),
+          ],
+        },
+      },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    // 0 in-progress !== 1, so InProgressContents renders (shows completed fallback)
+    expect(screen.getByTestId('in-progress-contents')).toBeInTheDocument();
+  });
+
+  it('does not render FAQ section in post-enrollment view', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = {
+      data: { data: { courses: [makeCourse()] } },
+      isLoading: false,
+      error: null,
+      refetch: vi.fn(),
+    };
+    renderHomePage();
+    expect(screen.queryByTestId('faq-section')).not.toBeInTheDocument();
+  });
+
+  // --- Loading/error states ---
+
+  it('shows spinner when enrollment is loading', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = { data: undefined, isLoading: true, error: null, refetch: vi.fn() };
+    renderHomePage();
+    expect(screen.getByTestId('ion-spinner')).toBeInTheDocument();
+  });
+
+  it('shows error state when enrollment fails', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    mockEnrollmentData = { data: undefined, isLoading: false, error: new Error('fail'), refetch: vi.fn() };
+    renderHomePage();
+    expect(screen.getByText('error')).toBeInTheDocument();
   });
 });

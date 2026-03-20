@@ -113,6 +113,13 @@ class UserService {
     this.account = null;
   }
 
+  /** Returns display name from a user profile (firstName + lastName) or null */
+  getDisplayName(profile: { firstName?: string; lastName?: string } | null | undefined): string | null {
+    if (!profile) return null;
+    const name = [profile.firstName, profile.lastName].filter(Boolean).join(' ');
+    return name || null;
+  }
+
   /** Fetch user profile from server */
   async userRead(userId: string): Promise<ApiResponse<any>> {
     return getClient().get(
