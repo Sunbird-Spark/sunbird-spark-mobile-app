@@ -1,4 +1,4 @@
-import type { HierarchyContentNode } from '../types/collectionTypes';
+import type { HierarchyContentNode } from '../../types/collectionTypes';
 
 export interface CdataItem {
   id: string;

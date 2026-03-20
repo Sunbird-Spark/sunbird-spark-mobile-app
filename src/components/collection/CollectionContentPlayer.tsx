@@ -5,7 +5,7 @@ import { ContentPlayer } from '../players/ContentPlayer';
 import { useContentRead } from '../../hooks/useContent';
 import { useQumlContent } from '../../hooks/useQumlContent';
 import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
-import { buildCollectionCdata, buildObjectRollup } from '../../utils/collectionTelemetryContext';
+import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 
@@ -56,15 +56,15 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   // Lock to landscape on mount
   useEffect(() => {
-    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
+    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => { });
 
     return () => {
-      ScreenOrientation.unlock().catch(() => {});
+      ScreenOrientation.unlock().catch(() => { });
     };
   }, []);
 
   const handleClose = useCallback(() => {
-    ScreenOrientation.unlock().catch(() => {});
+    ScreenOrientation.unlock().catch(() => { });
     onClose();
   }, [onClose]);
 
