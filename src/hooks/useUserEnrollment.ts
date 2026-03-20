@@ -1,6 +1,6 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { AppInitializer } from '../AppInitializer';
-import { EnrollmentService } from '../services/course/EnrollmentService';
+import { EnrollmentService } from '../services/user_enrollment/EnrollmentService';
 import type { CourseEnrollmentResponse } from '../types/collectionTypes';
 import type { ApiResponse } from '../lib/http-client';
 

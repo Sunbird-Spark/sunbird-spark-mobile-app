@@ -2,6 +2,27 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import SearchPage from './SearchPage';
 
+// ── Mock react-i18next ──
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        searchPlaceholder: 'Search courses, textbooks...',
+        search: 'Search',
+        close: 'Close',
+        cancel: 'Cancel',
+        searching: 'Searching...',
+        searchResultsFor: 'Results for',
+        noResultsFor: 'No results for',
+        viewAllResults: 'View All Results',
+        searchPageHint: 'Search for courses, textbooks, and more',
+      };
+      return translations[key] ?? key;
+    },
+    i18n: { language: 'en', changeLanguage: vi.fn() },
+  }),
+}));
+
 // ── Mock router ──
 const mockPush = vi.fn();
 const mockGoBack = vi.fn();
@@ -102,14 +123,14 @@ describe('SearchPage', () => {
     render(<SearchPage />);
     const input = screen.getByPlaceholderText('Search courses, textbooks...');
     fireEvent.change(input, { target: { value: 'test' } });
-    expect(screen.getByLabelText('Clear search')).toBeInTheDocument();
+    expect(screen.getByLabelText('Close')).toBeInTheDocument();
   });
 
   it('clears search query when clear button is clicked', () => {
     render(<SearchPage />);
     const input = screen.getByPlaceholderText('Search courses, textbooks...') as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'test' } });
-    fireEvent.click(screen.getByLabelText('Clear search'));
+    fireEvent.click(screen.getByLabelText('Close'));
     expect(input.value).toBe('');
   });
 

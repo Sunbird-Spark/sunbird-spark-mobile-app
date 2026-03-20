@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getInProgressCourses } from '../../../data/mockData';
 
 const ArrowIcon = () => (
@@ -51,6 +52,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
 };
 
 export const ContinueLearningCard: React.FC = () => {
+  const { t } = useTranslation();
   const inProgressCourses = getInProgressCourses();
   const course = inProgressCourses[0];
 
@@ -59,13 +61,13 @@ export const ContinueLearningCard: React.FC = () => {
   return (
     <section style={{ padding: '0 16px 16px' }}>
       <h2 style={{
-        fontFamily: "'Rubik', sans-serif",
+        fontFamily: 'var(--ion-font-family)',
         fontSize: '18px',
         fontWeight: 500,
         color: 'var(--ion-color-dark, var(--color-222222, #222222))',
         margin: '0 0 12px 0',
       }}>
-        Continue from where you left
+        {t('continueFromWhereLeft')}
       </h2>
 
       {/* Card */}
@@ -108,7 +110,7 @@ export const ContinueLearningCard: React.FC = () => {
         }}>
           {/* Title */}
           <p style={{
-            fontFamily: "'Rubik', sans-serif",
+            fontFamily: 'var(--ion-font-family)',
             fontSize: '16px',
             fontWeight: 500,
             color: 'var(--ion-color-dark, var(--color-222222, #222222))',
@@ -127,13 +129,13 @@ export const ContinueLearningCard: React.FC = () => {
           }}>
             <CircularProgress progress={course.progress} size={26} strokeWidth={3} />
             <p style={{
-              fontFamily: "'Rubik', sans-serif",
+              fontFamily: 'var(--ion-font-family)',
               fontSize: '14px',
               fontWeight: 400,
               color: 'var(--ion-color-dark, var(--color-222222, #222222))',
               margin: 0,
             }}>
-              Completed: {course.progress}%
+              {t('completedPercent', { percent: course.progress })}
             </p>
           </div>
 
@@ -152,12 +154,12 @@ export const ContinueLearningCard: React.FC = () => {
             }}
           >
             <span style={{
-              fontFamily: "'Rubik', sans-serif",
+              fontFamily: 'var(--ion-font-family)',
               fontSize: '16px',
               fontWeight: 500,
               color: 'var(--ion-color-light)',
             }}>
-              Continue Learning
+              {t('continueLearning')}
             </span>
             <ArrowIcon />
           </button>

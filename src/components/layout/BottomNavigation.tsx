@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useHistory } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 import {
   searchOutline,
   bookOutline,
@@ -14,20 +15,21 @@ interface NavItem {
   path: string;
   icon: string;
   activeIcon?: string;
-  label: string;
+  labelKey: string;
 }
 
 const navItems: NavItem[] = [
-  { path: '/explore', icon: searchOutline, label: 'Explore' },
-  { path: '/profile/my-learning', icon: bookOutline, label: 'My learning' },
-  { path: '/', icon: homeOutline, activeIcon: home, label: 'Home' },
-  { path: '/support', icon: helpCircleOutline, label: 'Support' },
-  { path: '/profile', icon: personOutline, label: 'Profile' },
+  { path: '/explore', icon: searchOutline, labelKey: 'explore' },
+  { path: '/profile/my-learning', icon: bookOutline, labelKey: 'myLearning' },
+  { path: '/', icon: homeOutline, activeIcon: home, labelKey: 'home' },
+  { path: '/support', icon: helpCircleOutline, labelKey: 'helpAndSupport' },
+  { path: '/profile', icon: personOutline, labelKey: 'profile' },
 ];
 
 export const BottomNavigation: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
+  const { t } = useTranslation();
 
   return (
     <div
@@ -84,7 +86,7 @@ export const BottomNavigation: React.FC = () => {
                 fontWeight: isActive ? '500' : '400',
               }}
             >
-              {item.label}
+              {t(item.labelKey)}
             </span>
           </button>
         );
@@ -92,4 +94,3 @@ export const BottomNavigation: React.FC = () => {
     </div>
   );
 };
-

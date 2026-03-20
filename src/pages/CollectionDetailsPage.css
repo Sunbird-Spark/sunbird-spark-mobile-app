@@ -17,7 +17,7 @@
 }
 
 .collection-details-title {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -29,7 +29,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
 }
@@ -75,7 +75,7 @@
     --padding-end: 1.25rem;
     --padding-top: 1.25rem;
     --padding-bottom: 1.25rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
 }
@@ -97,7 +97,7 @@
     border-radius: 0.625rem;
     box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.05);
     border: 1px solid rgba(168, 82, 54, 0.1);
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
 }
 
 .curriculum-item-left {
@@ -134,7 +134,7 @@
 }
 
 .collection-bottom-cta-text {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: white;
@@ -168,7 +168,7 @@
 }
 
 .batch-modal-header h2 {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -191,7 +191,7 @@
 }
 
 .batch-modal-subtitle {
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 0.875rem;
     color: var(--ion-color-medium, var(--color-757575, #757575));
     margin: 0 0 1.5rem 0;
@@ -211,7 +211,7 @@
     border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.75rem;
     padding: 1rem;
-    font-family: 'Rubik', sans-serif;
+    font-family: var(--ion-font-family);
     font-size: 1rem;
     color: var(--ion-color-dark, var(--color-222222, #222222));
     cursor: pointer;

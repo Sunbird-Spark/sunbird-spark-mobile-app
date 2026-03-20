@@ -1,6 +1,7 @@
 import React from 'react';
 import { useHistory } from 'react-router-dom';
 import { IonCard } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 
 export interface ContentCardItem {
     id: string;
@@ -24,6 +25,7 @@ const StarIcon = () => (
 
 export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title, items }) => {
     const history = useHistory();
+    const { t } = useTranslation();
 
     return (
         <section className="content-carousel-section">
@@ -32,7 +34,7 @@ export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title,
                 <button
                     className="content-carousel-arrow"
                     onClick={() => history.push('/courses')}
-                    aria-label="View all"
+                    aria-label={t('viewAll')}
                 >
                     <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8.5 0L7.09 1.41L9.67 4H0V6H9.67L7.09 8.59L8.5 10L13 5L8.5 0Z" transform="translate(0, -0.5)" />
@@ -64,7 +66,7 @@ export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title,
                             <StarIcon />
                             <span className="content-card-rating">{item.rating}</span>
                             <span className="content-card-dot">•</span>
-                            <span className="content-card-lessons">{item.lessons} Lessons</span>
+                            <span className="content-card-lessons">{item.lessons} {t('lessons')}</span>
                         </div>
                     </IonCard>
                 ))}

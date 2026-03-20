@@ -7,7 +7,7 @@ const { mockGetUserEnrollments } = vi.hoisted(() => ({
   mockGetUserEnrollments: vi.fn(),
 }));
 
-vi.mock('../services/course/EnrollmentService', () => ({
+vi.mock('../services/user_enrollment/EnrollmentService', () => ({
   EnrollmentService: class {
     getUserEnrollments = mockGetUserEnrollments;
   },

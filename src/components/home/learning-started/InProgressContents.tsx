@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { getInProgressCourses } from '../../../data/mockData';
 
 interface ContentBadgeProps {
@@ -13,7 +14,7 @@ const ContentBadge: React.FC<ContentBadgeProps> = ({ label }) => (
     border: '1px solid var(--ion-color-primary-tint)',
     borderRadius: '36px',
     padding: '4px 10px',
-    fontFamily: "'Rubik', sans-serif",
+    fontFamily: 'var(--ion-font-family)',
     fontSize: '14px',
     fontWeight: 400,
     color: 'var(--ion-color-dark, var(--color-000000, #000000))',
@@ -50,6 +51,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
 );
 
 export const InProgressContents: React.FC = () => {
+  const { t } = useTranslation();
   const inProgressCourses = getInProgressCourses();
 
   // Extend the list for display – show each course twice to match the design's 4-item list
@@ -58,19 +60,19 @@ export const InProgressContents: React.FC = () => {
   return (
     <section style={{ padding: '0 16px 16px' }}>
       <h2 style={{
-        fontFamily: "'Rubik', sans-serif",
+        fontFamily: 'var(--ion-font-family)',
         fontSize: '18px',
         fontWeight: 500,
         color: 'var(--ion-color-dark, var(--color-222222, #222222))',
         margin: '0 0 12px 0',
       }}>
-        In Progress Contents
+        {t('inProgressContents')}
       </h2>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
         {displayCourses.map((course, idx) => {
           const isTextbook = idx % 2 === 1;
-          const badgeLabel = isTextbook ? 'Textbook' : 'Course';
+          const badgeLabel = isTextbook ? t('textbook') : t('course');
 
           return (
             <div
@@ -91,7 +93,7 @@ export const InProgressContents: React.FC = () => {
                 <ContentBadge label={badgeLabel} />
 
                 <p style={{
-                  fontFamily: "'Rubik', sans-serif",
+                  fontFamily: 'var(--ion-font-family)',
                   fontSize: '16px',
                   fontWeight: 500,
                   color: 'var(--ion-color-dark, var(--color-222222, #222222))',
@@ -109,7 +111,7 @@ export const InProgressContents: React.FC = () => {
                 }}>
                   <ProgressBar progress={course.progress} />
                   <span style={{
-                    fontFamily: "'Rubik', sans-serif",
+                    fontFamily: 'var(--ion-font-family)',
                     fontSize: '14px',
                     fontWeight: 400,
                     color: 'var(--ion-color-dark, var(--color-222222, #222222))',
