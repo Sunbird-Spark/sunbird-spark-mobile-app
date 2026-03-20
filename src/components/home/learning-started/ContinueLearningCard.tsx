@@ -73,7 +73,10 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
 
       <div className="continue-learning__card">
         <div className="continue-learning__thumbnail-wrapper">
-          <img src={thumbnail} alt={title} className="continue-learning__thumbnail" />
+          {thumbnail
+            ? <img src={thumbnail} alt={title} className="continue-learning__thumbnail" />
+            : <div className="continue-learning__thumbnail-placeholder" />
+          }
         </div>
 
         <div className="continue-learning__content">
