@@ -2,6 +2,7 @@ import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { useEffect } from 'react';
 import { Redirect, Route } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
 import { AppInitializer } from './AppInitializer';
 import { useAppInitialized } from './hooks/useAppInitialized';
 import PageLoader from './components/common/PageLoader';
@@ -45,8 +46,19 @@ import CollectionDetailsPage from './pages/CollectionDetailsPage';
 import CollectionPage from './pages/CollectionPage';
 import CourseLearningPage from './pages/CourseLearningPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 
 setupIonicReact();
+
+/** Redirects to /terms-and-conditions when TnC is pending after login */
+const TnCGuard: React.FC = () => {
+  const { needsTnC } = useAuth();
+
+  if (needsTnC) {
+    return <Redirect to="/terms-and-conditions" />;
+  }
+  return null;
+};
 
 const App: React.FC = () => {
   const isInitialized = useAppInitialized();
@@ -68,6 +80,7 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
+        <TnCGuard />
         <IonRouterOutlet>
           <Route exact path="/search">
             <SearchPage />
@@ -131,6 +144,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/sign-in">
             <SignInPage />
+          </Route>
+          <Route exact path="/terms-and-conditions">
+            <TermsAndConditionsPage />
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>

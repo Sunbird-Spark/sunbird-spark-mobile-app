@@ -133,7 +133,13 @@
     "loading": "Loading FAQs...",
     "error": "Could not load FAQs"
   },
-
+  "tnc": {
+    "title": "Terms And Conditions",
+    "iAgree": "I understand & accept the SUNBIRD Terms of Use",
+    "continue": "Continue",
+    "acceptFailed": "Unable to record your acceptance. Please try again later.",
+    "error": "Error"
+  },
   "heroSection": {
     "title": "Knowledge that moves you forward.",
     "subtitle": "Unlock your potential and explore a world of knowledge. Start your journey with 100+ courses built for your future.",
