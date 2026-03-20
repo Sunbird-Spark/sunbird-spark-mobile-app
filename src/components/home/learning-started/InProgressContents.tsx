@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import type { TrackableCollection } from '../../../types/collectionTypes';
@@ -12,13 +13,13 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
   const { t } = useTranslation();
   const history = useHistory();
 
-  const inProgressCourses = courses.filter(c => (c.completionPercentage ?? 0) < 100);
-  const completedCourses = courses.filter(c => (c.completionPercentage ?? 0) >= 100);
+  const inProgressCourses = _.filter(courses, c => (c.completionPercentage ?? 0) < 100);
+  const completedCourses = _.filter(courses, c => (c.completionPercentage ?? 0) >= 100);
 
-  const displayCourses = inProgressCourses.length > 0 ? inProgressCourses : completedCourses;
-  const sectionTitle = inProgressCourses.length > 0 ? t('inProgressCourses') : t('completedCourses');
+  const displayCourses = _.isEmpty(inProgressCourses) ? completedCourses : inProgressCourses;
+  const sectionTitle = _.isEmpty(inProgressCourses) ? t('completedCourses') : t('inProgressCourses');
 
-  if (displayCourses.length === 0) return null;
+  if (_.isEmpty(displayCourses)) return null;
 
   return (
     <section className="in-progress">
@@ -27,11 +28,10 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
       <div className="in-progress__list">
         {displayCourses.map((course) => {
           const collectionId = course.collectionId || course.courseId;
-          const badge = (course as any).content?.primaryCategory || t('course');
-          const title = course.courseName || (course as any).content?.name || 'Untitled Course';
-          const thumbnail = (course as any).content?.posterImage
-            || (course as any).content?.appIcon
-            || '';
+          const badge = _.get(course, 'content.primaryCategory', t('course'));
+          const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
+          const thumbnail = _.get(course, 'content.posterImage')
+            || _.get(course, 'content.appIcon', '');
           const progress = course.completionPercentage ?? 0;
 
           return (

@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import type { TrackableCollection } from '../../../types/collectionTypes';
@@ -43,21 +44,20 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
   const { t } = useTranslation();
   const history = useHistory();
 
-  const lastAccessedCourse = courses
-    .filter(c => (c.completionPercentage ?? 0) < 100)
-    .sort((a, b) => new Date(b.enrolledDate ?? 0).getTime() - new Date(a.enrolledDate ?? 0).getTime())[0];
+  const incompleteCourses = _.filter(courses, c => (c.completionPercentage ?? 0) < 100);
+  const lastAccessedCourse = _.first(
+    _.orderBy(incompleteCourses, c => new Date(c.enrolledDate ?? 0).getTime(), 'desc')
+  );
 
-  const collectionId = lastAccessedCourse?.collectionId || lastAccessedCourse?.courseId;
+  const collectionId = _.get(lastAccessedCourse, 'collectionId') || _.get(lastAccessedCourse, 'courseId');
 
   if (!lastAccessedCourse) return null;
 
-  const thumbnail = (lastAccessedCourse as any).content?.posterImage
-    || (lastAccessedCourse as any).content?.appIcon
-    || '';
+  const thumbnail = _.get(lastAccessedCourse, 'content.posterImage')
+    || _.get(lastAccessedCourse, 'content.appIcon', '');
 
   const title = lastAccessedCourse.courseName
-    || (lastAccessedCourse as any).content?.name
-    || 'Untitled Course';
+    || _.get(lastAccessedCourse, 'content.name', 'Untitled Course');
 
   const progress = lastAccessedCourse.completionPercentage ?? 0;
 

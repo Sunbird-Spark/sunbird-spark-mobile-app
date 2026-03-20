@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import _ from 'lodash';
 import {
   IonContent,
   IonHeader,
@@ -87,10 +88,11 @@ const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ 
   });
 
   const recommended = useMemo(() => {
-    const content: ContentSearchItem[] = (data?.data as any)?.content || [];
-    return content
-      .filter(item => !enrolledCourseIds.includes(item.identifier))
-      .slice(0, 3);
+    const content: ContentSearchItem[] = _.get(data, 'data.content', []);
+    return _.take(
+      _.reject(content, item => _.includes(enrolledCourseIds, item.identifier)),
+      3
+    );
   }, [data, enrolledCourseIds]);
 
   if (isLoading) {
@@ -139,9 +141,9 @@ const HomePage: React.FC = () => {
     request: HOME_PAGE_FORM_REQUEST,
   });
   const homeSections = useMemo(() => {
-    const raw = (formData?.data as any)?.form?.data?.sections;
-    if (!Array.isArray(raw)) return [];
-    return [...raw].sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0));
+    const raw = _.get(formData, 'data.form.data.sections', []);
+    if (!_.isArray(raw)) return [];
+    return _.sortBy(raw, (s: any) => s.index ?? 0);
   }, [formData]);
 
   // Landing page sections for public view
@@ -155,17 +157,17 @@ const HomePage: React.FC = () => {
     refetch,
   } = useUserEnrollmenList(userId, { enabled: isAuthenticated });
 
-  const enrolledCourses = enrollmentData?.data?.courses ?? [];
-  const enrolledCount = enrolledCourses.length;
+  const enrolledCourses = _.get(enrollmentData, 'data.courses', []);
+  const enrolledCount = _.size(enrolledCourses);
 
   // Certificate count
   const { data: certData } = useUserCertificates(isAuthenticated ? userId : null);
-  const certificationsEarned = Array.isArray((certData?.data as any)) ? (certData?.data as any).length : 0;
+  const certificationsEarned = _.size(_.get(certData, 'data', []));
 
   // Stats computation
-  const coursesInProgress = enrolledCourses.filter(c => (c.completionPercentage ?? 0) < 100).length;
-  const coursesCompleted = enrolledCourses.filter(c => c.status === 2).length;
-  const enrolledCourseIds = enrolledCourses.map(c => c.collectionId || c.courseId || '').filter(Boolean);
+  const coursesInProgress = _.filter(enrolledCourses, c => (c.completionPercentage ?? 0) < 100).length;
+  const coursesCompleted = _.filter(enrolledCourses, { status: 2 }).length;
+  const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
 
   return (
     <IonPage>

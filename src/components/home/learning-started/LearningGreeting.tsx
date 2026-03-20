@@ -1,4 +1,5 @@
 import React from 'react';
+import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useUser } from '../../../hooks/useUser';
@@ -15,8 +16,8 @@ export const LearningGreeting: React.FC<LearningGreetingProps> = ({ enrolledCoun
   const { t } = useTranslation();
 
   const name = userService.getDisplayName(userProfile);
-  const greeting = name ? t('hiUser', { name }) : t('hiGuest');
-  const subtitle = enrolledCount === 0 ? t('journeyStart') : t('welcomeMessage');
+  const greeting = _.isEmpty(name) ? t('hiGuest') : t('hiUser', { name });
+  const subtitle = _.isEqual(enrolledCount, 0) ? t('journeyStart') : t('welcomeMessage');
 
   return (
     <div className="learning-greeting">

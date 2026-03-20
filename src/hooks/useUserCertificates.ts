@@ -10,7 +10,7 @@ export const useUserCertificates = (
   return useQuery({
     queryKey: ['userCertificates', userId],
     queryFn: () => certificateService.searchCertificates(userId!),
-    enabled: !!userId && AppInitializer.isInitialized(),
+    enabled: !!userId,
     staleTime: 5 * 60 * 1000,
   });
 };
