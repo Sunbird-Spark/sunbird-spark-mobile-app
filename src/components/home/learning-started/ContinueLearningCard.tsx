@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
-import type { TrackableCollection, HierarchyContentNode } from '../../../types/collectionTypes';
-import { useCollection } from '../../../hooks/useCollection';
+import type { TrackableCollection } from '../../../types/collectionTypes';
+import './ContinueLearningCard.css';
 
 interface ContinueLearningCardProps {
   courses: TrackableCollection[];
@@ -39,17 +39,6 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
   );
 };
 
-function getFirstLeafContentId(node: HierarchyContentNode | undefined): string | undefined {
-  if (!node) return undefined;
-  const COLLECTION_MIME = 'application/vnd.ekstep.content-collection';
-  if (node.mimeType && node.mimeType !== COLLECTION_MIME) return node.identifier;
-  for (const child of node.children ?? []) {
-    const id = getFirstLeafContentId(child);
-    if (id) return id;
-  }
-  return undefined;
-}
-
 export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ courses }) => {
   const { t } = useTranslation();
   const history = useHistory();
@@ -59,12 +48,8 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
     .sort((a, b) => new Date(b.enrolledDate ?? 0).getTime() - new Date(a.enrolledDate ?? 0).getTime())[0];
 
   const collectionId = lastAccessedCourse?.collectionId || lastAccessedCourse?.courseId;
-  const { data: collectionData } = useCollection(collectionId);
 
   if (!lastAccessedCourse) return null;
-
-  const contentId = lastAccessedCourse.contentId
-    ?? getFirstLeafContentId(collectionData?.children?.[0]);
 
   const thumbnail = (lastAccessedCourse as any).content?.posterImage
     || (lastAccessedCourse as any).content?.appIcon
@@ -78,101 +63,31 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
 
   const handleContinue = () => {
     if (collectionId && lastAccessedCourse.batchId) {
-      const path = contentId
-        ? `/collection/${collectionId}`
-        : `/collection/${collectionId}`;
-      history.push(path);
+      history.push(`/collection/${collectionId}`);
     }
   };
 
   return (
-    <section style={{ padding: '0 16px 16px' }}>
-      <h2 style={{
-        fontFamily: 'var(--ion-font-family)',
-        fontSize: '18px',
-        fontWeight: 500,
-        color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-        margin: '0 0 12px 0',
-      }}>
-        {t('continueFromWhereLeft')}
-      </h2>
+    <section className="continue-learning">
+      <h2 className="continue-learning__heading">{t('continueFromWhereLeft')}</h2>
 
-      <div style={{
-        backgroundColor: '#ffffff',
-        borderRadius: '20px',
-        boxShadow: '2px 2px 20px 0px #00000017',
-        display: 'flex',
-        flexDirection: 'row',
-        overflow: 'hidden',
-        minHeight: '200px',
-      }}>
-        <div style={{
-          width: '104px',
-          flexShrink: 0,
-          overflow: 'hidden',
-          borderRadius: '15px',
-          margin: '15px 0 15px 15px',
-        }}>
-          <img
-            src={thumbnail}
-            alt={title}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '15px' }}
-          />
+      <div className="continue-learning__card">
+        <div className="continue-learning__thumbnail-wrapper">
+          <img src={thumbnail} alt={title} className="continue-learning__thumbnail" />
         </div>
 
-        <div style={{
-          flex: 1,
-          padding: '16px 16px 16px 12px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}>
-          <p style={{
-            fontFamily: 'var(--ion-font-family)',
-            fontSize: '16px',
-            fontWeight: 500,
-            color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-            margin: '0 0 12px 0',
-            lineHeight: 1.4,
-          }}>
-            {title}
-          </p>
+        <div className="continue-learning__content">
+          <p className="continue-learning__title">{title}</p>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+          <div className="continue-learning__progress-row">
             <CircularProgress progress={progress} size={26} strokeWidth={3} />
-            <p style={{
-              fontFamily: 'var(--ion-font-family)',
-              fontSize: '14px',
-              fontWeight: 400,
-              color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-              margin: 0,
-            }}>
+            <p className="continue-learning__progress-text">
               {t('completedPercent', { percent: progress })}
             </p>
           </div>
 
-          <button
-            onClick={handleContinue}
-            style={{
-              backgroundColor: 'var(--ion-color-primary)',
-              borderRadius: '10px',
-              border: 'none',
-              padding: '10px 14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-            }}
-          >
-            <span style={{
-              fontFamily: 'var(--ion-font-family)',
-              fontSize: '16px',
-              fontWeight: 500,
-              color: 'var(--ion-color-light)',
-            }}>
-              {t('continueLearning')}
-            </span>
+          <button onClick={handleContinue} className="continue-learning__button">
+            <span className="continue-learning__button-text">{t('continueLearning')}</span>
             <ArrowIcon />
           </button>
         </div>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
+import './LearningStatsGrid.css';
 
 interface LearningStatsGridProps {
   totalCourses: number;
@@ -81,63 +82,20 @@ export const LearningStatsGrid: React.FC<LearningStatsGridProps> = ({
   ];
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '1fr 1fr',
-      gap: '12px',
-      padding: '12px 16px',
-    }}>
+    <div className="stats-grid">
       {stats.map((stat) => (
         <div
           key={stat.labelKey}
-          style={{
-            backgroundColor: stat.tileBg,
-            borderRadius: '16px',
-            padding: '16px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            minHeight: '105px',
-          }}
+          className="stats-grid__tile"
+          style={{ backgroundColor: stat.tileBg }}
         >
-          <div style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-          }}>
-            <p style={{
-              fontFamily: 'var(--ion-font-family)',
-              fontSize: '24px',
-              fontWeight: 600,
-              color: 'var(--ion-color-light)',
-              margin: 0,
-              lineHeight: 1,
-            }}>
-              {stat.value}
-            </p>
-            <div style={{
-              backgroundColor: stat.iconBg,
-              borderRadius: '8px',
-              width: '33px',
-              height: '33px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}>
+          <div className="stats-grid__top-row">
+            <p className="stats-grid__value">{stat.value}</p>
+            <div className="stats-grid__icon" style={{ backgroundColor: stat.iconBg }}>
               {stat.icon}
             </div>
           </div>
-          <p style={{
-            fontFamily: 'var(--ion-font-family)',
-            fontSize: '14px',
-            fontWeight: 400,
-            color: 'var(--ion-color-light)',
-            margin: 0,
-            lineHeight: 1.2,
-          }}>
-            {t(stat.labelKey)}
-          </p>
+          <p className="stats-grid__label">{t(stat.labelKey)}</p>
         </div>
       ))}
     </div>
