@@ -91,7 +91,7 @@ export interface BatchReadResponse {
     name?: string;
     startDate?: string;
     endDate?: string;
-    cert_templates?: Record<string, CertTemplate>;
+    certTemplates?: Record<string, CertTemplate>;
     [key: string]: unknown;
   };
 }

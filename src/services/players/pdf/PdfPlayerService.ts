@@ -7,6 +7,32 @@ export class PdfPlayerService {
   private static cssLoading?: Promise<string>;
   private static scriptLoaded = false;
   private static scriptLoading?: Promise<void>;
+  private static baseRefCount = 0;
+  private static baseElement: HTMLBaseElement | null = null;
+
+  /**
+   * Add a <base href="/"> to <head> so the PDF player's relative iframe src
+   * ("assets/pdf-player/pdfjs/web/viewer.html?file=...") resolves from the
+   * app root instead of the current route path.
+   * Ref-counted so multiple player instances share a single <base> tag.
+   */
+  private static addBaseTag(): void {
+    PdfPlayerService.baseRefCount++;
+    if (PdfPlayerService.baseRefCount > 1) return;
+    if (document.querySelector('base')) return;
+    const base = document.createElement('base');
+    base.href = '/';
+    document.head.prepend(base);
+    PdfPlayerService.baseElement = base;
+  }
+
+  private static removeBaseTag(): void {
+    PdfPlayerService.baseRefCount = Math.max(0, PdfPlayerService.baseRefCount - 1);
+    if (PdfPlayerService.baseRefCount === 0 && PdfPlayerService.baseElement) {
+      PdfPlayerService.baseElement.remove();
+      PdfPlayerService.baseElement = null;
+    }
+  }
 
   private loadScript(): Promise<void> {
     if (PdfPlayerService.scriptLoaded || customElements.get('sunbird-pdf-player')) {
@@ -35,7 +61,7 @@ export class PdfPlayerService {
 
     const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
-    return { context, config: { baseURL: '' }, metadata };
+    return { context, config: { baseURL: '', apislug: '/action' }, metadata };
   }
 
   private async fetchStyles(): Promise<string> {
@@ -76,6 +102,7 @@ export class PdfPlayerService {
   }
 
   async createElement(config: PdfPlayerConfig): Promise<HTMLElement> {
+    PdfPlayerService.addBaseTag();
     const cssContent = await this.fetchStyles();
 
     const wrapper = document.createElement('div');
@@ -146,5 +173,6 @@ export class PdfPlayerService {
       playerEl.removeEventListener('telemetryEvent', handlers.telemetry);
       this.eventHandlers.delete(element);
     }
+    PdfPlayerService.removeBaseTag();
   }
 }

@@ -135,19 +135,19 @@ export function useCollectionEnrollment(
     return null;
   }, [collectionData, contentStatusMap]);
 
-  // 8. Certificate — read batch detail for cert_templates
+  // 8. Certificate — read batch detail for certTemplates
   const batchReadQuery = useBatchRead(enrolledBatchId ?? undefined, {
     enabled: isEnrolled && !!enrolledBatchId,
   });
 
   const hasCertificate = useMemo(() => {
-    const templates = batchReadQuery.data?.data?.response?.cert_templates;
+    const templates = batchReadQuery.data?.data?.response?.certTemplates;
     return !!templates && Object.keys(templates).length > 0;
   }, [batchReadQuery.data]);
 
   const certPreviewUrl = useMemo(() => {
     return getFirstCertPreviewUrl(
-      batchReadQuery.data?.data?.response?.cert_templates,
+      batchReadQuery.data?.data?.response?.certTemplates,
     );
   }, [batchReadQuery.data]);
 

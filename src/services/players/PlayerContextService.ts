@@ -134,13 +134,15 @@ export async function buildPlayerContext(
     console.warn('PlayerContextService: Failed to fetch organization data:', error);
   }
 
-  // Producer data
+  // Producer data & host base URL
   let producerId = 'sunbird.app';
   let appVersion = '1.0.0';
+  let baseUrl = '';
   try {
     const config = await NativeConfigServiceInstance.load();
     producerId = config.producerId || producerId;
     appVersion = config.appVersion || appVersion;
+    baseUrl = config.baseUrl || '';
   } catch (error) {
     console.warn('PlayerContextService: Failed to fetch native config:', error);
   }
@@ -181,7 +183,7 @@ export async function buildPlayerContext(
     cdata,
     timeDiff,
     objectRollup: overrides?.objectRollup || {},
-    host: '',
+    host: baseUrl,
     endpoint: TELEMETRY_ENDPOINT,
     dims,
     app: channel ? [channel] : [],
