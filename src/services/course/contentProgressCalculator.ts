@@ -20,6 +20,7 @@ const PLAYBACK_MIME_TYPES = [
   'video/webm',
   'application/pdf',
   'application/epub',
+  'application/epub+zip'
 ];
 
 const OTHER_MIME_TYPES = [

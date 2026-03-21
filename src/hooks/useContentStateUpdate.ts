@@ -27,12 +27,12 @@ type TelemetryEvent = {
   eid?: string;
   type?: string;
   ets?: number;
-  edata?: { summary?: ConsumptionSummary[]; score?: number; [key: string]: unknown };
+  edata?: { summary?: ConsumptionSummary[]; score?: number;[key: string]: unknown };
   summary?: ConsumptionSummary | ConsumptionSummary[];
   data?: string | {
     eid?: string;
     ets?: number;
-    edata?: { summary?: ConsumptionSummary[]; score?: number; [key: string]: unknown };
+    edata?: { summary?: ConsumptionSummary[]; score?: number;[key: string]: unknown };
     summary?: ConsumptionSummary | ConsumptionSummary[];
     score?: number;
     [key: string]: unknown;
@@ -114,7 +114,6 @@ export function useContentStateUpdate({
         }
       } catch (err) {
         console.error('Content state update failed:', err);
-        throw err;
       }
     },
     [collectionId, contentId, effectiveBatchId, userId, queryClient, contentStateUpdate],
@@ -132,7 +131,7 @@ export function useContentStateUpdate({
     try {
       const now = new Date();
       const pad = (n: number, w = 2) => String(n).padStart(w, '0');
-      const lastAccessTime = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}:${pad(now.getMilliseconds(), 3)}+0000`;
+      const lastAccessTime = `${now.getUTCFullYear()}-${pad(now.getUTCMonth() + 1)}-${pad(now.getUTCDate())} ${pad(now.getUTCHours())}:${pad(now.getUTCMinutes())}:${pad(now.getUTCSeconds())}:${pad(now.getUTCMilliseconds(), 3)}+0000`;
       await contentStateUpdate({
         userId,
         courseId: collectionId,

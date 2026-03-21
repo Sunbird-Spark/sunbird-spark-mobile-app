@@ -90,30 +90,41 @@ vi.mock('../services/relatedContentMapper', () => ({
 
 vi.mock('../hooks/useCollectionEnrollment', () => ({
   useCollectionEnrollment: vi.fn(() => ({
+    isLoading: false,
     isEnrolled: false,
-    isEnrollmentLoading: false,
-    progressPercentage: 0,
-    effectiveBatchId: undefined,
-    hasCertificate: false,
-    certPreviewUrl: undefined,
+    enrolledBatchId: null,
+    enrollableBatches: [],
     isBatchEnded: false,
     isBatchUpcoming: false,
     batchStartDate: undefined,
     batchEnrollmentType: undefined,
-    enrollableBatches: [],
-    batchListError: null,
-    enrol: { mutateAsync: vi.fn() },
-    unenrol: { mutateAsync: vi.fn() },
     contentStatusMap: {},
+    contentAttemptInfoMap: {},
+    progressProps: { total: 0, completed: 0, percentage: 0 },
+    leafContentIds: [],
+    nextContentId: null,
+    hasCertificate: false,
+    certPreviewUrl: undefined,
+    batchListLoading: false,
+    batchListError: undefined,
+    joinLoading: false,
+    joinError: '',
+    isEnrollmentsFetching: false,
+    enrol: { mutateAsync: vi.fn(), isPending: false },
+    unenrol: { mutateAsync: vi.fn(), isPending: false },
   })),
 }));
 
 vi.mock('../hooks/useConsent', () => ({
   useConsent: vi.fn(() => ({
-    showConsentPopup: false,
-    consentData: null,
-    submitConsent: vi.fn(),
-    dismissConsent: vi.fn(),
+    status: null,
+    lastUpdatedOn: undefined,
+    isLoading: false,
+    isError: false,
+    error: null,
+    refetch: vi.fn(),
+    updateConsent: vi.fn(),
+    isUpdating: false,
   })),
 }));
 
@@ -125,7 +136,12 @@ vi.mock('../hooks/useUser', () => ({
 }));
 
 vi.mock('../hooks/useForceSync', () => ({
-  useForceSync: vi.fn(() => vi.fn()),
+  useForceSync: vi.fn(() => ({
+    showForceSyncButton: false,
+    handleForceSync: vi.fn(),
+    isForceSyncing: false,
+    forceSyncError: null,
+  })),
 }));
 
 vi.mock('../services/UserService', () => ({
