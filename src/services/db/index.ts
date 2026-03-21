@@ -8,3 +8,6 @@ export type { ConfigType } from './ConfigDbService';
 export { enrolledCoursesDbService } from './EnrolledCoursesDbService';
 export type { EnrolledCourseDetails } from './EnrolledCoursesDbService';
 export { telemetryDbService } from './TelemetryDbService';
+export { downloadDbService } from './DownloadDbService';
+export { contentDbService } from './ContentDbService';
+

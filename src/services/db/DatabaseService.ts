@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
 const DB_NAME = 'sunbird_spark';
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 // ── Allowlisted identifiers (guards against SQL injection via identifiers) ────
 
@@ -12,6 +12,8 @@ const ALLOWED_TABLES = new Set([
   'telemetry',
   'enrolled_courses',
   'configs',
+  'download_queue',
+  'content',
 ]);
 
 function assertTable(table: string): void {
@@ -91,6 +93,49 @@ const SCHEMA_STATEMENTS = [
   fetched_on    INTEGER NOT NULL
 )`,
   `CREATE INDEX IF NOT EXISTS idx_configs_type ON configs(config_type)`,
+  `CREATE TABLE IF NOT EXISTS download_queue (
+  identifier        TEXT PRIMARY KEY,
+  parent_identifier TEXT,
+  download_url      TEXT NOT NULL,
+  filename          TEXT NOT NULL,
+  mime_type         TEXT NOT NULL,
+  file_path         TEXT,
+  state             TEXT NOT NULL,
+  progress          INTEGER NOT NULL DEFAULT 0,
+  bytes_downloaded  INTEGER NOT NULL DEFAULT 0,
+  total_bytes       INTEGER NOT NULL DEFAULT 0,
+  retry_count       INTEGER NOT NULL DEFAULT 0,
+  max_retries       INTEGER NOT NULL DEFAULT 3,
+  last_error        TEXT,
+  content_meta      TEXT,
+  priority          INTEGER NOT NULL DEFAULT 0,
+  cancelled_by_user INTEGER NOT NULL DEFAULT 0,
+  created_at        INTEGER NOT NULL,
+  updated_at        INTEGER NOT NULL
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_download_queue_state ON download_queue(state)`,
+  `CREATE INDEX IF NOT EXISTS idx_download_queue_parent ON download_queue(parent_identifier)`,
+  `CREATE TABLE IF NOT EXISTS content (
+  identifier             TEXT PRIMARY KEY,
+  server_data            TEXT,
+  local_data             TEXT,
+  mime_type              TEXT,
+  path                   TEXT,
+  visibility             TEXT,
+  server_last_updated_on TEXT,
+  local_last_updated_on  TEXT,
+  ref_count              INTEGER NOT NULL DEFAULT 1,
+  content_state          INTEGER NOT NULL DEFAULT 2,
+  content_type           TEXT,
+  audience               TEXT DEFAULT 'Learner',
+  size_on_device         INTEGER NOT NULL DEFAULT 0,
+  pragma                 TEXT DEFAULT '',
+  manifest_version       TEXT,
+  dialcodes              TEXT DEFAULT '',
+  child_nodes            TEXT DEFAULT '',
+  primary_category       TEXT DEFAULT ''
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_content_state ON content(content_state)`,
 ];
 
 export class DatabaseService {
