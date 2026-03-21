@@ -29,8 +29,18 @@ vi.mock('../services/UserService', () => ({
     isLoggedIn: () => false,
     getUserId: () => null,
     getAccessToken: () => null,
+    getLoginProvider: () => null,
     clearAccount: vi.fn().mockResolvedValue(undefined),
     saveAccount: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// Mock socialLoginService
+vi.mock('../services/auth/socialLogin/socialLogin.service', () => ({
+  socialLoginService: {
+    loginWithGoogle: vi.fn(),
+    logoutGoogle: vi.fn().mockResolvedValue(undefined),
+    trySilentGoogleLogin: vi.fn().mockResolvedValue(null),
   },
 }));
 
