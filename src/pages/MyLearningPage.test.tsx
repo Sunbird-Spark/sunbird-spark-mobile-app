@@ -65,6 +65,14 @@ vi.mock('../components/content/CollectionCard', () => ({
 vi.mock('../components/content/ResourceCard', () => ({
   default: ({ item }: any) => <div data-testid="resource-card">{item.name}</div>,
 }));
+vi.mock('../components/common/PageLoader', () => ({
+  default: ({ message, error, onRetry }: any) => (
+    <div data-testid="page-loader" data-error={error || undefined}>
+      {error ? <span>Something went wrong</span> : <span>{message || 'Loading...'}</span>}
+      {onRetry && <button onClick={onRetry}>Retry</button>}
+    </div>
+  ),
+}));
 
 // Mock hooks — configurable
 let mockEnrollmentData: any = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
@@ -139,12 +147,12 @@ describe('MyLearningPage', () => {
 
   // --- Loading/error ---
 
-  it('shows spinner when loading', () => {
+  it('shows page loader when loading', () => {
     mockAuthContext.isAuthenticated = true;
     mockAuthContext.userId = 'user-1';
     mockEnrollmentData = { data: undefined, isLoading: true, error: null, refetch: vi.fn() };
     renderPage();
-    expect(screen.getByTestId('ion-spinner')).toBeInTheDocument();
+    expect(screen.getByTestId('page-loader')).toBeInTheDocument();
   });
 
   it('shows error with retry', () => {
@@ -152,7 +160,7 @@ describe('MyLearningPage', () => {
     mockAuthContext.userId = 'user-1';
     mockEnrollmentData = { data: undefined, isLoading: false, error: new Error('fail'), refetch: vi.fn() };
     renderPage();
-    expect(screen.getByText('Error')).toBeInTheDocument();
+    expect(screen.getByText('Something went wrong')).toBeInTheDocument();
   });
 
   // --- Tabs ---
