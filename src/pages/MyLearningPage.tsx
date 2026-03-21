@@ -4,8 +4,8 @@ import {
   IonContent,
   IonHeader,
   IonPage,
-  IonSpinner,
 } from '@ionic/react';
+import PageLoader from '../components/common/PageLoader';
 import { useTranslation } from 'react-i18next';
 import { useHistory } from 'react-router-dom';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
@@ -154,11 +154,7 @@ const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolle
   }, [data, enrolledCourseIds]);
 
   if (isLoading) {
-    return (
-      <div className="my-learning__center">
-        <IonSpinner name="crescent" color="primary" />
-      </div>
-    );
+    return <PageLoader />;
   }
 
   if (_.isEmpty(recommended)) return null;
@@ -317,16 +313,9 @@ const MyLearningPage: React.FC = () => {
 
       <IonContent fullscreen>
         {isLoading ? (
-          <div className="my-learning__center">
-            <IonSpinner name="crescent" />
-          </div>
+          <PageLoader message={t('loading')} />
         ) : error ? (
-          <div className="my-learning__error">
-            <p className="my-learning__error-text">{t('error')}</p>
-            <button className="my-learning__retry-btn" onClick={() => refetch()}>
-              {t('retry') || 'Retry'}
-            </button>
-          </div>
+          <PageLoader error={error.message} onRetry={() => refetch()} />
         ) : (
           <>
 
