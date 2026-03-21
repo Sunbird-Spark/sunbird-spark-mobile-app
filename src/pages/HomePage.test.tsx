@@ -102,7 +102,7 @@ vi.mock('../hooks/useFormRead', () => ({
 }));
 
 vi.mock('../hooks/useUserEnrollment', () => ({
-  useUserEnrollmenList: () => mockEnrollmentData,
+  useUserEnrollmentList: () => mockEnrollmentData,
 }));
 
 vi.mock('../hooks/useUserCertificates', () => ({

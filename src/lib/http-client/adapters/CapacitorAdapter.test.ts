@@ -7,7 +7,8 @@ vi.mock('@capacitor/core', () => ({
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
-    del: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -258,9 +259,28 @@ describe('CapacitorAdapter', () => {
     });
   });
 
+  describe('PATCH requests', () => {
+    it('should handle PATCH with data', async () => {
+      (CapacitorHttp.patch as any).mockResolvedValue({
+        data: { id: 1 },
+        status: 200,
+        headers: {},
+      });
+
+      const result = await adapter.patch('/test', { name: 'patched' });
+
+      expect(CapacitorHttp.patch).toHaveBeenCalledWith({
+        url: 'http://test.com/api/test',
+        data: { name: 'patched' },
+        headers: {},
+      });
+      expect(result).toEqual({ data: { id: 1 }, status: 200, headers: {} });
+    });
+  });
+
   describe('DELETE requests', () => {
     it('should handle DELETE', async () => {
-      (CapacitorHttp.del as any).mockResolvedValue({
+      (CapacitorHttp.delete as any).mockResolvedValue({
         data: null,
         status: 204,
         headers: {},
@@ -268,7 +288,7 @@ describe('CapacitorAdapter', () => {
 
       const result = await adapter.delete('/test');
 
-      expect(CapacitorHttp.del).toHaveBeenCalledWith({
+      expect(CapacitorHttp.delete).toHaveBeenCalledWith({
         url: 'http://test.com/api/test',
         headers: {},
       });

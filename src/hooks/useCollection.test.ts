@@ -81,6 +81,7 @@ describe('useCollection', () => {
       children: apiResponse.data.content.children,
       createdBy: 'user-1',
       channel: 'channel-1',
+      hierarchyRoot: apiResponse.data.content,
     });
 
     expect(mockGet).toHaveBeenCalledWith('/course/v1/hierarchy/do_123');

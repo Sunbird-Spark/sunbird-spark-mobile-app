@@ -37,7 +37,7 @@ export class VideoPlayerService {
   ): Promise<VideoPlayerConfig> {
     await this.loadScript();
 
-    const context = await buildPlayerContext(contextProps);
+    const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
     return { context, config: {}, metadata };
   }

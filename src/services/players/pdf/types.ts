@@ -1,11 +1,6 @@
-export interface PdfPlayerContextProps {
-  mode?: string;
-  cdata?: any[];
-  contextRollup?: {
-    l1: string;
-  };
-  objectRollup?: Record<string, any>;
-}
+import type { PlayerContext, PlayerContextOverrides } from '../PlayerContextService';
+
+export type PdfPlayerContextProps = PlayerContextOverrides;
 
 export interface PdfPlayerMetadata {
   identifier: string;
@@ -18,26 +13,7 @@ export interface PdfPlayerMetadata {
 }
 
 export interface PdfPlayerConfig {
-  context: {
-    mode: string;
-    sid: string;
-    did: string;
-    uid: string;
-    channel: string;
-    pdata: {
-      id: string;
-      ver: string;
-      pid: string;
-    };
-    contextRollup: {
-      l1: string;
-    };
-    cdata: any[];
-    timeDiff: number;
-    objectRollup: Record<string, any>;
-    host: string;
-    endpoint: string;
-  };
+  context: PlayerContext;
   config: Record<string, any>;
   metadata: PdfPlayerMetadata;
 }

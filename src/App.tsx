@@ -42,9 +42,7 @@ import './theme/overrides.css';
 import VideoContentPage from './pages/VideoContentPage';
 import SearchPage from './pages/SearchPage';
 import CourseDetailsPage from './pages/CourseDetailsPage';
-import CollectionDetailsPage from './pages/CollectionDetailsPage';
 import CollectionPage from './pages/CollectionPage';
-import CourseLearningPage from './pages/CourseLearningPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 
@@ -128,14 +126,8 @@ const App: React.FC = () => {
           <Route exact path="/course-details">
             <CourseDetailsPage />
           </Route>
-          <Route exact path="/collection-details">
-            <CollectionDetailsPage />
-          </Route>
           <Route exact path="/collection/:collectionId">
             <CollectionPage />
-          </Route>
-          <Route exact path="/course-learning">
-            <CourseLearningPage />
           </Route>
           <Route exact path="/content/:contentId">
             <ContentPlayerPage />

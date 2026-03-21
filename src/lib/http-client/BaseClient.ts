@@ -48,6 +48,8 @@ export abstract class BaseClient implements IHttpClient {
   protected abstract _get<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>>;
   protected abstract _post<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>>;
   protected abstract _put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>>;
+
+  protected abstract _patch<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>>;
   protected abstract _delete<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>>;
 
   public abstract updateHeaders(headers: HeaderOperation[]): void;
@@ -67,6 +69,12 @@ export abstract class BaseClient implements IHttpClient {
 
   public async put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     const retry = () => this._put<T>(url, data, headers);
+    const response = await retry();
+    return this.handleResponse(response, retry, url);
+  }
+
+  public async patch<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    const retry = () => this._patch<T>(url, data, headers);
     const response = await retry();
     return this.handleResponse(response, retry, url);
   }

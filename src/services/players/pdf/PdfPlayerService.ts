@@ -33,7 +33,7 @@ export class PdfPlayerService {
   ): Promise<PdfPlayerConfig> {
     await this.loadScript();
 
-    const context = await buildPlayerContext(contextProps);
+    const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
     return { context, config: { baseURL: '' }, metadata };
   }

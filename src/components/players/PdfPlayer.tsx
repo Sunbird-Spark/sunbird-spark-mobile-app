@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { PdfPlayerService } from '../../services/players/pdf';
 import type { PdfPlayerEvent, PdfPlayerContextProps, PdfPlayerMetadata } from '../../services/players/pdf';
 
@@ -24,13 +24,13 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const serviceRef = useRef<PdfPlayerService>(new PdfPlayerService());
 
-  const handlePlayerEvent = useCallback((event: PdfPlayerEvent) => {
-    onPlayerEvent?.(event);
-  }, [onPlayerEvent]);
+  // Store callbacks in refs so the player init useEffect doesn't re-run
+  // when callback identities change (e.g. after content state updates).
+  const onPlayerEventRef = useRef(onPlayerEvent);
+  useEffect(() => { onPlayerEventRef.current = onPlayerEvent; }, [onPlayerEvent]);
+  const onTelemetryEventRef = useRef(onTelemetryEvent);
+  useEffect(() => { onTelemetryEventRef.current = onTelemetryEvent; }, [onTelemetryEvent]);
 
-  const handleTelemetryEvent = useCallback((event: any) => {
-    onTelemetryEvent?.(event);
-  }, [onTelemetryEvent]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -44,6 +44,14 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
       ...(cdata !== undefined && { cdata }),
       ...(contextRollup !== undefined && { contextRollup }),
       ...(objectRollup !== undefined && { objectRollup }),
+    };
+
+    const handlePlayerEvent = (event: PdfPlayerEvent) => {
+      onPlayerEventRef.current?.(event);
+    };
+
+    const handleTelemetryEvent = (event: any) => {
+      onTelemetryEventRef.current?.(event);
     };
 
     const initPlayer = async () => {
@@ -72,7 +80,7 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata]);
 
   return (
     <div

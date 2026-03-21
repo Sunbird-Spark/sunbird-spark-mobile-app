@@ -1,3 +1,5 @@
+import type { PlayerContextOverrides } from '../PlayerContextService';
+
 export interface QumlPlayerConfig {
   context: Record<string, any>;
   config: Record<string, any>;
@@ -20,9 +22,4 @@ export interface QumlPlayerEvent {
   timestamp: number;
 }
 
-export interface QumlPlayerContextProps {
-  mode?: string;
-  cdata?: any[];
-  contextRollup?: { l1: string };
-  objectRollup?: Record<string, any>;
-}
+export type QumlPlayerContextProps = PlayerContextOverrides;

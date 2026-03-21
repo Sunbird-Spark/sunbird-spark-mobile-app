@@ -70,6 +70,11 @@ vi.mock('../../hooks/useQumlContent', () => ({
   useQumlContent: () => mockUseQumlContentReturn,
 }));
 
+// Mock useContentStateUpdate hook (uses useQueryClient internally)
+vi.mock('../../hooks/useContentStateUpdate', () => ({
+  useContentStateUpdate: () => vi.fn(),
+}));
+
 // Mock CSS import
 vi.mock('../../pages/ContentPlayerPage.css', () => ({}));
 

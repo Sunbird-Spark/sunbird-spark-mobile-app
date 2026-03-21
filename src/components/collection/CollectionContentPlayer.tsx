@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { IonPage, IonContent } from '@ionic/react';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../players/ContentPlayer';
 import { useContentRead } from '../../hooks/useContent';
 import { useQumlContent } from '../../hooks/useQumlContent';
+import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
+import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
+import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 
 const QUML_MIME_TYPES = [
@@ -14,11 +17,26 @@ const QUML_MIME_TYPES = [
 interface CollectionContentPlayerProps {
   contentId: string;
   onClose: () => void;
+  collectionId?: string;
+  batchId?: string;
+  hierarchyRoot?: HierarchyContentNode;
+  isEnrolled?: boolean;
+  isBatchEnded?: boolean;
+  currentContentStatus?: number;
+  /** A6: When true (creator/mentor viewing own course), skip all progress/state API calls. */
+  skipContentStateUpdate?: boolean;
 }
 
 const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   contentId,
   onClose,
+  collectionId,
+  batchId,
+  hierarchyRoot,
+  isEnrolled = false,
+  isBatchEnded = false,
+  currentContentStatus,
+  skipContentStateUpdate = false,
 }) => {
   const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
@@ -38,15 +56,15 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   // Lock to landscape on mount
   useEffect(() => {
-    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => {});
+    ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => { });
 
     return () => {
-      ScreenOrientation.unlock().catch(() => {});
+      ScreenOrientation.unlock().catch(() => { });
     };
   }, []);
 
   const handleClose = useCallback(() => {
-    ScreenOrientation.unlock().catch(() => {});
+    ScreenOrientation.unlock().catch(() => { });
     onClose();
   }, [onClose]);
 
@@ -57,6 +75,30 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     }
   }, [refetch, refetchQuml, isQumlContent]);
 
+  // Build telemetry context for the player
+  const cdata = useMemo(
+    () => buildCollectionCdata(collectionId, batchId),
+    [collectionId, batchId],
+  );
+
+  const objectRollup = useMemo(
+    () => buildObjectRollup(hierarchyRoot, contentId),
+    [hierarchyRoot, contentId],
+  );
+
+  // Content state update hook — bridges telemetry events to API
+  const handleTelemetryStateUpdate = useContentStateUpdate({
+    collectionId,
+    contentId,
+    effectiveBatchId: batchId,
+    isEnrolledInCurrentBatch: isEnrolled,
+    isBatchEnded,
+    mimeType,
+    currentContentStatus,
+    skipContentStateUpdate,
+    contentType: contentData?.contentType,
+  });
+
   const handlePlayerEvent = useCallback((event: any) => {
     console.log('[CollectionContentPlayer] Player event:', event);
     if (event?.data?.type === 'EXIT') {
@@ -64,9 +106,10 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     }
   }, [handleClose]);
 
-  const handleTelemetryEvent = (event: any) => {
+  const handleTelemetryEvent = useCallback((event: any) => {
     console.log('[CollectionContentPlayer] Telemetry event:', event);
-  };
+    handleTelemetryStateUpdate(event);
+  }, [handleTelemetryStateUpdate]);
 
   if (playerIsLoading) {
     return (
@@ -116,6 +159,8 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
           <ContentPlayer
             mimeType={mimeType}
             metadata={playerMetadata}
+            cdata={cdata}
+            objectRollup={objectRollup}
             onPlayerEvent={handlePlayerEvent}
             onTelemetryEvent={handleTelemetryEvent}
           />

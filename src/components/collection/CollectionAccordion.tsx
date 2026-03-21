@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal, useIonRouter } from '@ionic/react';
+import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal, IonToast, useIonRouter } from '@ionic/react';
 import { chevronDownOutline } from 'ionicons/icons';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import { VideoIcon, DocumentIcon } from '../icons/CollectionIcons';
+import { isSelfAssess } from '../../services/course/enrollmentMapper';
 
 const COLLECTION_MIME = 'application/vnd.ekstep.content-collection';
 
@@ -15,23 +16,65 @@ function isVideoMime(mimeType?: string): boolean {
   return !!mimeType && mimeType.toLowerCase().startsWith('video/');
 }
 
+function formatDuration(seconds?: number): string {
+  if (!seconds || seconds <= 0) return '';
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
+// ── Status Icons (enrolled view only) ──
+const StatusNotStarted = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="7" stroke="var(--ion-color-medium, #92949c)" strokeWidth="1.5" />
+  </svg>
+);
+
+const StatusInProgress = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="7" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="1.5" />
+    <path d="M8 4V8L10.5 10.5" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+);
+
+const StatusCompleted = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <circle cx="8" cy="8" r="8" fill="var(--ion-color-success, #2dd36f)" />
+    <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+
+function getStatusIcon(status: number | undefined) {
+  if (status === 2) return <StatusCompleted />;
+  if (status === 1) return <StatusInProgress />;
+  return <StatusNotStarted />;
+}
+
+// ── Enrollment data passed to accordion for enrolled view ──
+interface EnrollmentData {
+  contentStatusMap: Record<string, number>;
+  contentAttemptInfoMap: Record<string, { attemptCount?: number; bestScore?: { totalScore: number; totalMaxScore: number } }>;
+}
+
 // ── Recursive sub-unit content ──
 interface ExpandedUnitContentProps {
   nodes: HierarchyContentNode[];
   collectionId: string;
-  viewState: 'anonymous' | 'unenrolled' | 'enrolled';
+  contentBlocked: boolean;
   onContentClick: (leafId: string) => void;
   t: (key: string) => string;
   depth?: number;
+  enrollmentData?: EnrollmentData;
 }
 
 const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
   nodes,
   collectionId,
-  viewState,
+  contentBlocked,
   onContentClick,
   t,
   depth = 0,
+  enrollmentData,
 }) => {
   if (!nodes?.length) return null;
 
@@ -39,7 +82,6 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
     <div className={`cp-curriculum-nested ${depth > 0 ? 'cp-curriculum-nested-indented' : ''}`}>
       {nodes.map((node) => {
         if (isCollectionNode(node)) {
-          // Sub-unit: render as a section title without accordion
           const childList = node.children ?? [];
           return (
             <div key={node.identifier} className="cp-curriculum-subunit">
@@ -51,28 +93,52 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
               <ExpandedUnitContent
                 nodes={childList}
                 collectionId={collectionId}
-                viewState={viewState}
+                contentBlocked={contentBlocked}
                 onContentClick={onContentClick}
                 t={t}
                 depth={depth + 1}
+                enrollmentData={enrollmentData}
               />
             </div>
           );
         }
+
+        const duration = formatDuration(node.duration);
+        const status = enrollmentData?.contentStatusMap[node.identifier];
+        const attemptInfo = enrollmentData?.contentAttemptInfoMap[node.identifier];
+        const selfAssess = enrollmentData ? isSelfAssess(node) : false;
+        const maxExceeded = selfAssess && node.maxAttempts && node.maxAttempts > 0 && (attemptInfo?.attemptCount ?? 0) >= node.maxAttempts;
 
         // Leaf content item
         return (
           <div
             key={node.identifier}
             className="cp-curriculum-item"
-            onClick={() => onContentClick(node.identifier)}
+            onClick={() => !contentBlocked && !maxExceeded && onContentClick(node.identifier)}
+            style={contentBlocked || maxExceeded ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
           >
             <div className="cp-curriculum-item-left">
+              {enrollmentData && getStatusIcon(status)}
               <span className="cp-curriculum-item-icon">
                 {isVideoMime(node.mimeType) ? <VideoIcon size={22} /> : <DocumentIcon size={22} />}
               </span>
-              <span className="cp-curriculum-item-title">{node.name}</span>
+              <div>
+                <span className="cp-curriculum-item-title">{node.name}</span>
+                {selfAssess && attemptInfo?.bestScore && (
+                  <div style={{ fontSize: '0.7rem', color: 'var(--ion-color-medium)', marginTop: 2 }}>
+                    Best Score: {attemptInfo.bestScore.totalScore}/{attemptInfo.bestScore.totalMaxScore}
+                  </div>
+                )}
+                {maxExceeded && (
+                  <div style={{ fontSize: '0.7rem', color: 'var(--ion-color-danger, #eb445a)', marginTop: 2 }}>
+                    Max attempts reached
+                  </div>
+                )}
+              </div>
             </div>
+            {duration && (
+              <span className="cp-curriculum-item-duration">{duration}</span>
+            )}
           </div>
         );
       })}
@@ -85,9 +151,11 @@ interface CollectionAccordionProps {
   children: HierarchyContentNode[];
   collectionId: string;
   isCourse: boolean;
-  viewState: 'anonymous' | 'unenrolled' | 'enrolled';
+  viewState: 'anonymous' | 'unenrolled' | 'enrolled' | 'default';
   t: (key: string) => string;
   onContentPlay?: (id: string) => void;
+  enrollmentData?: EnrollmentData;
+  hideTitle?: boolean;
 }
 
 const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
@@ -97,13 +165,21 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
   viewState,
   t,
   onContentPlay,
+  enrollmentData,
+  hideTitle,
 }) => {
   const router = useIonRouter();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [showJoinToast, setShowJoinToast] = useState(false);
+
+  // Content is blocked only for logged-in users who haven't joined a batch
+  const contentBlocked = viewState === 'unenrolled';
 
   const handleContentClick = (leafId: string) => {
     if (viewState === 'anonymous') {
       setShowLoginPrompt(true);
+    } else if (viewState === 'unenrolled') {
+      setShowJoinToast(true);
     } else {
       onContentPlay?.(leafId);
     }
@@ -115,9 +191,11 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
 
   return (
     <div className="cp-curriculum-section">
-      <h2 className="cp-curriculum-title">
-        {isCourse ? 'Course' : 'Collection'} Curriculum
-      </h2>
+      {!hideTitle && (
+        <h2 className="cp-curriculum-title">
+          {isCourse ? 'Course' : 'Collection'} Curriculum
+        </h2>
+      )}
 
       <IonAccordionGroup multiple={true} value={expandedValues} onIonChange={(event) => setExpandedValues(event.detail.value as string[])}>
         {(children ?? []).map((unit, unitIndex) => (
@@ -130,8 +208,10 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
           >
             <IonItem slot="header" lines="none" className="cp-curriculum-unit-header-item">
               <IonLabel className="ion-text-wrap">
-                <div className="cp-curriculum-unit-name">
-                  {unit.name ?? `Unit ${unitIndex + 1}`}
+                <div className="cp-curriculum-unit-header-row">
+                  <div className="cp-curriculum-unit-name">
+                    {unit.name ?? `Unit ${unitIndex + 1}`}
+                  </div>
                 </div>
                 {unit.description && (
                   <div className="cp-curriculum-subtitle">{unit.description}</div>
@@ -143,9 +223,10 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
               <ExpandedUnitContent
                 nodes={unit.children ?? []}
                 collectionId={collectionId}
-                viewState={viewState}
+                contentBlocked={contentBlocked}
                 onContentClick={handleContentClick}
                 t={t}
+                enrollmentData={enrollmentData}
               />
             </div>
           </IonAccordion>
@@ -178,6 +259,16 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
           </button>
         </div>
       </IonModal>
+
+      {/* Toast for unenrolled users trying to play content */}
+      <IonToast
+        isOpen={showJoinToast}
+        onDidDismiss={() => setShowJoinToast(false)}
+        message="Join the course to access content."
+        duration={2500}
+        position="bottom"
+        color="warning"
+      />
     </div>
   );
 };

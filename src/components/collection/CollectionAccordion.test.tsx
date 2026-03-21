@@ -26,11 +26,11 @@ vi.mock('@ionic/react', () => ({
   ),
   IonModal: ({ children, isOpen, onDidDismiss }: any) => {
     if (!isOpen) return null;
-    return (
-      <div data-testid="ion-modal">
-        {children}
-      </div>
-    );
+    return <div data-testid="ion-modal">{children}</div>;
+  },
+  IonToast: ({ isOpen, message }: any) => {
+    if (!isOpen) return null;
+    return <div data-testid="ion-toast">{message}</div>;
   },
   useIonRouter: () => ({
     push: vi.fn(),
@@ -182,12 +182,12 @@ describe('CollectionAccordion', () => {
       expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
     });
 
-    it('calls onContentPlay on leaf click when unenrolled', () => {
+    it('does NOT call onContentPlay on leaf click when unenrolled', () => {
       render(
         <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="unenrolled" t={mockT} onContentPlay={mockOnContentPlay} />
       );
       fireEvent.click(screen.getByText('Introduction'));
-      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+      expect(mockOnContentPlay).not.toHaveBeenCalled();
     });
 
     it('does NOT call onContentPlay on leaf click when anonymous — shows login prompt instead', () => {

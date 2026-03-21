@@ -6,7 +6,7 @@ import type { ApiResponse } from '../lib/http-client';
 
 const enrollmentService = new EnrollmentService();
 
-export function useUserEnrollmenList(
+export function useUserEnrollmentList(
   userId: string | null,
   options?: { enabled?: boolean }
 ): UseQueryResult<ApiResponse<CourseEnrollmentResponse>, Error> {

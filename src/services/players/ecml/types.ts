@@ -1,11 +1,6 @@
-export interface EcmlPlayerContextProps {
-  mode?: string;
-  cdata?: any[];
-  contextRollup?: {
-    l1: string;
-  };
-  objectRollup?: Record<string, any>;
-}
+import type { PlayerContext, PlayerContextOverrides } from '../PlayerContextService';
+
+export type EcmlPlayerContextProps = PlayerContextOverrides;
 
 export interface EcmlPlayerMetadata {
   identifier: string;
@@ -21,35 +16,7 @@ export interface EcmlPlayerMetadata {
 }
 
 export interface EcmlPlayerConfig {
-  context: {
-    mode: string;
-    sid: string;
-    did: string;
-    uid: string;
-    channel: string;
-    contentId: string;
-    pdata: {
-      id: string;
-      ver: string;
-      pid: string;
-    };
-    contextRollup: {
-      l1: string;
-    };
-    tags: string[];
-    cdata: any[];
-    timeDiff: number;
-    objectRollup: Record<string, any>;
-    host: string;
-    endpoint: string;
-    dims: string[];
-    app: string[];
-    partner?: any[];
-    userData: {
-      firstName: string;
-      lastName: string;
-    };
-  };
+  context: PlayerContext;
   config: {
     showEndPage: boolean;
     endPage?: Array<{ template: string; contentType: string[] }>;

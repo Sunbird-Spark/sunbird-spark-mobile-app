@@ -24,6 +24,7 @@ function mapToCollectionData(
     children,
     createdBy: content.createdBy,
     channel: content.channel,
+    hierarchyRoot: content,
   };
 }
 
