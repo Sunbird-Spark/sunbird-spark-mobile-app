@@ -1,5 +1,6 @@
 import { initializeApiClient } from './api/config';
 import { AppConsumerAuthService } from './services/AppConsumerAuthService';
+import { databaseService } from './services/db/DatabaseService';
 import { getClient } from './lib/http-client';
 import { userService } from './services/UserService';
 
@@ -21,6 +22,9 @@ export class AppInitializer {
     }
 
     try {
+      // Initialize SQLite database first — all other services depend on it
+      await databaseService.initialize();
+
       // Initialize API client
       await initializeApiClient();
 
