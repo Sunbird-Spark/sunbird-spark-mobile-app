@@ -90,7 +90,9 @@
   "certificates": "الشهادات",
   "badges": "الشارات",
   "timeSpent": "الوقت المُستغرق",
-  "contentsViewed": "المحتويات المشاهدة",
+  "contentsViewed": "Contents Viewed",
+  "totalCourses": "Total Courses",
+  "inProgress": "In Progress",
 
   "welcomeBack": "مرحباً بعودتك",
   "welcome": "مرحباً",
@@ -160,5 +162,28 @@
   "activeSessions": "الجلسات النشطة",
   "ongoingSessions": "جلسات جارية",
   "completionRate": "معدل الإكمال",
-  "averageCompletion": "متوسط الإكمال"
+  "averageCompletion": "متوسط الإكمال",
+
+  "all": "الكل",
+  "ongoing": "جارٍ",
+  "dueDate": "تاريخ الاستحقاق",
+  "downloadCertificate": "تحميل الشهادة",
+  "noCertificate": "لا توجد شهادة",
+  "noEnrolledCourses": "لا توجد دورات مسجلة بعد.",
+  "certificateDownloadError": "فشل تحميل الشهادة",
+
+  "personalInformation": "المعلومات الشخصية",
+  "learner": "متعلم",
+  "fullName": "الاسم الكامل",
+  "mobileNumber": "رقم الجوال",
+  "emailId": "البريد الإلكتروني",
+  "alternateEmailId": "البريد الإلكتروني البديل",
+  "sendingOtp": "جارٍ إرسال OTP…",
+  "enterTheCode": "أدخل الرمز",
+  "otpSubtitle": "أدخل الرمز المكوّن من 6 أرقام المُرسَل إلى رقم هاتفك وأكمل التحقق",
+  "otpValidity": "رمز OTP صالح لمدة 30 دقيقة",
+  "resendOtp": "إعادة إرسال OTP",
+  "verifying": "جارٍ التحقق…",
+  "submit": "إرسال",
+  "fieldUpdatedSuccessfully": "تم تحديث {{field}} بنجاح"
 }

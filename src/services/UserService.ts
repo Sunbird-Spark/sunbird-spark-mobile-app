@@ -122,9 +122,23 @@ class UserService {
 
   /** Fetch user profile from server */
   async userRead(userId: string): Promise<ApiResponse<any>> {
-    return getClient().get(
-      `/user/v5/read/${userId}?fields=promptTnC,tncLatestVersion,tncLatestVersionUrl`
-    );
+    const fields = [
+      'promptTnC',
+      'tncLatestVersion',
+      'tncLatestVersionUrl',
+      'userName',
+      'phone',
+      'email',
+      'recoveryEmail',
+      'roles',
+      'organisations',
+    ].join(',');
+    return getClient().get(`/user/v5/read/${userId}?fields=${fields}`);
+  }
+
+  /** Update user profile fields */
+  async updateUser(request: Record<string, unknown>): Promise<ApiResponse<any>> {
+    return getClient().patch('/user/v3/update', { request });
   }
 
   /** Accept TnC for the given version */

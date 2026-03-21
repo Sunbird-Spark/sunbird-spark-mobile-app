@@ -1,8 +1,9 @@
-import React, { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
 import { useUser } from '../hooks/useUser';
+import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
 
@@ -31,6 +32,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(() => userService.isLoggedIn());
   const [userId, setUserId] = useState(() => userService.getUserId());
   const [tncDismissed, setTncDismissed] = useState(false);
+
+  const isAppInitialized = useAppInitialized();
+
+  // AppInitializer loads the session from secure storage asynchronously.
+  // The useState initialisers above run before that completes, so userId may
+  // be null even for a logged-in user.  Sync once initialisation is done.
+  useEffect(() => {
+    if (!isAppInitialized) return;
+    setUserId(userService.getUserId());
+    setIsAuthenticated(userService.isLoggedIn());
+  }, [isAppInitialized]);
 
   // Fetch user profile reactively when userId is set
   const { data: profile } = useUser(userId);

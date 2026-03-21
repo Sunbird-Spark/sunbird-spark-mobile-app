@@ -6,6 +6,14 @@
     --background: var(--ion-color-light);
 }
 
+/* Modal root — replaces IonPage inside IonModal to avoid blank-page layout bug */
+.pd-modal-root {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: var(--ion-color-light);
+}
+
 /* ── Page header ── */
 .personal-details-page .pd-header {
     box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);

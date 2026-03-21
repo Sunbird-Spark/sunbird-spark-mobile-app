@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     IonContent,
     IonHeader,
@@ -8,72 +9,86 @@ import {
     IonButtons,
     IonBackButton,
     IonModal,
+    IonToast,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
+import { GoogleReCaptchaProvider, useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+import { useAuth } from '../contexts/AuthContext';
+import { useUser } from '../hooks/useUser';
+import { useEditProfile, TriggerCaptcha } from '../hooks/useEditProfile';
+import { useSystemSetting } from '../hooks/useSystemSetting';
 import './PersonalDetailsPage.css';
 
 const OTP_LENGTH = 6;
 
-const PersonalDetailsPage: React.FC = () => {
-    const [formData] = useState({
-        fullName: 'Prachi Desai',
-        mobileNumber: '',
-        emailId: 'prachi@gmail.com',
-        alternateEmailId: '',
-        district: 'Bengaluru',
-        state: 'Karnataka',
-    });
+// ── Inner component — consumes the v3 reCAPTCHA context ────────────────────
+const PersonalDetailsBody: React.FC = () => {
+    const { t } = useTranslation();
+    const { userId } = useAuth();
+    const { data: profile } = useUser(userId);
+    const { executeRecaptcha } = useGoogleReCaptcha();
 
-    const [editData, setEditData] = useState<Record<string, string>>({ ...formData });
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [isOtpOpen, setIsOtpOpen] = useState(false);
-    const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''));
-    const [timer, setTimer] = useState(240); // 4 minutes = 240 seconds
-    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-    const openEdit = () => {
-        setEditData({ ...formData });
-        setIsEditOpen(true);
-    };
-
-    const handleChange = (field: string, value: string) => {
-        setEditData(prev => ({ ...prev, [field]: value }));
-    };
-
-    /* ── OTP timer ── */
-    const startTimer = useCallback(() => {
-        setTimer(240);
-        if (timerRef.current) clearInterval(timerRef.current);
-        timerRef.current = setInterval(() => {
-            setTimer(prev => {
-                if (prev <= 1) {
-                    if (timerRef.current) clearInterval(timerRef.current);
-                    return 0;
-                }
-                return prev - 1;
-            });
-        }, 1000);
-    }, []);
-
-    useEffect(() => {
-        if (!isOtpOpen) {
-            if (timerRef.current) clearInterval(timerRef.current);
+    const triggerCaptcha = useCallback<TriggerCaptcha>((callback) => {
+        if (!executeRecaptcha) {
+            // No provider / key not ready — proceed without token
+            callback();
             return;
         }
-        // OTP modal opened — start a fresh timer via interval (no sync setState)
-        if (timerRef.current) clearInterval(timerRef.current);
-        let remaining = 240;
-        timerRef.current = setInterval(() => {
-            remaining -= 1;
-            if (remaining <= 0) {
-                if (timerRef.current) clearInterval(timerRef.current);
-                remaining = 0;
-            }
-            setTimer(remaining);
-        }, 1000);
-        return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [isOtpOpen]);
+        executeRecaptcha('otp_request')
+            .then(token => callback(token))
+            .catch(() => callback());
+    }, [executeRecaptcha]);
+
+    const {
+        editData,
+        otpValue,
+        otpStatus,
+        otpError,
+        timer,
+        resendCount,
+        activeOtpField,
+        handleFieldChange,
+        handleVerifyDetails,
+        handleOtpChange,
+        handleSubmitOtp,
+        handleResendOtp,
+        resetOtpState,
+    } = useEditProfile(userId, profile, triggerCaptcha);
+
+    const [isEditOpen, setIsEditOpen] = React.useState(false);
+    const [isOtpOpen, setIsOtpOpen] = React.useState(false);
+    const [toastMessage, setToastMessage] = React.useState('');
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+    const transitioningToOtp = useRef(false);
+
+    const fullName = [profile?.firstName, profile?.lastName].filter(Boolean).join(' ');
+    const formData = {
+        fullName,
+        mobileNumber: (profile?.phone as string) ?? '',
+        emailId: (profile?.email as string) ?? '',
+        alternateEmailId: (profile?.recoveryEmail as string) ?? '',
+    };
+
+    const OTP_FIELD_LABELS: Record<string, string> = {
+        mobileNumber: t('mobileNumber'),
+        emailId: t('emailId'),
+        alternateEmailId: t('alternateEmailId'),
+    };
+
+    const openEdit = () => setIsEditOpen(true);
+
+    const closeEdit = () => {
+        setIsEditOpen(false);
+        if (!transitioningToOtp.current) {
+            resetOtpState();
+        }
+        transitioningToOtp.current = false;
+    };
+
+    const closeOtp = () => {
+        setIsOtpOpen(false);
+        resetOtpState();
+    };
 
     const formatTime = (s: number) => {
         const m = String(Math.floor(s / 60)).padStart(2, '0');
@@ -81,41 +96,49 @@ const PersonalDetailsPage: React.FC = () => {
         return `${m}:${sec}`;
     };
 
-    /* ── OTP input handlers ── */
-    const handleOtpChange = (index: number, value: string) => {
-        if (!/^\d*$/.test(value)) return; // digits only
-        const next = [...otp];
-        next[index] = value.slice(-1); // single char
-        setOtp(next);
+    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+        if (e.key === 'Backspace' && !otpValue[index] && index > 0) {
+            inputRefs.current[index - 1]?.focus();
+        }
+    };
+
+    const handleOtpInputChange = (index: number, value: string) => {
+        handleOtpChange(index, value);
         if (value && index < OTP_LENGTH - 1) {
             inputRefs.current[index + 1]?.focus();
         }
     };
 
-    const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-        if (e.key === 'Backspace' && !otp[index] && index > 0) {
-            inputRefs.current[index - 1]?.focus();
+    const handleVerifyClick = async () => {
+        const shouldOpenOtp = await handleVerifyDetails();
+        if (shouldOpenOtp) {
+            transitioningToOtp.current = true;
+            setIsEditOpen(false);
+            setIsOtpOpen(true);
+        } else if (otpStatus !== 'error') {
+            setIsEditOpen(false);
         }
     };
 
-    const handleResend = () => {
-        setOtp(Array(OTP_LENGTH).fill(''));
-        startTimer();
+    const handleSubmitClick = async () => {
+        const success = await handleSubmitOtp();
+        if (success) {
+            setIsOtpOpen(false);
+            const label = activeOtpField ? OTP_FIELD_LABELS[activeOtpField] : null;
+            if (label) setToastMessage(t('fieldUpdatedSuccessfully', { field: label }));
+        }
+    };
+
+    const handleResendClick = async () => {
+        await handleResendOtp();
         inputRefs.current[0]?.focus();
     };
 
-    const handleVerifyClick = () => {
-        setIsEditOpen(false);
-        setIsOtpOpen(true);
-    };
-
     const fields = [
-        { key: 'fullName', label: 'Full Name', type: 'text' },
-        { key: 'mobileNumber', label: 'Mobile Number', type: 'text' },
-        { key: 'emailId', label: 'Email ID', type: 'email' },
-        { key: 'alternateEmailId', label: 'Alternate Email ID', type: 'email' },
-        { key: 'district', label: 'District', type: 'text' },
-        { key: 'state', label: 'State', type: 'text' },
+        { key: 'fullName', label: t('fullName'), type: 'text' },
+        { key: 'mobileNumber', label: t('mobileNumber'), type: 'text' },
+        { key: 'emailId', label: t('emailId'), type: 'email' },
+        { key: 'alternateEmailId', label: t('alternateEmailId'), type: 'email' },
     ];
 
     return (
@@ -131,7 +154,7 @@ const PersonalDetailsPage: React.FC = () => {
                             className="pd-back-btn"
                         />
                     </IonButtons>
-                    <IonTitle className="pd-title">Personal Details</IonTitle>
+                    <IonTitle className="pd-title">{t('personalDetails')}</IonTitle>
                     <IonButtons slot="end">
                         <button className="pd-edit-btn" onClick={openEdit}>
                             <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -158,14 +181,14 @@ const PersonalDetailsPage: React.FC = () => {
             {/* ── Edit bottom-sheet modal ── */}
             <IonModal
                 isOpen={isEditOpen}
-                onDidDismiss={() => setIsEditOpen(false)}
+                onDidDismiss={closeEdit}
                 className="pd-edit-modal"
             >
-                <IonPage>
+                <div className="pd-modal-root">
                     <IonHeader className="ion-no-border">
                         <IonToolbar className="pd-modal-toolbar">
                             <IonButtons slot="end">
-                                <button className="pd-modal-close-btn" onClick={() => setIsEditOpen(false)}>
+                                <button className="pd-modal-close-btn" onClick={closeEdit}>
                                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
                                         <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
@@ -183,33 +206,40 @@ const PersonalDetailsPage: React.FC = () => {
                                     <input
                                         type={f.type}
                                         className="pd-input"
-                                        value={editData[f.key]}
-                                        onChange={e => handleChange(f.key, e.target.value)}
+                                        value={editData[f.key] ?? ''}
+                                        onChange={e => handleFieldChange(f.key, e.target.value)}
                                     />
                                 </div>
                             ))}
+                            {otpStatus === 'error' && otpError && (
+                                <p className="pd-error">{otpError}</p>
+                            )}
                         </div>
                     </IonContent>
 
                     <div className="pd-modal-footer">
-                        <button className="pd-verify-btn" onClick={handleVerifyClick}>
-                            Verify the Details
+                        <button
+                            className="pd-verify-btn"
+                            onClick={handleVerifyClick}
+                            disabled={otpStatus === 'sending'}
+                        >
+                            {otpStatus === 'sending' ? t('sendingOtp') : t('verifyDetails')}
                         </button>
                     </div>
-                </IonPage>
+                </div>
             </IonModal>
 
             {/* ── OTP Verification bottom-sheet modal ── */}
             <IonModal
                 isOpen={isOtpOpen}
-                onDidDismiss={() => setIsOtpOpen(false)}
+                onDidDismiss={closeOtp}
                 className="pd-otp-modal"
             >
-                <IonPage>
+                <div className="pd-modal-root">
                     <IonHeader className="ion-no-border">
                         <IonToolbar className="pd-modal-toolbar">
                             <IonButtons slot="end">
-                                <button className="pd-modal-close-btn" onClick={() => setIsOtpOpen(false)}>
+                                <button className="pd-modal-close-btn" onClick={closeOtp}>
                                     <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
                                         <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
@@ -221,16 +251,15 @@ const PersonalDetailsPage: React.FC = () => {
 
                     <IonContent className="pd-modal-content">
                         <div className="otp-body">
-                            <h2 className="otp-title">Enter the code</h2>
+                            <h2 className="otp-title">{t('enterTheCode')}</h2>
                             <p className="otp-subtitle">
-                                Enter the 6 digit code sent to your phone number and complete the verification
+                                {t('otpSubtitle')}
                             </p>
 
-                            <p className="otp-validity">OTP is valid for 30 minutes</p>
+                            <p className="otp-validity">{t('otpValidity')}</p>
 
-                            {/* 6-digit OTP boxes */}
                             <div className="otp-inputs">
-                                {otp.map((digit, idx) => (
+                                {otpValue.map((digit, idx) => (
                                     <input
                                         key={idx}
                                         ref={el => { inputRefs.current[idx] = el; }}
@@ -239,32 +268,66 @@ const PersonalDetailsPage: React.FC = () => {
                                         maxLength={1}
                                         className="otp-box"
                                         value={digit}
-                                        onChange={e => handleOtpChange(idx, e.target.value)}
+                                        onChange={e => handleOtpInputChange(idx, e.target.value)}
                                         onKeyDown={e => handleOtpKeyDown(idx, e)}
                                     />
                                 ))}
                             </div>
 
-                            {/* Timer + Resend */}
+                            {otpStatus === 'error' && otpError && (
+                                <p className="pd-error">{otpError}</p>
+                            )}
+
                             <div className="otp-timer-row">
                                 <span className="otp-timer">{formatTime(timer)}</span>
                                 <button
                                     className="otp-resend"
-                                    onClick={handleResend}
-                                    disabled={timer > 0}
+                                    onClick={handleResendClick}
+                                    disabled={timer > 0 || resendCount >= 4 || otpStatus === 'verifying'}
                                 >
-                                    Resend OTP
+                                    {t('resendOtp')}
                                 </button>
                             </div>
                         </div>
                     </IonContent>
 
                     <div className="pd-modal-footer">
-                        <button className="pd-verify-btn pd-submit-btn">Submit</button>
+                        <button
+                            className="pd-verify-btn pd-submit-btn"
+                            onClick={handleSubmitClick}
+                            disabled={otpValue.join('').length < OTP_LENGTH || otpStatus === 'verifying'}
+                        >
+                            {otpStatus === 'verifying' ? t('verifying') : t('submit')}
+                        </button>
                     </div>
-                </IonPage>
+                </div>
             </IonModal>
+
+            <IonToast
+                isOpen={!!toastMessage}
+                onDidDismiss={() => setToastMessage('')}
+                message={toastMessage}
+                duration={3000}
+                position="bottom"
+            />
         </IonPage>
+    );
+};
+
+// ── Outer component — resolves the site key and provides reCAPTCHA context ──
+const PersonalDetailsPage: React.FC = () => {
+    const { data: captchaSetting } = useSystemSetting('portal_google_recaptcha_site_key');
+    const captchaSiteKey = (captchaSetting?.data as any)?.response?.value ?? '';
+
+    if (!captchaSiteKey) {
+    
+        return <PersonalDetailsBody />;
+    }
+
+    return (
+        <GoogleReCaptchaProvider reCaptchaKey={captchaSiteKey}>
+            <PersonalDetailsBody />
+        </GoogleReCaptchaProvider>
     );
 };
 
