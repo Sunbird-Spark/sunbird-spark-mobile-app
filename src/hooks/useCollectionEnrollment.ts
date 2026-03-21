@@ -1,4 +1,4 @@
-import { useMemo, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
@@ -151,12 +151,12 @@ export function useCollectionEnrollment(
     );
   }, [batchReadQuery.data]);
 
-  // 9. Batch dates
-  // Use useSyncExternalStore so Date.now() is read as external state (pure during render).
-  const now = useSyncExternalStore(
-    (cb) => { const id = setInterval(cb, 60_000); return () => clearInterval(id); },
-    () => Date.now(),
-  );
+  // 9. Batch dates — refresh once per minute
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
