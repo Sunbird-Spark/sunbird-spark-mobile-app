@@ -11,7 +11,12 @@ vi.mock('@ionic/react', () => ({
   IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
   IonContent: ({ children }: any) => <div data-testid="ion-content">{children}</div>,
   IonModal: ({ isOpen, children }: any) => (isOpen ? <div data-testid="ion-modal">{children}</div> : null),
+  IonSpinner: () => <div data-testid="ion-spinner" />,
+  IonToggle: ({ checked, onIonChange }: any) => <input data-testid="ion-toggle" type="checkbox" checked={checked} onChange={onIonChange} />,
+  IonToast: ({ isOpen, message }: any) => (isOpen ? <div data-testid="ion-toast">{message}</div> : null),
   useIonRouter: () => ({ push: mockRouterPush, goBack: mockRouterGoBack }),
+  useIonViewDidEnter: vi.fn(),
+  useIonViewWillLeave: vi.fn(),
 }));
 
 // ── Mock CSS ──
@@ -83,6 +88,57 @@ vi.mock('../services/relatedContentMapper', () => ({
   mapSearchContentToRelatedContentItems: vi.fn(() => []),
 }));
 
+vi.mock('../hooks/useCollectionEnrollment', () => ({
+  useCollectionEnrollment: vi.fn(() => ({
+    isEnrolled: false,
+    isEnrollmentLoading: false,
+    progressPercentage: 0,
+    effectiveBatchId: undefined,
+    hasCertificate: false,
+    certPreviewUrl: undefined,
+    isBatchEnded: false,
+    isBatchUpcoming: false,
+    batchStartDate: undefined,
+    batchEnrollmentType: undefined,
+    enrollableBatches: [],
+    batchListError: null,
+    enrol: { mutateAsync: vi.fn() },
+    unenrol: { mutateAsync: vi.fn() },
+    contentStatusMap: {},
+  })),
+}));
+
+vi.mock('../hooks/useConsent', () => ({
+  useConsent: vi.fn(() => ({
+    showConsentPopup: false,
+    consentData: null,
+    submitConsent: vi.fn(),
+    dismissConsent: vi.fn(),
+  })),
+}));
+
+vi.mock('../hooks/useUser', () => ({
+  useUser: vi.fn(() => ({
+    data: undefined,
+    isLoading: false,
+  })),
+}));
+
+vi.mock('../hooks/useForceSync', () => ({
+  useForceSync: vi.fn(() => vi.fn()),
+}));
+
+vi.mock('../services/UserService', () => ({
+  userService: {
+    getUserId: vi.fn(() => 'mock-user-id'),
+    isLoggedIn: vi.fn(() => false),
+  },
+}));
+
+vi.mock('../components/collection/CourseCompletionDialog', () => ({
+  default: () => <div data-testid="course-completion-dialog" />,
+}));
+
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: vi.fn(() => ({ isAuthenticated: false })),
 }));
@@ -97,6 +153,7 @@ import { useCollection } from '../hooks/useCollection';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useAuth } from '../contexts/AuthContext';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
+import { userService } from '../services/UserService';
 
 const mockCollectionData = {
   id: 'do_test_123',
@@ -258,7 +315,7 @@ describe('CollectionPage', () => {
   });
 
   describe('view state', () => {
-    it('shows enrolled viewState for non-trackable collections', () => {
+    it('shows default viewState for non-trackable collections', () => {
       (useCollection as any).mockReturnValue({
         data: { ...mockCollectionData, trackable: { enabled: 'No' } },
         isLoading: false,
@@ -267,7 +324,7 @@ describe('CollectionPage', () => {
       });
 
       render(<CollectionPage />);
-      expect(screen.getByTestId('collection-accordion')).toHaveAttribute('data-view-state', 'enrolled');
+      expect(screen.getByTestId('collection-accordion')).toHaveAttribute('data-view-state', 'default');
     });
 
     it('shows anonymous viewState for trackable collection when not authenticated', () => {
@@ -299,7 +356,7 @@ describe('CollectionPage', () => {
     });
 
     it('shows unenrolled viewState for trackable collection when authenticated', () => {
-      (useAuth as any).mockReturnValue({ isAuthenticated: true });
+      vi.mocked(userService.isLoggedIn).mockReturnValue(true);
       (useCollection as any).mockReturnValue({
         data: { ...mockCollectionData, trackable: { enabled: 'Yes' } },
         isLoading: false,
@@ -313,7 +370,7 @@ describe('CollectionPage', () => {
     });
 
     it('opens batch modal on "Join the Course" click', () => {
-      (useAuth as any).mockReturnValue({ isAuthenticated: true });
+      vi.mocked(userService.isLoggedIn).mockReturnValue(true);
       (useCollection as any).mockReturnValue({
         data: { ...mockCollectionData, trackable: { enabled: 'Yes' } },
         isLoading: false,

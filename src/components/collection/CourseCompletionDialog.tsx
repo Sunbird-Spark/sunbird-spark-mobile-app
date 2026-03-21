@@ -38,7 +38,7 @@ export default function CourseCompletionDialog({
     if (collectionId !== lastCollectionIdRef.current) {
       lastCollectionIdRef.current = collectionId;
       previousProgressRef.current = null;
-      setOpen(false);
+      queueMicrotask(() => setOpen(false));
     }
   }, [collectionId]);
 
@@ -65,7 +65,7 @@ export default function CourseCompletionDialog({
       if (previousProgressRef.current < 100 && currentPercent >= 100) {
         if (!completionShownForCollectionIdsRef.current.has(collectionId)) {
           completionShownForCollectionIdsRef.current.add(collectionId);
-          setOpen(true);
+          queueMicrotask(() => setOpen(true));
         }
         previousProgressRef.current = 100;
         return;
@@ -76,7 +76,7 @@ export default function CourseCompletionDialog({
     if (previousProgressRef.current < 100 && currentPercent >= 100) {
       if (!completionShownForCollectionIdsRef.current.has(collectionId)) {
         completionShownForCollectionIdsRef.current.add(collectionId);
-        setOpen(true);
+        queueMicrotask(() => setOpen(true));
       }
       previousProgressRef.current = 100;
       return;

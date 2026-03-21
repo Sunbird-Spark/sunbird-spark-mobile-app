@@ -26,8 +26,7 @@ vi.mock('@ionic/react', () => ({
   ),
   IonModal: ({ children, isOpen, onDidDismiss }: any) => {
     if (!isOpen) return null;
-    return (
-    );
+    return <div data-testid="ion-modal">{children}</div>;
   },
   IonToast: ({ isOpen, message }: any) => {
     if (!isOpen) return null;

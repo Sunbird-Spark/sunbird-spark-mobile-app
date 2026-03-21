@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
@@ -152,18 +152,24 @@ export function useCollectionEnrollment(
   }, [batchReadQuery.data]);
 
   // 9. Batch dates
+  // Use useSyncExternalStore so Date.now() is read as external state (pure during render).
+  const now = useSyncExternalStore(
+    (cb) => { const id = setInterval(cb, 60_000); return () => clearInterval(id); },
+    () => Date.now(),
+  );
+
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
     if (!endDateStr) return false;
     const endMs = new Date(endDateStr).getTime();
-    return Number.isFinite(endMs) && endMs < Date.now();
-  }, [batchReadQuery.data]);
+    return Number.isFinite(endMs) && endMs < now;
+  }, [batchReadQuery.data, now]);
 
   const isBatchUpcoming = useMemo(() => {
     const startDateStr = batchReadQuery.data?.data?.response?.startDate as string | undefined;
     if (!startDateStr) return false;
-    return new Date(startDateStr).getTime() > Date.now();
-  }, [batchReadQuery.data]);
+    return new Date(startDateStr).getTime() > now;
+  }, [batchReadQuery.data, now]);
 
   const batchStartDate = batchReadQuery.data?.data?.response?.startDate as string | undefined;
   const batchEnrollmentType = batchReadQuery.data?.data?.response?.enrollmentType as string | undefined;

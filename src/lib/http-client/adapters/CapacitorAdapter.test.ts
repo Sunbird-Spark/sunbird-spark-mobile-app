@@ -7,7 +7,7 @@ vi.mock('@capacitor/core', () => ({
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
-    del: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -260,7 +260,7 @@ describe('CapacitorAdapter', () => {
 
   describe('DELETE requests', () => {
     it('should handle DELETE', async () => {
-      (CapacitorHttp.del as any).mockResolvedValue({
+      (CapacitorHttp.delete as any).mockResolvedValue({
         data: null,
         status: 204,
         headers: {},
@@ -268,7 +268,7 @@ describe('CapacitorAdapter', () => {
 
       const result = await adapter.delete('/test');
 
-      expect(CapacitorHttp.del).toHaveBeenCalledWith({
+      expect(CapacitorHttp.delete).toHaveBeenCalledWith({
         url: 'http://test.com/api/test',
         headers: {},
       });
