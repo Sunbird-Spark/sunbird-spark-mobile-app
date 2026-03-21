@@ -9,6 +9,7 @@ export function useForceSync(
   collectionId: string | undefined,
   batchId: string | undefined,
   courseProgressProps: { total: number; completed: number; percentage: number } | null | undefined,
+  isBatchEnded?: boolean,
 ) {
   const [, setForceSyncRefresh] = useState(0);
   const [isForceSyncing, setIsForceSyncing] = useState(false);
@@ -20,6 +21,7 @@ export function useForceSync(
     userId &&
     collectionId &&
     batchId &&
+    !isBatchEnded &&
     progressPercentage >= 100 &&
     canUseForceSync(userId, collectionId, batchId),
   );

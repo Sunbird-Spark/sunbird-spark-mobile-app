@@ -20,7 +20,7 @@ import { LearningStatsGrid } from '../components/home/learning-started/LearningS
 import { ContinueLearningCard } from '../components/home/learning-started/ContinueLearningCard';
 import { InProgressContents } from '../components/home/learning-started/InProgressContents';
 import { useFormRead } from '../hooks/useFormRead';
-import { useUserEnrollmenList } from '../hooks/useUserEnrollment';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { useUserCertificates } from '../hooks/useUserCertificates';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useLandingPageConfig } from '../hooks/useLandingPageConfig';
@@ -155,7 +155,7 @@ const HomePage: React.FC = () => {
     isLoading: enrollmentsLoading,
     error: enrollmentsError,
     refetch,
-  } = useUserEnrollmenList(userId, { enabled: isAuthenticated });
+  } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
 
   const enrolledCourses = _.get(enrollmentData, 'data.courses', []);
   const enrolledCount = _.size(enrolledCourses);

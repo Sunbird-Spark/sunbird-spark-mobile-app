@@ -152,7 +152,7 @@ const CollectionPage: React.FC = () => {
   const [toastMessage, setToastMessage] = useState('');
 
   // Force sync (enrolled only)
-  const forceSync = useForceSync(userId, collectionId, enrollment.enrolledBatchId ?? undefined, enrollment.progressProps);
+  const forceSync = useForceSync(userId, collectionId, enrollment.enrolledBatchId ?? undefined, enrollment.progressProps, enrollment.isBatchEnded);
 
   // Related content search
   const hierarchySuccess = !isError && !!collectionData;

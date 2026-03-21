@@ -12,9 +12,10 @@ import {
 } from '@ionic/react';
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
+import { Redirect } from 'react-router-dom';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import './SignInPage.css';
 
 const GoogleIcon: React.FC = () => (
@@ -68,7 +69,7 @@ const SignInPage: React.FC = () => {
 
   const { isOffline } = useNetwork();
   const { loginWithCredentials } = useAuth();
-  const history = useHistory();
+  const router = useIonRouter();
   const wasOffline = useRef(false);
 
   useEffect(() => {
@@ -96,7 +97,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithCredentials(trimmedEmail, password);
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     } catch (err) {
       setError(getLoginErrorMessage(err));
     } finally {
