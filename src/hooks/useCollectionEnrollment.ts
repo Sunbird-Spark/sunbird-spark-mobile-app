@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
@@ -151,25 +151,19 @@ export function useCollectionEnrollment(
     );
   }, [batchReadQuery.data]);
 
-  // 9. Batch dates — refresh once per minute
-  const [now, setNow] = useState(Date.now);
-  useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-
+  // 9. Batch dates
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
     if (!endDateStr) return false;
     const endMs = new Date(endDateStr).getTime();
-    return Number.isFinite(endMs) && endMs < now;
-  }, [batchReadQuery.data, now]);
+    return Number.isFinite(endMs) && endMs < Date.now();
+  }, [batchReadQuery.data]);
 
   const isBatchUpcoming = useMemo(() => {
     const startDateStr = batchReadQuery.data?.data?.response?.startDate as string | undefined;
     if (!startDateStr) return false;
-    return new Date(startDateStr).getTime() > now;
-  }, [batchReadQuery.data, now]);
+    return new Date(startDateStr).getTime() > Date.now();
+  }, [batchReadQuery.data]);
 
   const batchStartDate = batchReadQuery.data?.data?.response?.startDate as string | undefined;
   const batchEnrollmentType = batchReadQuery.data?.data?.response?.enrollmentType as string | undefined;
