@@ -80,7 +80,7 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata]);
+  }, [metadata.identifier]);
 
   return (
     <div

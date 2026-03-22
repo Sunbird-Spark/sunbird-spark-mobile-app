@@ -80,7 +80,7 @@ export async function buildPlayerContext(
       const profile = profileResponse?.data?.response;
       if (profile) {
         userData = {
-          firstName: profile.firstName || '',
+          firstName: profile.firstName || 'Guest',
           lastName: profile.lastName || '',
         };
         // User's channel acts as slug for org search
