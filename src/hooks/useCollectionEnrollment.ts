@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
@@ -152,7 +152,7 @@ export function useCollectionEnrollment(
   }, [batchReadQuery.data]);
 
   // 9. Batch dates — captured once on mount
-  const now = useRef(Date.now()).current;
+  const [now] = useState(Date.now);
 
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
