@@ -47,15 +47,11 @@ vi.mock('@ionic/react', () => ({
   IonImg: ({ src, alt, className }: any) => (
     <img data-testid="ion-img" src={src} alt={alt} className={className} />
   ),
+  useIonRouter: () => ({ push: mockPush, goBack: vi.fn(), canGoBack: () => true }),
 }));
 
-// Mock react-router-dom
+// Mock router
 const mockPush = vi.fn();
-vi.mock('react-router-dom', () => ({
-  useHistory: () => ({
-    push: mockPush,
-  }),
-}));
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
@@ -118,7 +114,7 @@ describe('CourseCard', () => {
       render(<CourseCard course={mockCourse} />);
       
       fireEvent.click(screen.getByTestId('ion-card'));
-      expect(mockPush).toHaveBeenCalledWith('/courses/1');
+      expect(mockPush).toHaveBeenCalledWith('/courses/1', 'forward', 'push');
     });
 
     it('shows enrolled badge when enrolled', () => {
