@@ -98,10 +98,9 @@
   "certificates": "Certificats",
   "badges": "Badges",
   "timeSpent": "Temps passé",
-  "contentsViewed": "Contents Viewed",
-  "totalCourses": "Total Courses",
-  "inProgress": "In Progress",
-
+  "contentsViewed": "Contenus consultés",
+  "totalCourses": "Total des cours",
+  "inProgress": "En cours",
   "welcomeBack": "Bienvenue à nouveau",
   "welcome": "Bienvenue",
 

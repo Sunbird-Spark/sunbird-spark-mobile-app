@@ -1,5 +1,5 @@
 import { Directory, Filesystem } from '@capacitor/filesystem';
-import { getClient } from '../lib/http-client';
+import { getClient, ApiResponse } from '../lib/http-client';
 
 export interface CertificateSearchResponse {
   [key: string]: unknown;
@@ -17,7 +17,7 @@ interface CertificateRcSearchResponse {
 
 export class CertificateService {
   /** Original method — search by recipient userId */
-  async searchCertificates(userId: string): Promise<{ data: CertificateSearchResponse }> {
+  async searchCertificates(userId: string): Promise<ApiResponse<CertificateSearchResponse>> {
     return getClient().post<CertificateSearchResponse>('/rc/certificate/v1/search', {
       filters: {
         recipient: {
@@ -49,11 +49,11 @@ export class CertificateService {
     const response = await getClient().get<string>(`/rc/certificate/v1/download/${certificateId}`);
     const svgContent = response.data as unknown as string;
     const fileName = `certificate_${certificateId}.svg`;
-    const base64Data = btoa(unescape(encodeURIComponent(svgContent)));
     await Filesystem.writeFile({
       path: fileName,
-      data: base64Data,
+      data: svgContent,
       directory: Directory.Documents,
+      encoding: 'utf8',
     });
     return fileName;
   }

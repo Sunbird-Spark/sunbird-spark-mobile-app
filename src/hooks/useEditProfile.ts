@@ -217,6 +217,27 @@ export const useEditProfile = (
     setTimer(0);
   }, []);
 
+  const resetEditData = useCallback(() => {
+    if (profile) {
+      setEditData({
+        fullName: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
+        mobileNumber: (profile.phone as string) ?? '',
+        emailId: (profile.email as string) ?? '',
+        alternateEmailId: (profile.recoveryEmail as string) ?? '',
+      });
+    }
+  }, [profile]);
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, []);
+
   return {
     editData,
     otpValue,
@@ -231,5 +252,6 @@ export const useEditProfile = (
     handleSubmitOtp,
     handleResendOtp,
     resetOtpState,
+    resetEditData,
   };
 };

@@ -53,6 +53,7 @@ const PersonalDetailsBody: React.FC = () => {
         handleSubmitOtp,
         handleResendOtp,
         resetOtpState,
+        resetEditData,
     } = useEditProfile(userId, profile, triggerCaptcha);
 
     const [isEditOpen, setIsEditOpen] = React.useState(false);
@@ -75,7 +76,10 @@ const PersonalDetailsBody: React.FC = () => {
         alternateEmailId: t('alternateEmailId'),
     };
 
-    const openEdit = () => setIsEditOpen(true);
+    const openEdit = () => {
+        resetEditData();
+        setIsEditOpen(true);
+    };
 
     const closeEdit = () => {
         setIsEditOpen(false);

@@ -90,9 +90,9 @@
   "certificates": "الشهادات",
   "badges": "الشارات",
   "timeSpent": "الوقت المُستغرق",
-  "contentsViewed": "Contents Viewed",
-  "totalCourses": "Total Courses",
-  "inProgress": "In Progress",
+  "contentsViewed": "المحتوى المُشاهد",
+  "totalCourses": "إجمالي الدورات",
+  "inProgress": "قيد التقدّم",
 
   "welcomeBack": "مرحباً بعودتك",
   "welcome": "مرحباً",
