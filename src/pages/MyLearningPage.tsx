@@ -7,7 +7,7 @@ import {
 } from '@ionic/react';
 import PageLoader from '../components/common/PageLoader';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
@@ -95,7 +95,7 @@ interface CourseCardItemProps {
 
 const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
 
   const collectionId = course.collectionId || course.courseId;
   const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
@@ -105,7 +105,7 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
   return (
     <div
       className="my-learning__card"
-      onClick={() => collectionId && history.push(`/collection/${collectionId}`)}
+      onClick={() => collectionId && router.push(`/collection/${collectionId}`, 'forward', 'push')}
     >
       <div className="my-learning__card-thumbnail">
         {thumbnail
@@ -136,7 +136,7 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
 // ── Recommended section ──
 const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolledCourseIds }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
   const { data, isLoading } = useContentSearch({
     request: {
       filters: { status: ['Live'], objectType: ['Content'] },
@@ -165,7 +165,7 @@ const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolle
         <h2 className="content-carousel-title">{t('recommendedContent')}</h2>
         <button
           className="content-carousel-arrow"
-          onClick={() => history.push('/explore')}
+          onClick={() => router.push('/explore', 'forward', 'push')}
           aria-label={t('viewAll')}
         >
           <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
@@ -192,7 +192,7 @@ const MyLearningPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
   const { t } = useTranslation();
   const { isAuthenticated, userId } = useAuth();
-  const history = useHistory();
+  const router = useIonRouter();
 
   const {
     data: enrollmentData,
@@ -263,7 +263,7 @@ const MyLearningPage: React.FC = () => {
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
             <button
               className="my-learning__sign-in-button"
-              onClick={() => history.push('/sign-in')}
+              onClick={() => router.push('/sign-in', 'forward', 'push')}
             >
               {t('signIn')}
             </button>
@@ -338,7 +338,7 @@ const MyLearningPage: React.FC = () => {
               <div className="my-learning__view-more">
                 <button
                   className="my-learning__view-more-link"
-                  onClick={() => history.push('/explore')}
+                  onClick={() => router.push('/explore', 'forward', 'push')}
                 >
                   {t('viewMoreCourses')}
                 </button>

@@ -8,7 +8,8 @@ import {
   IonPage,
   IonToolbar,
 } from '@ionic/react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { downloadOutline, shareSocialOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../components/players/ContentPlayer';
@@ -38,7 +39,7 @@ const MOCK_RELATED_CONTENT = [
 
 const ContentPlayerPage: React.FC = () => {
   const { contentId } = useParams<{ contentId: string }>();
-  const history = useHistory();
+  const router = useIonRouter();
   const [isPlaying, setIsPlaying] = useState(false);
 
   const { data, isLoading, error, refetch } = useContentRead(contentId);
@@ -122,7 +123,7 @@ const ContentPlayerPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="cp-toolbar">
           <IonButtons slot="start">
-            <button className="cp-action-btn" onClick={() => history.goBack()}>
+            <button className="cp-action-btn" onClick={() => router.goBack()}>
               <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

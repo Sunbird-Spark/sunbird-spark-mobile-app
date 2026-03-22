@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { IonCard } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
@@ -24,7 +24,7 @@ const StarIcon = () => (
 );
 
 export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title, items }) => {
-    const history = useHistory();
+    const router = useIonRouter();
     const { t } = useTranslation();
 
     return (
@@ -33,7 +33,7 @@ export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title,
                 <h2 className="content-carousel-title">{title}</h2>
                 <button
                     className="content-carousel-arrow"
-                    onClick={() => history.push('/courses')}
+                    onClick={() => router.push('/courses', 'forward', 'push')}
                     aria-label={t('viewAll')}
                 >
                     <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
@@ -46,7 +46,7 @@ export const ContentCardCarousel: React.FC<ContentCardCarouselProps> = ({ title,
                     <IonCard
                         key={item.id}
                         className="content-card"
-                        onClick={() => history.push(`/courses/${item.id}`)}
+                        onClick={() => router.push(`/courses/${item.id}`, 'forward', 'push')}
                         role="button"
                         tabIndex={0}
                         style={{ margin: 0 }}

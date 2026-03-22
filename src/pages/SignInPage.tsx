@@ -14,8 +14,17 @@ import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
-import { useHistory } from 'react-router-dom';
 import './SignInPage.css';
+
+/**
+ * Navigate to /home and wipe the entire browser history stack so the user
+ * cannot press back to return to sign-in or any pre-login page.
+ */
+const navigateAfterLogin = () => {
+  // Replace the current history entry with /home, then clear the full stack.
+  // window.location.replace() resets the webview history to a single entry.
+  window.location.replace('/home');
+};
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -68,7 +77,6 @@ const SignInPage: React.FC = () => {
 
   const { isOffline } = useNetwork();
   const { loginWithCredentials, loginWithGoogle } = useAuth();
-  const history = useHistory();
   const wasOffline = useRef(false);
 
   useEffect(() => {
@@ -96,7 +104,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithCredentials(trimmedEmail, password);
-      history.replace('/home');
+      navigateAfterLogin();
     } catch (err) {
       setError(getLoginErrorMessage(err));
     } finally {
@@ -129,7 +137,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithGoogle();
-      history.replace('/home');
+      navigateAfterLogin();
     } catch (err) {
       if (!isGoogleCancelError(err)) {
         const code = err instanceof Error ? (err as any).code : undefined;
