@@ -11,6 +11,7 @@ import {
   IonFooter,
   IonButtons,
   IonButton,
+  useIonRouter,
 } from '@ionic/react';
 import { close } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -19,17 +20,10 @@ import { useTnCAccept } from '../hooks/useTnC';
 import PageLoader from '../components/common/PageLoader';
 import './TermsAndConditionsPage.css';
 
-/**
- * Navigate to /home and wipe the entire browser history stack so the user
- * cannot press back to return to TnC or sign-in pages.
- */
-const navigateAfterLogin = () => {
-  window.location.replace('/home');
-};
-
 const TermsAndConditionsPage: React.FC = () => {
   const { tncData, completeTnC } = useAuth();
   const { t } = useTranslation();
+  const router = useIonRouter();
 
   const acceptTnC = useTnCAccept();
 
@@ -40,13 +34,13 @@ const TermsAndConditionsPage: React.FC = () => {
 
   useEffect(() => {
     if (!tncData) {
-      navigateAfterLogin();
+      router.push('/home', 'root', 'replace');
     }
   }, [tncData]);
 
   const handleClose = () => {
     completeTnC();
-    navigateAfterLogin();
+    router.push('/home', 'root', 'replace');
   };
 
   const handleAccept = async () => {
@@ -55,7 +49,7 @@ const TermsAndConditionsPage: React.FC = () => {
     try {
       await acceptTnC.mutateAsync({ version: tncData.version });
       completeTnC();
-      navigateAfterLogin();
+      router.push('/home', 'root', 'replace');
     } catch {
       setErrorMessage(t('tnc.acceptFailed'));
       setShowError(true);
@@ -65,7 +59,7 @@ const TermsAndConditionsPage: React.FC = () => {
   const handleErrorDismiss = () => {
     setShowError(false);
     completeTnC();
-    navigateAfterLogin();
+    router.push('/home', 'root', 'replace');
   };
 
   const handleIframeLoad = () => {

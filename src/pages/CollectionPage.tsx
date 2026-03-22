@@ -228,7 +228,7 @@ const CollectionPage: React.FC = () => {
         isEnrolled={enrollment.isEnrolled}
         isBatchEnded={enrollment.isBatchEnded}
         currentContentStatus={playingContentId ? enrollment.contentStatusMap[playingContentId] : undefined}
-        skipContentStateUpdate={false}
+        skipContentStateUpdate={isCreator}
       />
     );
   }
