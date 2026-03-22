@@ -183,6 +183,9 @@ export interface TrackableCollection {
   contentId?: string;
   collectionId?: string;
   courseName?: string;
+  name?: string;
+  appIcon?: string;
+  posterImage?: string;
   batchId: string;
   userId: string;
   completionPercentage?: number;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   IonContent,
   IonPage,
@@ -12,7 +12,6 @@ import {
 } from '@ionic/react';
 import {
   timeOutline,
-  ribbonOutline,
   chevronForwardOutline,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -20,10 +19,53 @@ import { useAuth } from '../contexts/AuthContext';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { AppHeader } from '../components/layout/AppHeader';
 import Avatar from 'react-avatar';
+import { useUser } from '../hooks/useUser';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 
 const ProfilePage: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, userId } = useAuth();
   const { t } = useTranslation();
+
+  const { data: profile } = useUser(userId);
+  const { data: enrollmentResponse } = useUserEnrollmentList(userId);
+
+  const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
+
+  const fullName = useMemo(() => {
+    const parts = [profile?.firstName, profile?.lastName].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : 'User';
+  }, [profile]);
+
+  const roles = useMemo(() => {
+    const roleSet = new Set<string>();
+    const addRole = (r: string | { role?: string } | unknown) => {
+      if (typeof r === 'string') {
+        roleSet.add(r);
+      } else if (r && typeof r === 'object' && 'role' in r && typeof (r as any).role === 'string') {
+        roleSet.add((r as any).role);
+      }
+    };
+    profile?.organisations?.forEach(org => org.roles?.forEach(addRole));
+    profile?.roles?.forEach(addRole);
+    return Array.from(roleSet);
+  }, [profile]);
+
+  const totalCourses = courses.length;
+
+  const inProgressCount = useMemo(
+    () => courses.filter(c => c.status === 1).length,
+    [courses]
+  );
+
+  const completedCount = useMemo(
+    () => courses.filter(c => c.status === 2).length,
+    [courses]
+  );
+
+  const certificatesEarned = useMemo(
+    () => courses.reduce((acc, course) => acc + (course.issuedCertificates?.length ?? 0), 0),
+    [courses]
+  );
 
   return (
     <IonPage>
@@ -33,18 +75,21 @@ const ProfilePage: React.FC = () => {
         {/* Profile Info Card */}
         <div className="profile-info-card">
           <div className="profile-avatar-wrapper">
-            <Avatar name="Prachi desai" round={true} size="133" color="var(--ion-color-primary-tint)" className="profile-avatar" />
+            <Avatar name={fullName} round={true} size="133" color="var(--ion-color-primary-tint)" className="profile-avatar" />
           </div>
 
-          <h2 className="profile-name">Prachi desai</h2>
-          <p className="profile-email">{t('sunbirdId')} : prachi@gmail.com</p>
+          <h2 className="profile-name">{fullName}</h2>
+          <p className="profile-email">{t('sunbirdId')} : {profile?.userName ?? ''}</p>
 
           <div className="profile-roles">
-            <span className="profile-role">Learner</span>
-            <span className="profile-role-dot"></span>
-            <span className="profile-role">Creator</span>
-            <span className="profile-role-dot"></span>
-            <span className="profile-role">Reviewer</span>
+            {roles.length > 0 ? roles.map((role, i) => (
+              <React.Fragment key={role}>
+                {i > 0 && <span className="profile-role-dot"></span>}
+                <span className="profile-role">{role}</span>
+              </React.Fragment>
+            )) : (
+              <span className="profile-role">{t('learner')}</span>
+            )}
           </div>
         </div>
 
@@ -56,8 +101,8 @@ const ProfilePage: React.FC = () => {
                 <div className="profile-stat-icon-badge profile-stat-icon-time">
                   <IonIcon icon={timeOutline} />
                 </div>
-                <div className="profile-stat-value">30</div>
-                <div className="profile-stat-label">{t('timeSpent')}</div>
+                <div className="profile-stat-value">{String(totalCourses).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('totalCourses')}</div>
               </div>
             </IonCol>
             <IonCol size="6">
@@ -75,8 +120,8 @@ const ProfilePage: React.FC = () => {
                     </defs>
                   </svg>
                 </div>
-                <div className="profile-stat-value">05</div>
-                <div className="profile-stat-label">{t('badges')}</div>
+                <div className="profile-stat-value">{String(inProgressCount).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('inProgress')}</div>
               </div>
             </IonCol>
           </IonRow>
@@ -89,8 +134,8 @@ const ProfilePage: React.FC = () => {
                     <path d="M5.51855 7.32626L6.68441 8.49479C7.03686 8.84725 7.61518 8.84725 7.96764 8.49479L10.941 5.5188" stroke="white" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </div>
-                <div className="profile-stat-value">13</div>
-                <div className="profile-stat-label">{t('contentsViewed')}</div>
+                <div className="profile-stat-value">{String(completedCount).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('completed')}</div>
               </div>
             </IonCol>
             <IonCol size="6">
@@ -107,7 +152,7 @@ const ProfilePage: React.FC = () => {
                     </defs>
                   </svg>
                 </div>
-                <div className="profile-stat-value">06</div>
+                <div className="profile-stat-value">{String(certificatesEarned).padStart(2, '0')}</div>
                 <div className="profile-stat-label">{t('certificates')}</div>
               </div>
             </IonCol>
@@ -117,17 +162,17 @@ const ProfilePage: React.FC = () => {
         {/* Action Items */}
         <IonList className="profile-actions-list" lines="none">
           <IonItem className="profile-action-item" button detail={false} routerLink="/profile/personal-details">
-            <IonLabel className="profile-action-label">Personal Information</IonLabel>
+            <IonLabel className="profile-action-label">{t('personalInformation')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/my-learning">
+          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/learning">
             <IonLabel className="profile-action-label">{t('myLearning')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
           <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
-            <IonLabel className="profile-action-label">Downloaded Contents</IonLabel>
+            <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 

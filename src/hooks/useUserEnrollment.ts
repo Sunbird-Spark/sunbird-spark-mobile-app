@@ -15,5 +15,6 @@ export function useUserEnrollmentList(
     queryKey: ['userEnrollments', userId],
     queryFn: () => enrollmentService.getUserEnrollments(userId!),
     enabled: enabled && !!userId,
+    staleTime: 5 * 60 * 1000,
   });
 }

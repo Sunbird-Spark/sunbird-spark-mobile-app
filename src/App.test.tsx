@@ -143,6 +143,10 @@ vi.mock('./pages/CollectionPage', () => ({
   default: () => <div data-testid="collection-page">Collection Page</div>,
 }));
 
+vi.mock('./pages/ProfileLearningPage', () => ({
+  default: () => <div data-testid="profile-learning-page">Profile Learning Page</div>,
+}));
+
 // Mock CSS imports
 vi.mock('@ionic/react/css/core.css', () => ({}));
 vi.mock('@ionic/react/css/normalize.css', () => ({}));

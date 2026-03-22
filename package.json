@@ -63,6 +63,7 @@
     "react": "^19.2.1",
     "react-avatar": "^5.0.4",
     "react-dom": "^19.2.1",
+    "react-google-recaptcha-v3": "^1.11.0",
     "react-i18next": "^16.5.2",
     "react-router": "^5.3.4",
     "react-router-dom": "^5.3.4",
