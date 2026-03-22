@@ -78,7 +78,7 @@ vi.mock('../components/common/PageLoader', () => ({
 let mockEnrollmentData: any = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };
 
 vi.mock('../hooks/useUserEnrollment', () => ({
-  useUserEnrollmenList: () => mockEnrollmentData,
+  useUserEnrollmentList: () => mockEnrollmentData,
 }));
 
 vi.mock('../hooks/useContentSearch', () => ({

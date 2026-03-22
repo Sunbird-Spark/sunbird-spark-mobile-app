@@ -13,5 +13,6 @@ export const useUser = (userId: string | null): UseQueryResult<UserProfile, Erro
       return (response.data as any).response;
     },
     enabled: !!userId && AppInitializer.isInitialized(),
+    staleTime: 60 * 60 * 1000,
   });
 };

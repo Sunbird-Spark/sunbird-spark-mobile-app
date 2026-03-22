@@ -45,6 +45,7 @@ import CourseDetailsPage from './pages/CourseDetailsPage';
 import CollectionPage from './pages/CollectionPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import ProfileLearningPage from './pages/ProfileLearningPage';
 
 setupIonicReact();
 
@@ -107,6 +108,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/profile/my-learning">
             <MyLearningPage />
+          </Route>
+          <Route exact path="/profile/learning">
+            <ProfileLearningPage />
           </Route>
           <Route exact path="/profile/downloaded-contents">
             <DownloadedContentsPage />

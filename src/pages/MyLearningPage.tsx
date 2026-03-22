@@ -11,7 +11,7 @@ import { useHistory } from 'react-router-dom';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
 import { useAuth } from '../contexts/AuthContext';
-import { useUserEnrollmenList } from '../hooks/useUserEnrollment';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { useContentSearch } from '../hooks/useContentSearch';
 import type { TrackableCollection } from '../types/collectionTypes';
 import type { ContentSearchItem } from '../types/contentTypes';
@@ -199,7 +199,7 @@ const MyLearningPage: React.FC = () => {
     isLoading,
     error,
     refetch,
-  } = useUserEnrollmenList(userId, { enabled: isAuthenticated });
+  } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
 
   const enrolledCourses: TrackableCollection[] = _.get(enrollmentData, 'data.courses', []);
   const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
