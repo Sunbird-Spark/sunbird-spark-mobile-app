@@ -11,6 +11,7 @@ import {
 } from '@ionic/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useIonRouter, useIonViewDidEnter, useIonViewWillLeave } from '@ionic/react';
+import { warningOutline } from 'ionicons/icons';
 import { userService } from '../services/UserService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCollection } from '../hooks/useCollection';
@@ -95,7 +96,8 @@ const CollectionPage: React.FC = () => {
     (collectionData?.trackable?.enabled?.toLowerCase() ?? '') === 'yes';
   const isCourse = collectionData?.primaryCategory?.toLowerCase() === 'course';
 
-  // A6: Creator/mentor privilege — creator can always view, but no enrollment UI / progress sync
+  // Creator check — course creators cannot enroll in / consume their own trackable courses
+  // (mirrors old SunbirdEd mobile app behaviour)
   const isCreator = !!(userId && collectionData?.createdBy && userId === collectionData.createdBy);
 
   // Enrollment state — uses real API data
@@ -107,9 +109,10 @@ const CollectionPage: React.FC = () => {
   const viewState: ViewState = useMemo(() => {
     if (!isTrackable) return 'default';
     if (!isAuthenticated) return 'anonymous';
+    if (isCreator) return 'unenrolled'; // Creator treated as unenrolled — blocked from consuming
     if (enrollment.isEnrolled) return 'enrolled';
     return 'unenrolled';
-  }, [isTrackable, isAuthenticated, enrollment.isEnrolled]);
+  }, [isTrackable, isAuthenticated, isCreator, enrollment.isEnrolled]);
 
   // Player state
   const [playingContentId, setPlayingContentId] = useState<string | null>(null);
@@ -225,7 +228,7 @@ const CollectionPage: React.FC = () => {
         isEnrolled={enrollment.isEnrolled}
         isBatchEnded={enrollment.isBatchEnded}
         currentContentStatus={playingContentId ? enrollment.contentStatusMap[playingContentId] : undefined}
-        skipContentStateUpdate={isCreator}
+        skipContentStateUpdate={false}
       />
     );
   }
@@ -645,10 +648,19 @@ const CollectionPage: React.FC = () => {
         </div>
       )}
 
-      {/* Unenrolled: "Join the Course" → open batch modal */}
+      {/* Unenrolled: "Join the Course" → open batch modal (blocked for creators) */}
       {viewState === 'unenrolled' && isTrackable && !isLoading && collectionData && (
         <>
-          <div className="cp-bottom-cta" onClick={() => setIsBatchModalOpen(true)}>
+          <div
+            className="cp-bottom-cta"
+            onClick={() => {
+              if (isCreator) {
+                setToastMessage(t('collection.creatorCannotEnrol'));
+              } else {
+                setIsBatchModalOpen(true);
+              }
+            }}
+          >
             <span className="cp-bottom-cta-text">{t('collection.joinTheCourse')}</span>
           </div>
 
@@ -726,6 +738,17 @@ const CollectionPage: React.FC = () => {
         </>
       )}
 
+      {/* Page-level toast (creator error, etc.) — visible across all view states */}
+      <IonToast
+        isOpen={!!toastMessage}
+        onDidDismiss={() => setToastMessage('')}
+        message={toastMessage}
+        icon={warningOutline}
+        duration={3500}
+        position="bottom"
+        color="warning"
+        cssClass="cp-creator-toast"
+      />
     </IonPage>
   );
 };

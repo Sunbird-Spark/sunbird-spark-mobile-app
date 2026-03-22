@@ -110,6 +110,29 @@
     "loading": "Carregando perguntas...",
     "error": "Não foi possível carregar as perguntas"
   },
+  "collection": {
+    "courseOverview": "Visão geral do curso",
+    "collectionOverview": "Visão geral da coleção",
+    "units": "Unidades",
+    "lessons": "Lições",
+    "bestSuitedFor": "Mais indicado para",
+    "courseCurriculum": "Currículo do curso",
+    "collectionCurriculum": "Currículo da coleção",
+    "relatedContent": "Conteúdo relacionado",
+    "faq": "Perguntas frequentes",
+    "letsGetStarted": "Vamos começar",
+    "joinTheCourse": "Participar do curso",
+    "creatorCannotEnrol": "Você não pode se inscrever em um curso que você criou.",
+    "availableBatches": "Turmas disponíveis",
+    "selectBatch": "Selecione uma turma",
+    "selectBatchToStart": "Selecione uma turma para começar a aprender.",
+    "noBatchesAvailable": "Nenhuma turma disponível para inscrição no momento.",
+    "joinTheBatch": "Participar da turma",
+    "courseProgress": "Progresso do curso",
+    "batchStartedOn": "Turma iniciada em",
+    "notFound": "Coleção não encontrada.",
+    "errorLoading": "Falha ao carregar a coleção."
+  },
 
   "heroSection": {
     "title": "O conhecimento que te faz avançar.",
