@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, startTransition } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { otpService } from '../services/OtpService';
 import { userService } from '../services/UserService';
@@ -45,11 +45,13 @@ export const useEditProfile = (
   // Sync editData when profile loads
   useEffect(() => {
     if (profile) {
-      setEditData({
-        fullName: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
-        mobileNumber: (profile.phone as string) ?? '',
-        emailId: (profile.email as string) ?? '',
-        alternateEmailId: (profile.recoveryEmail as string) ?? '',
+      startTransition(() => {
+        setEditData({
+          fullName: [profile.firstName, profile.lastName].filter(Boolean).join(' '),
+          mobileNumber: (profile.phone as string) ?? '',
+          emailId: (profile.email as string) ?? '',
+          alternateEmailId: (profile.recoveryEmail as string) ?? '',
+        });
       });
     }
   }, [profile]);
@@ -68,8 +70,8 @@ export const useEditProfile = (
     }, 1000);
   }, []);
 
-  const getCaptchaToken = (): Promise<string | undefined> =>
-    new Promise(resolve => triggerCaptcha(token => resolve(token)));
+  const getCaptchaToken = useCallback((): Promise<string | undefined> =>
+    new Promise(resolve => triggerCaptcha(token => resolve(token))), [triggerCaptcha]);
 
   const handleFieldChange = useCallback((field: string, value: string) => {
     setEditData(prev => ({ ...prev, [field]: value }));
@@ -121,7 +123,7 @@ export const useEditProfile = (
       setOtpError('Failed to send OTP. Please try again.');
       return false;
     }
-  }, [editData, startTimer]);
+  }, [editData, startTimer, getCaptchaToken]);
 
   // Returns true if OTP modal should open, false if saved directly (name only)
   const handleVerifyDetails = useCallback(async (): Promise<boolean> => {
@@ -142,7 +144,7 @@ export const useEditProfile = (
     }
 
     return false;
-  }, [getFirstModifiedOtpField, sendOtp, hasNameChanged, userId, editData, queryClient]);
+  }, [getFirstModifiedOtpField, sendOtp, hasNameChanged, userId, editData, queryClient, otpStatus]);
 
   const handleOtpChange = useCallback((index: number, value: string) => {
     if (!/^\d*$/.test(value)) return;

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, startTransition, ReactNode } from 'react';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
@@ -40,8 +40,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // be null even for a logged-in user.  Sync once initialisation is done.
   useEffect(() => {
     if (!isAppInitialized) return;
-    setUserId(userService.getUserId());
-    setIsAuthenticated(userService.isLoggedIn());
+    startTransition(() => {
+      setUserId(userService.getUserId());
+      setIsAuthenticated(userService.isLoggedIn());
+    });
   }, [isAppInitialized]);
 
   // Fetch user profile reactively when userId is set

@@ -20,14 +20,14 @@ import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { AppHeader } from '../components/layout/AppHeader';
 import Avatar from 'react-avatar';
 import { useUser } from '../hooks/useUser';
-import { useUserEnrollmenList } from '../hooks/useUserEnrollment';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 
 const ProfilePage: React.FC = () => {
   const { logout, userId } = useAuth();
   const { t } = useTranslation();
 
   const { data: profile } = useUser(userId);
-  const { data: enrollmentResponse } = useUserEnrollmenList(userId);
+  const { data: enrollmentResponse } = useUserEnrollmentList(userId);
 
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 

@@ -12,7 +12,7 @@ import {
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
-import { useUserEnrollmenList } from '../hooks/useUserEnrollment';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { certificateService } from '../services/CertificateService';
 import type { TrackableCollection } from '../types/collectionTypes';
 import './ProfileLearningPage.css';
@@ -144,7 +144,7 @@ const ProfileLearningPage: React.FC = () => {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
 
-  const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmenList(userId);
+  const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmentList(userId);
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 
   const filteredCourses = useMemo(() => {
