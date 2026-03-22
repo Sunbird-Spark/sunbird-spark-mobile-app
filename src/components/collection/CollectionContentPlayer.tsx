@@ -75,10 +75,13 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     }
   }, [refetch, refetchQuml, isQumlContent]);
 
-  // Build telemetry context for the player
+  // Build telemetry context for the player.
+  // Exclude batch data when the batch has ended — the backend rejects
+  // progress updates for expired batches, so tagging telemetry with a
+  // stale batchId would cause sync errors.
   const cdata = useMemo(
-    () => buildCollectionCdata(collectionId, batchId),
-    [collectionId, batchId],
+    () => buildCollectionCdata(collectionId, isBatchEnded ? undefined : batchId),
+    [collectionId, batchId, isBatchEnded],
   );
 
   const objectRollup = useMemo(
