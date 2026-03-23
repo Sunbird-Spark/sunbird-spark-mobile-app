@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import { EpubPlayer } from './EpubPlayer';
 import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
@@ -50,11 +50,14 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   const openRating = useCallback(() => setRatingOpen(true), []);
   const { onContentEnd, onContentStart, cancel } = useRatingTimer(openRating);
 
-  // When contentId changes (e.g. next content in collection), dismiss rating and cancel timer
-  useEffect(() => {
+  // When contentId changes (e.g. next content in collection), dismiss rating and cancel timer.
+  // Track via ref + render-phase check to avoid setState-in-effect lint error.
+  const prevContentIdRef = useRef(contentId);
+  if (prevContentIdRef.current !== contentId) {
+    prevContentIdRef.current = contentId;
     cancel();
-    setRatingOpen(false);
-  }, [contentId, cancel]);
+    if (ratingOpen) setRatingOpen(false);
+  }
 
   // Extract eid from either a telemetry event or a player event
   const extractEid = (event: any): string =>
