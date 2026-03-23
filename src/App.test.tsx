@@ -147,6 +147,10 @@ vi.mock('./pages/ProfileLearningPage', () => ({
   default: () => <div data-testid="profile-learning-page">Profile Learning Page</div>,
 }));
 
+vi.mock('./components/common/BackButtonHandler', () => ({
+  default: () => null,
+}));
+
 // Mock CSS imports
 vi.mock('@ionic/react/css/core.css', () => ({}));
 vi.mock('@ionic/react/css/normalize.css', () => ({}));

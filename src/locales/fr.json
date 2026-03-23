@@ -109,6 +109,29 @@
     "loading": "Chargement des FAQ...",
     "error": "Impossible de charger les FAQ"
   },
+  "collection": {
+    "courseOverview": "Aperçu du cours",
+    "collectionOverview": "Aperçu de la collection",
+    "units": "Unités",
+    "lessons": "Leçons",
+    "bestSuitedFor": "Idéal pour",
+    "courseCurriculum": "Programme du cours",
+    "collectionCurriculum": "Programme de la collection",
+    "relatedContent": "Contenu connexe",
+    "faq": "Questions fréquentes",
+    "letsGetStarted": "Commençons",
+    "joinTheCourse": "Rejoindre le cours",
+    "creatorCannotEnrol": "Vous ne pouvez pas vous inscrire à un cours que vous avez créé.",
+    "availableBatches": "Sessions disponibles",
+    "selectBatch": "Sélectionnez une session",
+    "selectBatchToStart": "Sélectionnez une session pour commencer à apprendre.",
+    "noBatchesAvailable": "Aucune session disponible pour l'inscription pour le moment.",
+    "joinTheBatch": "Rejoindre la session",
+    "courseProgress": "Progression du cours",
+    "batchStartedOn": "Session commencée le",
+    "notFound": "Collection introuvable.",
+    "errorLoading": "Échec du chargement de la collection."
+  },
 
   "heroSection": {
     "title": "Le savoir qui vous propulse vers l'avant.",

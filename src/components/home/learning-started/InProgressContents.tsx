@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 import './InProgressContents.css';
 
@@ -11,7 +11,7 @@ interface InProgressContentsProps {
 
 export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
 
   const inProgressCourses = _.filter(courses, c => (c.completionPercentage ?? 0) < 100);
   const completedCourses = _.filter(courses, c => (c.completionPercentage ?? 0) >= 100);
@@ -38,7 +38,7 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
             <div
               key={collectionId || course.batchId}
               className="in-progress__card"
-              onClick={() => collectionId && history.push(`/collection/${collectionId}`)}
+              onClick={() => collectionId && router.push(`/collection/${collectionId}`, 'forward', 'push')}
             >
               <div className="in-progress__card-content">
                 <span className="in-progress__badge">{badge}</span>
