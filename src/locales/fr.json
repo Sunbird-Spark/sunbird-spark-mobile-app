@@ -197,6 +197,10 @@
   "submit": "Soumettre",
   "fieldUpdatedSuccessfully": "{{field}} mis à jour avec succès",
   "download": {
+    "download": "Télécharger",
+    "resume": "Reprendre le téléchargement",
+    "retry": "Réessayer le téléchargement",
+    "error": "Échoué",
     "started": "Téléchargement lancé",
     "alreadyDownloaded": "Déjà téléchargé",
     "inProgress": "Téléchargement en cours",

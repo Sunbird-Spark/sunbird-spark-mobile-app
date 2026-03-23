@@ -1,7 +1,6 @@
 import { Filesystem } from '@capacitor/filesystem';
 import { contentDbService } from '../db/ContentDbService';
 import { downloadDbService } from '../db/DownloadDbService';
-import { databaseService } from '../db/DatabaseService';
 import { downloadManager } from '../download_manager';
 
 const TAG = '[contentDeleteHelper]';

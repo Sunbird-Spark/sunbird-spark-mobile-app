@@ -10,12 +10,6 @@ vi.mock('@capacitor/filesystem', () => ({
   },
 }));
 
-vi.mock('../db/DatabaseService', () => ({
-  databaseService: {
-    ensureOpen: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: {
     getByIdentifier: vi.fn(),
@@ -49,7 +43,7 @@ describe('deleteDownloadedContent', () => {
     expect(result).toEqual({ deleted: false, freedBytes: 0 });
   });
 
-  it('returns not deleted when content_state is not 2', async () => {
+  it('returns deleted when content_state is lesser than 2', async () => {
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
       identifier: 'do_1',
       content_state: 1,

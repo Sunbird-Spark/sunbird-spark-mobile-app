@@ -207,6 +207,10 @@
   "submit": "Submit",
   "fieldUpdatedSuccessfully": "{{field}} updated successfully",
   "download": {
+    "download": "Download",
+    "resume": "Resume downloading",
+    "retry": "Retry download",
+    "error": "Failed",
     "started": "Download started",
     "alreadyDownloaded": "Already downloaded",
     "inProgress": "Download in progress",

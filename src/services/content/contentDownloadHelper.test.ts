@@ -1,6 +1,13 @@
 import { startContentDownload } from './contentDownloadHelper';
 import { downloadManager } from '../download_manager';
 import { contentDbService } from '../db/ContentDbService';
+import { databaseService } from '../db/DatabaseService';
+
+vi.mock('../db/DatabaseService', () => ({
+  databaseService: {
+    initialize: vi.fn(),
+  },
+}));
 
 vi.mock('../download_manager', () => ({
   downloadManager: {
@@ -15,15 +22,10 @@ vi.mock('../db/ContentDbService', () => ({
   },
 }));
 
-vi.mock('../db/DatabaseService', () => ({
-  databaseService: {
-    ensureOpen: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
 describe('startContentDownload', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(databaseService.initialize).mockResolvedValue();
   });
 
   it('returns not_available when downloadUrl is missing', async () => {

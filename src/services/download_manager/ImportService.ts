@@ -18,14 +18,14 @@ interface ManifestItem {
   contentType?: string;
   artifactUrl?: string;
   visibility?: string;
-  audience?: string;
+  audience?: string | string[];
   primaryCategory?: string;
   status?: string;
   expires?: string;
   pkgVersion?: number;
-  pragma?: string[];
-  dialcodes?: string[];
-  childNodes?: string[];
+  pragma?: string | string[];
+  dialcodes?: string | string[];
+  childNodes?: string | string[];
   [key: string]: unknown;
 }
 
@@ -183,31 +183,27 @@ export class ImportService {
     if (isCollection || isQuestionSet) return 2;
 
     // No artifact URL or remote-only
-    if (!artifactUrl || artifactUrl.startsWith('https:')) return 0;
+    if (!artifactUrl || artifactUrl.startsWith('https:')) return 2;
 
     // Online-only content
     if (disposition === 'online') return 2;
 
     const itemSourcePath = `${tmpUri}/${artifactUrl}`;
 
-    try {
-      if (
-        mimeType === 'application/epub' ||
-        mimeType === 'application/epub+zip'
-      ) {
-        // EPUB → copy directly
-        await this.copyAsset(itemSourcePath, destUri);
-      } else if (disposition === 'inline' && encoding === 'identity') {
-        // Uncompressed (PDF, MP4, WebM) → copy directly
-        await this.copyAsset(itemSourcePath, destUri);
-      } else {
-        // Default (inline + gzip) → unzip
-        await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
-      }
-      return 2; // ARTIFACT_AVAILABLE
-    } catch {
-      return 0; // ONLY_SPINE (unzip/copy failed)
+    if (
+      mimeType === 'application/epub' ||
+      mimeType === 'application/epub+zip'
+    ) {
+      // EPUB → copy directly
+      await this.copyAsset(itemSourcePath, destUri);
+    } else if (disposition === 'inline' && encoding === 'identity') {
+      // Uncompressed (PDF, MP4, WebM) → copy directly
+      await this.copyAsset(itemSourcePath, destUri);
+    } else {
+      // Default (inline + gzip) → unzip
+      await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
     }
+    return 2; // ARTIFACT_AVAILABLE
   }
 
   private async copyAsset(source: string, destDir: string): Promise<void> {
@@ -251,12 +247,12 @@ export class ImportService {
       ref_count: refCount,
       content_state: resolvedState,
       content_type: item.contentType || '',
-      audience: this.joinArray(item.audience as unknown as string | string[]) || 'Learner',
+      audience: this.joinArray(item.audience) || 'Learner',
       size_on_device: 0,
-      pragma: this.joinArray(item.pragma as unknown as string | string[]) || '',
+      pragma: this.joinArray(item.pragma) || '',
       manifest_version: manifestVersion,
-      dialcodes: this.joinArray(item.dialcodes as unknown as string | string[]),
-      child_nodes: this.joinArray(item.childNodes as unknown as string | string[]),
+      dialcodes: this.joinArray(item.dialcodes),
+      child_nodes: this.joinArray(item.childNodes),
       primary_category: item.primaryCategory || '',
     };
   }
@@ -292,7 +288,7 @@ export class ImportService {
   }
 
   private readVisibility(item: ManifestItem): 'Default' | 'Parent' {
-    return item.visibility === 'Default' ? 'Default' : 'Parent';
+    return item.visibility === 'Parent' ? 'Parent' : 'Default';
   }
 
   private joinArray(arr?: string | string[]): string {

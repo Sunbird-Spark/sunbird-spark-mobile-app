@@ -1,5 +1,6 @@
 import { downloadManager } from '../download_manager';
 import { contentDbService } from '../db/ContentDbService';
+import { databaseService } from '../db/DatabaseService';
 import type { DownloadRequest } from '../download_manager/types';
 
 const TAG = '[contentDownloadHelper]';
@@ -38,6 +39,7 @@ export async function startContentDownload(
   }
 
   try {
+    await databaseService.initialize();
     const localEntry = await contentDbService.getByIdentifier(contentMeta.identifier);
     if (localEntry && localEntry.content_state === 2) {
       console.debug(TAG, contentMeta.identifier, 'already downloaded locally (content_state=2)');

@@ -205,6 +205,10 @@
   "submit": "إرسال",
   "fieldUpdatedSuccessfully": "تم تحديث {{field}} بنجاح",
   "download": {
+    "download": "تنزيل",
+    "resume": "استئناف التنزيل",
+    "retry": "إعادة محاولة التنزيل",
+    "error": "فشل",
     "started": "بدأ التحميل",
     "alreadyDownloaded": "تم التحميل مسبقاً",
     "inProgress": "التحميل جارٍ",

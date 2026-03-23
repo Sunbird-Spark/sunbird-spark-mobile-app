@@ -197,6 +197,10 @@
   "submit": "Enviar",
   "fieldUpdatedSuccessfully": "{{field}} atualizado com sucesso",
   "download": {
+    "download": "Baixar",
+    "resume": "Retomar download",
+    "retry": "Tentar download novamente",
+    "error": "Falhou",
     "started": "Download iniciado",
     "alreadyDownloaded": "Já baixado",
     "inProgress": "Download em andamento",
