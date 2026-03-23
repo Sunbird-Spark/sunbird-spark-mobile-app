@@ -1,5 +1,5 @@
-import { Directory, Filesystem } from '@capacitor/filesystem';
 import { getClient, ApiResponse } from '../lib/http-client';
+import { convertSvgAndSave, CertificateFormat } from '../utils/svg-converter';
 
 export interface CertificateSearchResponse {
   [key: string]: unknown;
@@ -16,7 +16,7 @@ interface CertificateRcSearchResponse {
 }
 
 export class CertificateService {
-  /** Original method — search by recipient userId */
+  /** Search certificates by recipient userId (used as fallback when enrollment data has no cert ID) */
   async searchCertificates(userId: string): Promise<ApiResponse<CertificateSearchResponse>> {
     return getClient().post<CertificateSearchResponse>('/rc/certificate/v1/search', {
       filters: {
@@ -27,7 +27,7 @@ export class CertificateService {
     });
   }
 
-  /** Search certificate by courseId + batchId (portal flow Step 2) */
+  /** Search certificate by courseId + batchId */
   async searchCertificate(courseId: string, batchId: string): Promise<string | null> {
     try {
       const response = await getClient().post<CertificateRcSearchResponse>(
@@ -44,18 +44,42 @@ export class CertificateService {
     }
   }
 
-  /** Download certificate SVG and save to device Documents folder (portal flow Step 3-4) */
-  async downloadAndSave(certificateId: string): Promise<string> {
-    const response = await getClient().get<string>(`/rc/certificate/v1/download/${certificateId}`);
+  /**
+   * Download the certificate SVG from the RC service.
+   * Sends Accept: image/svg+xml and optional template header (required by RC service).
+   */
+  async downloadCertificateSvg(
+    certificateId: string,
+    templateUrl?: string
+  ): Promise<ApiResponse<string>> {
+    const headers: Record<string, string> = {
+      Accept: 'image/svg+xml',
+    };
+    if (templateUrl) {
+      headers['template'] = templateUrl;
+    }
+    return getClient().get<string>(`/rc/certificate/v1/download/${certificateId}`, headers);
+  }
+
+  /**
+   * Full pipeline: download SVG from API → convert to PNG or PDF → save to device Documents.
+   * Returns the saved file name.
+   */
+  async downloadAndSave(
+    certificateId: string,
+    courseName: string = 'certificate',
+    format: CertificateFormat = 'pdf',
+    templateUrl?: string
+  ): Promise<string> {
+    const response = await this.downloadCertificateSvg(certificateId, templateUrl);
     const svgContent = response.data as unknown as string;
-    const fileName = `certificate_${certificateId}.svg`;
-    await Filesystem.writeFile({
-      path: fileName,
-      data: svgContent,
-      directory: Directory.Documents,
-      encoding: 'utf8',
-    });
-    return fileName;
+
+    if (!svgContent || typeof svgContent !== 'string' || svgContent.trim().length === 0) {
+      throw new Error('No certificate SVG received from server.');
+    }
+
+    const safeName = courseName.replace(/[^a-z0-9_\-]/gi, '_').substring(0, 80) || 'certificate';
+    return convertSvgAndSave(svgContent, safeName, format);
   }
 }
 

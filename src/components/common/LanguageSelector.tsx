@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { IonPopover } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGE_CONFIG } from '../../config/languages';
 
 export const LanguageSelector: React.FC = () => {
-    const [isOpen, setIsOpen] = useState(false);
-    const [triggerEvent, setTriggerEvent] = useState<Event | undefined>(undefined);
+    const popoverRef = useRef<HTMLIonPopoverElement>(null);
     const { i18n } = useTranslation();
 
     const currentLang = LANGUAGE_CONFIG.find(l => l.code === i18n.language) ?? LANGUAGE_CONFIG[0];
@@ -17,13 +16,13 @@ export const LanguageSelector: React.FC = () => {
     const handleLanguageChange = (lang: typeof LANGUAGE_CONFIG[0]) => {
         i18n.changeLanguage(lang.code);
         localStorage.setItem('appLanguage', lang.code);
-        setIsOpen(false);
+        popoverRef.current?.dismiss();
     };
 
     return (
         <>
             <button
-                onClick={(e) => { setTriggerEvent(e.nativeEvent); setIsOpen(true); }}
+                id="language-selector-trigger"
                 style={{
                     background: 'none',
                     border: 'none',
@@ -42,41 +41,36 @@ export const LanguageSelector: React.FC = () => {
             </button>
 
             <IonPopover
-                isOpen={isOpen}
-                event={triggerEvent}
+                ref={popoverRef}
+                trigger="language-selector-trigger"
                 triggerAction="click"
-                onDidDismiss={() => setIsOpen(false)}
                 side="bottom"
                 alignment="end"
-                style={{
-                    '--width': 'max-content',
-                    '--min-width': 'auto',
-                    '--border-radius': '12px',
-                    '--box-shadow': '0 4px 20px rgba(0,0,0,0.15)',
-                }}
+                className="language-selector-popover"
             >
                 <div style={{ padding: '8px 0', background: 'var(--ion-color-light)' }}>
-                    {LANGUAGE_CONFIG.map((lang) => (
-                        <button
-                            key={lang.code}
-                            onClick={() => handleLanguageChange(lang)}
-                            style={{
-                                display: 'block',
-                                width: '100%',
-                                padding: '12px 16px',
-                                background: 'transparent',
-                                border: 'none',
-                                textAlign: 'left',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                color: currentLang.code === lang.code ? 'var(--ion-color-primary)' : 'var(--ion-color-dark, var(--color-222222, #222222))',
-                                fontWeight: currentLang.code === lang.code ? 600 : 400,
-                                transition: 'background 0.2s',
-                            }}
-                        >
-                            {lang.label}
-                        </button>
-                    ))}
+                    {LANGUAGE_CONFIG.map((lang) => {
+                        const isActive = currentLang.code === lang.code;
+                        return (
+                            <button
+                                key={lang.code}
+                                onClick={() => handleLanguageChange(lang)}
+                                style={{
+                                    display: 'block',
+                                    width: '100%',
+                                    padding: '12px 16px',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    textAlign: 'left',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    color: isActive ? 'var(--ion-color-primary)' : 'var(--ion-color-dark, var(--color-222222, #222222))',
+                                }}
+                            >
+                                {lang.label}
+                            </button>
+                        );
+                    })}
                 </div>
             </IonPopover>
         </>
