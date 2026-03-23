@@ -1,3 +1,4 @@
+import React from 'react';
 import { useHardwareBackButton } from '../../hooks/useBackButton';
 
 /**

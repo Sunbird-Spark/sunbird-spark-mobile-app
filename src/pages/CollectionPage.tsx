@@ -153,6 +153,7 @@ const CollectionPage: React.FC = () => {
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
+  const [consentToastMessage, setConsentToastMessage] = useState('');
 
   // Force sync (enrolled only)
   const forceSync = useForceSync(userId, collectionId, enrollment.enrolledBatchId ?? undefined, enrollment.progressProps, enrollment.isBatchEnded);
@@ -592,7 +593,7 @@ const CollectionPage: React.FC = () => {
                       onClick={async () => {
                         await consent.updateConsent('REVOKED');
                         setIsConsentModalOpen(false);
-                        setToastMessage('Profile data sharing preference updated.');
+                        setConsentToastMessage('Profile data sharing preference updated.');
                         consent.refetch();
                       }}
                       style={{ padding: '0.6rem 1rem', border: '1px solid var(--ion-color-medium-tint)', borderRadius: '8px', background: 'transparent', color: 'var(--ion-color-dark)', fontWeight: 500 }}
@@ -604,7 +605,7 @@ const CollectionPage: React.FC = () => {
                         if (consentChecked) {
                           await consent.updateConsent('ACTIVE');
                           setIsConsentModalOpen(false);
-                          setToastMessage('Profile data sharing preference updated.');
+                          setConsentToastMessage('Profile data sharing preference updated.');
                           consent.refetch();
                         }
                       }}
@@ -619,9 +620,9 @@ const CollectionPage: React.FC = () => {
             </IonModal>
 
             <IonToast
-              isOpen={!!toastMessage}
-              onDidDismiss={() => setToastMessage('')}
-              message={toastMessage}
+              isOpen={!!consentToastMessage}
+              onDidDismiss={() => setConsentToastMessage('')}
+              message={consentToastMessage}
               duration={3000}
               position="top"
               color="dark"

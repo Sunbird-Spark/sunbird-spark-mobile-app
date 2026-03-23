@@ -82,8 +82,8 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <TnCGuard />
+        <BackButtonHandler />
         <IonRouterOutlet>
-          <BackButtonHandler />
           <Route exact path="/search">
             <SearchPage />
           </Route>
