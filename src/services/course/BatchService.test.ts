@@ -10,6 +10,25 @@ vi.mock('../../lib/http-client', () => ({
   getClient: vi.fn(),
 }));
 
+vi.mock('../network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
+vi.mock('../db/KeyValueDbService', () => ({
+  keyValueDbService: {
+    getRaw: vi.fn().mockResolvedValue(null),
+    setRaw: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('../db/EnrolledCoursesDbService', () => ({
+  enrolledCoursesDbService: {
+    upsertBatch: vi.fn().mockResolvedValue(undefined),
+    getByUser: vi.fn().mockResolvedValue([]),
+    updateProgress: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 describe('BatchService', () => {
   let service: BatchService;
   let mockHttpClient: any;
@@ -75,10 +94,11 @@ describe('BatchService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should propagate errors', async () => {
+    it('should queue locally and return offline response on error', async () => {
       mockHttpClient.post.mockRejectedValue(new Error('Enrollment failed'));
 
-      await expect(service.enrol('c', 'u', 'b')).rejects.toThrow('Enrollment failed');
+      const result = await service.enrol('c', 'u', 'b');
+      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
     });
   });
 

@@ -6,6 +6,17 @@ vi.mock('../../lib/http-client', () => ({
     getClient: vi.fn(),
 }));
 
+vi.mock('../db/EnrolledCoursesDbService', () => ({
+    enrolledCoursesDbService: {
+        upsertBatch: vi.fn().mockResolvedValue(undefined),
+        getByUser: vi.fn().mockResolvedValue([]),
+    },
+}));
+
+vi.mock('../network/networkService', () => ({
+    networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
 const mockEnrollmentResponse = {
     data: {
         id: 'api.user.enrollment.list',
@@ -142,7 +153,8 @@ describe('EnrollmentService', () => {
         it('should handle API errors', async () => {
             mockHttpClient.get.mockRejectedValue(new Error('API Error'));
 
-            await expect(enrollmentService.getUserEnrollments('user_001')).rejects.toThrow('API Error');
+            const result = await enrollmentService.getUserEnrollments('user_001');
+            expect(result).toMatchObject({ data: { courses: [] }, status: 200 });
             expect(mockHttpClient.get).toHaveBeenCalled();
         });
     });

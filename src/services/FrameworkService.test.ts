@@ -8,6 +8,14 @@ vi.mock('../lib/http-client', () => ({
   getClient: vi.fn()
 }));
 
+vi.mock('./db/ConfigDbService', () => ({
+  configDbService: { get: vi.fn().mockResolvedValue(null), set: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('./network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
 describe('FrameworkService', () => {
   let frameworkService: FrameworkService;
   let mockHttpClient: any;
