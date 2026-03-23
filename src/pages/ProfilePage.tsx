@@ -102,10 +102,14 @@ const ProfilePage: React.FC = () => {
             </button>
           </div>
 
-          {/* Downloaded Contents — always visible */}
+          {/* Downloaded Contents & Settings — always visible */}
           <IonList className="profile-actions-list" lines="none" style={{ marginTop: '1rem' }}>
             <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
               <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
+            <IonItem className="profile-action-item" button detail={false} routerLink="/profile/settings">
+              <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
             </IonItem>
           </IonList>
@@ -228,11 +232,12 @@ const ProfilePage: React.FC = () => {
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item profile-action-logout" button detail={false} onClick={handleLogout}>
-            <svg slot="start" className="profile-logout-icon" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M0.937881 7.58364L0.366072 7.12605L0 7.58364L0.366072 8.04123L0.937881 7.58364ZM7.52718 8.31579C7.93132 8.31579 8.25932 7.98779 8.25932 7.58364C8.25932 7.1795 7.93132 6.8515 7.52718 6.8515V8.31579ZM3.29465 3.46533L0.366072 7.12605L1.50969 8.04123L4.43827 4.38051L3.29465 3.46533ZM0.366072 8.04123L3.29465 11.702L4.43827 10.7868L1.50969 7.12605L0.366072 8.04123ZM0.937881 8.31579H7.52718V6.8515H0.937881V8.31579Z" fill="var(--ion-color-primary-tint)" />
-              <path d="M6.79541 4.75143V4.20746C6.79541 3.02212 6.79541 2.42982 7.14245 2.02055C7.48948 1.61055 8.07372 1.51316 9.24222 1.31841L10.4664 1.11415C12.8407 0.718792 14.0275 0.521123 14.8044 1.17859C15.5812 1.83679 15.5811 3.04043 15.5811 5.44772V9.71903C15.5811 12.1263 15.5812 13.33 14.8044 13.9882C14.0275 14.6456 12.8407 14.448 10.4664 14.0526L9.24222 13.8483C8.07372 13.6536 7.48948 13.5562 7.14245 13.1462C6.79541 12.7369 6.79541 12.1446 6.79541 10.9593V10.5603" stroke="var(--ion-color-primary-tint)" strokeWidth="1.5" />
-            </svg>
+          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/settings">
+            <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
+            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+          </IonItem>
+
+          <IonItem className="profile-action-item" button detail={false} onClick={handleLogout}>
             <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
           </IonItem>
         </IonList>

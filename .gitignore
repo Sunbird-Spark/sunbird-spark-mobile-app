@@ -12,6 +12,7 @@ coverage
 dist
 public/assets
 public/content/assets
+public/content-player
 public/libs
 dist-ssr
 *.local
@@ -26,5 +27,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.claude/*
 
 google-services.json

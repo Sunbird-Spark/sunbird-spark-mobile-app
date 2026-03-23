@@ -26,6 +26,7 @@ import { startContentDownload } from '../services/content/contentDownloadHelper'
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import { downloadManager } from '../services/download_manager';
 import PageLoader from '../components/common/PageLoader';
+import { telemetryService } from '../services/TelemetryService';
 import './ContentPlayerPage.css';
 
 const QUML_MIME_TYPES = [
@@ -194,6 +195,7 @@ const ContentPlayerPage: React.FC = () => {
 
   const handleTelemetryEvent = (event: any) => {
     console.log('[ContentPlayerPage] Telemetry event:', event);
+    void telemetryService.save(event);
   };
 
   // ── Fullscreen player mode (landscape, no header) ──

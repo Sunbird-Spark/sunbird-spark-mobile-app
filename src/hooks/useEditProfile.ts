@@ -5,7 +5,7 @@ import { userService } from '../services/UserService';
 import type { UserProfile } from '../types/userTypes';
 import type { OtpType } from '../types/otpTypes';
 
-export type TriggerCaptcha = (callback: (token?: string) => void) => void;
+export type TriggerCaptcha = (callback: (token: string | null) => void) => void;
 
 export type OtpStatus = 'idle' | 'sending' | 'sent' | 'verifying' | 'verified' | 'error';
 
@@ -70,7 +70,7 @@ export const useEditProfile = (
     }, 1000);
   }, []);
 
-  const getCaptchaToken = useCallback((): Promise<string | undefined> =>
+  const getCaptchaToken = useCallback((): Promise<string | null> =>
     new Promise(resolve => triggerCaptcha(token => resolve(token))), [triggerCaptcha]);
 
   const handleFieldChange = useCallback((field: string, value: string) => {
@@ -111,6 +111,11 @@ export const useEditProfile = (
 
     try {
       const captchaToken = await getCaptchaToken();
+      if (captchaToken === null) {
+        setOtpStatus('error');
+        setOtpError('reCAPTCHA verification failed. Please try again.');
+        return false;
+      }
       await otpService.generate({
         request: { key: editData[field], type: config.type, captchaToken },
       });
