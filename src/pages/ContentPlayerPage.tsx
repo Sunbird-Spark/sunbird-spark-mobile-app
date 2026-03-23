@@ -107,6 +107,7 @@ const ContentPlayerPage: React.FC = () => {
             <ContentPlayer
               mimeType={mimeType}
               metadata={playerMetadata}
+              contentId={contentId}
               onPlayerEvent={handlePlayerEvent}
               onTelemetryEvent={handleTelemetryEvent}
             />

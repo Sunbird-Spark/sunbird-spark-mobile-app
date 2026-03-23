@@ -1,9 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { EpubPlayer } from './EpubPlayer';
 import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
 import { EcmlPlayer } from './EcmlPlayer';
 import QumlPlayer from './QumlPlayer';
+import RatingDialog from '../common/RatingDialog';
+import { useRatingTimer } from '../../hooks/useRatingTimer';
 
 // MIME type to player component mapping
 const MIME_TYPE_PLAYERS = {
@@ -24,6 +26,7 @@ type SupportedMimeType = keyof typeof MIME_TYPE_PLAYERS;
 interface ContentPlayerProps {
   mimeType: string;
   metadata: any;
+  contentId?: string;
   mode?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
@@ -35,6 +38,7 @@ interface ContentPlayerProps {
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   mimeType,
   metadata,
+  contentId,
   mode,
   cdata,
   contextRollup,
@@ -42,16 +46,36 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   onPlayerEvent,
   onTelemetryEvent,
 }) => {
-  const handleTelemetry = useCallback((event: any) => {
-    const eid = ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const openRating = useCallback(() => setRatingOpen(true), []);
+  const { onContentEnd, onContentStart, cancel } = useRatingTimer(openRating);
+
+  // When contentId changes (e.g. next content in collection), dismiss rating and cancel timer
+  useEffect(() => {
+    cancel();
+    setRatingOpen(false);
+  }, [contentId, cancel]);
+
+  // Extract eid from either a telemetry event or a player event
+  const extractEid = (event: any): string =>
+    ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
+
+  const handleRatingTrigger = useCallback((eid: string) => {
     if (eid === 'END') {
-      console.log('[ContentPlayer] Content ended');
+      console.log('[ContentPlayer] END detected — scheduling rating popup');
+      onContentEnd();
     }
     if (eid === 'START') {
-      console.log('[ContentPlayer] Content started');
+      console.log('[ContentPlayer] START detected — cancelling rating timer');
+      onContentStart();
     }
+  }, [onContentEnd, onContentStart]);
+
+  const handleTelemetry = useCallback((event: any) => {
+    const eid = extractEid(event);
+    handleRatingTrigger(eid);
     onTelemetryEvent?.(event);
-  }, [onTelemetryEvent]);
+  }, [handleRatingTrigger, onTelemetryEvent]);
 
   const PlayerComponent = MIME_TYPE_PLAYERS[mimeType as SupportedMimeType] || EcmlPlayer;
 
@@ -65,6 +89,11 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
         objectRollup={objectRollup}
         onPlayerEvent={onPlayerEvent}
         onTelemetryEvent={handleTelemetry}
+      />
+      <RatingDialog
+        open={ratingOpen}
+        onClose={() => setRatingOpen(false)}
+        playerMetadata={metadata}
       />
     </div>
   );
