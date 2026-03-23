@@ -48,26 +48,12 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   const openRating = useCallback(() => setRatingOpen(true), []);
   const { onContentEnd, onContentStart } = useRatingTimer(openRating);
 
-  // Extract eid from either a telemetry event or a player event
-  const extractEid = (event: any): string =>
-    ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
-
-  const handleRatingTrigger = useCallback((eid: string) => {
-    if (eid === 'END') {
-      console.log('[ContentPlayer] END detected — scheduling rating popup');
-      onContentEnd();
-    }
-    if (eid === 'START') {
-      console.log('[ContentPlayer] START detected — cancelling rating timer');
-      onContentStart();
-    }
-  }, [onContentEnd, onContentStart]);
-
   const handleTelemetry = useCallback((event: any) => {
-    const eid = extractEid(event);
-    handleRatingTrigger(eid);
+    const eid = ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
+    if (eid === 'END') onContentEnd();
+    if (eid === 'START') onContentStart();
     onTelemetryEvent?.(event);
-  }, [handleRatingTrigger, onTelemetryEvent]);
+  }, [onContentEnd, onContentStart, onTelemetryEvent]);
 
   const PlayerComponent = MIME_TYPE_PLAYERS[mimeType as SupportedMimeType] || EcmlPlayer;
 
