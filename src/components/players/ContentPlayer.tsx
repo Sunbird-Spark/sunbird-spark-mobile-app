@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, { useState, useCallback } from 'react';
 import { EpubPlayer } from './EpubPlayer';
 import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
@@ -26,7 +26,6 @@ type SupportedMimeType = keyof typeof MIME_TYPE_PLAYERS;
 interface ContentPlayerProps {
   mimeType: string;
   metadata: any;
-  contentId?: string;
   mode?: string;
   cdata?: any[];
   contextRollup?: { l1: string };
@@ -38,7 +37,6 @@ interface ContentPlayerProps {
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   mimeType,
   metadata,
-  contentId,
   mode,
   cdata,
   contextRollup,
@@ -48,16 +46,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
 }) => {
   const [ratingOpen, setRatingOpen] = useState(false);
   const openRating = useCallback(() => setRatingOpen(true), []);
-  const { onContentEnd, onContentStart, cancel } = useRatingTimer(openRating);
-
-  // When contentId changes (e.g. next content in collection), dismiss rating and cancel timer.
-  // Track via ref + render-phase check to avoid setState-in-effect lint error.
-  const prevContentIdRef = useRef(contentId);
-  if (prevContentIdRef.current !== contentId) {
-    prevContentIdRef.current = contentId;
-    cancel();
-    if (ratingOpen) setRatingOpen(false);
-  }
+  const { onContentEnd, onContentStart } = useRatingTimer(openRating);
 
   // Extract eid from either a telemetry event or a player event
   const extractEid = (event: any): string =>

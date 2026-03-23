@@ -162,7 +162,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
           <ContentPlayer
             mimeType={mimeType}
             metadata={playerMetadata}
-            contentId={contentId}
             cdata={cdata}
             objectRollup={objectRollup}
             onPlayerEvent={handlePlayerEvent}
