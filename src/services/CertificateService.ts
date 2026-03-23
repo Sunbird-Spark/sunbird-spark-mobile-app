@@ -78,7 +78,7 @@ export class CertificateService {
       throw new Error('No certificate SVG received from server.');
     }
 
-    const safeName = courseName.replace(/[^a-z0-9_\-]/gi, '_').substring(0, 80) || 'certificate';
+    const safeName = courseName.replace(/[^a-z0-9_-]/gi, '_').substring(0, 80) || 'certificate';
     return convertSvgAndSave(svgContent, safeName, format);
   }
 }
