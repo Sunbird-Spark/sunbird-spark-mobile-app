@@ -64,14 +64,15 @@ class AuthWebviewService {
   private openInBrowser(url: string, callbackPath?: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       let settled = false;
+      const listeners: any[] = [];
 
       const cleanup = () => {
-        InAppBrowser.removeAllListeners();
+        listeners.forEach(handle => handle.remove());
       };
 
       // Watch for redirect URL if callbackPath is provided
       if (callbackPath) {
-        InAppBrowser.addListener('browserPageNavigationCompleted', (event) => {
+        const navListener = InAppBrowser.addListener('browserPageNavigationCompleted', (event) => {
           if (settled || !event.url) return;
           try {
             const eventUrl = new URL(event.url);
@@ -85,16 +86,18 @@ class AuthWebviewService {
             // Invalid URL — ignore
           }
         });
+        listeners.push(navListener);
       }
 
       // Listen for browser closed (user closed manually)
-      InAppBrowser.addListener('browserClosed', () => {
+      const closeListener = InAppBrowser.addListener('browserClosed', () => {
         if (!settled) {
           settled = true;
           cleanup();
           resolve();
         }
       });
+      listeners.push(closeListener);
 
       InAppBrowser.openInWebView({
         url,
