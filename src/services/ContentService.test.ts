@@ -11,6 +11,7 @@ vi.mock('../lib/http-client', () => ({
 vi.mock('./db/ContentDbService', () => ({
   contentDbService: {
     upsert: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockResolvedValue(undefined),
     getByIdentifier: vi.fn().mockResolvedValue(null),
   },
 }));
@@ -37,6 +38,7 @@ describe('ContentService', () => {
     (networkService.isConnected as any).mockReturnValue(true);
     (contentDbService.getByIdentifier as any).mockResolvedValue(null);
     (contentDbService.upsert as any).mockResolvedValue(undefined);
+    (contentDbService.update as any).mockResolvedValue(undefined);
   });
 
   describe('getContent', () => {
@@ -303,55 +305,59 @@ describe('ContentService', () => {
       expect(calledUrl).toContain('mode=edit');
     });
 
-    it('should cache content to DB after successful fetch', async () => {
+    it('should refresh server_data in DB when row already exists', async () => {
       mockHttpClient.get.mockResolvedValue(mockReadResponse);
+      (contentDbService.getByIdentifier as any).mockResolvedValue({ identifier: 'do_content_001', audience: 'Learner' });
 
       await contentService.contentRead('do_content_001');
 
-      expect(contentDbService.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({
-          identifier: 'do_content_001',
-          mime_type: 'video/mp4',
-          content_state: 0,
-        })
+      expect(contentDbService.update).toHaveBeenCalledWith(
+        'do_content_001',
+        expect.objectContaining({ server_data: expect.any(String) })
       );
     });
 
     it('should map array audience to comma-separated string', async () => {
       mockHttpClient.get.mockResolvedValue(mockReadResponse);
+      (contentDbService.getByIdentifier as any).mockResolvedValue({ identifier: 'do_content_001', audience: 'Learner' });
 
       await contentService.contentRead('do_content_001');
 
-      expect(contentDbService.upsert).toHaveBeenCalledWith(
+      expect(contentDbService.update).toHaveBeenCalledWith(
+        'do_content_001',
         expect.objectContaining({ audience: 'Learner' })
       );
     });
 
-    it('should map array dialcodes and childNodes to strings', async () => {
+    it('should store content fields in server_data JSON blob', async () => {
       mockHttpClient.get.mockResolvedValue(mockReadResponse);
+      (contentDbService.getByIdentifier as any).mockResolvedValue({ identifier: 'do_content_001', audience: 'Learner' });
 
       await contentService.contentRead('do_content_001');
 
-      expect(contentDbService.upsert).toHaveBeenCalledWith(
-        expect.objectContaining({ dialcodes: 'D1', child_nodes: 'child-1' })
-      );
+      const updateCall = (contentDbService.update as any).mock.calls[0];
+      const serverData = JSON.parse(updateCall[1].server_data);
+      expect(serverData.identifier).toBe('do_content_001');
+      expect(serverData.mimeType).toBe('video/mp4');
     });
 
-    it('should not crash if DB upsert fails (swallows cache error)', async () => {
+    it('should not crash if DB update fails (swallows cache error)', async () => {
       mockHttpClient.get.mockResolvedValue(mockReadResponse);
-      (contentDbService.upsert as any).mockRejectedValueOnce(new Error('DB error'));
+      (contentDbService.getByIdentifier as any).mockResolvedValue({ identifier: 'do_content_001', audience: 'Learner' });
+      (contentDbService.update as any).mockRejectedValueOnce(new Error('DB error'));
 
       const result = await contentService.contentRead('do_content_001');
 
       expect(result).toEqual(mockReadResponse);
     });
 
-    it('should skip DB upsert when content has no identifier', async () => {
-      mockHttpClient.get.mockResolvedValue({ data: { content: { name: 'no-id' } }, status: 200, headers: {} });
+    it('should skip DB update when row does not exist in content table', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+      (contentDbService.getByIdentifier as any).mockResolvedValue(null);
 
       await contentService.contentRead('do_content_001');
 
-      expect(contentDbService.upsert).not.toHaveBeenCalled();
+      expect(contentDbService.update).not.toHaveBeenCalled();
     });
 
     it('should return offline DB content when offline', async () => {
