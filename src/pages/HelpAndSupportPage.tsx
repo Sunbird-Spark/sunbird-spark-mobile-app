@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import {
     IonContent,
     IonHeader,
@@ -41,7 +41,7 @@ const ChevronDownIcon: React.FC = () => (
 /* ── Component ── */
 
 const HelpAndSupportPage: React.FC = () => {
-    const history = useHistory();
+    const router = useIonRouter();
     const { t } = useTranslation();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
     const [showModal, setShowModal] = useState(false);
@@ -114,7 +114,7 @@ const HelpAndSupportPage: React.FC = () => {
                                 <div
                                     className="hs-category-card"
                                     key={idx}
-                                    onClick={() => history.push(`/support/${cat.slug}`)}
+                                    onClick={() => router.push(`/support/${cat.slug}`, 'forward', 'push')}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <div className="hs-accent-bar" />

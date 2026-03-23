@@ -8,10 +8,12 @@ vi.mock('../icons/CollectionIcons', () => ({
   RightArrowIcon: () => <span data-testid="right-arrow-icon" />,
 }));
 
-// Mock react-router-dom
+// Mock router
 const mockPush = vi.fn();
+vi.mock('@ionic/react', () => ({
+  useIonRouter: () => ({ push: mockPush, goBack: vi.fn(), canGoBack: () => true }),
+}));
 vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: mockPush }),
   useLocation: () => ({ pathname: '/explore', state: undefined }),
 }));
 

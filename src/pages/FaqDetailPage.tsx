@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     IonContent,
     IonPage,
@@ -21,7 +21,6 @@ const ChevronDownIcon: React.FC = () => (
 
 const FaqDetailPage: React.FC = () => {
     const { category } = useParams<{ category: string }>();
-    const history = useHistory();
     const { t } = useTranslation();
     const { faqData, isLoading, isError } = useFaqData();
 

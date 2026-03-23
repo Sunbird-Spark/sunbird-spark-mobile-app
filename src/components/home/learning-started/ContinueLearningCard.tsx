@@ -1,7 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 import './ContinueLearningCard.css';
 
@@ -42,7 +42,7 @@ const CircularProgress: React.FC<CircularProgressProps> = ({
 
 export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ courses }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
 
   const incompleteCourses = _.filter(courses, c => (c.completionPercentage ?? 0) < 100);
   const lastAccessedCourse = _.first(
@@ -63,7 +63,7 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
 
   const handleContinue = () => {
     if (collectionId && lastAccessedCourse.batchId) {
-      history.push(`/collection/${collectionId}`);
+      router.push(`/collection/${collectionId}`, 'forward', 'push');
     }
   };
 

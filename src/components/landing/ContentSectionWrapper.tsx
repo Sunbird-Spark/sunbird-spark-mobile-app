@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { IonSpinner } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useContentSearch } from '../../hooks/useContentSearch';
@@ -14,7 +14,7 @@ interface ContentSectionWrapperProps {
 }
 
 export const ContentSectionWrapper: React.FC<ContentSectionWrapperProps> = ({ section }) => {
-  const history = useHistory();
+  const router = useIonRouter();
   const { t } = useTranslation();
   const sectionRequest = section?.criteria?.request || {};
 
@@ -52,7 +52,7 @@ export const ContentSectionWrapper: React.FC<ContentSectionWrapperProps> = ({ se
         <h2 className="content-carousel-title">{title}</h2>
         <button
           className="content-carousel-arrow"
-          onClick={() => history.push('/explore')}
+          onClick={() => router.push('/explore', 'forward', 'push')}
           aria-label={t('viewAll')}
         >
           <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">

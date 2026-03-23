@@ -46,6 +46,7 @@ import CollectionPage from './pages/CollectionPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
 import ProfileLearningPage from './pages/ProfileLearningPage';
+import BackButtonHandler from './components/common/BackButtonHandler';
 
 setupIonicReact();
 
@@ -81,6 +82,7 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <TnCGuard />
+        <BackButtonHandler />
         <IonRouterOutlet>
           <Route exact path="/search">
             <SearchPage />

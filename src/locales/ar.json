@@ -102,6 +102,29 @@
     "loading": "جار تحميل الأسئلة...",
     "error": "تعذّر تحميل الأسئلة"
   },
+  "collection": {
+    "courseOverview": "نظرة عامة على الدورة",
+    "collectionOverview": "نظرة عامة على المجموعة",
+    "units": "الوحدات",
+    "lessons": "الدروس",
+    "bestSuitedFor": "الأنسب لـ",
+    "courseCurriculum": "منهج الدورة",
+    "collectionCurriculum": "منهج المجموعة",
+    "relatedContent": "محتوى ذو صلة",
+    "faq": "الأسئلة الشائعة",
+    "letsGetStarted": "لنبدأ",
+    "joinTheCourse": "انضم إلى الدورة",
+    "creatorCannotEnrol": "لا يمكنك التسجيل في دورة قمت بإنشائها.",
+    "availableBatches": "الدُفعات المتاحة",
+    "selectBatch": "اختر دُفعة",
+    "selectBatchToStart": "اختر دُفعة لبدء التعلم.",
+    "noBatchesAvailable": "لا توجد دُفعات متاحة للتسجيل حاليًا.",
+    "joinTheBatch": "انضم إلى الدُفعة",
+    "courseProgress": "تقدم الدورة",
+    "batchStartedOn": "بدأت الدُفعة في",
+    "notFound": "لم يتم العثور على المجموعة.",
+    "errorLoading": "فشل تحميل المجموعة."
+  },
 
   "heroSection": {
     "title": "المعرفة التي تدفعك إلى الأمام.",

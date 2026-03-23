@@ -9,12 +9,12 @@ import {
   IonSpinner,
   IonIcon,
   IonToast,
+  useIonRouter,
 } from '@ionic/react';
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
-import { useHistory } from 'react-router-dom';
 import './SignInPage.css';
 
 const GoogleIcon: React.FC = () => (
@@ -68,7 +68,7 @@ const SignInPage: React.FC = () => {
 
   const { isOffline } = useNetwork();
   const { loginWithCredentials, loginWithGoogle } = useAuth();
-  const history = useHistory();
+  const router = useIonRouter();
   const wasOffline = useRef(false);
 
   useEffect(() => {
@@ -96,7 +96,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithCredentials(trimmedEmail, password);
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     } catch (err) {
       setError(getLoginErrorMessage(err));
     } finally {
@@ -129,7 +129,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithGoogle();
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     } catch (err) {
       if (!isGoogleCancelError(err)) {
         const code = err instanceof Error ? (err as any).code : undefined;
