@@ -74,7 +74,7 @@ const RatingDialog = ({ open, onClose, onSubmit }: RatingDialogProps) => {
         <button
           onClick={handleClose}
           className="rating-dialog-close-btn"
-          aria-label="Close rating dialog"
+          aria-label={t('close')}
         >
           <CloseIcon />
         </button>
