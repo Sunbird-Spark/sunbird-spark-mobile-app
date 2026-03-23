@@ -44,6 +44,19 @@ export class KeyValueDbService {
   async delete(key: KVKey): Promise<void> {
     await this.db.delete('key_value', { eq: { key } });
   }
+
+  /** Store a value under a dynamic (non-enum) key, e.g. 'content_state_{userId}_{courseId}'. */
+  async setRaw(key: string, value: string): Promise<void> {
+    await this.db.insert('key_value', { key, value, updated_at: Date.now() }, 'REPLACE');
+  }
+
+  async getRaw(key: string): Promise<string | null> {
+    const rows = await this.db.select<{ value: string }>(
+      'key_value',
+      { columns: ['value'], where: { eq: { key } } }
+    );
+    return rows.length > 0 ? rows[0].value : null;
+  }
 }
 
 export const keyValueDbService = new KeyValueDbService(databaseService);

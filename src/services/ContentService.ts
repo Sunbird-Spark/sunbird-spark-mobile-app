@@ -1,5 +1,9 @@
 import { getClient, ApiResponse } from '../lib/http-client';
+import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import type { ContentSearchRequest, ContentSearchResponse } from '../types/contentTypes';
+import { contentDbService } from './db/ContentDbService';
+import type { ContentEntry } from './download_manager/types';
+import { networkService } from './network/networkService';
 
 const DEFAULT_CONTENT_FIELDS = [
   'transcripts', 'ageGroup', 'appIcon', 'artifactUrl', 'attributions', 'audience',
@@ -29,12 +33,59 @@ export class ContentService {
   }
 
   public async contentRead<T = any>(contentId: string, fields?: string[], mode?: string): Promise<ApiResponse<T>> {
-    const resolvedFields = fields ?? DEFAULT_CONTENT_FIELDS;
-    const params = new URLSearchParams();
-    if (resolvedFields.length) params.set('fields', resolvedFields.join(','));
-    if (mode) params.set('mode', mode);
-    const queryString = params.toString() ? `?${params.toString()}` : '';
-    return getClient().get<T>(`/content/v1/read/${contentId}${queryString}`);
+    if (!networkService.isConnected()) {
+      return this.readContentFromDb<T>(contentId);
+    }
+
+    try {
+      const resolvedFields = fields ?? DEFAULT_CONTENT_FIELDS;
+      const params = new URLSearchParams();
+      if (resolvedFields.length) params.set('fields', resolvedFields.join(','));
+      if (mode) params.set('mode', mode);
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await getClient().get<T>(`/content/v1/read/${contentId}${queryString}`);
+
+      try {
+        const content = (response.data as any)?.content;
+        if (content?.identifier) {
+          const entry: ContentEntry = {
+            identifier: content.identifier,
+            server_data: JSON.stringify(content),
+            local_data: JSON.stringify(content),
+            mime_type: content.mimeType ?? '',
+            path: null,
+            visibility: (content.visibility as 'Default' | 'Parent') ?? 'Default',
+            server_last_updated_on: content.lastUpdatedOn ?? null,
+            local_last_updated_on: new Date().toISOString(),
+            ref_count: 1,
+            content_state: 0,
+            content_type: content.contentType ?? '',
+            audience: Array.isArray(content.audience)
+              ? content.audience.join(',')
+              : (content.audience ?? 'Learner'),
+            size_on_device: 0,
+            pragma: '',
+            manifest_version: content.pkgVersion != null ? String(content.pkgVersion) : '',
+            dialcodes: Array.isArray(content.dialcodes) ? content.dialcodes.join(',') : '',
+            child_nodes: Array.isArray(content.childNodes) ? content.childNodes.join(',') : '',
+            primary_category: content.primaryCategory ?? '',
+          };
+          await contentDbService.upsert(entry);
+        }
+      } catch (err) {
+        console.warn('[ContentService] Failed to cache content to SQLite:', err);
+      }
+
+      return response;
+    } catch {
+      return this.readContentFromDb<T>(contentId);
+    }
+  }
+
+  private async readContentFromDb<T>(contentId: string): Promise<ApiResponse<T>> {
+    const entry = await contentDbService.getByIdentifier(contentId);
+    const content = entry?.server_data ? JSON.parse(entry.server_data) : null;
+    return buildOfflineResponse<T>({ content } as T);
   }
   
   public async contentSearch(

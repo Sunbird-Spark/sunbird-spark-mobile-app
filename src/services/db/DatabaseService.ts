@@ -143,6 +143,8 @@ export class DatabaseService {
   private sqlite: SQLiteConnection;
   private db: SQLiteDBConnection | null = null;
   private initialized = false;
+  /** Shared promise so concurrent callers all wait on the same init run. */
+  private initPromise: Promise<void> | null = null;
 
   private constructor() {
     this.sqlite = new SQLiteConnection(CapacitorSQLite);
@@ -157,6 +159,21 @@ export class DatabaseService {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
+    // Concurrent callers share one in-flight promise instead of each racing
+    // through the connection-creation logic simultaneously.
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = this._doInitialize().finally(() => {
+      this.initPromise = null;
+    });
+
+    return this.initPromise;
+  }
+
+  private async _doInitialize(): Promise<void> {
+    // Re-check after acquiring the shared promise slot — a concurrent caller
+    // may have finished by the time we get here.
+    if (this.initialized) return;
 
     try {
       const platform = Capacitor.getPlatform();
@@ -170,7 +187,18 @@ export class DatabaseService {
       if (isConnection) {
         this.db = await this.sqlite.retrieveConnection(DB_NAME, false);
       } else {
-        this.db = await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false);
+        try {
+          this.db = await this.sqlite.createConnection(DB_NAME, false, 'no-encryption', 1, false);
+        } catch (createErr: any) {
+          // The plugin can report the connection as absent yet still hold it
+          // internally (e.g. after a failed previous init). Recover gracefully.
+          const msg: string = createErr?.message ?? String(createErr);
+          if (msg.includes('already exists')) {
+            this.db = await this.sqlite.retrieveConnection(DB_NAME, false);
+          } else {
+            throw createErr;
+          }
+        }
       }
 
       await this.db.open();
