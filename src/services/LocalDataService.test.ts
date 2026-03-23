@@ -33,7 +33,7 @@ vi.mock('./course/BatchService', () => ({
   }),
 }));
 
-import { offlineSyncService } from './OfflineSyncService';
+import { localDataService } from './LocalDataService';
 import { networkService } from './network/networkService';
 import { keyValueDbService } from './db/KeyValueDbService';
 
@@ -58,7 +58,7 @@ async function triggerDisconnect() {
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
-describe('OfflineSyncService', () => {
+describe('LocalDataService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetJSON.mockResolvedValue(null);
@@ -69,13 +69,13 @@ describe('OfflineSyncService', () => {
 
   describe('init()', () => {
     it('registers a subscriber with networkService', () => {
-      offlineSyncService.init();
+      localDataService.init();
 
       expect(networkService.subscribe).toHaveBeenCalledWith(expect.any(Function));
     });
 
     it('does not flush when network is disconnected', async () => {
-      offlineSyncService.init();
+      localDataService.init();
 
       await triggerDisconnect();
 
@@ -83,7 +83,7 @@ describe('OfflineSyncService', () => {
     });
 
     it('flushes both queues when network reconnects', async () => {
-      offlineSyncService.init();
+      localDataService.init();
       mockGetJSON
         .mockResolvedValueOnce([{ userId: 'u', courseId: 'c', batchId: 'b', contents: [], queuedAt: 1, retryCount: 0 }])
         .mockResolvedValueOnce([{ courseId: 'c', userId: 'u', batchId: 'b', queuedAt: 1, retryCount: 0 }]);
@@ -96,7 +96,7 @@ describe('OfflineSyncService', () => {
   });
 
   describe('flushContentStateQueue()', () => {
-    beforeEach(() => { offlineSyncService.init(); });
+    beforeEach(() => { localDataService.init(); });
 
     it('does nothing when queue is null', async () => {
       mockGetJSON.mockResolvedValueOnce(null);
@@ -184,7 +184,7 @@ describe('OfflineSyncService', () => {
   });
 
   describe('flushEnrolQueue()', () => {
-    beforeEach(() => { offlineSyncService.init(); });
+    beforeEach(() => { localDataService.init(); });
 
     it('does nothing when enrol queue is null', async () => {
       // content state queue → null, enrol queue → null
@@ -238,7 +238,7 @@ describe('OfflineSyncService', () => {
 
   describe('flushing guard', () => {
     it('does not start a second flush cycle while one is in progress', async () => {
-      offlineSyncService.init();
+      localDataService.init();
 
       let resolveFirstFlush!: () => void;
       mockGetJSON.mockImplementationOnce(

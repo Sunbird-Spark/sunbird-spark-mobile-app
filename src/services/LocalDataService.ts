@@ -3,7 +3,7 @@ import { keyValueDbService, KVKey } from './db/KeyValueDbService';
 import { BatchService } from './course/BatchService';
 import type { ContentStateUpdateRequest } from '../types/collectionTypes';
 
-class OfflineSyncService {
+class LocalDataService {
   private readonly batchService = new BatchService();
   private flushing = false;
 
@@ -36,7 +36,7 @@ class OfflineSyncService {
       const queue = await keyValueDbService.getJSON<QueueItem[]>(KVKey.PENDING_CONTENT_STATE_Q);
       if (!queue || queue.length === 0) return;
 
-      console.debug(`[OfflineSyncService] Flushing ${queue.length} pending content state update(s)`);
+      console.debug(`[LocalDataService] Flushing ${queue.length} pending content state update(s)`);
 
       const failed: QueueItem[] = [];
 
@@ -52,10 +52,10 @@ class OfflineSyncService {
           await this.batchService.contentStateUpdate(request);
         } catch {
           const retryCount = (item.retryCount ?? 0) + 1;
-          if (retryCount < OfflineSyncService.MAX_RETRIES) {
+          if (retryCount < LocalDataService.MAX_RETRIES) {
             failed.push({ ...item, retryCount });
           } else {
-            console.warn(`[OfflineSyncService] Dropping content state update after ${retryCount} failures`, item);
+            console.warn(`[LocalDataService] Dropping content state update after ${retryCount} failures`, item);
           }
         }
       }
@@ -63,12 +63,12 @@ class OfflineSyncService {
       await keyValueDbService.setJSON(KVKey.PENDING_CONTENT_STATE_Q, failed);
 
       if (failed.length > 0) {
-        console.warn(`[OfflineSyncService] ${failed.length} item(s) failed to sync and will be retried`);
+        console.warn(`[LocalDataService] ${failed.length} item(s) failed to sync and will be retried`);
       } else {
-        console.debug('[OfflineSyncService] All pending updates synced successfully');
+        console.debug('[LocalDataService] All pending updates synced successfully');
       }
     } catch (err) {
-      console.warn('[OfflineSyncService] Flush error:', err);
+      console.warn('[LocalDataService] Flush error:', err);
     }
   }
 
@@ -80,7 +80,7 @@ class OfflineSyncService {
       const queue = await keyValueDbService.getJSON<EnrolItem[]>(KVKey.PENDING_ENROL_Q);
       if (!queue || queue.length === 0) return;
 
-      console.debug(`[OfflineSyncService] Flushing ${queue.length} pending enrol request(s)`);
+      console.debug(`[LocalDataService] Flushing ${queue.length} pending enrol request(s)`);
 
       const failed: EnrolItem[] = [];
 
@@ -89,10 +89,10 @@ class OfflineSyncService {
           await this.batchService.enrol(item.courseId, item.userId, item.batchId);
         } catch {
           const retryCount = (item.retryCount ?? 0) + 1;
-          if (retryCount < OfflineSyncService.MAX_RETRIES) {
+          if (retryCount < LocalDataService.MAX_RETRIES) {
             failed.push({ ...item, retryCount });
           } else {
-            console.warn(`[OfflineSyncService] Dropping enrol after ${retryCount} failures`, item);
+            console.warn(`[LocalDataService] Dropping enrol after ${retryCount} failures`, item);
           }
         }
       }
@@ -100,14 +100,14 @@ class OfflineSyncService {
       await keyValueDbService.setJSON(KVKey.PENDING_ENROL_Q, failed);
 
       if (failed.length > 0) {
-        console.warn(`[OfflineSyncService] ${failed.length} enrol request(s) failed and will be retried`);
+        console.warn(`[LocalDataService] ${failed.length} enrol request(s) failed and will be retried`);
       } else {
-        console.debug('[OfflineSyncService] All pending enrols synced successfully');
+        console.debug('[LocalDataService] All pending enrols synced successfully');
       }
     } catch (err) {
-      console.warn('[OfflineSyncService] Enrol flush error:', err);
+      console.warn('[LocalDataService] Enrol flush error:', err);
     }
   }
 }
 
-export const offlineSyncService = new OfflineSyncService();
+export const localDataService = new LocalDataService();

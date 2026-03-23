@@ -7,7 +7,7 @@ import { userService } from './services/UserService';
 import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
 import { SystemSettingService } from './services/SystemSettingService';
 import { networkService } from './services/network/networkService';
-import { offlineSyncService } from './services/OfflineSyncService';
+import { localDataService } from './services/LocalDataService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -33,8 +33,8 @@ export class AppInitializer {
       // Initialize network service — required for offline/online detection
       await networkService.init();
 
-      // Start offline sync service — flushes pending content state updates on reconnect
-      offlineSyncService.init();
+      // Start outbox service — drains pending content state updates and enrolments on reconnect
+      localDataService.init();
 
       // Initialize download manager (depends on DB)
       await downloadManager.init();

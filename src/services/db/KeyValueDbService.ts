@@ -64,6 +64,17 @@ export class KeyValueDbService {
     );
     return rows.length > 0 ? rows[0].value : null;
   }
+
+  /**
+   * Delete all key_value rows whose key starts with `prefix`.
+   * Used to bulk-remove dynamic cache entries (e.g. 'cache:content_state_{userId}_').
+   */
+  async deleteByPrefix(prefix: string): Promise<void> {
+    await this.db.getDb().run(
+      'DELETE FROM key_value WHERE key LIKE ?',
+      [`${prefix}%`]
+    );
+  }
 }
 
 export const keyValueDbService = new KeyValueDbService(databaseService);

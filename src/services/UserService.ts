@@ -5,6 +5,8 @@ import { getClient, ApiResponse } from '../lib/http-client';
 import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import { userDbService } from './db/UserDbService';
 import type { UserType } from './db/UserDbService';
+import { enrolledCoursesDbService } from './db/EnrolledCoursesDbService';
+import { keyValueDbService, KVKey } from './db/KeyValueDbService';
 import { networkService } from './network/networkService';
 
 const STORAGE_KEY = 'USER_ACCOUNT';
@@ -107,8 +109,20 @@ class UserService {
     this.account = account;
   }
 
-  /** Clear account on logout */
+  /** Clear account on logout — removes session token and all user-specific SQLite data. */
   async clearAccount(): Promise<void> {
+    const userId = this.getUserId();
+
+    if (userId) {
+      await Promise.allSettled([
+        enrolledCoursesDbService.deleteAllForUser(userId),
+        userDbService.delete(userId),
+        keyValueDbService.delete(KVKey.PENDING_CONTENT_STATE_Q),
+        keyValueDbService.delete(KVKey.PENDING_ENROL_Q),
+        keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
+      ]);
+    }
+
     try {
       await SecureStoragePlugin.remove({ key: STORAGE_KEY });
     } catch {
@@ -148,7 +162,7 @@ class UserService {
         const profile = (response.data as any)?.response;
         if (profile) {
           const provider = this.getLoginProvider();
-          const userType: UserType = provider === 'google' ? 'GOOGLE' : 'GUEST';
+          const userType: UserType = provider === 'google' ? 'GOOGLE' : 'KEYCLOAK';
           await userDbService.upsert({
             id: userId,
             details: {
