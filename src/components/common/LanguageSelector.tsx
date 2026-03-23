@@ -13,7 +13,8 @@ export const LanguageSelector: React.FC = () => {
 
     useEffect(() => {
         document.documentElement.dir = currentLang.dir;
-    }, [currentLang.dir]);
+        document.documentElement.style.setProperty('--ion-font-family', currentLang.font);
+    }, [currentLang.dir, currentLang.font]);
 
     const handleLanguageChange = (lang: typeof LANGUAGE_CONFIG[0]) => {
         i18n.changeLanguage(lang.code);
