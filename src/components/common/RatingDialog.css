@@ -1,36 +1,55 @@
-/* Rating Dialog - rendered as overlay inside the player wrapper */
 .rating-dialog-overlay {
   position: absolute;
   inset: 0;
-  z-index: 100;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 0;
 }
 
 .rating-dialog-card {
-  background: #ffffff;
-  border-radius: 1rem;
+  background: #FFFFFF;
+  border-radius: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 2rem 1.5rem;
-  width: 85%;
-  max-width: 340px;
+  width: 100%;
+  height: 100%;
   position: relative;
+  padding: 1.5rem;
+}
+
+.rating-dialog-close-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: #AB4A2C;
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .rating-dialog-badge {
-  margin-bottom: 1rem;
+  width: 80px;
+  height: 80px;
+  margin-bottom: 0.75rem;
 }
 
 .rating-dialog-title {
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   line-height: 1.3;
+  letter-spacing: 0;
   color: #222222;
   margin: 0 0 0.25rem 0;
 }
@@ -39,28 +58,30 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 400;
   font-size: 0.875rem;
-  line-height: 1.5;
-  color: #666666;
+  line-height: 1.5rem;
+  letter-spacing: 0;
+  color: #222222;
   margin: 0 0 1.5rem 0;
 }
 
 .rating-dialog-stars {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2rem;
 }
 
 .rating-dialog-star-btn {
   background: none;
   border: none;
-  padding: 0.5rem;
-  cursor: pointer;
+  padding: 0.25rem;
   min-width: 44px;
   min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s;
 }
 
 .rating-dialog-star-btn:active {
@@ -68,16 +89,14 @@
 }
 
 .rating-dialog-submit-btn {
-  background: #D35400;
-  color: #ffffff;
+  background: #AB4A2C;
+  color: #FFFFFF;
   border: none;
   border-radius: 0.5rem;
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
   font-size: 1rem;
-  padding: 0.75rem 2rem;
-  width: 100%;
-  max-width: 200px;
+  padding: 0.625rem 2.5rem;
   cursor: pointer;
   transition: opacity 0.2s;
 }
@@ -85,34 +104,4 @@
 .rating-dialog-submit-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-}
-
-.rating-dialog-submit-btn:active:not(:disabled) {
-  opacity: 0.8;
-}
-
-/* Landscape adjustments for fullscreen player context */
-@media (orientation: landscape) {
-  .rating-dialog-card {
-    width: 50%;
-    max-width: 400px;
-    padding: 1.5rem;
-  }
-
-  .rating-dialog-badge svg {
-    width: 36px;
-    height: 36px;
-  }
-
-  .rating-dialog-title {
-    font-size: 1rem;
-  }
-
-  .rating-dialog-subtitle {
-    margin-bottom: 1rem;
-  }
-
-  .rating-dialog-stars {
-    margin-bottom: 1rem;
-  }
 }
