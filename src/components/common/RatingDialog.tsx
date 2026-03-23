@@ -2,21 +2,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import './RatingDialog.css';
 
-export interface PlayerMetadata {
-  identifier?: string;
-  objectType?: string;
-  contentType?: string;
-  primaryCategory?: string;
-  pkgVersion?: number | string;
-  versionKey?: string;
-  [key: string]: unknown;
-}
-
 interface RatingDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit?: (rating: number) => void;
-  playerMetadata?: PlayerMetadata;
 }
 
 /** Feather-style X icon */

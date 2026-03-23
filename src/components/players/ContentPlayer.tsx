@@ -85,7 +85,6 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
       <RatingDialog
         open={ratingOpen}
         onClose={() => setRatingOpen(false)}
-        playerMetadata={metadata}
       />
     </div>
   );
