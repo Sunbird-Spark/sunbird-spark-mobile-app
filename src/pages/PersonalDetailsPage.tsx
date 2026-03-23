@@ -30,13 +30,12 @@ const PersonalDetailsBody: React.FC = () => {
 
     const triggerCaptcha = useCallback<TriggerCaptcha>((callback) => {
         if (!executeRecaptcha) {
-            // No provider / key not ready — proceed without token
-            callback();
+            callback(null);
             return;
         }
         executeRecaptcha('otp_request')
             .then(token => callback(token))
-            .catch(() => callback());
+            .catch(() => callback(null));
     }, [executeRecaptcha]);
 
     const {
