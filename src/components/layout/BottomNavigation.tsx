@@ -1,6 +1,6 @@
 import React from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
-import { IonIcon } from '@ionic/react';
+import { useLocation } from 'react-router-dom';
+import { IonIcon, useIonRouter } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import {
   searchOutline,
@@ -28,7 +28,7 @@ const navItems: NavItem[] = [
 
 export const BottomNavigation: React.FC = () => {
   const location = useLocation();
-  const history = useHistory();
+  const router = useIonRouter();
   const { t } = useTranslation();
 
   return (
@@ -58,7 +58,7 @@ export const BottomNavigation: React.FC = () => {
         return (
           <button
             key={item.path}
-            onClick={() => history.push(item.path)}
+            onClick={() => router.push(item.path, 'root', 'replace')}
             style={{
               display: 'flex',
               flexDirection: 'column',

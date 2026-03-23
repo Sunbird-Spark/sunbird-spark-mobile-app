@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import {
-    IonPage, IonHeader, IonToolbar, IonContent, IonInput, IonSpinner,
+    IonPage, IonHeader, IonToolbar, IonContent, IonInput, IonSpinner, useIonRouter,
 } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useContentSearch } from '../hooks/useContentSearch';
 import useDebounce from '../hooks/useDebounce';
@@ -36,7 +35,7 @@ const ArrowRightIcon = () => (
 );
 
 const SearchPage: React.FC = () => {
-    const history = useHistory();
+    const router = useIonRouter();
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedQuery = useDebounce(searchQuery.trim(), 600);
@@ -56,10 +55,10 @@ const SearchPage: React.FC = () => {
     const totalCount = data?.data?.count || 0;
 
     const handleCancel = () => {
-        if (history.length > 1) {
-            history.goBack();
+        if (router.canGoBack()) {
+            router.goBack();
         } else {
-            history.push('/home');
+            router.push('/home', 'back', 'replace');
         }
     };
 
@@ -68,7 +67,7 @@ const SearchPage: React.FC = () => {
     };
 
     const handleViewAllResults = () => {
-        history.push(`/explore?query=${encodeURIComponent(debouncedQuery)}`);
+        router.push(`/explore?query=${encodeURIComponent(debouncedQuery)}`, 'forward', 'push');
     };
 
     const renderResultCard = (item: ContentSearchItem) => {

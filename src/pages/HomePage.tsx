@@ -7,7 +7,7 @@ import {
   IonSpinner,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PublicWelcomeHeader } from '../components/home/PublicWelcomeHeader';
 import { HeroSection } from '../components/home/HeroSection';
@@ -75,7 +75,7 @@ const renderSection = (section: any) => {
 
 const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolledCourseIds }) => {
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
   const { data, isLoading } = useContentSearch({
     request: {
       filters: {
@@ -113,7 +113,7 @@ const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ 
         <h2 className="content-carousel-title">{t('recommendedContent')}</h2>
         <button
           className="content-carousel-arrow"
-          onClick={() => history.push('/explore')}
+          onClick={() => router.push('/explore', 'forward', 'push')}
           aria-label={t('viewAll')}
         >
           <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">

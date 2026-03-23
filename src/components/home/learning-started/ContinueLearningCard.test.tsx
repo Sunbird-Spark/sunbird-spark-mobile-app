@@ -4,8 +4,8 @@ import { ContinueLearningCard } from './ContinueLearningCard';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 
 const mockPush = vi.fn();
-vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: mockPush }),
+vi.mock('@ionic/react', () => ({
+  useIonRouter: () => ({ push: mockPush, goBack: vi.fn(), canGoBack: () => true }),
 }));
 
 vi.mock('react-i18next', () => ({

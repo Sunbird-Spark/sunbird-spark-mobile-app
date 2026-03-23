@@ -1045,6 +1045,13 @@ ion-tab-button:hover {
     --background: rgb(244, 244, 244);
 }
 
+/* --- Language Selector Popover --- */
+.language-selector-popover {
+    --width: 7.5rem;
+    --border-radius: 0.75rem;
+    --box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
+}
+
 /* --- Profile Info Card --- */
 .profile-info-card {
     background: var(--ion-color-light);
@@ -1169,11 +1176,11 @@ ion-tab-button:hover {
     margin-top: 0.25rem;
 }
 
-/* Icon badge in top-right of stat card */
+/* Icon badge in top-right of stat card (inset-inline-end flips to left in RTL) */
 .profile-stat-icon-badge {
     position: absolute;
     top: 0.75rem;
-    right: 0.75rem;
+    inset-inline-end: 0.75rem;
     width: 2rem;
     height: 2.0625rem;
     border-radius: 0.5rem;
@@ -1252,6 +1259,15 @@ ion-tab-button:hover {
 
 .profile-bottom-spacer {
     height: 6.25rem;
+}
+
+/* --- RTL overrides for profile --- */
+[dir="rtl"] .profile-action-chevron {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .profile-logout-icon {
+    transform: scaleX(-1);
 }
 
 /* --- Override header white style for public page --- */

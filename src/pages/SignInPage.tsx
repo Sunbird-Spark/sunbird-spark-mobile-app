@@ -9,12 +9,13 @@ import {
   IonSpinner,
   IonIcon,
   IonToast,
+  useIonRouter,
 } from '@ionic/react';
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
-import { useHistory } from 'react-router-dom';
+import { authWebviewService } from '../services/AuthWebviewService';
 import './SignInPage.css';
 
 const GoogleIcon: React.FC = () => (
@@ -68,7 +69,7 @@ const SignInPage: React.FC = () => {
 
   const { isOffline } = useNetwork();
   const { loginWithCredentials, loginWithGoogle } = useAuth();
-  const history = useHistory();
+  const router = useIonRouter();
   const wasOffline = useRef(false);
 
   useEffect(() => {
@@ -96,7 +97,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithCredentials(trimmedEmail, password);
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     } catch (err) {
       setError(getLoginErrorMessage(err));
     } finally {
@@ -104,16 +105,69 @@ const SignInPage: React.FC = () => {
     }
   };
 
-  const handleForgotPassword = () => {
+  const handleForgotPassword = async () => {
     if (loading) return;
-    // TODO: Wire to Form API → InAppBrowser
-    console.log('Forgot password clicked');
+
+    if (isOffline) {
+      setToastMessage('Please check your internet connection');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+
+    try {
+      await authWebviewService.openForgotPassword();
+      // Browser closed — user can now login with new password
+    } catch (err) {
+      if (err instanceof Error) {
+        const msg = err.message.toLowerCase();
+        if (msg.includes('cancel')) {
+          // User closed browser — no error
+        } else if (msg.includes('form') || msg.includes('config')) {
+          setError('Unable to open. Please try again');
+        } else {
+          setError('Something went wrong. Please try again');
+        }
+      } else {
+        setError('Something went wrong. Please try again');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (loading) return;
-    // TODO: Wire to Form API → InAppBrowser
-    console.log('Register clicked');
+
+    if (isOffline) {
+      setToastMessage('Please check your internet connection');
+      return;
+    }
+
+    setError('');
+    setLoading(true);
+
+    try {
+      await authWebviewService.openRegistration();
+      // Browser closed — user may or may not have completed registration
+      // No toast needed — if they registered, they'll login with new credentials
+    } catch (err) {
+      if (err instanceof Error) {
+        const msg = err.message.toLowerCase();
+        if (msg.includes('cancel')) {
+          // User closed browser — no error
+        } else if (msg.includes('form') || msg.includes('config')) {
+          setError('Unable to open registration. Please try again');
+        } else {
+          setError('Something went wrong. Please try again');
+        }
+      } else {
+        setError('Something went wrong. Please try again');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleSignIn = async () => {
@@ -129,7 +183,7 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithGoogle();
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     } catch (err) {
       if (!isGoogleCancelError(err)) {
         const code = err instanceof Error ? (err as any).code : undefined;
