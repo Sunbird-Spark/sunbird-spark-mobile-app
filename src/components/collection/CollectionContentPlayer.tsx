@@ -8,6 +8,7 @@ import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
 import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
+import { telemetryService } from '../../services/TelemetryService';
 
 const QUML_MIME_TYPES = [
   'application/vnd.sunbird.questionset',
@@ -111,6 +112,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   const handleTelemetryEvent = useCallback((event: any) => {
     console.log('[CollectionContentPlayer] Telemetry event:', event);
+    void telemetryService.save(event);
     handleTelemetryStateUpdate(event);
   }, [handleTelemetryStateUpdate]);
 

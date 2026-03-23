@@ -2,7 +2,6 @@ import { getClient, ApiResponse } from '../lib/http-client';
 import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import type { ContentSearchRequest, ContentSearchResponse } from '../types/contentTypes';
 import { contentDbService } from './db/ContentDbService';
-import type { ContentEntry } from './download_manager/types';
 import { networkService } from './network/networkService';
 
 const DEFAULT_CONTENT_FIELDS = [
@@ -48,34 +47,22 @@ export class ContentService {
       try {
         const content = (response.data as any)?.content;
         if (content?.identifier) {
-          const entry: ContentEntry = {
-            identifier: content.identifier,
-            server_data: JSON.stringify(content),
-            // local_data mirrors server_data on fetch; locally-modified content
-            // (e.g. downloaded state) should update only local_data, not server_data.
-            local_data: JSON.stringify(content),
-            mime_type: content.mimeType ?? '',
-            path: null,
-            visibility: (content.visibility as 'Default' | 'Parent') ?? 'Default',
-            server_last_updated_on: content.lastUpdatedOn ?? null,
-            local_last_updated_on: new Date().toISOString(),
-            ref_count: 1, // tracks how many collections reference this content; incremented by the download manager on import
-            content_state: 0,
-            content_type: content.contentType ?? '',
-            audience: Array.isArray(content.audience)
-              ? content.audience.join(',')
-              : (content.audience ?? 'Learner'),
-            size_on_device: 0,
-            pragma: '',
-            manifest_version: content.pkgVersion != null ? String(content.pkgVersion) : '',
-            dialcodes: Array.isArray(content.dialcodes) ? content.dialcodes.join(',') : '',
-            child_nodes: Array.isArray(content.childNodes) ? content.childNodes.join(',') : '',
-            primary_category: content.primaryCategory ?? '',
-          };
-          await contentDbService.upsert(entry);
+          // Only refresh server_data on rows that already exist (placed there by
+          // the download/import pipeline). Never create new rows here — the content
+          // table is owned exclusively by the download manager.
+          const existing = await contentDbService.getByIdentifier(content.identifier);
+          if (existing) {
+            await contentDbService.update(content.identifier, {
+              server_data: JSON.stringify(content),
+              server_last_updated_on: content.lastUpdatedOn ?? null,
+              audience: Array.isArray(content.audience)
+                ? content.audience.join(',')
+                : (content.audience ?? existing.audience),
+            });
+          }
         }
       } catch (err) {
-        console.warn('[ContentService] Failed to cache content to SQLite:', err);
+        console.warn('[ContentService] Failed to refresh server_data in SQLite:', err);
       }
 
       return response;
@@ -86,7 +73,26 @@ export class ContentService {
 
   private async readContentFromDb<T>(contentId: string): Promise<ApiResponse<T>> {
     const entry = await contentDbService.getByIdentifier(contentId);
-    const content = entry?.server_data ? JSON.parse(entry.server_data) : null;
+    if (!entry) return buildOfflineResponse<T>({ content: null } as T);
+
+    // local_data is set by the import pipeline (manifest item JSON).
+    // server_data is refreshed when online. Prefer local_data as it reflects
+    // what is actually on disk; fall back to server_data for content that was
+    // only viewed online (no download).
+    const raw = entry.local_data || entry.server_data;
+    const content = raw ? JSON.parse(raw) : null;
+
+    // Resolve artifact URL to the local filesystem for downloaded content.
+    // entry.path is the content directory (file:///…/content/<id>/).
+    // The artifactUrl from the manifest may be a relative filename or a CDN URL;
+    // in both cases the actual file is at {path}/{basename}.
+    if (content && entry.path && entry.content_state === 2 && content.artifactUrl) {
+      const basename = content.artifactUrl.split('/').pop();
+      if (basename) {
+        content.artifactUrl = `${entry.path}/${basename}`;
+      }
+    }
+
     return buildOfflineResponse<T>({ content } as T);
   }
   

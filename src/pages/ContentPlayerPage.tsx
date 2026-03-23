@@ -15,6 +15,7 @@ import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
 import { useQumlContent } from '../hooks/useQumlContent';
 import PageLoader from '../components/common/PageLoader';
+import { telemetryService } from '../services/TelemetryService';
 import './ContentPlayerPage.css';
 
 const QUML_MIME_TYPES = [
@@ -87,6 +88,7 @@ const ContentPlayerPage: React.FC = () => {
 
   const handleTelemetryEvent = (event: any) => {
     console.log('[ContentPlayerPage] Telemetry event:', event);
+    void telemetryService.save(event);
   };
 
   // ── Fullscreen player mode (landscape, no header) ──
