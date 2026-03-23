@@ -6,39 +6,42 @@ export interface SettingOption {
   value: string;
 }
 
-export const SYNC_DATA_OPTIONS: SettingOption[] = [
+export const SYNC_DATA_OPTIONS = [
   { label: 'OFF',    value: 'off'    },
   { label: 'WIFI',   value: 'wifi'   },
   { label: 'ALWAYS', value: 'always' },
-];
+] as const;
 
-export const DOWNLOAD_CONTENT_OPTIONS: SettingOption[] = [
+export const DOWNLOAD_CONTENT_OPTIONS = [
   { label: 'WIFI',   value: 'wifi'   },
   { label: 'ALWAYS', value: 'always' },
-];
+] as const;
 
-const SYNC_DATA_DEFAULT     = 'wifi';
-const DOWNLOAD_CONTENT_DEFAULT = 'always';
+export type SyncDataValue = typeof SYNC_DATA_OPTIONS[number]['value'];
+export type DownloadContentValue = typeof DOWNLOAD_CONTENT_OPTIONS[number]['value'];
+
+const SYNC_DATA_DEFAULT: SyncDataValue = 'wifi';
+const DOWNLOAD_CONTENT_DEFAULT: DownloadContentValue = 'always';
 
 export class SettingsService {
   constructor(private kv: KeyValueDbService) {}
 
-  async getSyncData(): Promise<string> {
-    const stored = await this.kv.get(KVKey.SYNC_DATA);
-    return stored ?? SYNC_DATA_DEFAULT;
+  async getSyncData(): Promise<SyncDataValue> {
+    const stored = await this.kv.get(KVKey.TELEMETRY_SYNC_NETWORK_TYPE);
+    return SYNC_DATA_OPTIONS.some(o => o.value === stored) ? (stored as SyncDataValue) : SYNC_DATA_DEFAULT;
   }
 
-  async setSyncData(value: string): Promise<void> {
-    await this.kv.set(KVKey.SYNC_DATA, value);
+  async setSyncData(value: SyncDataValue): Promise<void> {
+    await this.kv.set(KVKey.TELEMETRY_SYNC_NETWORK_TYPE, value);
   }
 
-  async getDownloadContent(): Promise<string> {
-    const stored = await this.kv.get(KVKey.DOWNLOAD_CONTENT);
-    return stored ?? DOWNLOAD_CONTENT_DEFAULT;
+  async getDownloadContent(): Promise<DownloadContentValue> {
+    const stored = await this.kv.get(KVKey.CONTENT_DOWNLOAD_NETWORK_TYPE);
+    return DOWNLOAD_CONTENT_OPTIONS.some(o => o.value === stored) ? (stored as DownloadContentValue) : DOWNLOAD_CONTENT_DEFAULT;
   }
 
-  async setDownloadContent(value: string): Promise<void> {
-    await this.kv.set(KVKey.DOWNLOAD_CONTENT, value);
+  async setDownloadContent(value: DownloadContentValue): Promise<void> {
+    await this.kv.set(KVKey.CONTENT_DOWNLOAD_NETWORK_TYPE, value);
   }
 
   async getAppVersion(): Promise<{ version: string; build: string }> {

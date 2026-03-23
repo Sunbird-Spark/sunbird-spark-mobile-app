@@ -14,31 +14,42 @@ import {
   settingsService,
   SYNC_DATA_OPTIONS,
   DOWNLOAD_CONTENT_OPTIONS,
+  type SyncDataValue,
+  type DownloadContentValue,
 } from '../services/SettingsService';
 import './SettingsPage.css';
 
 const SettingsPage: React.FC = () => {
-  const [syncData, setSyncDataState] = useState<string>('wifi');
-  const [downloadContents, setDownloadContentsState] = useState<string>('always');
+  const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');
+  const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');
   const [appBuild, setAppBuild] = useState<string>('');
 
   // Load persisted values from DB and app version on mount
   useEffect(() => {
-    settingsService.getSyncData().then(setSyncDataState);
-    settingsService.getDownloadContent().then(setDownloadContentsState);
-    settingsService.getAppVersion().then(({ version, build }) => {
-      setAppVersion(version);
-      setAppBuild(build);
-    });
+    let isMounted = true;
+    const loadSettings = async () => {
+      const [syncDataValue, downloadContentValue, appInfo] = await Promise.all([
+        settingsService.getSyncData(),
+        settingsService.getDownloadContent(),
+        settingsService.getAppVersion(),
+      ]);
+      if (!isMounted) return;
+      setSyncDataState(syncDataValue);
+      setDownloadContentsState(downloadContentValue);
+      setAppVersion(appInfo.version);
+      setAppBuild(appInfo.build);
+    };
+    loadSettings();
+    return () => { isMounted = false; };
   }, []);
 
-  const handleSyncDataChange = async (value: string) => {
+  const handleSyncDataChange = async (value: SyncDataValue) => {
     await settingsService.setSyncData(value);
     setSyncDataState(value);
   };
 
-  const handleDownloadContentChange = async (value: string) => {
+  const handleDownloadContentChange = async (value: DownloadContentValue) => {
     await settingsService.setDownloadContent(value);
     setDownloadContentsState(value);
   };
@@ -73,8 +84,10 @@ const SettingsPage: React.FC = () => {
                 {SYNC_DATA_OPTIONS.map((option) => (
                   <button
                     key={option.value}
+                    type="button"
                     className={`profile-settings-option-btn${syncData === option.value ? ' active-sync' : ''}`}
-                    onClick={() => handleSyncDataChange(option.value)}
+                    aria-pressed={syncData === option.value}
+                    onClick={() => handleSyncDataChange(option.value as SyncDataValue)}
                   >
                     {option.label}
                   </button>
@@ -97,8 +110,10 @@ const SettingsPage: React.FC = () => {
                 {DOWNLOAD_CONTENT_OPTIONS.map((option) => (
                   <button
                     key={option.value}
+                    type="button"
                     className={`profile-settings-option-btn${downloadContents === option.value ? ' active-download' : ''}`}
-                    onClick={() => handleDownloadContentChange(option.value)}
+                    aria-pressed={downloadContents === option.value}
+                    onClick={() => handleDownloadContentChange(option.value as DownloadContentValue)}
                   >
                     {option.label}
                   </button>

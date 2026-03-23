@@ -109,7 +109,7 @@ const ProfilePage: React.FC = () => {
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
             </IonItem>
             <IonItem className="profile-action-item" button detail={false} routerLink="/profile/settings">
-              <IonLabel className="profile-action-label">Settings</IonLabel>
+              <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
             </IonItem>
           </IonList>
@@ -233,8 +233,12 @@ const ProfilePage: React.FC = () => {
           </IonItem>
 
           <IonItem className="profile-action-item" button detail={false} routerLink="/profile/settings">
-            <IonLabel className="profile-action-label">Settings</IonLabel>
+            <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+          </IonItem>
+
+          <IonItem className="profile-action-item" button detail={false} onClick={handleLogout}>
+            <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
           </IonItem>
         </IonList>
 

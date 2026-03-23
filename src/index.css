@@ -364,7 +364,7 @@ ion-tab-button:hover {
 }
 
 .horizontal-course-card:hover {
-    transform: translateY(-1px);
+    transform: translateY(-0.0625rem);
     box-shadow: 0 0.25rem 0.75rem rgba(0, 0, 0, 0.15);
 }
 
@@ -562,7 +562,7 @@ ion-tab-button:hover {
 }
 
 .stats-divider {
-    width: 1px;
+    width: 0.0625rem;
     height: 2.5rem;
     background: var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0));
     flex-shrink: 0;
@@ -840,7 +840,7 @@ ion-tab-button:hover {
 
 .resource-center-line {
     flex: 1;
-    height: 1px;
+    height: 0.0625rem;
     background: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
@@ -1261,27 +1261,26 @@ ion-tab-button:hover {
     height: 6.25rem;
 }
 
-
 .profile-settings-heading {
     font-size: 1.375rem;
     font-weight: 800;
-    color: var(--ion-color-dark, #2e3335);
+    color: var(--ion-color-dark);
     margin: 0 0 0.25rem;
     letter-spacing: -0.02em;
 }
 
 .profile-settings-subheading {
     font-size: 0.875rem;
-    color: var(--ion-color-medium, #5a6062);
+    color: var(--ion-color-medium);
     margin: 0 0 1.25rem;
 }
 
 .profile-settings-card {
-    background: #ffffff;
+    background: var(--ion-color-light);
     border-radius: 0.75rem;
     padding: 1.25rem;
     margin-bottom: 1rem;
-    box-shadow: 0 20px 40px rgba(46, 51, 53, 0.06);
+    box-shadow: 0 1.25rem 2.5rem rgba(var(--ion-color-dark-rgb), 0.06);
     position: relative;
     overflow: hidden;
 }
@@ -1303,19 +1302,19 @@ ion-tab-button:hover {
 }
 
 .profile-settings-icon-sync {
-    background: rgba(147, 76, 19, 0.1);
+    background: rgba(var(--ion-color-primary-rgb), 0.1);
 }
 
-.profile-settings-icon-sync .material-symbols-outlined {
-    color: var(--ion-color-primary, #934c13);
+.profile-settings-icon-sync ion-icon {
+    color: var(--ion-color-primary);
 }
 
 .profile-settings-icon-download {
-    background: rgba(44, 103, 113, 0.1);
+    background: rgba(var(--ion-color-tertiary-rgb), 0.1);
 }
 
-.profile-settings-icon-download .material-symbols-outlined {
-    color: #2c6771;
+.profile-settings-icon-download ion-icon {
+    color: var(--ion-color-tertiary);
 }
 
 .profile-settings-card-content {
@@ -1328,13 +1327,13 @@ ion-tab-button:hover {
 .profile-settings-card-title {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--ion-color-dark, #2e3335);
+    color: var(--ion-color-dark);
     margin: 0 0 0.25rem;
 }
 
 .profile-settings-card-desc {
     font-size: 0.8125rem;
-    color: var(--ion-color-medium, #5a6062);
+    color: var(--ion-color-medium);
     margin: 0;
 }
 
@@ -1346,10 +1345,10 @@ ion-tab-button:hover {
 
 .profile-settings-option-btn {
     padding: 0.4375rem 1.125rem;
-    border-radius: 9999px;
+    border-radius: 31.25rem;
     border: none;
-    background: #ebeef0;
-    color: var(--ion-color-medium, #5a6062);
+    background: var(--ion-color-light-shade);
+    color: var(--ion-color-medium);
     font-size: 0.875rem;
     font-weight: 600;
     cursor: pointer;
@@ -1357,20 +1356,20 @@ ion-tab-button:hover {
 }
 
 .profile-settings-option-btn.active-sync {
-    background: var(--ion-color-primary, #934c13);
-    color: #fff7f4;
-    box-shadow: 0 4px 12px rgba(147, 76, 19, 0.25);
+    background: var(--ion-color-primary);
+    color: var(--ion-color-primary-contrast);
+    box-shadow: 0 0.25rem 0.75rem rgba(var(--ion-color-primary-rgb), 0.25);
 }
 
 .profile-settings-option-btn.active-download {
-    background: #2c6771;
-    color: #ecfcff;
-    box-shadow: 0 4px 12px rgba(44, 103, 113, 0.25);
+    background: var(--ion-color-tertiary);
+    color: var(--ion-color-tertiary-contrast);
+    box-shadow: 0 0.25rem 0.75rem rgba(var(--ion-color-tertiary-rgb), 0.25);
 }
 
 .profile-settings-version-card {
-    background: rgba(188, 253, 209, 0.3);
-    border: 1px solid rgba(46, 106, 73, 0.1);
+    background: rgba(var(--ion-color-success-rgb), 0.15);
+    border: 0.0625rem solid rgba(var(--ion-color-success-rgb), 0.2);
     border-radius: 0.75rem;
     padding: 1.25rem;
     margin-bottom: 1rem;
@@ -1381,7 +1380,7 @@ ion-tab-button:hover {
 .profile-settings-version-label {
     font-size: 0.6875rem;
     font-weight: 700;
-    color: #2e6a49;
+    color: var(--ion-color-success-shade);
     text-transform: uppercase;
     letter-spacing: 0.08em;
 }
@@ -1389,7 +1388,7 @@ ion-tab-button:hover {
 .profile-settings-version-name {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #276343;
+    color: var(--ion-color-success-shade);
     margin: 0.25rem 0 2rem;
 }
 
@@ -1402,12 +1401,12 @@ ion-tab-button:hover {
 .profile-settings-version-desc {
     font-size: 0.875rem;
     font-weight: 500;
-    color: rgba(39, 99, 67, 0.6);
+    color: rgba(var(--ion-color-success-rgb), 0.7);
 }
 
 .profile-settings-version-badge {
-    background: #2e6a49;
-    color: #e7ffeb;
+    background: var(--ion-color-success-shade);
+    color: var(--ion-color-success-contrast);
     padding: 0.25rem 0.75rem;
     border-radius: 0.5rem;
     font-family: monospace;
