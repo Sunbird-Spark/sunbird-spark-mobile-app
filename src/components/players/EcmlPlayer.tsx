@@ -37,8 +37,9 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
     let cancelled = false;
 
     const messageHandler = (event: MessageEvent) => {
-      // Only accept messages from our player iframe
+      // Only accept messages from our player iframe at the same origin
       if (event.source !== iframe.contentWindow) return;
+      if (event.origin !== window.location.origin) return;
       if (!event.data) return;
 
       const eventData = typeof event.data === 'string'
@@ -100,14 +101,13 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
 
         iframe.onload = () => {
           if (cancelled) return;
-          try {
-            const contentWindow = iframe.contentWindow as any;
-            if (contentWindow && contentWindow.initializePreview) {
-              contentWindow.initializePreview(config);
-            }
-          } catch (error) {
-            console.error('Failed to initialize ECML preview:', error);
-          }
+          // Send config to the iframe via postMessage.
+          // The custom preview.html listens for this and calls initializePreview.
+          // This avoids cross-origin contentWindow access issues in Capacitor.
+          iframe.contentWindow?.postMessage(
+            { __ecmlPlayerConfig: true, config },
+            window.location.origin
+          );
         };
 
         window.addEventListener('message', messageHandler);

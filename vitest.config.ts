@@ -10,6 +10,12 @@ export default defineConfig({
     setupFiles: './src/setupTests.ts',
     css: true,
     pool: 'threads',
+    exclude: [
+      'node_modules/**',
+      'dist/**',
+      'public/content-player/**',
+      'android/**',
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

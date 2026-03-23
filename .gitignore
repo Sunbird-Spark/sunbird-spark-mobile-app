@@ -12,6 +12,7 @@ coverage
 dist
 public/assets
 public/content/assets
+public/content-player
 public/libs
 dist-ssr
 *.local
