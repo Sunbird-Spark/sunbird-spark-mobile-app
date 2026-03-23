@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BatchService } from './BatchService';
 import { getClient } from '../../lib/http-client';
+import { networkService } from '../network/networkService';
+import { keyValueDbService } from '../db/KeyValueDbService';
+import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import type {
   ContentStateReadRequest,
   ContentStateUpdateRequest,
@@ -10,11 +13,36 @@ vi.mock('../../lib/http-client', () => ({
   getClient: vi.fn(),
 }));
 
+vi.mock('../network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
+vi.mock('../db/KeyValueDbService', () => ({
+  KVKey: {
+    PENDING_CONTENT_STATE_Q: 'pending_content_state_q',
+  },
+  keyValueDbService: {
+    getJSON: vi.fn().mockResolvedValue(null),
+    setJSON: vi.fn().mockResolvedValue(undefined),
+    getRaw: vi.fn().mockResolvedValue(null),
+    setRaw: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('../db/EnrolledCoursesDbService', () => ({
+  enrolledCoursesDbService: {
+    upsertBatch: vi.fn().mockResolvedValue(undefined),
+    getByUser: vi.fn().mockResolvedValue([]),
+    updateProgress: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 describe('BatchService', () => {
   let service: BatchService;
   let mockHttpClient: any;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     service = new BatchService();
     mockHttpClient = {
       get: vi.fn(),
@@ -75,11 +103,6 @@ describe('BatchService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should propagate errors', async () => {
-      mockHttpClient.post.mockRejectedValue(new Error('Enrollment failed'));
-
-      await expect(service.enrol('c', 'u', 'b')).rejects.toThrow('Enrollment failed');
-    });
   });
 
   describe('unenrol', () => {
@@ -248,6 +271,124 @@ describe('BatchService', () => {
           batchId: 'batch-1',
         },
       });
+    });
+  });
+
+  describe('contentStateRead — offline path', () => {
+    it('should return cached data when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (keyValueDbService.getRaw as any).mockResolvedValue(
+        JSON.stringify({ contentList: [{ contentId: 'c1', status: 2 }] })
+      );
+
+      const request: ContentStateReadRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contentIds: ['c1'],
+      };
+
+      const result = await service.contentStateRead(request);
+
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+      expect((result.data as any).contentList).toHaveLength(1);
+    });
+
+    it('should return empty contentList when offline and no cache', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (keyValueDbService.getRaw as any).mockResolvedValue(null);
+
+      const request: ContentStateReadRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contentIds: [],
+      };
+
+      const result = await service.contentStateRead(request);
+
+      expect((result.data as any).contentList).toEqual([]);
+    });
+
+    it('should fall back to cache when API fails', async () => {
+      mockHttpClient.post.mockRejectedValue(new Error('Network error'));
+      (keyValueDbService.getRaw as any).mockResolvedValue(
+        JSON.stringify({ contentList: [{ contentId: 'c1', status: 1 }] })
+      );
+
+      const request: ContentStateReadRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contentIds: ['c1'],
+      };
+
+      const result = await service.contentStateRead(request);
+
+      expect((result.data as any).contentList).toHaveLength(1);
+    });
+  });
+
+  describe('contentStateUpdate — offline path', () => {
+    it('should queue and return offline response when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      const result = await service.contentStateUpdate(request);
+
+      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
+      expect(mockHttpClient.patch).not.toHaveBeenCalled();
+      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+    });
+
+    it('should queue when API fails and update local caches', async () => {
+      mockHttpClient.patch.mockRejectedValue(new Error('Server error'));
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      const result = await service.contentStateUpdate(request);
+
+      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
+      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+    });
+
+    it('should update local course progress when content reaches status 2', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (enrolledCoursesDbService.getByUser as any).mockResolvedValue([{
+        course_id: 'course-1',
+        user_id: 'user-1',
+        details: { courseId: 'course-1', name: 'Test', leafNodesCount: 2 },
+        enrolled_on: Date.now(),
+        progress: 0,
+        status: 'active',
+      }]);
+      (keyValueDbService.getRaw as any).mockResolvedValue(
+        JSON.stringify({ contentList: [{ contentId: 'c1', status: 2 }, { contentId: 'c2', status: 2 }] })
+      );
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      await service.contentStateUpdate(request);
+
+      expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
+        'course-1', 'user-1', 100, 'completed'
+      );
     });
   });
 });

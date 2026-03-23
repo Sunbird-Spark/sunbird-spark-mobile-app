@@ -1,9 +1,11 @@
-import React, { useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { EpubPlayer } from './EpubPlayer';
 import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
 import { EcmlPlayer } from './EcmlPlayer';
 import QumlPlayer from './QumlPlayer';
+import RatingDialog from '../common/RatingDialog';
+import { useRatingTimer } from '../../hooks/useRatingTimer';
 
 // MIME type to player component mapping
 const MIME_TYPE_PLAYERS = {
@@ -42,16 +44,25 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   onPlayerEvent,
   onTelemetryEvent,
 }) => {
+  const [ratingOpen, setRatingOpen] = useState(false);
+  const openRating = useCallback(() => setRatingOpen(true), []);
+  const { onContentEnd, onContentStart } = useRatingTimer(openRating);
+
+  // On mobile, some players (e.g. PDF) emit END/START only via onPlayerEvent,
+  // not onTelemetryEvent. Intercept both callbacks to ensure the rating timer fires.
+  const handlePlayerEvent = useCallback((event: any) => {
+    const eid = ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
+    if (eid === 'END') onContentEnd();
+    if (eid === 'START') onContentStart();
+    onPlayerEvent?.(event);
+  }, [onContentEnd, onContentStart, onPlayerEvent]);
+
   const handleTelemetry = useCallback((event: any) => {
     const eid = ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
-    if (eid === 'END') {
-      console.log('[ContentPlayer] Content ended');
-    }
-    if (eid === 'START') {
-      console.log('[ContentPlayer] Content started');
-    }
+    if (eid === 'END') onContentEnd();
+    if (eid === 'START') onContentStart();
     onTelemetryEvent?.(event);
-  }, [onTelemetryEvent]);
+  }, [onContentEnd, onContentStart, onTelemetryEvent]);
 
   const PlayerComponent = MIME_TYPE_PLAYERS[mimeType as SupportedMimeType] || EcmlPlayer;
 
@@ -63,8 +74,12 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
         cdata={cdata}
         contextRollup={contextRollup}
         objectRollup={objectRollup}
-        onPlayerEvent={onPlayerEvent}
+        onPlayerEvent={handlePlayerEvent}
         onTelemetryEvent={handleTelemetry}
+      />
+      <RatingDialog
+        open={ratingOpen}
+        onClose={() => setRatingOpen(false)}
       />
     </div>
   );

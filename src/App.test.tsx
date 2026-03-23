@@ -67,6 +67,7 @@ vi.mock('ionicons/icons', () => ({
   searchOutline: 'search-outline-icon',
   helpCircleOutline: 'help-circle-outline-icon',
   chevronBackOutline: 'chevron-back-outline-icon',
+  syncOutline: 'sync-outline-icon',
 }));
 
 // Mock pages
@@ -145,6 +146,10 @@ vi.mock('./pages/CollectionPage', () => ({
 
 vi.mock('./pages/ProfileLearningPage', () => ({
   default: () => <div data-testid="profile-learning-page">Profile Learning Page</div>,
+}));
+
+vi.mock('./pages/SettingsPage', () => ({
+  default: () => <div data-testid="settings-page">Settings Page</div>,
 }));
 
 vi.mock('./components/common/BackButtonHandler', () => ({

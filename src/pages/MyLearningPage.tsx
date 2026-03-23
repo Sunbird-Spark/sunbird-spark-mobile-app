@@ -45,14 +45,14 @@ const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, c
   const outerR = 52;
   const outerStroke = 10;
   const outerCirc = 2 * Math.PI * outerR;
-  const outerRatio = totalLessons > 0 ? lessonsVisited / totalLessons : 0;
+  const outerRatio = _.clamp(totalLessons > 0 ? lessonsVisited / totalLessons : 0, 0, 1);
   const outerOffset = outerCirc * (1 - outerRatio);
 
   // Inner ring — courses completed
   const innerR = 32;
   const innerStroke = 10;
   const innerCirc = 2 * Math.PI * innerR;
-  const innerRatio = totalCourses > 0 ? coursesCompleted / totalCourses : 0;
+  const innerRatio = _.clamp(totalCourses > 0 ? coursesCompleted / totalCourses : 0, 0, 1);
   const innerOffset = innerCirc * (1 - innerRatio);
 
   return (
@@ -100,13 +100,22 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
   const collectionId = course.collectionId || course.courseId;
   const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
   const thumbnail = _.get(course, 'content.posterImage') || _.get(course, 'content.appIcon', '');
-  const progress = course.completionPercentage ?? 0;
+  const progress = _.clamp(Math.round(course.completionPercentage ?? 0), 0, 100);
+
+  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
 
   return (
     <div
       className="my-learning__card"
-      onClick={() => collectionId && router.push(`/collection/${collectionId}`, 'forward', 'push')}
-    >
+      role="button"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNavigate();
+        }
+      }}>
       <div className="my-learning__card-thumbnail">
         {thumbnail
           ? <img src={thumbnail} alt={title} />
@@ -280,7 +289,7 @@ const MyLearningPage: React.FC = () => {
         <div className="my-learning__header">
           <span className="my-learning__header-title">{t('myLearning')}</span>
           <div className="my-learning__header-actions">
-            <button className="my-learning__icon-btn" aria-label="Notifications">
+            <button className="my-learning__icon-btn" aria-label={t('notifications')} disabled>
               <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
                 <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
               </svg>
@@ -291,10 +300,10 @@ const MyLearningPage: React.FC = () => {
 
         {/* Courses heading */}
         <div className="my-learning__heading-wrapper">
-          <button className="my-learning__heading-btn">
+          <div className="my-learning__heading-btn" role="heading" aria-level={2}>
             <span className="my-learning__heading-text">{t('courses')}</span>
             <ChevronDownIcon />
-          </button>
+          </div>
         </div>
 
         {/* Tab bar */}

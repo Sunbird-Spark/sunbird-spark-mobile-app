@@ -20,7 +20,7 @@
     "snyk": "snyk code test",
     "snyk-auth": "snyk auth",
     "livereload": "ionic cap run android --livereload --external",
-    "postinstall": "node copy-assets.js"
+    "postinstall": "node copy-assets.js && node scripts/copyContentPlayer.js"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +45,7 @@
     "@capgo/capacitor-social-login": "^7.20.0",
     "@ionic/react": "^8.7.17",
     "@ionic/react-router": "^8.7.17",
+    "@project-sunbird/content-player": "^8.0.0",
     "@project-sunbird/sunbird-epub-player-web-component": "^2.0.0",
     "@project-sunbird/sunbird-pdf-player-web-component": "^2.0.0",
     "@project-sunbird/sunbird-quml-player-web-component": "^6.0.0",

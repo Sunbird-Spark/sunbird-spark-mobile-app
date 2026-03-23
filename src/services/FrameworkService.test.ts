@@ -8,6 +8,14 @@ vi.mock('../lib/http-client', () => ({
   getClient: vi.fn()
 }));
 
+vi.mock('./db/ConfigDbService', () => ({
+  configDbService: { get: vi.fn().mockResolvedValue(null), set: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('./network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
 describe('FrameworkService', () => {
   let frameworkService: FrameworkService;
   let mockHttpClient: any;
@@ -43,12 +51,15 @@ describe('FrameworkService', () => {
     });
 
     it('should handle API errors', async () => {
-      // Arrange
+      // Arrange — service falls back to cache (null) and returns offline response
       const frameworkId = 'invalid-framework-id';
       mockHttpClient.get.mockRejectedValue(mockApiError);
 
-      // Act & Assert
-      await expect(frameworkService.read(frameworkId)).rejects.toThrow('API Error');
+      // Act
+      const result = await frameworkService.read(frameworkId);
+
+      // Assert
+      expect(result).toMatchObject({ data: null, status: 200 });
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         `/framework/v1/read/${frameworkId}`,
         {

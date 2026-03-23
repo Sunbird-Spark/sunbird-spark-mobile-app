@@ -1,0 +1,45 @@
+/* =============================================
+   Settings Page
+   ============================================= */
+
+.settings-page {
+    --background: var(--ion-color-step-50);
+}
+
+/* ── Header ── */
+.settings-page .settings-header {
+    box-shadow: 0 0.875rem 0.875rem rgba(var(--ion-color-dark-rgb, 0, 0, 0), 0.05);
+    background: var(--ion-color-light);
+}
+
+.settings-page .settings-toolbar {
+    --background: var(--ion-color-light) !important;
+    --color: var(--ion-color-dark) !important;
+    --border-width: 0 !important;
+}
+
+.settings-page .settings-toolbar .settings-title,
+.settings-page .settings-toolbar .settings-back-btn {
+    color: var(--ion-color-dark) !important;
+}
+
+.settings-title {
+    font-family: var(--ion-font-family);
+    font-size: 1.125rem;
+    font-weight: 500;
+    text-align: left;
+    padding-inline-start: 0;
+}
+
+.settings-back-btn {
+    --color: var(--ion-color-primary) !important;
+}
+
+/* ── Content ── */
+.settings-content {
+    --background: var(--ion-color-step-50);
+}
+
+.settings-section {
+    padding: 1.25rem 0.9375rem 0;
+}

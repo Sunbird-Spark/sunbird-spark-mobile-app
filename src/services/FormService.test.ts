@@ -7,6 +7,14 @@ vi.mock('../lib/http-client', () => ({
   getClient: vi.fn()
 }));
 
+vi.mock('./db/ConfigDbService', () => ({
+  configDbService: { get: vi.fn().mockResolvedValue(null), set: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('./network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
 describe('FormService', () => {
   let formService: FormService;
   let mockHttpClient: any;
@@ -150,17 +158,15 @@ describe('FormService', () => {
     it('should handle API errors', async () => {
       mockHttpClient.post.mockRejectedValue(new Error('API Error'));
 
-      await expect(
-        formService.formRead({ type: 'test', action: 'read' })
-      ).rejects.toThrow('API Error');
+      const result = await formService.formRead({ type: 'test', action: 'read' });
+      expect(result).toMatchObject({ data: null, status: 200 });
     });
 
     it('should handle network errors', async () => {
       mockHttpClient.post.mockRejectedValue(new Error('Network Error'));
 
-      await expect(
-        formService.formRead({ type: 'portal', action: 'filters' })
-      ).rejects.toThrow('Network Error');
+      const result = await formService.formRead({ type: 'portal', action: 'filters' });
+      expect(result).toMatchObject({ data: null, status: 200 });
     });
 
     it('should return form data with correct structure', async () => {

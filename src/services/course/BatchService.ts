@@ -1,11 +1,16 @@
 import { getClient, ApiResponse } from '../../lib/http-client';
+import { buildOfflineResponse } from '../../lib/http-client/offlineResponse';
 import type {
   BatchListResponse,
   BatchReadResponse,
+  ContentStateItem,
   ContentStateReadRequest,
   ContentStateReadResponse,
   ContentStateUpdateRequest,
 } from '../../types/collectionTypes';
+import { keyValueDbService, KVKey } from '../db/KeyValueDbService';
+import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
+import { networkService } from '../network/networkService';
 
 export class BatchService {
   public batchList(courseId: string): Promise<ApiResponse<BatchListResponse>> {
@@ -30,43 +35,168 @@ export class BatchService {
     });
   }
 
-  public contentStateRead(
+  public async contentStateRead(
     request: ContentStateReadRequest
   ): Promise<ApiResponse<ContentStateReadResponse>> {
-    const body: Record<string, unknown> = {
-      userId: request.userId,
-      courseId: request.courseId,
-      batchId: request.batchId,
-      contentIds: request.contentIds,
-    };
-    if (request.fields?.length) {
-      body.fields = request.fields;
+    const key = `cache:content_state_${request.userId}_${request.courseId}`;
+
+    if (!networkService.isConnected()) {
+      return this.readContentStateFromDb(key);
     }
-    return getClient().post<ContentStateReadResponse>('/course/v1/content/state/read', {
-      request: body,
-    });
+
+    try {
+      const body: Record<string, unknown> = {
+        userId: request.userId,
+        courseId: request.courseId,
+        batchId: request.batchId,
+        contentIds: request.contentIds,
+      };
+      if (request.fields?.length) {
+        body.fields = request.fields;
+      }
+      const response = await getClient().post<ContentStateReadResponse>(
+        '/course/v1/content/state/read',
+        { request: body }
+      );
+
+      try {
+        await keyValueDbService.setRaw(key, JSON.stringify(response.data));
+      } catch (err) {
+        console.warn('[BatchService] Failed to cache content state to SQLite:', err);
+      }
+
+      return response;
+    } catch {
+      return this.readContentStateFromDb(key);
+    }
   }
 
-  public contentStateUpdate(
+  private async readContentStateFromDb(key: string): Promise<ApiResponse<ContentStateReadResponse>> {
+    const raw = await keyValueDbService.getRaw(key);
+    const data: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
+    return buildOfflineResponse<ContentStateReadResponse>(data);
+  }
+
+  public async contentStateUpdate(
     request: ContentStateUpdateRequest
   ): Promise<ApiResponse<unknown>> {
-    const contents = request.contents.map((item) => ({
-      contentId: item.contentId,
-      status: item.status,
-      courseId: request.courseId,
-      batchId: request.batchId,
-      ...(item.lastAccessTime != null && { lastAccessTime: item.lastAccessTime }),
-    }));
-    const body: Record<string, unknown> = {
-      userId: request.userId,
-      contents,
-    };
-    if (request.assessments?.length) {
-      body.assessments = request.assessments;
+    if (!networkService.isConnected()) {
+      await this.queueAndApplyLocally(request);
+      return buildOfflineResponse({ message: 'Queued for sync' });
     }
-    return getClient().patch<unknown>('/course/v1/content/state/update', {
-      request: body,
-    });
+
+    try {
+      const contents = request.contents.map((item) => ({
+        contentId: item.contentId,
+        status: item.status,
+        courseId: request.courseId,
+        batchId: request.batchId,
+        ...(item.lastAccessTime != null && { lastAccessTime: item.lastAccessTime }),
+      }));
+      const body: Record<string, unknown> = {
+        userId: request.userId,
+        contents,
+      };
+      if (request.assessments?.length) {
+        body.assessments = request.assessments;
+      }
+      return await getClient().patch<unknown>('/course/v1/content/state/update', {
+        request: body,
+      });
+    } catch {
+      await this.queueAndApplyLocally(request);
+      return buildOfflineResponse({ message: 'Queued for sync' });
+    }
+  }
+
+  // ── Offline helpers ──────────────────────────────────────────────────────────
+
+  /** Queue the request and immediately apply it to both local caches. */
+  private async queueAndApplyLocally(request: ContentStateUpdateRequest): Promise<void> {
+    // addToPendingQueue and updateLocalContentStateCache can run concurrently — they touch
+    // different keys. updateLocalCourseProgress must run AFTER updateLocalContentStateCache
+    // because it reads the cache key that updateLocalContentStateCache writes.
+    await Promise.all([
+      this.addToPendingQueue(request),
+      this.updateLocalContentStateCache(request),
+    ]);
+    await this.updateLocalCourseProgress(request);
+  }
+
+  /** Append the request to the persistent pending queue. */
+  private async addToPendingQueue(request: ContentStateUpdateRequest): Promise<void> {
+    try {
+      const queue = await keyValueDbService.getJSON<Array<ContentStateUpdateRequest & { queuedAt: number; retryCount: number }>>(KVKey.PENDING_CONTENT_STATE_Q) ?? [];
+      queue.push({ ...request, queuedAt: Date.now(), retryCount: 0 });
+      await keyValueDbService.setJSON(KVKey.PENDING_CONTENT_STATE_Q, queue);
+    } catch (err) {
+      console.warn('[BatchService] Failed to enqueue content state update:', err);
+    }
+  }
+
+  /**
+   * Merge the request into the cached contentList for this user+course
+   * so that offline reads reflect the latest progress immediately.
+   */
+  private async updateLocalContentStateCache(request: ContentStateUpdateRequest): Promise<void> {
+    try {
+      const key = `cache:content_state_${request.userId}_${request.courseId}`;
+      const raw = await keyValueDbService.getRaw(key);
+      const cached: ContentStateReadResponse = raw
+        ? JSON.parse(raw)
+        : { contentList: [] };
+
+      const contentList: ContentStateItem[] = cached.contentList ?? [];
+
+      for (const update of request.contents) {
+        const idx = contentList.findIndex(c => c.contentId === update.contentId);
+        if (idx >= 0) {
+          contentList[idx] = { ...contentList[idx], status: update.status };
+        } else {
+          contentList.push({ contentId: update.contentId, status: update.status });
+        }
+      }
+
+      await keyValueDbService.setRaw(key, JSON.stringify({ contentList }));
+    } catch (err) {
+      console.warn('[BatchService] Failed to update local content state cache:', err);
+    }
+  }
+
+  /**
+   * Recompute and persist course completion percentage in enrolled_courses
+   * whenever at least one content item reaches status=2 (completed).
+   */
+  private async updateLocalCourseProgress(request: ContentStateUpdateRequest): Promise<void> {
+    try {
+      const hasCompletion = request.contents.some(c => c.status === 2);
+      if (!hasCompletion) return;
+
+      const courses = await enrolledCoursesDbService.getByUser(request.userId);
+      const course = courses.find(c => c.course_id === request.courseId);
+      if (!course) return;
+
+      const leafNodesCount = course.details.leafNodesCount ?? 0;
+      if (leafNodesCount === 0) return;
+
+      // Read the freshly-updated content state cache to count completed items
+      const key = `cache:content_state_${request.userId}_${request.courseId}`;
+      const raw = await keyValueDbService.getRaw(key);
+      const cached: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
+      const completedCount = (cached.contentList ?? []).filter(c => c.status === 2).length;
+
+      const newProgress = Math.min(100, Math.floor((completedCount / leafNodesCount) * 100));
+      const newStatus = newProgress >= 100 ? 'completed' : 'active';
+
+      await enrolledCoursesDbService.updateProgress(
+        request.courseId,
+        request.userId,
+        newProgress,
+        newStatus,
+      );
+    } catch (err) {
+      console.warn('[BatchService] Failed to update local course progress:', err);
+    }
   }
 
   public forceSyncActivityAgg(params: {

@@ -1,7 +1,8 @@
+import _ from 'lodash';
 import { EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
 import { buildEcmlPlayerContext } from '../PlayerContextService';
 
-const PREVIEW_URL = '/content/preview/preview.html?webview=true';
+const PREVIEW_URL = '/content-player/preview.html?webview=true';
 
 export class EcmlPlayerService {
   async createConfig(
@@ -42,7 +43,7 @@ export class EcmlPlayerService {
       context,
       config,
       metadata,
-      data: metadata.body || {},
+      data: !_.isEmpty(metadata.body) ? metadata.body : {},
     };
   }
 
