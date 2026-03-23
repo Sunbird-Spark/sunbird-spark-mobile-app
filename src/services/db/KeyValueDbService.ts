@@ -6,6 +6,8 @@ export enum KVKey {
   LAST_ACTIVE_USER_ID     = 'last_active_user_id',    // SDK: last played content uid
   TELEMETRY_SYNC_LAST_RUN = 'telemetry_sync_last_run',// SDK: KEY_LAST_SYNCED_TIME_STAMP
   ACTIVE_CHANNEL_ID       = 'active_channel_id',      // SDK: ACTIVE_CHANNEL_ID in SharedPreferences
+  // ── Offline sync queues (persistent across sessions) ────────────────────────
+  PENDING_CONTENT_STATE_Q = 'pending_content_state_q',
 }
 
 export class KeyValueDbService {
@@ -43,6 +45,34 @@ export class KeyValueDbService {
 
   async delete(key: KVKey): Promise<void> {
     await this.db.delete('key_value', { eq: { key } });
+  }
+
+  /**
+   * Store a value under a dynamic (non-enum) key.
+   * Convention: prefix dynamic per-entity cache keys with 'cache:' (e.g. 'cache:channel_{id}')
+   * to avoid accidental collisions with KVKey enum values.
+   */
+  async setRaw(key: string, value: string): Promise<void> {
+    await this.db.insert('key_value', { key, value, updated_at: Date.now() }, 'REPLACE');
+  }
+
+  async getRaw(key: string): Promise<string | null> {
+    const rows = await this.db.select<{ value: string }>(
+      'key_value',
+      { columns: ['value'], where: { eq: { key } } }
+    );
+    return rows.length > 0 ? rows[0].value : null;
+  }
+
+  /**
+   * Delete all key_value rows whose key starts with `prefix`.
+   * Used to bulk-remove dynamic cache entries (e.g. 'cache:content_state_{userId}_').
+   */
+  async deleteByPrefix(prefix: string): Promise<void> {
+    await this.db.getDb().run(
+      'DELETE FROM key_value WHERE key LIKE ?',
+      [`${prefix}%`]
+    );
   }
 }
 

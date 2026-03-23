@@ -1,5 +1,8 @@
 import { getClient, ApiResponse } from '../lib/http-client';
+import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import type { ContentSearchRequest, ContentSearchResponse } from '../types/contentTypes';
+import { contentDbService } from './db/ContentDbService';
+import { networkService } from './network/networkService';
 
 const DEFAULT_CONTENT_FIELDS = [
   'transcripts', 'ageGroup', 'appIcon', 'artifactUrl', 'attributions', 'audience',
@@ -29,12 +32,68 @@ export class ContentService {
   }
 
   public async contentRead<T = any>(contentId: string, fields?: string[], mode?: string): Promise<ApiResponse<T>> {
-    const resolvedFields = fields ?? DEFAULT_CONTENT_FIELDS;
-    const params = new URLSearchParams();
-    if (resolvedFields.length) params.set('fields', resolvedFields.join(','));
-    if (mode) params.set('mode', mode);
-    const queryString = params.toString() ? `?${params.toString()}` : '';
-    return getClient().get<T>(`/content/v1/read/${contentId}${queryString}`);
+    if (!networkService.isConnected()) {
+      return this.readContentFromDb<T>(contentId);
+    }
+
+    try {
+      const resolvedFields = fields ?? DEFAULT_CONTENT_FIELDS;
+      const params = new URLSearchParams();
+      if (resolvedFields.length) params.set('fields', resolvedFields.join(','));
+      if (mode) params.set('mode', mode);
+      const queryString = params.toString() ? `?${params.toString()}` : '';
+      const response = await getClient().get<T>(`/content/v1/read/${contentId}${queryString}`);
+
+      try {
+        const content = (response.data as any)?.content;
+        if (content?.identifier) {
+          // Only refresh server_data on rows that already exist (placed there by
+          // the download/import pipeline). Never create new rows here — the content
+          // table is owned exclusively by the download manager.
+          const existing = await contentDbService.getByIdentifier(content.identifier);
+          if (existing) {
+            await contentDbService.update(content.identifier, {
+              server_data: JSON.stringify(content),
+              server_last_updated_on: content.lastUpdatedOn ?? null,
+              audience: Array.isArray(content.audience)
+                ? content.audience.join(',')
+                : (content.audience ?? existing.audience),
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('[ContentService] Failed to refresh server_data in SQLite:', err);
+      }
+
+      return response;
+    } catch {
+      return this.readContentFromDb<T>(contentId);
+    }
+  }
+
+  private async readContentFromDb<T>(contentId: string): Promise<ApiResponse<T>> {
+    const entry = await contentDbService.getByIdentifier(contentId);
+    if (!entry) return buildOfflineResponse<T>({ content: null } as T);
+
+    // local_data is set by the import pipeline (manifest item JSON).
+    // server_data is refreshed when online. Prefer local_data as it reflects
+    // what is actually on disk; fall back to server_data for content that was
+    // only viewed online (no download).
+    const raw = entry.local_data || entry.server_data;
+    const content = raw ? JSON.parse(raw) : null;
+
+    // Resolve artifact URL to the local filesystem for downloaded content.
+    // entry.path is the content directory (file:///…/content/<id>/).
+    // The artifactUrl from the manifest may be a relative filename or a CDN URL;
+    // in both cases the actual file is at {path}/{basename}.
+    if (content && entry.path && entry.content_state === 2 && content.artifactUrl) {
+      const basename = content.artifactUrl.split('/').pop();
+      if (basename) {
+        content.artifactUrl = `${entry.path}/${basename}`;
+      }
+    }
+
+    return buildOfflineResponse<T>({ content } as T);
   }
   
   public async contentSearch(

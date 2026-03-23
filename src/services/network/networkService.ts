@@ -82,6 +82,11 @@ class NetworkService {
     this.initialized = false;
   }
 
+  /** Returns true when the device has network connectivity. */
+  isConnected(): boolean {
+    return this.state.connected;
+  }
+
   /** internal helper to broadcast changes */
   private notify() {
     for (const listener of this.listeners) {
