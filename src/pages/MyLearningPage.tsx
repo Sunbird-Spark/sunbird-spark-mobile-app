@@ -110,8 +110,12 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
       role="button"
       tabIndex={0}
       onClick={handleNavigate}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleNavigate()}
-    >
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNavigate();
+        }
+      }}>
       <div className="my-learning__card-thumbnail">
         {thumbnail
           ? <img src={thumbnail} alt={title} />
