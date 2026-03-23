@@ -33,7 +33,7 @@ export class DownloadManager {
     private downloadDb: DownloadDbService,
     private networkSvc: typeof networkService,
     private importSvc: ImportService
-  ) {}
+  ) { }
 
   // ══════════════════════════════════════════════
   //  LIFECYCLE
@@ -70,7 +70,7 @@ export class DownloadManager {
     this.unsubscribeNetwork?.();
     this.unsubscribeNetwork = null;
     this.activeDownloads.clear();
-    await CapacitorDownloader.removeAllListeners().catch(() => {});
+    await CapacitorDownloader.removeAllListeners().catch(() => { });
     this.initialized = false;
   }
 
@@ -81,13 +81,13 @@ export class DownloadManager {
 
       const bytesDownloaded = Math.floor((entry.total_bytes * progress) / 100);
 
-      await this.downloadDb.update(id, { 
+      await this.downloadDb.update(id, {
         progress,
         bytes_downloaded: bytesDownloaded
       });
-      
+
       this.emit({ type: 'progress', identifier: id });
-    }).catch(() => {});
+    }).catch(() => { });
 
     CapacitorDownloader.addListener('downloadCompleted', async ({ id }) => {
       const entry = await this.downloadDb.getByIdentifier(id);
@@ -96,12 +96,12 @@ export class DownloadManager {
       this.activeDownloads.delete(id);
       await this.transition(id, DownloadState.DOWNLOADED, { progress: 100 });
       await this.processQueue();
-    }).catch(() => {});
+    }).catch(() => { });
 
     CapacitorDownloader.addListener('downloadFailed', async ({ id, error }) => {
       this.activeDownloads.delete(id);
       await this.handleDownloadFailure(id, new Error(error));
-    }).catch(() => {});
+    }).catch(() => { });
   }
 
   // ══════════════════════════════════════════════
@@ -167,7 +167,7 @@ export class DownloadManager {
 
       case DownloadState.DOWNLOADING:
       case DownloadState.PAUSED:
-        await CapacitorDownloader.stop(identifier).catch(() => {});
+        await CapacitorDownloader.stop({ id: identifier }).catch(() => { });
         this.activeDownloads.delete(identifier);
         await this.cleanPartialFile(entry);
         await this.transition(identifier, DownloadState.CANCELLED);
@@ -177,7 +177,7 @@ export class DownloadManager {
         await this.transition(identifier, DownloadState.CANCELLED);
         // Delete the .ecar file
         if (entry.file_path) {
-          await Filesystem.deleteFile({ path: entry.file_path }).catch(() => {});
+          await Filesystem.deleteFile({ path: entry.file_path }).catch(() => { });
         }
         break;
 
@@ -220,7 +220,13 @@ export class DownloadManager {
     const entry = await this.downloadDb.getByIdentifier(identifier);
     if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
 
-    await CapacitorDownloader.pause(identifier).catch(() => {});
+    try {
+      await CapacitorDownloader.pause({ id: identifier });
+    } catch {
+      // Fallback for Android (Native DownloadManager does not support strict pausing)
+      await CapacitorDownloader.stop({ id: identifier }).catch(() => { });
+    }
+
     this.activeDownloads.delete(identifier);
     await this.transition(identifier, DownloadState.PAUSED);
     this.emit({ type: 'state_change', identifier });
@@ -230,11 +236,23 @@ export class DownloadManager {
     const entry = await this.downloadDb.getByIdentifier(identifier);
     if (!entry || entry.state !== DownloadState.PAUSED) return;
 
-    await CapacitorDownloader.resume(identifier).catch(() => {});
-    this.activeDownloads.set(identifier, { nativeId: identifier });
-    await this.transition(identifier, DownloadState.DOWNLOADING);
-    this.emit({ type: 'state_change', identifier });
-    // Note: Don't call processQueue here, since resume is targeting this specific download.
+    let resumedNatively = false;
+    try {
+      await CapacitorDownloader.resume({ id: identifier });
+      resumedNatively = true;
+    } catch {
+      // Fallback: reset to queued and restart download payload stream natively
+      await this.transition(identifier, DownloadState.QUEUED);
+      this.emit({ type: 'state_change', identifier });
+      await this.processQueue();
+      return;
+    }
+
+    if (resumedNatively) {
+      this.activeDownloads.set(identifier, { nativeId: identifier });
+      await this.transition(identifier, DownloadState.DOWNLOADING);
+      this.emit({ type: 'state_change', identifier });
+    }
   }
 
   async retry(identifier: string): Promise<void> {
@@ -297,8 +315,8 @@ export class DownloadManager {
     const overallPercent =
       total > 0
         ? Math.round(
-            entries.reduce((sum, e) => sum + e.progress, 0) / total
-          )
+          entries.reduce((sum, e) => sum + e.progress, 0) / total
+        )
         : 0;
 
     return { parentIdentifier, completed, total, overallPercent };
@@ -400,11 +418,18 @@ export class DownloadManager {
 
     try {
       const validFilename = entry.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const destinationPath = `Download/${entry.identifier}_${validFilename}`;
-      
-      const uriResult = await Filesystem.getUri({ 
-        path: destinationPath, 
-        directory: Directory.Data 
+      const destinationDir = 'Download';
+      const destinationPath = `${destinationDir}/${entry.identifier}_${validFilename}`;
+
+      await Filesystem.mkdir({
+        path: destinationDir,
+        directory: Directory.External,
+        recursive: true
+      }).catch(() => { }); // Catch specifically if it already exists
+
+      const uriResult = await Filesystem.getUri({
+        path: destinationPath,
+        directory: Directory.External
       });
 
       await this.downloadDb.update(entry.identifier, { file_path: uriResult.uri });

@@ -5,7 +5,6 @@
   "profile": "प्रोफ़ाइल",
   "dashboard": "डैशबोर्ड",
   "scan": "स्कैन",
-
   "loading": "लोड हो रहा है...",
   "error": "त्रुटि",
   "success": "सफलता",
@@ -15,7 +14,6 @@
   "search": "खोजें",
   "cancel": "रद्द करें",
   "ok": "ठीक है",
-
   "startLearning": "सीखना शुरू करें",
   "continueLearning": "सीखना जारी रखें",
   "completed": "पूर्ण",
@@ -41,14 +39,12 @@
   "categories": "श्रेणियाँ ब्राउज़ करें",
   "resourceCenter": "संसाधन केंद्र",
   "selectLanguage": "भाषा चुनें",
-
   "logout": "लॉग आउट",
   "login": "लॉग इन",
   "editProfile": "प्रोफ़ाइल संपादित करें",
   "changePassword": "पासवर्ड बदलें",
   "sunbirdId": "सनबर्ड आईडी",
   "updatePhoto": "फ़ोटो अपडेट करें",
-
   "downloads": "डाउनलोड",
   "downloadedContents": "डाउनलोड की गई सामग्री",
   "personalDetails": "व्यक्तिगत विवरण",
@@ -75,12 +71,10 @@
   "verifyDetails": "विवरण सत्यापित करें",
   "yes": "हाँ",
   "no": "नहीं",
-
   "contactUs": "हमसे संपर्क करें",
   "reportIssue": "समस्या रिपोर्ट करें",
   "helpAndSupport": "सहायता और समर्थन",
   "frequentlyAsked": "अक्सर पूछे जाने वाले प्रश्न",
-
   "courseProgress": "कोर्स प्रगति",
   "lessons": "पाठ",
   "duration": "अवधि",
@@ -94,7 +88,6 @@
   "inProgress": "प्रगति पर",
   "welcomeBack": "वापस स्वागत है",
   "welcome": "स्वागत है",
-
   "faqSection": {
     "heading": "अक्सर पूछे जाने वाले प्रश्न",
     "loading": "FAQ लोड हो रहे हैं...",
@@ -123,17 +116,14 @@
     "notFound": "संग्रह नहीं मिला।",
     "errorLoading": "संग्रह लोड करने में विफल।"
   },
-
   "heroSection": {
     "title": "वह ज्ञान जो आपको आगे बढ़ाए।",
     "subtitle": "अपनी क्षमता उजागर करें और ज्ञान की दुनिया खोजें। 100+ कोर्सों के साथ अपनी यात्रा शुरू करें।",
     "ctaButton": "चलिए शुरू करते हैं"
   },
-
   "activeLearners": "सक्रिय शिक्षार्थी",
   "certifications": "प्रमाणपत्र",
   "howCanWeHelp": "आज हम आपकी कैसे सहायता कर सकते हैं?",
-
   "browseCategories": "श्रेणियां ब्राउज़ करें",
   "browseAllCategories": "सभी श्रेणियां ब्राउज़ करें",
   "continueFromWhereLeft": "जहां छोड़ा था वहां से जारी रखें",
@@ -167,7 +157,6 @@
   "tellUsMore": "हमें और बताएं",
   "feedbackToastMessage": "आपकी प्रतिक्रिया के लिए धन्यवाद। हम हर सुझाव का जवाब नहीं दे सकते, लेकिन आपकी प्रतिक्रिया इस ऐप को सभी के लिए बेहतर बनाने में मदद करती है।",
   "faqCount": "{{count}} अक्सर पूछे जाने वाले प्रश्न",
-
   "all": "सभी",
   "ongoing": "जारी",
   "dueDate": "अंतिम तिथि",
@@ -178,7 +167,6 @@
   "noCertificate": "कोई प्रमाणपत्र नहीं",
   "noEnrolledCourses": "अभी तक कोई कोर्स नामांकित नहीं।",
   "certificateDownloadError": "प्रमाणपत्र डाउनलोड करने में विफल",
-
   "personalInformation": "व्यक्तिगत जानकारी",
   "learner": "शिक्षार्थी",
   "fullName": "पूरा नाम",
@@ -193,7 +181,6 @@
   "verifying": "सत्यापित हो रहा है…",
   "submit": "सबमिट करें",
   "fieldUpdatedSuccessfully": "{{field}} सफलतापूर्वक अपडेट किया गया",
-
   "months": {
     "jan": "जन",
     "feb": "फ़र",
@@ -201,5 +188,34 @@
     "apr": "अप्रैल",
     "may": "मई",
     "jun": "जून"
+  },
+  "download": {
+    "started": "डाउनलोड शुरू हुआ",
+    "alreadyDownloaded": "पहले से डाउनलोड किया गया",
+    "inProgress": "डाउनलोड जारी है",
+    "notAvailable": "डाउनलोड के लिए उपलब्ध नहीं",
+    "noInternet": "इंटरनेट कनेक्शन नहीं है",
+    "deleted": "सामग्री हटा दी गई",
+    "youreOffline": "आप ऑफलाइन हैं",
+    "downloadToPlayOffline": "इस सामग्री को ऑफलाइन चलाने के लिए डाउनलोड करें।",
+    "downloadSuccess": "सामग्री सफलतापूर्वक डाउनलोड हो गई",
+    "noActiveDownloads": "कोई सक्रिय डाउनलोड नहीं",
+    "noActiveDownloadsDesc": "आपके द्वारा शुरू किए गए डाउनलोड यहाँ दिखाई देंगे।",
+    "noDownloadedContent": "अभी तक कोई डाउनलोड की गई सामग्री नहीं।",
+    "cancelAll": "सभी रद्द करें",
+    "downloading": "डाउनलोड हो रहा है",
+    "processing": "प्रोसेसिंग...",
+    "queued": "कतार में",
+    "waiting": "प्रतीक्षा में...",
+    "failed": "विफल",
+    "retryAll": "सभी पुनः प्रयास करें",
+    "item": "आइटम",
+    "items": "आइटम",
+    "used": "उपयोग किया गया",
+    "deleteTitle": "सामग्री हटाएं",
+    "deleteMessage": "{{name}} हटाएं? इससे डाउनलोड की गई सामग्री हट जाएगी।",
+    "delete": "हटाएं",
+    "deleteFailed": "सामग्री हटाने में विफल",
+    "downloadFailed": "सामग्री डाउनलोड करने में विफल।"
   }
 }

@@ -13,7 +13,6 @@
   "completionRate": "Taxa de conclusão",
   "averageCompletion": "conclusão média",
   "scan": "Escanear",
-
   "loading": "Carregando...",
   "error": "Erro",
   "success": "Sucesso",
@@ -23,7 +22,6 @@
   "search": "Pesquisar",
   "cancel": "Cancelar",
   "ok": "OK",
-
   "startLearning": "Começar a aprender",
   "continueLearning": "Continuar aprendendo",
   "completed": "Concluído",
@@ -50,14 +48,12 @@
   "resourceCenter": "Central de recursos",
   "resourceCenterSubtitle": "Fique à frente. O que vem a seguir começa aqui.",
   "selectLanguage": "Selecionar idioma",
-
   "logout": "Sair",
   "login": "Entrar",
   "editProfile": "Editar perfil",
   "changePassword": "Alterar senha",
   "sunbirdId": "ID Sunbird",
   "updatePhoto": "Atualizar foto",
-
   "downloads": "Downloads",
   "downloadedContents": "Conteúdos baixados",
   "personalDetails": "Informações pessoais",
@@ -84,12 +80,10 @@
   "verifyDetails": "Verificar os dados",
   "yes": "Sim",
   "no": "Não",
-
   "contactUs": "Fale conosco",
   "reportIssue": "Reportar problema",
   "helpAndSupport": "Ajuda e suporte",
   "frequentlyAsked": "Perguntas frequentes",
-
   "courseProgress": "Progresso do curso",
   "lessons": "Aulas",
   "duration": "Duração",
@@ -101,10 +95,8 @@
   "contentsViewed": "Conteúdos visualizados",
   "totalCourses": "Total de cursos",
   "inProgress": "Em andamento",
-
   "welcomeBack": "Bem-vindo de volta",
   "welcome": "Bem-vindo",
-
   "faqSection": {
     "heading": "Perguntas frequentes",
     "loading": "Carregando perguntas...",
@@ -133,17 +125,14 @@
     "notFound": "Coleção não encontrada.",
     "errorLoading": "Falha ao carregar a coleção."
   },
-
   "heroSection": {
     "title": "O conhecimento que te faz avançar.",
     "subtitle": "Libere seu potencial e explore um mundo de conhecimento. Comece sua jornada com mais de 100 cursos criados para o seu futuro.",
     "ctaButton": "Vamos Começar"
   },
-
   "activeLearners": "Alunos ativos",
   "certifications": "Certificações",
   "howCanWeHelp": "Como podemos ajudá-lo hoje?",
-
   "browseCategories": "Explorar categorias",
   "browseAllCategories": "Explorar todas as categorias",
   "continueFromWhereLeft": "Continuar de onde parou",
@@ -177,7 +166,6 @@
   "tellUsMore": "Conte-nos mais",
   "feedbackToastMessage": "Obrigado pelo seu feedback. Talvez não consigamos responder a cada sugestão, mas seu feedback ajuda a melhorar este aplicativo para todos.",
   "faqCount": "{{count}} FAQ",
-
   "all": "Todos",
   "ongoing": "Em andamento",
   "dueDate": "Data limite",
@@ -188,7 +176,6 @@
   "noCertificate": "Sem certificado",
   "noEnrolledCourses": "Nenhum curso matriculado ainda.",
   "certificateDownloadError": "Falha ao baixar o certificado",
-
   "personalInformation": "Informações pessoais",
   "learner": "Aprendiz",
   "fullName": "Nome completo",
@@ -203,7 +190,35 @@
   "verifying": "Verificando…",
   "submit": "Enviar",
   "fieldUpdatedSuccessfully": "{{field}} atualizado com sucesso",
-
+  "download": {
+    "started": "Download iniciado",
+    "alreadyDownloaded": "Já baixado",
+    "inProgress": "Download em andamento",
+    "notAvailable": "Não disponível para download",
+    "noInternet": "Sem conexão com a internet",
+    "deleted": "Conteúdo excluído",
+    "youreOffline": "Você está offline",
+    "downloadToPlayOffline": "Baixe este conteúdo para reproduzi-lo offline.",
+    "downloadSuccess": "Conteúdo baixado com sucesso",
+    "noActiveDownloads": "Nenhum download ativo",
+    "noActiveDownloadsDesc": "Os downloads que você iniciar aparecerão aqui.",
+    "noDownloadedContent": "Nenhum conteúdo baixado ainda.",
+    "cancelAll": "Cancelar tudo",
+    "downloading": "Baixando",
+    "processing": "Processando...",
+    "queued": "Na fila",
+    "waiting": "Aguardando...",
+    "failed": "Falhou",
+    "retryAll": "Tentar tudo novamente",
+    "item": "item",
+    "items": "itens",
+    "used": "usado",
+    "deleteTitle": "Excluir conteúdo",
+    "deleteMessage": "Excluir {{name}}? Isso excluirá o conteúdo baixado.",
+    "delete": "Excluir",
+    "deleteFailed": "Falha ao excluir o conteúdo",
+    "downloadFailed": "Falha ao baixar conteúdo."
+  },
   "months": {
     "jan": "Jan",
     "feb": "Fev",

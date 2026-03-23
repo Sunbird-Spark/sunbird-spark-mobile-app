@@ -11,7 +11,7 @@ const DEFAULT_CONTENT_FIELDS = [
   'mimeType', 'name', 'originData', 'osId', 'owner', 'pkgVersion', 'publisher',
   'questions', 'resourceType', 'scoreDisplayConfig', 'status', 'streamingUrl',
   'template', 'templateId', 'totalQuestions', 'totalScore', 'versionKey', 'visibility',
-  'year', 'primaryCategory', 'additionalCategories', 'interceptionPoints', 'interceptionType',
+  'year', 'primaryCategory', 'additionalCategories', 'interceptionPoints', 'interceptionType', 'downloadUrl'
 ];
 
 export class ContentService {
@@ -36,7 +36,7 @@ export class ContentService {
     const queryString = params.toString() ? `?${params.toString()}` : '';
     return getClient().get<T>(`/content/v1/read/${contentId}${queryString}`);
   }
-  
+
   public async contentSearch(
     request: ContentSearchRequest = {}
   ): Promise<ApiResponse<ContentSearchResponse>> {

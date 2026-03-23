@@ -5,7 +5,6 @@
   "profile": "الملف الشخصي",
   "dashboard": "لوحة التحكم",
   "scan": "مسح",
-
   "loading": "جار التحميل...",
   "error": "خطأ",
   "success": "نجاح",
@@ -15,7 +14,6 @@
   "search": "بحث",
   "cancel": "إلغاء",
   "ok": "موافق",
-
   "startLearning": "ابدأ التعلّم",
   "continueLearning": "متابعة التعلّم",
   "completed": "مكتمل",
@@ -42,14 +40,12 @@
   "resourceCenter": "مركز الموارد",
   "resourceCenterSubtitle": "ابقَ في المقدمة. ما هو قادم يبدأ هنا.",
   "selectLanguage": "اختر اللغة",
-
   "logout": "تسجيل الخروج",
   "login": "تسجيل الدخول",
   "editProfile": "تعديل الملف الشخصي",
   "changePassword": "تغيير كلمة المرور",
   "sunbirdId": "معرّف صنبرد",
   "updatePhoto": "تحديث الصورة",
-
   "downloads": "التنزيلات",
   "downloadedContents": "المحتويات المنزّلة",
   "personalDetails": "التفاصيل الشخصية",
@@ -76,12 +72,10 @@
   "verifyDetails": "التحقق من التفاصيل",
   "yes": "نعم",
   "no": "لا",
-
   "contactUs": "اتصل بنا",
   "reportIssue": "الإبلاغ عن مشكلة",
   "helpAndSupport": "المساعدة والدعم",
   "frequentlyAsked": "الأسئلة الشائعة",
-
   "courseProgress": "تقدم الدورة",
   "lessons": "الدروس",
   "duration": "المدة",
@@ -93,10 +87,8 @@
   "contentsViewed": "المحتوى المُشاهد",
   "totalCourses": "إجمالي الدورات",
   "inProgress": "قيد التقدّم",
-
   "welcomeBack": "مرحباً بعودتك",
   "welcome": "مرحباً",
-
   "faqSection": {
     "heading": "الأسئلة الشائعة",
     "loading": "جار تحميل الأسئلة...",
@@ -125,17 +117,14 @@
     "notFound": "لم يتم العثور على المجموعة.",
     "errorLoading": "فشل تحميل المجموعة."
   },
-
   "heroSection": {
     "title": "المعرفة التي تدفعك إلى الأمام.",
     "subtitle": "أطلق إمكاناتك واستكشف عالماً من المعرفة. ابدأ رحلتك مع أكثر من 100 دورة مصممة لمستقبلك.",
     "ctaButton": "لنبدأ"
   },
-
   "activeLearners": "المتعلمون النشطون",
   "certifications": "الشهادات",
   "howCanWeHelp": "كيف يمكننا مساعدتك اليوم؟",
-
   "browseCategories": "استعرض الفئات",
   "browseAllCategories": "تصفح جميع الفئات",
   "continueFromWhereLeft": "متابعة من حيث توقفت",
@@ -169,7 +158,6 @@
   "tellUsMore": "أخبرنا أكثر",
   "feedbackToastMessage": "شكراً لملاحظاتك. قد لا نتمكن من الرد على كل اقتراح، لكن ملاحظاتك تساعد في تحسين هذا التطبيق للجميع.",
   "faqCount": "{{count}} أسئلة شائعة",
-
   "months": {
     "jan": "يناير",
     "feb": "فبراير",
@@ -178,7 +166,6 @@
     "may": "مايو",
     "jun": "يونيو"
   },
-
   "dashboardOverview": "نظرة عامة على لوحة التحكم",
   "dashboardDescription": "اطلع على ملخص المقاييس الرئيسية ونشاطك الأخير.",
   "totalStudents": "إجمالي الطلاب",
@@ -187,7 +174,6 @@
   "ongoingSessions": "جلسات جارية",
   "completionRate": "معدل الإكمال",
   "averageCompletion": "متوسط الإكمال",
-
   "all": "الكل",
   "ongoing": "جارٍ",
   "dueDate": "تاريخ الاستحقاق",
@@ -198,7 +184,6 @@
   "noCertificate": "لا توجد شهادة",
   "noEnrolledCourses": "لا توجد دورات مسجلة بعد.",
   "certificateDownloadError": "فشل تحميل الشهادة",
-
   "personalInformation": "المعلومات الشخصية",
   "learner": "متعلم",
   "fullName": "الاسم الكامل",
@@ -212,5 +197,34 @@
   "resendOtp": "إعادة إرسال OTP",
   "verifying": "جارٍ التحقق…",
   "submit": "إرسال",
-  "fieldUpdatedSuccessfully": "تم تحديث {{field}} بنجاح"
+  "fieldUpdatedSuccessfully": "تم تحديث {{field}} بنجاح",
+  "download": {
+    "started": "بدأ التحميل",
+    "alreadyDownloaded": "تم التحميل مسبقاً",
+    "inProgress": "التحميل جارٍ",
+    "notAvailable": "غير متاح للتحميل",
+    "noInternet": "لا يوجد اتصال بالإنترنت",
+    "deleted": "تم حذف المحتوى",
+    "youreOffline": "أنت غير متصل",
+    "downloadToPlayOffline": "قم بتحميل هذا المحتوى لتشغيله بدون إنترنت.",
+    "downloadSuccess": "تم تنزيل المحتوى بنجاح",
+    "noActiveDownloads": "لا توجد تحميلات نشطة",
+    "noActiveDownloadsDesc": "ستظهر التحميلات التي تبدأها هنا.",
+    "noDownloadedContent": "لا يوجد محتوى محمّل بعد.",
+    "cancelAll": "إلغاء الكل",
+    "downloading": "جارٍ التحميل",
+    "processing": "جارٍ المعالجة...",
+    "queued": "في قائمة الانتظار",
+    "waiting": "في الانتظار...",
+    "failed": "فشل",
+    "retryAll": "إعادة محاولة الكل",
+    "item": "عنصر",
+    "items": "عناصر",
+    "used": "مستخدم",
+    "deleteTitle": "حذف المحتوى",
+    "deleteMessage": "حذف {{name}}؟ سيؤدي هذا إلى حذف المحتوى الذي تم تنزيله.",
+    "delete": "حذف",
+    "deleteFailed": "فشل في حذف المحتوى",
+    "downloadFailed": "فشل تنزيل المحتوى."
+  }
 }
