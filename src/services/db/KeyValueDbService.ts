@@ -6,6 +6,9 @@ export enum KVKey {
   LAST_ACTIVE_USER_ID     = 'last_active_user_id',    // SDK: last played content uid
   TELEMETRY_SYNC_LAST_RUN = 'telemetry_sync_last_run',// SDK: KEY_LAST_SYNCED_TIME_STAMP
   ACTIVE_CHANNEL_ID       = 'active_channel_id',      // SDK: ACTIVE_CHANNEL_ID in SharedPreferences
+  // ── Offline sync queues (persistent across sessions) ────────────────────────
+  PENDING_CONTENT_STATE_Q = 'pending_content_state_q',
+  PENDING_ENROL_Q         = 'pending_enrol_q',
 }
 
 export class KeyValueDbService {
@@ -45,7 +48,11 @@ export class KeyValueDbService {
     await this.db.delete('key_value', { eq: { key } });
   }
 
-  /** Store a value under a dynamic (non-enum) key, e.g. 'content_state_{userId}_{courseId}'. */
+  /**
+   * Store a value under a dynamic (non-enum) key.
+   * Convention: prefix dynamic per-entity cache keys with 'cache:' (e.g. 'cache:channel_{id}')
+   * to avoid accidental collisions with KVKey enum values.
+   */
   async setRaw(key: string, value: string): Promise<void> {
     await this.db.insert('key_value', { key, value, updated_at: Date.now() }, 'REPLACE');
   }

@@ -8,12 +8,9 @@ import type {
   ContentStateReadResponse,
   ContentStateUpdateRequest,
 } from '../../types/collectionTypes';
-import { keyValueDbService } from '../db/KeyValueDbService';
+import { keyValueDbService, KVKey } from '../db/KeyValueDbService';
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import { networkService } from '../network/networkService';
-
-export const PENDING_CONTENT_STATE_QUEUE_KEY = 'pending_content_state_q';
-export const PENDING_ENROL_QUEUE_KEY = 'pending_enrol_q';
 
 export class BatchService {
   public batchList(courseId: string): Promise<ApiResponse<BatchListResponse>> {
@@ -51,7 +48,7 @@ export class BatchService {
   public async contentStateRead(
     request: ContentStateReadRequest
   ): Promise<ApiResponse<ContentStateReadResponse>> {
-    const key = `content_state_${request.userId}_${request.courseId}`;
+    const key = `cache:content_state_${request.userId}_${request.courseId}`;
 
     if (!networkService.isConnected()) {
       return this.readContentStateFromDb(key);
@@ -126,22 +123,25 @@ export class BatchService {
 
   /** Queue the request and immediately apply it to both local caches. */
   private async queueAndApplyLocally(request: ContentStateUpdateRequest): Promise<void> {
+    // addToPendingQueue and updateLocalContentStateCache can run concurrently — they touch
+    // different keys. updateLocalCourseProgress must run AFTER updateLocalContentStateCache
+    // because it reads the cache key that updateLocalContentStateCache writes.
     await Promise.all([
       this.addToPendingQueue(request),
       this.updateLocalContentStateCache(request),
-      this.updateLocalCourseProgress(request),
     ]);
+    await this.updateLocalCourseProgress(request);
   }
 
   /** Append the request to the persistent pending queue. */
   private async addToPendingQueue(request: ContentStateUpdateRequest): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(PENDING_CONTENT_STATE_QUEUE_KEY);
+      const raw = await keyValueDbService.getRaw(KVKey.PENDING_CONTENT_STATE_Q);
       const queue: Array<ContentStateUpdateRequest & { queuedAt: number }> = raw
         ? JSON.parse(raw)
         : [];
       queue.push({ ...request, queuedAt: Date.now() });
-      await keyValueDbService.setRaw(PENDING_CONTENT_STATE_QUEUE_KEY, JSON.stringify(queue));
+      await keyValueDbService.setRaw(KVKey.PENDING_CONTENT_STATE_Q, JSON.stringify(queue));
     } catch (err) {
       console.warn('[BatchService] Failed to enqueue content state update:', err);
     }
@@ -153,7 +153,7 @@ export class BatchService {
    */
   private async updateLocalContentStateCache(request: ContentStateUpdateRequest): Promise<void> {
     try {
-      const key = `content_state_${request.userId}_${request.courseId}`;
+      const key = `cache:content_state_${request.userId}_${request.courseId}`;
       const raw = await keyValueDbService.getRaw(key);
       const cached: ContentStateReadResponse = raw
         ? JSON.parse(raw)
@@ -193,7 +193,7 @@ export class BatchService {
       if (leafNodesCount === 0) return;
 
       // Read the freshly-updated content state cache to count completed items
-      const key = `content_state_${request.userId}_${request.courseId}`;
+      const key = `cache:content_state_${request.userId}_${request.courseId}`;
       const raw = await keyValueDbService.getRaw(key);
       const cached: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
       const completedCount = (cached.contentList ?? []).filter(c => c.status === 2).length;
@@ -224,7 +224,7 @@ export class BatchService {
 
   private async addToEnrolQueue(courseId: string, userId: string, batchId: string): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(PENDING_ENROL_QUEUE_KEY);
+      const raw = await keyValueDbService.getRaw(KVKey.PENDING_ENROL_Q);
       const queue: Array<{ courseId: string; userId: string; batchId: string; queuedAt: number }> = raw
         ? JSON.parse(raw)
         : [];
@@ -234,7 +234,7 @@ export class BatchService {
       );
       if (!isDuplicate) {
         queue.push({ courseId, userId, batchId, queuedAt: Date.now() });
-        await keyValueDbService.setRaw(PENDING_ENROL_QUEUE_KEY, JSON.stringify(queue));
+        await keyValueDbService.setRaw(KVKey.PENDING_ENROL_Q, JSON.stringify(queue));
       }
     } catch (err) {
       console.warn('[BatchService] Failed to enqueue enrol request:', err);

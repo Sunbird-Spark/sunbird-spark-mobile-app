@@ -51,12 +51,15 @@ describe('FrameworkService', () => {
     });
 
     it('should handle API errors', async () => {
-      // Arrange
+      // Arrange — service falls back to cache (null) and returns offline response
       const frameworkId = 'invalid-framework-id';
       mockHttpClient.get.mockRejectedValue(mockApiError);
 
-      // Act & Assert
-      await expect(frameworkService.read(frameworkId)).rejects.toThrow('API Error');
+      // Act
+      const result = await frameworkService.read(frameworkId);
+
+      // Assert
+      expect(result).toMatchObject({ data: null, status: 200 });
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         `/framework/v1/read/${frameworkId}`,
         {

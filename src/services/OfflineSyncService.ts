@@ -1,6 +1,7 @@
 import { networkService } from './network/networkService';
 import { keyValueDbService } from './db/KeyValueDbService';
-import { BatchService, PENDING_CONTENT_STATE_QUEUE_KEY, PENDING_ENROL_QUEUE_KEY } from './course/BatchService';
+import { BatchService } from './course/BatchService';
+import { KVKey } from './db/KeyValueDbService';
 import type { ContentStateUpdateRequest } from '../types/collectionTypes';
 
 class OfflineSyncService {
@@ -15,8 +16,13 @@ class OfflineSyncService {
   init(): void {
     networkService.subscribe(async (state) => {
       if (state.connected && !this.flushing) {
-        await this.flushContentStateQueue();
-        await this.flushEnrolQueue();
+        this.flushing = true;
+        try {
+          await this.flushContentStateQueue();
+          await this.flushEnrolQueue();
+        } finally {
+          this.flushing = false;
+        }
       }
     });
   }
@@ -24,9 +30,8 @@ class OfflineSyncService {
   // ── Flush ────────────────────────────────────────────────────────────────────
 
   private async flushContentStateQueue(): Promise<void> {
-    this.flushing = true;
     try {
-      const raw = await keyValueDbService.getRaw(PENDING_CONTENT_STATE_QUEUE_KEY);
+      const raw = await keyValueDbService.getRaw(KVKey.PENDING_CONTENT_STATE_Q);
       if (!raw) return;
 
       const queue: Array<ContentStateUpdateRequest & { queuedAt: number }> = JSON.parse(raw);
@@ -53,7 +58,7 @@ class OfflineSyncService {
       }
 
       await keyValueDbService.setRaw(
-        PENDING_CONTENT_STATE_QUEUE_KEY,
+        KVKey.PENDING_CONTENT_STATE_Q,
         JSON.stringify(failed),
       );
 
@@ -64,8 +69,6 @@ class OfflineSyncService {
       }
     } catch (err) {
       console.warn('[OfflineSyncService] Flush error:', err);
-    } finally {
-      this.flushing = false;
     }
   }
 
@@ -73,7 +76,7 @@ class OfflineSyncService {
 
   private async flushEnrolQueue(): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(PENDING_ENROL_QUEUE_KEY);
+      const raw = await keyValueDbService.getRaw(KVKey.PENDING_ENROL_Q);
       if (!raw) return;
 
       const queue: Array<{ courseId: string; userId: string; batchId: string; queuedAt: number }> = JSON.parse(raw);
@@ -91,7 +94,7 @@ class OfflineSyncService {
         }
       }
 
-      await keyValueDbService.setRaw(PENDING_ENROL_QUEUE_KEY, JSON.stringify(failed));
+      await keyValueDbService.setRaw(KVKey.PENDING_ENROL_Q, JSON.stringify(failed));
 
       if (failed.length > 0) {
         console.warn(`[OfflineSyncService] ${failed.length} enrol request(s) failed and will be retried`);

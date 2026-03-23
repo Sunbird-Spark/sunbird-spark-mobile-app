@@ -51,13 +51,15 @@ export class ContentService {
           const entry: ContentEntry = {
             identifier: content.identifier,
             server_data: JSON.stringify(content),
+            // local_data mirrors server_data on fetch; locally-modified content
+            // (e.g. downloaded state) should update only local_data, not server_data.
             local_data: JSON.stringify(content),
             mime_type: content.mimeType ?? '',
             path: null,
             visibility: (content.visibility as 'Default' | 'Parent') ?? 'Default',
             server_last_updated_on: content.lastUpdatedOn ?? null,
             local_last_updated_on: new Date().toISOString(),
-            ref_count: 1,
+            ref_count: 1, // tracks how many collections reference this content; incremented by the download manager on import
             content_state: 0,
             content_type: content.contentType ?? '',
             audience: Array.isArray(content.audience)

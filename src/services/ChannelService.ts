@@ -5,7 +5,7 @@ import { networkService } from './network/networkService';
 
 export class ChannelService {
   public async read<T = any>(id: string): Promise<ApiResponse<T>> {
-    const key = `channel_${id}`;
+    const key = `cache:channel_${id}`;
 
     if (!networkService.isConnected()) {
       return this.readFromDb<T>(key);
@@ -24,11 +24,8 @@ export class ChannelService {
       }
 
       return response;
-    } catch (error) {
-      const cached = await this.readFromDb<T>(key);
-      if ((cached.data as any) !== null) return cached;
-      console.error('ChannelService API Error:', error);
-      throw error;
+    } catch {
+      return this.readFromDb<T>(key);
     }
   }
 

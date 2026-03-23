@@ -148,7 +148,7 @@ class UserService {
         const profile = (response.data as any)?.response;
         if (profile) {
           const provider = this.getLoginProvider();
-          const userType: UserType = provider === 'google' ? 'GOOGLE' : 'GOOGLE';
+          const userType: UserType = provider === 'google' ? 'GOOGLE' : 'GUEST';
           await userDbService.upsert({
             id: userId,
             details: {

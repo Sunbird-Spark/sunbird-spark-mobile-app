@@ -8,7 +8,7 @@ export class FormService {
   public async formRead(
     request: FormReadRequest
   ): Promise<ApiResponse<FormReadResponse>> {
-    const key = `form_${request.type}_${request.subType ?? ''}_${request.action}`;
+    const key = `cache:form_${request.type}_${request.subType ?? ''}_${request.action}`;
 
     if (!networkService.isConnected()) {
       return this.readFromDb(key);

@@ -5,7 +5,7 @@ import { networkService } from './network/networkService';
 
 export class FrameworkService {
   public async read<T = any>(id: string): Promise<ApiResponse<T>> {
-    const key = `framework_${id}`;
+    const key = `cache:framework_${id}`;
 
     if (!networkService.isConnected()) {
       return this.readFromDb<T>(key);
@@ -24,11 +24,8 @@ export class FrameworkService {
       }
 
       return response;
-    } catch (error) {
-      const cached = await this.readFromDb<T>(key);
-      if ((cached.data as any) !== null) return cached;
-      console.error('FrameworkService API Error:', error);
-      throw error;
+    } catch {
+      return this.readFromDb<T>(key);
     }
   }
 
