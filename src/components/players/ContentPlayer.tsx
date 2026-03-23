@@ -48,6 +48,15 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   const openRating = useCallback(() => setRatingOpen(true), []);
   const { onContentEnd, onContentStart } = useRatingTimer(openRating);
 
+  // On mobile, some players (e.g. PDF) emit END/START only via onPlayerEvent,
+  // not onTelemetryEvent. Intercept both callbacks to ensure the rating timer fires.
+  const handlePlayerEvent = useCallback((event: any) => {
+    const eid = ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
+    if (eid === 'END') onContentEnd();
+    if (eid === 'START') onContentStart();
+    onPlayerEvent?.(event);
+  }, [onContentEnd, onContentStart, onPlayerEvent]);
+
   const handleTelemetry = useCallback((event: any) => {
     const eid = ((event?.eid ?? event?.data?.eid ?? event?.type) ?? '').toUpperCase();
     if (eid === 'END') onContentEnd();
@@ -65,7 +74,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
         cdata={cdata}
         contextRollup={contextRollup}
         objectRollup={objectRollup}
-        onPlayerEvent={onPlayerEvent}
+        onPlayerEvent={handlePlayerEvent}
         onTelemetryEvent={handleTelemetry}
       />
       <RatingDialog
