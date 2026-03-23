@@ -19,6 +19,7 @@ import DownloadedContentsPage from './pages/DownloadedContentsPage';
 import HelpAndSupportPage from './pages/HelpAndSupportPage';
 import FaqDetailPage from './pages/FaqDetailPage';
 import SignInPage from './pages/SignInPage';
+import NotificationPage from './pages/NotificationPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -143,6 +144,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/sign-in">
             <SignInPage />
+          </Route>
+          <Route exact path="/notifications">
+            <NotificationPage />
           </Route>
           <Route exact path="/terms-and-conditions">
             <TermsAndConditionsPage />
