@@ -102,7 +102,7 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
   const thumbnail = _.get(course, 'content.posterImage') || _.get(course, 'content.appIcon', '');
   const progress = _.clamp(Math.round(course.completionPercentage ?? 0), 0, 100);
 
-  const handleNavigate = () => collectionId && history.push(`/collection/${collectionId}`);
+  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
 
   return (
     <div
