@@ -8,7 +8,6 @@ export enum KVKey {
   ACTIVE_CHANNEL_ID       = 'active_channel_id',      // SDK: ACTIVE_CHANNEL_ID in SharedPreferences
   // ── Offline sync queues (persistent across sessions) ────────────────────────
   PENDING_CONTENT_STATE_Q = 'pending_content_state_q',
-  PENDING_ENROL_Q         = 'pending_enrol_q',
 }
 
 export class KeyValueDbService {

@@ -23,20 +23,10 @@ export class BatchService {
     return getClient().get<BatchReadResponse>(`/course/v1/batch/read/${batchId}`);
   }
 
-  public async enrol(courseId: string, userId: string, batchId: string): Promise<ApiResponse<unknown>> {
-    if (!networkService.isConnected()) {
-      await this.queueEnrolLocally(courseId, userId, batchId);
-      return buildOfflineResponse({ message: 'Queued for sync' });
-    }
-
-    try {
-      return await getClient().post('/course/v1/enrol', {
-        request: { courseId, userId, batchId },
-      });
-    } catch {
-      await this.queueEnrolLocally(courseId, userId, batchId);
-      return buildOfflineResponse({ message: 'Queued for sync' });
-    }
+  public enrol(courseId: string, userId: string, batchId: string): Promise<ApiResponse<unknown>> {
+    return getClient().post('/course/v1/enrol', {
+      request: { courseId, userId, batchId },
+    });
   }
 
   public unenrol(courseId: string, userId: string, batchId: string): Promise<ApiResponse<unknown>> {
@@ -206,47 +196,6 @@ export class BatchService {
       );
     } catch (err) {
       console.warn('[BatchService] Failed to update local course progress:', err);
-    }
-  }
-
-  // ── Offline enrol helpers ────────────────────────────────────────────────────
-
-  /** Queue the enrol request and insert a stub row so the course appears offline. */
-  private async queueEnrolLocally(courseId: string, userId: string, batchId: string): Promise<void> {
-    await Promise.all([
-      this.addToEnrolQueue(courseId, userId, batchId),
-      this.insertStubEnrollment(courseId, userId, batchId),
-    ]);
-  }
-
-  private async addToEnrolQueue(courseId: string, userId: string, batchId: string): Promise<void> {
-    try {
-      const queue = await keyValueDbService.getJSON<Array<{ courseId: string; userId: string; batchId: string; queuedAt: number; retryCount: number }>>(KVKey.PENDING_ENROL_Q) ?? [];
-      // Avoid duplicate entries for the same course+user+batch
-      const isDuplicate = queue.some(
-        item => item.courseId === courseId && item.userId === userId && item.batchId === batchId
-      );
-      if (!isDuplicate) {
-        queue.push({ courseId, userId, batchId, queuedAt: Date.now(), retryCount: 0 });
-        await keyValueDbService.setJSON(KVKey.PENDING_ENROL_Q, queue);
-      }
-    } catch (err) {
-      console.warn('[BatchService] Failed to enqueue enrol request:', err);
-    }
-  }
-
-  private async insertStubEnrollment(courseId: string, userId: string, batchId: string): Promise<void> {
-    try {
-      await enrolledCoursesDbService.upsertBatch([{
-        course_id: courseId,
-        user_id: userId,
-        details: { courseId, name: '', batchId },
-        enrolled_on: Date.now(),
-        progress: 0,
-        status: 'active',
-      }]);
-    } catch (err) {
-      console.warn('[BatchService] Failed to insert stub enrollment:', err);
     }
   }
 

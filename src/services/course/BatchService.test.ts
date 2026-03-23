@@ -20,7 +20,6 @@ vi.mock('../network/networkService', () => ({
 vi.mock('../db/KeyValueDbService', () => ({
   KVKey: {
     PENDING_CONTENT_STATE_Q: 'pending_content_state_q',
-    PENDING_ENROL_Q: 'pending_enrol_q',
   },
   keyValueDbService: {
     getJSON: vi.fn().mockResolvedValue(null),
@@ -104,12 +103,6 @@ describe('BatchService', () => {
       expect(result).toEqual(mockResponse);
     });
 
-    it('should queue locally and return offline response on error', async () => {
-      mockHttpClient.post.mockRejectedValue(new Error('Enrollment failed'));
-
-      const result = await service.enrol('c', 'u', 'b');
-      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
-    });
   });
 
   describe('unenrol', () => {
@@ -278,39 +271,6 @@ describe('BatchService', () => {
           batchId: 'batch-1',
         },
       });
-    });
-  });
-
-  describe('enrol — offline path', () => {
-    it('should queue and return offline response when offline', async () => {
-      (networkService.isConnected as any).mockReturnValue(false);
-
-      const result = await service.enrol('course-1', 'user-1', 'batch-1');
-
-      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
-      expect(mockHttpClient.post).not.toHaveBeenCalled();
-      expect(keyValueDbService.getJSON).toHaveBeenCalled();
-    });
-
-    it('should not add duplicate enrol entries to the queue', async () => {
-      (networkService.isConnected as any).mockReturnValue(false);
-      (keyValueDbService.getJSON as any).mockResolvedValue([
-        { courseId: 'course-1', userId: 'user-1', batchId: 'batch-1', queuedAt: 1, retryCount: 0 },
-      ]);
-
-      await service.enrol('course-1', 'user-1', 'batch-1');
-
-      expect(keyValueDbService.setJSON).not.toHaveBeenCalled();
-    });
-
-    it('should insert stub enrollment when offline', async () => {
-      (networkService.isConnected as any).mockReturnValue(false);
-
-      await service.enrol('course-1', 'user-1', 'batch-1');
-
-      expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith([
-        expect.objectContaining({ course_id: 'course-1', user_id: 'user-1', status: 'active' }),
-      ]);
     });
   });
 

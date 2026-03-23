@@ -118,7 +118,6 @@ class UserService {
         enrolledCoursesDbService.deleteAllForUser(userId),
         userDbService.delete(userId),
         keyValueDbService.delete(KVKey.PENDING_CONTENT_STATE_Q),
-        keyValueDbService.delete(KVKey.PENDING_ENROL_Q),
         keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
       ]);
     }

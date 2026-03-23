@@ -18,7 +18,6 @@ class LocalDataService {
         this.flushing = true;
         try {
           await this.flushContentStateQueue();
-          await this.flushEnrolQueue();
         } finally {
           this.flushing = false;
         }
@@ -72,42 +71,6 @@ class LocalDataService {
     }
   }
 
-  // ── Enrol queue ──────────────────────────────────────────────────────────────
-
-  private async flushEnrolQueue(): Promise<void> {
-    try {
-      type EnrolItem = { courseId: string; userId: string; batchId: string; queuedAt: number; retryCount: number };
-      const queue = await keyValueDbService.getJSON<EnrolItem[]>(KVKey.PENDING_ENROL_Q);
-      if (!queue || queue.length === 0) return;
-
-      console.debug(`[LocalDataService] Flushing ${queue.length} pending enrol request(s)`);
-
-      const failed: EnrolItem[] = [];
-
-      for (const item of queue) {
-        try {
-          await this.batchService.enrol(item.courseId, item.userId, item.batchId);
-        } catch {
-          const retryCount = (item.retryCount ?? 0) + 1;
-          if (retryCount < LocalDataService.MAX_RETRIES) {
-            failed.push({ ...item, retryCount });
-          } else {
-            console.warn(`[LocalDataService] Dropping enrol after ${retryCount} failures`, item);
-          }
-        }
-      }
-
-      await keyValueDbService.setJSON(KVKey.PENDING_ENROL_Q, failed);
-
-      if (failed.length > 0) {
-        console.warn(`[LocalDataService] ${failed.length} enrol request(s) failed and will be retried`);
-      } else {
-        console.debug('[LocalDataService] All pending enrols synced successfully');
-      }
-    } catch (err) {
-      console.warn('[LocalDataService] Enrol flush error:', err);
-    }
-  }
 }
 
 export const localDataService = new LocalDataService();
