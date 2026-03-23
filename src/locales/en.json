@@ -13,7 +13,6 @@
   "completionRate": "Completion Rate",
   "averageCompletion": "average completion",
   "scan": "Scan",
-
   "loading": "Loading...",
   "error": "Error",
   "success": "Success",
@@ -23,7 +22,6 @@
   "search": "Search",
   "cancel": "Cancel",
   "ok": "OK",
-
   "startLearning": "Start Learning",
   "continueLearning": "Continue Learning",
   "completed": "Completed",
@@ -50,14 +48,12 @@
   "resourceCenter": "Resource Center",
   "resourceCenterSubtitle": "Stay ahead. What's next starts here.",
   "selectLanguage": "Select Language",
-
   "logout": "Logout",
   "login": "Log In",
   "editProfile": "Edit Profile",
   "changePassword": "Change Password",
   "sunbirdId": "Sunbird ID",
   "updatePhoto": "Update Photo",
-
   "downloads": "Downloads",
   "downloadedContents": "Downloaded Contents",
   "personalDetails": "Personal Details",
@@ -84,12 +80,10 @@
   "verifyDetails": "Verify the Details",
   "yes": "Yes",
   "no": "No",
-
   "contactUs": "Contact Us",
   "reportIssue": "Report an Issue",
   "helpAndSupport": "Help & Support",
   "frequentlyAsked": "Frequently Asked Questions",
-
   "courseProgress": "Course Progress",
   "lessons": "Lessons",
   "duration": "Duration",
@@ -101,7 +95,6 @@
   "contentsViewed": "Contents Viewed",
   "totalCourses": "Total Courses",
   "inProgress": "In Progress",
-
   "welcomeBack": "Welcome back",
   "featuredCourses": "Featured Courses",
   "browseCourses": "Browse Courses",
@@ -118,6 +111,7 @@
     "faq": "Frequently asked questions",
     "letsGetStarted": "Let's Get Started",
     "joinTheCourse": "Join the Course",
+    "creatorCannotEnrol": "You cannot enrol to the course that you have created.",
     "availableBatches": "Available Batches",
     "selectBatch": "Select a Batch",
     "selectBatchToStart": "Select a batch to start learning.",
@@ -145,11 +139,9 @@
     "subtitle": "Unlock your potential and explore a world of knowledge. Start your journey with 100+ courses built for your future.",
     "ctaButton": "Let's Get Started"
   },
-
   "activeLearners": "Active Learners",
   "certifications": "Certifications",
   "howCanWeHelp": "How can we assist you today?",
-
   "browseCategories": "Browse Through Categories",
   "browseAllCategories": "Browse all categories",
   "continueFromWhereLeft": "Continue from where you left",
@@ -159,6 +151,7 @@
   "course": "Course",
   "hiUser": "Hi {{name}}",
   "hiGuest": "Hi there",
+  "guestUser": "Guest",
   "journeyStart": "Your exciting learning journey starts here. Dive in!",
   "welcomeMessage": "Your exciting learning journey starts here. Dive in!",
   "greeting": "Hi {{name}}",
@@ -182,15 +175,16 @@
   "tellUsMore": "Tell us more",
   "feedbackToastMessage": "Thanks for your feedback. We may not be able to respond to every suggestion, but your feedback helps make this application better for everyone.",
   "faqCount": "{{count}} FAQ's",
-
   "all": "All",
   "ongoing": "Ongoing",
   "dueDate": "Due Date",
   "downloadCertificate": "Download Certificate",
+  "downloadAsPdf": "Download as PDF",
+  "downloadAsPng": "Download as PNG",
+  "certificateSavedToDocuments": "Certificate saved to Documents",
   "noCertificate": "No Certificate",
   "noEnrolledCourses": "No enrolled courses yet.",
   "certificateDownloadError": "Failed to download certificate",
-
   "personalInformation": "Personal Information",
   "learner": "Learner",
   "fullName": "Full Name",
@@ -205,7 +199,6 @@
   "verifying": "Verifying…",
   "submit": "Submit",
   "fieldUpdatedSuccessfully": "{{field}} updated successfully",
-
   "months": {
     "jan": "Jan",
     "feb": "Feb",

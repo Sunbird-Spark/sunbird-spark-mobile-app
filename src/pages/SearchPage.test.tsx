@@ -26,9 +26,6 @@ vi.mock('react-i18next', () => ({
 // ── Mock router ──
 const mockPush = vi.fn();
 const mockGoBack = vi.fn();
-vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: mockPush, goBack: mockGoBack, length: 2 }),
-}));
 
 // ── Mock Ionic components ──
 vi.mock('@ionic/react', () => ({
@@ -45,6 +42,7 @@ vi.mock('@ionic/react', () => ({
     />
   ),
   IonSpinner: () => <div data-testid="ion-spinner" />,
+  useIonRouter: () => ({ push: mockPush, goBack: mockGoBack, canGoBack: () => true }),
 }));
 
 // ── Mock CSS ──
@@ -240,6 +238,6 @@ describe('SearchPage', () => {
     fireEvent.change(input, { target: { value: 'data science' } });
 
     fireEvent.click(screen.getByText(/View All Results/));
-    expect(mockPush).toHaveBeenCalledWith('/explore?query=data%20science');
+    expect(mockPush).toHaveBeenCalledWith('/explore?query=data%20science', 'forward', 'push');
   });
 });

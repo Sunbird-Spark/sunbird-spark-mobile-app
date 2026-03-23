@@ -1,5 +1,6 @@
 import React from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import type { RelatedContentItem } from '../../types/contentTypes';
 import CollectionCard from '../content/CollectionCard';
 import ResourceCard from '../content/ResourceCard';
@@ -11,16 +12,13 @@ interface RelatedContentProps {
 }
 
 const RelatedContent: React.FC<RelatedContentProps> = ({ items, t }) => {
-  const history = useHistory();
+  const router = useIonRouter();
   const location = useLocation<{ parentRoute?: string }>();
 
   if (items.length === 0) return null;
 
   const navigateTo = (path: string) => {
-    history.push({
-      pathname: path,
-      state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
-    });
+    router.push(path, 'forward', 'push');
   };
 
   return (

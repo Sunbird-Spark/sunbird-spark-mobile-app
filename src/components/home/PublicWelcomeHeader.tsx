@@ -2,10 +2,10 @@ import React from 'react';
 import { IonToolbar } from '@ionic/react';
 import sunbirdLogo from '../../assets/sunbird-logo-new.png';
 import { LanguageSelector } from '../common/LanguageSelector';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 
 export const PublicWelcomeHeader: React.FC = () => {
-  const history = useHistory();
+  const router = useIonRouter();
 
   return (
     <IonToolbar
@@ -42,7 +42,7 @@ export const PublicWelcomeHeader: React.FC = () => {
         }}>
           {/* Search icon */}
           <button
-            onClick={() => history.push('/search')}
+            onClick={() => router.push('/search', 'forward', 'push')}
             style={{
               background: 'none',
               border: 'none',

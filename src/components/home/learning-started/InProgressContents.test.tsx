@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { InProgressContents } from './InProgressContents';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 
-vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: vi.fn() }),
+vi.mock('@ionic/react', () => ({
+  useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn(), canGoBack: () => true }),
 }));
 
 vi.mock('react-i18next', () => ({

@@ -3,6 +3,9 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MyLearningPage from './MyLearningPage';
 
+// Mock router
+const mockPush = vi.fn();
+
 // Mock Ionic
 vi.mock('@ionic/react', () => ({
   IonContent: ({ children, fullscreen }: any) => (
@@ -14,12 +17,10 @@ vi.mock('@ionic/react', () => ({
   IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
   IonTitle: ({ children }: any) => <h1 data-testid="ion-title">{children}</h1>,
   IonButtons: ({ children }: any) => <div>{children}</div>,
+  useIonRouter: () => ({ push: mockPush, goBack: vi.fn(), canGoBack: () => true }),
 }));
 
-// Mock router
-const mockPush = vi.fn();
 vi.mock('react-router-dom', () => ({
-  useHistory: () => ({ push: mockPush }),
   useLocation: () => ({ pathname: '/profile/my-learning' }),
 }));
 
@@ -142,7 +143,7 @@ describe('MyLearningPage', () => {
   it('navigates to /sign-in when sign-in button clicked', () => {
     renderPage();
     fireEvent.click(screen.getByText('Sign In'));
-    expect(mockPush).toHaveBeenCalledWith('/sign-in');
+    expect(mockPush).toHaveBeenCalledWith('/sign-in', 'forward', 'push');
   });
 
   // --- Loading/error ---
@@ -261,6 +262,6 @@ describe('MyLearningPage', () => {
     };
     renderPage();
     fireEvent.click(screen.getByText('View More Courses'));
-    expect(mockPush).toHaveBeenCalledWith('/explore');
+    expect(mockPush).toHaveBeenCalledWith('/explore', 'forward', 'push');
   });
 });

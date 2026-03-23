@@ -1,5 +1,5 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { IonCard } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
@@ -14,7 +14,7 @@ interface CategoriesGridProps {
 }
 
 export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, title }) => {
-    const history = useHistory();
+    const router = useIonRouter();
     const { t } = useTranslation();
 
     if (categories.length === 0) return null;
@@ -25,7 +25,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 <h2 className="categories-title">{title || t('browseCategories')}</h2>
                 <button
                     className="categories-arrow"
-                    onClick={() => history.push('/explore')}
+                    onClick={() => router.push('/explore', 'forward', 'push')}
                     aria-label={t('browseAllCategories')}
                 >
                     <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +38,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                     <IonCard
                         key={cat.name}
                         className="category-tile"
-                        onClick={() => history.push('/explore')}
+                        onClick={() => router.push('/explore', 'forward', 'push')}
                         style={{ '--background': cat.gradient, margin: 0 } as React.CSSProperties}
                     >
                         <div className="category-tile-overlay-gradient">
@@ -48,7 +48,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 ))}
                 <div
                     className="category-browse-all"
-                    onClick={() => history.push('/explore')}
+                    onClick={() => router.push('/explore', 'forward', 'push')}
                     role="button"
                     tabIndex={0}
                 >

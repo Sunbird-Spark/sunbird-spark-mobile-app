@@ -1,6 +1,6 @@
 import React from 'react';
 import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonProgressBar, IonBadge, IonImg } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { Course } from '../../data/mockData';
 
@@ -10,11 +10,11 @@ interface CourseCardProps {
 }
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, variant = 'default' }) => {
-  const history = useHistory();
+  const router = useIonRouter();
   const { t } = useTranslation();
 
   const handleClick = () => {
-    history.push(`/courses/${course.id}`);
+    router.push(`/courses/${course.id}`, 'forward', 'push');
   };
 
   if (variant === 'compact') {

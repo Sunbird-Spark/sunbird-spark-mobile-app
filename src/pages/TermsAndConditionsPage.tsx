@@ -11,9 +11,9 @@ import {
   IonFooter,
   IonButtons,
   IonButton,
+  useIonRouter,
 } from '@ionic/react';
 import { close } from 'ionicons/icons';
-import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTnCAccept } from '../hooks/useTnC';
@@ -22,8 +22,8 @@ import './TermsAndConditionsPage.css';
 
 const TermsAndConditionsPage: React.FC = () => {
   const { tncData, completeTnC } = useAuth();
-  const history = useHistory();
   const { t } = useTranslation();
+  const router = useIonRouter();
 
   const acceptTnC = useTnCAccept();
 
@@ -34,13 +34,13 @@ const TermsAndConditionsPage: React.FC = () => {
 
   useEffect(() => {
     if (!tncData) {
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     }
-  }, [tncData, history]);
+  }, [tncData]);
 
   const handleClose = () => {
     completeTnC();
-    history.replace('/home');
+    router.push('/home', 'root', 'replace');
   };
 
   const handleAccept = async () => {
@@ -49,7 +49,7 @@ const TermsAndConditionsPage: React.FC = () => {
     try {
       await acceptTnC.mutateAsync({ version: tncData.version });
       completeTnC();
-      history.replace('/home');
+      router.push('/home', 'root', 'replace');
     } catch {
       setErrorMessage(t('tnc.acceptFailed'));
       setShowError(true);
@@ -59,7 +59,7 @@ const TermsAndConditionsPage: React.FC = () => {
   const handleErrorDismiss = () => {
     setShowError(false);
     completeTnC();
-    history.replace('/home');
+    router.push('/home', 'root', 'replace');
   };
 
   const handleIframeLoad = () => {
