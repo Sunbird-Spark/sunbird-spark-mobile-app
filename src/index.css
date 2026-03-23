@@ -1261,6 +1261,159 @@ ion-tab-button:hover {
     height: 6.25rem;
 }
 
+
+.profile-settings-heading {
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: var(--ion-color-dark, #2e3335);
+    margin: 0 0 0.25rem;
+    letter-spacing: -0.02em;
+}
+
+.profile-settings-subheading {
+    font-size: 0.875rem;
+    color: var(--ion-color-medium, #5a6062);
+    margin: 0 0 1.25rem;
+}
+
+.profile-settings-card {
+    background: #ffffff;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 20px 40px rgba(46, 51, 53, 0.06);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-settings-icon-badge {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.profile-settings-icon-badge ion-icon {
+    font-size: 1.25rem;
+}
+
+.profile-settings-icon-sync {
+    background: rgba(147, 76, 19, 0.1);
+}
+
+.profile-settings-icon-sync .material-symbols-outlined {
+    color: var(--ion-color-primary, #934c13);
+}
+
+.profile-settings-icon-download {
+    background: rgba(44, 103, 113, 0.1);
+}
+
+.profile-settings-icon-download .material-symbols-outlined {
+    color: #2c6771;
+}
+
+.profile-settings-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding-right: 3rem;
+}
+
+.profile-settings-card-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ion-color-dark, #2e3335);
+    margin: 0 0 0.25rem;
+}
+
+.profile-settings-card-desc {
+    font-size: 0.8125rem;
+    color: var(--ion-color-medium, #5a6062);
+    margin: 0;
+}
+
+.profile-settings-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.profile-settings-option-btn {
+    padding: 0.4375rem 1.125rem;
+    border-radius: 9999px;
+    border: none;
+    background: #ebeef0;
+    color: var(--ion-color-medium, #5a6062);
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.profile-settings-option-btn.active-sync {
+    background: var(--ion-color-primary, #934c13);
+    color: #fff7f4;
+    box-shadow: 0 4px 12px rgba(147, 76, 19, 0.25);
+}
+
+.profile-settings-option-btn.active-download {
+    background: #2c6771;
+    color: #ecfcff;
+    box-shadow: 0 4px 12px rgba(44, 103, 113, 0.25);
+}
+
+.profile-settings-version-card {
+    background: rgba(188, 253, 209, 0.3);
+    border: 1px solid rgba(46, 106, 73, 0.1);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.profile-settings-version-label {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    color: #2e6a49;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.profile-settings-version-name {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #276343;
+    margin: 0.25rem 0 2rem;
+}
+
+.profile-settings-version-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+}
+
+.profile-settings-version-desc {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgba(39, 99, 67, 0.6);
+}
+
+.profile-settings-version-badge {
+    background: #2e6a49;
+    color: #e7ffeb;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.5rem;
+    font-family: monospace;
+    font-size: 0.875rem;
+}
+
 /* --- RTL overrides for profile --- */
 [dir="rtl"] .profile-action-chevron {
     transform: scaleX(-1);
@@ -1268,6 +1421,16 @@ ion-tab-button:hover {
 
 [dir="rtl"] .profile-logout-icon {
     transform: scaleX(-1);
+}
+
+[dir="rtl"] .profile-settings-icon-badge {
+    right: auto;
+    left: 1rem;
+}
+
+[dir="rtl"] .profile-settings-card-content {
+    padding-right: 0;
+    padding-left: 3rem;
 }
 
 /* --- Override header white style for public page --- */

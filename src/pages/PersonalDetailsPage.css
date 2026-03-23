@@ -302,3 +302,8 @@
 .pd-submit-btn {
     border-radius: 0;
 }
+
+/* Hide the reCAPTCHA v3 badge — token is still obtained in the background */
+.grecaptcha-badge {
+    visibility: hidden !important;
+}
