@@ -43,7 +43,7 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
   </svg>
 );
 
-const SEAL_BADGE_SRC = '/assets/rating-popup-check.svg';
+import ratingPopupCheck from '../../assets/rating-popup-check.svg';
 
 const RatingDialog = ({ open, onClose, onSubmit }: RatingDialogProps) => {
   const { t } = useTranslation();
@@ -81,7 +81,7 @@ const RatingDialog = ({ open, onClose, onSubmit }: RatingDialogProps) => {
 
         {/* Seal badge */}
         <img
-          src={SEAL_BADGE_SRC}
+          src={ratingPopupCheck}
           alt=""
           className="rating-dialog-badge"
         />
