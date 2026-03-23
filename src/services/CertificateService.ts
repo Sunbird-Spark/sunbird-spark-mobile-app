@@ -1,5 +1,5 @@
 import { getClient, ApiResponse } from '../lib/http-client';
-import { convertSvgAndSave, CertificateFormat } from '../utils/svg-converter';
+import type { CertificateFormat } from '../utils/svg-converter';
 
 export interface CertificateSearchResponse {
   [key: string]: unknown;
@@ -79,6 +79,7 @@ export class CertificateService {
     }
 
     const safeName = courseName.replace(/[^a-z0-9_-]/gi, '_').substring(0, 80) || 'certificate';
+    const { convertSvgAndSave } = await import('../utils/svg-converter');
     return convertSvgAndSave(svgContent, safeName, format);
   }
 }

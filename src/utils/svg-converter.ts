@@ -104,9 +104,9 @@ export const convertSvgAndSave = async (
   const pngDataUrl = `data:image/png;base64,${pngBase64}`;
   pdf.addImage(pngDataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
 
-  const pdfBase64 = pdf
-    .output('datauristring')
-    .replace(/^data:application\/pdf;base64,/, '');
+  const pdfDataUri = pdf.output('datauristring');
+  const commaIndex = pdfDataUri.indexOf(',');
+  const pdfBase64 = commaIndex !== -1 ? pdfDataUri.slice(commaIndex + 1) : pdfDataUri;
   const path = `${fileName}.pdf`;
   await Filesystem.writeFile({
     path,

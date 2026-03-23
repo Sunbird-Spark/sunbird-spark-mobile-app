@@ -151,6 +151,7 @@
   "course": "Course",
   "hiUser": "Hi {{name}}",
   "hiGuest": "Hi there",
+  "guestUser": "Guest",
   "journeyStart": "Your exciting learning journey starts here. Dive in!",
   "welcomeMessage": "Your exciting learning journey starts here. Dive in!",
   "greeting": "Hi {{name}}",

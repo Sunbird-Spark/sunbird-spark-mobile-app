@@ -1047,9 +1047,9 @@ ion-tab-button:hover {
 
 /* --- Language Selector Popover --- */
 .language-selector-popover {
-    --width: 120px;
-    --border-radius: 12px;
-    --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    --width: 7.5rem;
+    --border-radius: 0.75rem;
+    --box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
 }
 
 /* --- Profile Info Card --- */

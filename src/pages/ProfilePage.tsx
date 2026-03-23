@@ -84,9 +84,9 @@ const ProfilePage: React.FC = () => {
           {/* Guest profile card */}
           <div className="profile-info-card">
             <div className="profile-avatar-wrapper">
-              <Avatar name="Guest" round={true} size="133" color="var(--ion-color-medium)" className="profile-avatar" />
+              <Avatar name={t('guestUser')} round={true} size="133" color="var(--ion-color-medium)" className="profile-avatar" />
             </div>
-            <h2 className="profile-name">Guest</h2>
+            <h2 className="profile-name">{t('guestUser')}</h2>
           </div>
 
           {/* Sign-in prompt */}
