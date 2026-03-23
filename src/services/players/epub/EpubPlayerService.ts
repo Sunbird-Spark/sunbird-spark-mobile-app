@@ -34,10 +34,9 @@ export class EpubPlayerService {
   ): Promise<EpubPlayerConfig> {
     await this.loadScript();
 
-    const baseContext = await buildPlayerContext(contextProps);
-    const context = { ...baseContext, userData: { firstName: '', lastName: '' } };
+    const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
-    return { context, config: {}, metadata };
+    return { context, config: { apislug: '/action' }, metadata };
   }
 
   private async fetchStyles(): Promise<string> {

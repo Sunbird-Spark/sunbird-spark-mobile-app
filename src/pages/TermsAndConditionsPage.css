@@ -1,0 +1,132 @@
+/* =============================================
+   Terms and Conditions Page
+   ============================================= */
+
+.tnc-page {
+  --background: #ffffff;
+}
+
+/* ── Header ── */
+.tnc-header {
+  box-shadow: none;
+}
+
+.tnc-page .tnc-toolbar {
+  --background: #ffffff;
+  --border-width: 0;
+  --min-height: 3rem;
+  --padding-start: 1rem;
+}
+
+.tnc-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--ion-color-dark, #1a1a1a);
+  padding-inline-start: 0;
+}
+
+.tnc-close-btn {
+  --color: var(--ion-color-primary) !important;
+  --border-radius: 50%;
+  --padding-start: 6px;
+  --padding-end: 6px;
+  --padding-top: 6px;
+  --padding-bottom: 6px;
+  --background: var(--ion-color-step-100, #e8e8e8);
+  --background-hover: var(--ion-color-step-200, #d0d0d0);
+  width: 2rem;
+  height: 2rem;
+  margin-inline-end: 0rem;
+}
+
+.tnc-close-btn ion-icon {
+  font-size: 1rem;
+  height: 1.5rem;
+  width: 1.5rem;
+  color: var(--ion-color-primary);
+}
+
+/* ── Content ── */
+.tnc-content {
+  --background: #ffffff;
+}
+
+
+.tnc-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.tnc-iframe--hidden {
+  visibility: hidden;
+  position: absolute;
+}
+
+/* ── Footer ── */
+.tnc-footer {
+  --background: #ffffff;
+}
+
+.tnc-footer-inner {
+  padding: 1rem 1.5rem;
+  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  background: #ffffff;
+  border-top: 1px solid var(--ion-color-step-100, #e0e0e0);
+}
+
+.tnc-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.tnc-checkbox {
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  flex-shrink: 0;
+  accent-color: var(--ion-color-primary);
+  cursor: pointer;
+  margin-top: 0.125rem;
+}
+
+.tnc-checkbox-label {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--ion-color-dark, #333);
+  line-height: 1.4;
+}
+
+.tnc-accept-btn {
+  width: 100%;
+  height: 3rem;
+  border-radius: 999px;
+  border: none;
+  background: var(--ion-color-primary);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.tnc-accept-btn:active {
+  background: var(--ion-color-primary-shade);
+}
+
+.tnc-accept-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tnc-accept-btn ion-spinner {
+  color: #ffffff;
+  width: 1.25rem;
+  height: 1.25rem;
+}

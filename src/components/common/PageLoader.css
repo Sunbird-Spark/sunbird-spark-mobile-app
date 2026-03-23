@@ -81,7 +81,7 @@
 }
 
 .page-loader-message {
-  font-family: 'Rubik', sans-serif;
+  font-family: var(--ion-font-family);
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--ion-color-dark, #222);
@@ -89,7 +89,7 @@
 }
 
 .page-loader-error-title {
-  font-family: 'Rubik', sans-serif;
+  font-family: var(--ion-font-family);
   font-size: 1.125rem;
   font-weight: 600;
   color: var(--ion-color-danger, #dc3545);
@@ -97,7 +97,7 @@
 }
 
 .page-loader-error-message {
-  font-family: 'Rubik', sans-serif;
+  font-family: var(--ion-font-family);
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
   text-align: center;
@@ -110,7 +110,7 @@
   padding: 0.625rem 1.5rem;
   background: var(--ion-color-primary, #b4461e);
   color: white;
-  font-family: 'Rubik', sans-serif;
+  font-family: var(--ion-font-family);
   font-weight: 500;
   font-size: 0.875rem;
   border: none;

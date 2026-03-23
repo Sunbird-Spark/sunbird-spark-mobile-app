@@ -1,0 +1,15 @@
+/* Section alignment overrides — must load after Ionic CSS */
+
+.content-carousel-header,
+.categories-header,
+.resources-masonry-header,
+.resource-center-label-row {
+    margin-left: 0.9375rem;
+}
+
+.content-carousel-scroll,
+.categories-scroll,
+.resource-center-scroll,
+.resources-masonry-grid {
+    margin-left: 0.9375rem;
+}

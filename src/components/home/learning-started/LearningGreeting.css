@@ -1,0 +1,19 @@
+.learning-greeting {
+  padding: 20px 16px 8px;
+}
+
+.learning-greeting__title {
+  font-family: var(--ion-font-family);
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ion-color-dark, var(--color-222222, #222222));
+  margin: 0 0 4px 0;
+}
+
+.learning-greeting__subtitle {
+  font-family: var(--ion-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ion-color-medium, var(--color-757575, #757575));
+  margin: 0;
+}

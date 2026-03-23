@@ -1,5 +1,11 @@
 /* Ionic Variables and Theming - Brand Palette */
 :root {
+  /** Category Gradient Variables **/
+  --category-gradient-1: linear-gradient(to right, #45C0ED, #8E46C5);
+  --category-gradient-2: linear-gradient(to right, #D55E1D, #F6C35C);
+  --category-gradient-3: linear-gradient(to right, #1D79D5, #6ED97B);
+  --category-gradient-4: linear-gradient(to right, #F59C84, #D655E7);
+
   /** primary - BRICK **/
   --ion-color-primary: #a85236;
   --ion-color-primary-rgb: 168, 82, 54;

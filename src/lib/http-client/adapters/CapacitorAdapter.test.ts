@@ -7,7 +7,8 @@ vi.mock('@capacitor/core', () => ({
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
-    del: vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
   },
 }));
 
@@ -149,7 +150,7 @@ describe('CapacitorAdapter', () => {
       });
     });
 
-    it('should handle HTTP errors as responses', async () => {
+    it('should throw on 4xx/5xx HTTP errors', async () => {
       const errorResponse = {
         data: { error: 'Not found' },
         status: 404,
@@ -158,8 +159,7 @@ describe('CapacitorAdapter', () => {
 
       (CapacitorHttp.get as any).mockRejectedValue(errorResponse);
 
-      const result = await adapter.get('/test');
-      expect(result).toEqual(errorResponse);
+      await expect(adapter.get('/test')).rejects.toMatchObject({ status: 404 });
     });
 
     it('should throw non-HTTP errors', async () => {
@@ -259,9 +259,28 @@ describe('CapacitorAdapter', () => {
     });
   });
 
+  describe('PATCH requests', () => {
+    it('should handle PATCH with data', async () => {
+      (CapacitorHttp.patch as any).mockResolvedValue({
+        data: { id: 1 },
+        status: 200,
+        headers: {},
+      });
+
+      const result = await adapter.patch('/test', { name: 'patched' });
+
+      expect(CapacitorHttp.patch).toHaveBeenCalledWith({
+        url: 'http://test.com/api/test',
+        data: { name: 'patched' },
+        headers: {},
+      });
+      expect(result).toEqual({ data: { id: 1 }, status: 200, headers: {} });
+    });
+  });
+
   describe('DELETE requests', () => {
     it('should handle DELETE', async () => {
-      (CapacitorHttp.del as any).mockResolvedValue({
+      (CapacitorHttp.delete as any).mockResolvedValue({
         data: null,
         status: 204,
         headers: {},
@@ -269,7 +288,7 @@ describe('CapacitorAdapter', () => {
 
       const result = await adapter.delete('/test');
 
-      expect(CapacitorHttp.del).toHaveBeenCalledWith({
+      expect(CapacitorHttp.delete).toHaveBeenCalledWith({
         url: 'http://test.com/api/test',
         headers: {},
       });
@@ -278,7 +297,7 @@ describe('CapacitorAdapter', () => {
   });
 
   describe('headers management', () => {
-    it('should trigger status handler on specific status', async () => {
+    it('should trigger status handler on specific status and throw', async () => {
       const handler = vi.fn();
       adapter = new CapacitorAdapter({
         baseURL: 'http://test.com',
@@ -291,8 +310,8 @@ describe('CapacitorAdapter', () => {
         headers: {},
       });
 
-      const result = await adapter.get('/test');
-      expect(handler).toHaveBeenCalledWith(result);
+      await expect(adapter.get('/test')).rejects.toMatchObject({ status: 403 });
+      expect(handler).toHaveBeenCalled();
     });
 
     it('should clean headers by removing null values', async () => {

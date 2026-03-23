@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import {
-    IonPage, IonHeader, IonToolbar, IonContent, IonInput, IonSpinner,
+    IonPage, IonHeader, IonToolbar, IonContent, IonInput, IonSpinner, useIonRouter,
 } from '@ionic/react';
-import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useContentSearch } from '../hooks/useContentSearch';
 import useDebounce from '../hooks/useDebounce';
 import { ContentSearchItem } from '../types/contentTypes';
@@ -35,7 +35,8 @@ const ArrowRightIcon = () => (
 );
 
 const SearchPage: React.FC = () => {
-    const history = useHistory();
+    const router = useIonRouter();
+    const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedQuery = useDebounce(searchQuery.trim(), 600);
 
@@ -54,10 +55,10 @@ const SearchPage: React.FC = () => {
     const totalCount = data?.data?.count || 0;
 
     const handleCancel = () => {
-        if (history.length > 1) {
-            history.goBack();
+        if (router.canGoBack()) {
+            router.goBack();
         } else {
-            history.push('/home');
+            router.push('/home', 'back', 'replace');
         }
     };
 
@@ -66,7 +67,7 @@ const SearchPage: React.FC = () => {
     };
 
     const handleViewAllResults = () => {
-        history.push(`/explore?query=${encodeURIComponent(debouncedQuery)}`);
+        router.push(`/explore?query=${encodeURIComponent(debouncedQuery)}`, 'forward', 'push');
     };
 
     const renderResultCard = (item: ContentSearchItem) => {
@@ -86,19 +87,19 @@ const SearchPage: React.FC = () => {
                             <IonInput
                                 type="text"
                                 className="search-text-input"
-                                placeholder="Search courses, textbooks..."
+                                placeholder={t('searchPlaceholder')}
                                 value={searchQuery}
                                 onIonInput={(e) => setSearchQuery(e.detail.value || '')}
                                 autoFocus
                             />
                             {searchQuery && (
-                                <button className="search-clear-btn" onClick={handleClear} aria-label="Clear search">
+                                <button className="search-clear-btn" onClick={handleClear} aria-label={t('close')}>
                                     <ClearIcon />
                                 </button>
                             )}
                         </div>
                         <button className="search-cancel-btn" onClick={handleCancel}>
-                            Cancel
+                            {t('cancel')}
                         </button>
                     </div>
                 </IonToolbar>
@@ -110,7 +111,7 @@ const SearchPage: React.FC = () => {
                     {isLoading && (
                         <div className="search-loading">
                             <IonSpinner name="crescent" />
-                            <span>Searching...</span>
+                            <span>{t('searching')}</span>
                         </div>
                     )}
 
@@ -125,14 +126,14 @@ const SearchPage: React.FC = () => {
                     {debouncedQuery && !isLoading && !error && results.length > 0 && (
                         <div className="search-results-section">
                             <h2 className="search-results-heading">
-                                Results for &quot;{debouncedQuery}&quot;
+                                {t('searchResultsFor')} &quot;{debouncedQuery}&quot;
                             </h2>
                             <div className="search-results-row">
                                 {results.map(renderResultCard)}
                             </div>
                             {totalCount > PREVIEW_LIMIT && (
                                 <button className="search-view-all" onClick={handleViewAllResults}>
-                                    View All Results <ArrowRightIcon />
+                                    {t('viewAllResults')} <ArrowRightIcon />
                                 </button>
                             )}
                         </div>
@@ -140,13 +141,13 @@ const SearchPage: React.FC = () => {
 
                     {/* No Results */}
                     {debouncedQuery && !isLoading && !error && results.length === 0 && (
-                        <p className="search-no-results">No results for &quot;{debouncedQuery}&quot;</p>
+                        <p className="search-no-results">{t('noResultsFor')} &quot;{debouncedQuery}&quot;</p>
                     )}
 
                     {/* Default State */}
                     {!debouncedQuery && !isLoading && (
                         <div className="recommended-section">
-                            <h2 className="recommended-title">Search for courses, textbooks, and more</h2>
+                            <h2 className="recommended-title">{t('searchPageHint')}</h2>
                         </div>
                     )}
                 </div>

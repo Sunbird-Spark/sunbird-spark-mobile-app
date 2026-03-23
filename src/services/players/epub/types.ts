@@ -1,11 +1,6 @@
-export interface EpubPlayerContextProps {
-  mode?: string;
-  cdata?: any[];
-  contextRollup?: {
-    l1: string;
-  };
-  objectRollup?: Record<string, any>;
-}
+import type { PlayerContext, PlayerContextOverrides } from '../PlayerContextService';
+
+export type EpubPlayerContextProps = PlayerContextOverrides;
 
 export interface EpubPlayerMetadata {
   identifier: string;
@@ -18,28 +13,7 @@ export interface EpubPlayerMetadata {
 }
 
 export interface EpubPlayerConfig {
-  context: {
-    mode: string;
-    sid: string;
-    did: string;
-    uid: string;
-    channel: string;
-    pdata: {
-      id: string;
-      ver: string;
-      pid: string;
-    };
-    contextRollup: any;
-    cdata: any[];
-    timeDiff: number;
-    objectRollup: Record<string, any>;
-    host: string;
-    endpoint: string;
-    userData: {
-      firstName: string;
-      lastName: string;
-    };
-  };
+  context: PlayerContext;
   config: Record<string, any>;
   metadata: EpubPlayerMetadata;
 }

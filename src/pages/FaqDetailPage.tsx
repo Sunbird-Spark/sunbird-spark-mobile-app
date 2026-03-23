@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { useParams, useHistory } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
     IonContent,
-    IonHeader,
     IonPage,
-    IonToolbar,
-    IonButtons,
 } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
+import { AppHeader } from '../components/layout/AppHeader';
 import { useFaqData } from '../hooks/useFaqData';
 import './FaqDetailPage.css';
 
@@ -22,7 +21,7 @@ const ChevronDownIcon: React.FC = () => (
 
 const FaqDetailPage: React.FC = () => {
     const { category } = useParams<{ category: string }>();
-    const history = useHistory();
+    const { t } = useTranslation();
     const { faqData, isLoading, isError } = useFaqData();
 
     const categoryData = faqData?.categories.find(c => c.slug === category);
@@ -49,24 +48,13 @@ const FaqDetailPage: React.FC = () => {
 
     return (
         <IonPage className="faq-detail-page">
-            {/* ── Header ── */}
-            <IonHeader className="fd-header ion-no-border">
-                <IonToolbar className="fd-toolbar">
-                    <IonButtons slot="start">
-                        <button className="fd-back-btn" onClick={() => history.push('/support')}>
-                            <svg width="10" height="18" viewBox="0 0 10 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M9 1L1 9L9 17" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </button>
-                    </IonButtons>
-                </IonToolbar>
-            </IonHeader>
+            <AppHeader title={data.title} showBack />
 
             {/* ── Content ── */}
             <IonContent className="fd-content">
                 <div className="fd-container">
-                    {isLoading && <p className="fd-status-text">Loading...</p>}
-                    {isError && <p className="fd-status-text">Failed to load FAQs. Please try again.</p>}
+                    {isLoading && <p className="fd-status-text">{t('faqSection.loading')}</p>}
+                    {isError && <p className="fd-status-text">{t('faqSection.error')}</p>}
 
                     <h1 className="fd-section-title">{data.title}</h1>
 
@@ -85,19 +73,23 @@ const FaqDetailPage: React.FC = () => {
                                 </button>
                                 {expandedFaq === idx && (
                                     <div className="fd-faq-answer">
-                                        <p className="fd-faq-answer-text">{faq.answer}</p>
+                                        {/* Content is sanitized by useFaqData before reaching here. */}
+                        <div
+                          className="fd-faq-answer-text"
+                          dangerouslySetInnerHTML={{ __html: faq.answer }}
+                        />
 
                                         {feedback[idx] === 'yes' || feedback[idx] === 'submitted' ? (
                                             <div className="fd-feedback-thanks">
-                                                <span>Thank you for your feedback!</span>
+                                                <span>{t('thankYouFeedback')}</span>
                                             </div>
                                         ) : feedback[idx] === 'no' ? (
                                             <div className="fd-feedback-form">
-                                                <p className="fd-feedback-sorry">Sorry to hear that</p>
-                                                <p className="fd-feedback-improve">What could we do to improve?</p>
+                                                <p className="fd-feedback-sorry">{t('sorryToHear')}</p>
+                                                <p className="fd-feedback-improve">{t('whatCouldImprove')}</p>
                                                 <textarea
                                                     className="fd-feedback-textarea"
-                                                    placeholder="Tell us more..."
+                                                    placeholder={t('reportIssue')}
                                                     value={feedbackText[idx] || ''}
                                                     onChange={(e) =>
                                                         setFeedbackText(prev => ({ ...prev, [idx]: e.target.value }))
@@ -109,23 +101,23 @@ const FaqDetailPage: React.FC = () => {
                                                     disabled={!feedbackText[idx]?.trim()}
                                                     onClick={() => handleSubmitFeedback(idx)}
                                                 >
-                                                    Submit Feedback
+                                                    {t('submitFeedback')}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div className="fd-feedback-row">
-                                                <span className="fd-feedback-label">Did this answer help you?</span>
+                                                <span className="fd-feedback-label">{t('didThisHelp')}</span>
                                                 <button
                                                     className="fd-feedback-btn fd-feedback-no"
                                                     onClick={() => handleFeedback(idx, 'no')}
                                                 >
-                                                    No
+                                                    {t('no')}
                                                 </button>
                                                 <button
                                                     className="fd-feedback-btn fd-feedback-yes"
                                                     onClick={() => handleFeedback(idx, 'yes')}
                                                 >
-                                                    Yes
+                                                    {t('yes')}
                                                 </button>
                                             </div>
                                         )}

@@ -9,13 +9,13 @@ export class CapacitorAdapter extends BaseClient {
 
   constructor(config: HttpClientConfig) {
     super(config);
-    
+
     // Combine baseURL and apiPrefix.
     // If baseURL is provided, it's the host. apiPrefix is the path.
     // If baseURL is empty/undefined, we just use apiPrefix as the baseURL for relative requests.
     const prefix = config.apiPrefix ?? '/api';
     const baseURL = config.baseURL ? `${config.baseURL}${prefix}` : prefix;
-    
+
     this.config = {
       ...config,
       baseURL,
@@ -26,24 +26,31 @@ export class CapacitorAdapter extends BaseClient {
     const result = _.get(capacitorResponse.data, 'result');
     // If result exists and is not null/undefined, return result. Otherwise return full data.
     const data = !_.isNil(result) ? result : capacitorResponse.data;
-    
+
     const mappedResponse = {
       data: data as T,
       status: capacitorResponse.status,
       headers: capacitorResponse.headers as Record<string, any>,
     };
-    
+
     return mappedResponse;
   }
 
   private async request<T>(requestFn: () => Promise<any>): Promise<ApiResponse<T>> {
     try {
       const response = await requestFn();
-      return this.mapResponse(response);
+      const mapped = this.mapResponse<T>(response);
+      if (mapped.status >= 400) {
+        this.onResponse(mapped);
+        throw mapped;
+      }
+      return mapped;
     } catch (error: any) {
-      // If the error already looks like an HTTP response (e.g., 4xx/5xx), normalize it
+      // If the error already looks like an HTTP response (e.g., 4xx/5xx), run status handler and throw
       if (error && typeof error === 'object' && 'status' in error) {
-        return this.mapResponse(error);
+        const mapped = error.data !== undefined ? error : this.mapResponse(error);
+        this.onResponse(mapped);
+        throw mapped;
       }
       throw error;
     }
@@ -55,7 +62,7 @@ export class CapacitorAdapter extends BaseClient {
       ...this.customHeaders,
       ...customHeaders,
     };
-    
+
     // Clean headers - remove null/undefined values and ensure all values are strings
     const cleanHeaders: Record<string, string> = {};
     Object.entries(headers).forEach(([key, value]) => {
@@ -63,7 +70,7 @@ export class CapacitorAdapter extends BaseClient {
         cleanHeaders[key] = String(value);
       }
     });
-    
+
     return cleanHeaders;
   }
 
@@ -77,10 +84,10 @@ export class CapacitorAdapter extends BaseClient {
   protected async _get<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     const fullUrl = this.buildUrl(url);
     const cleanHeaders = this.getHeaders(headers);
-    
-    return this.request(() => 
-      CapacitorHttp.get({ 
-        url: fullUrl, 
+
+    return this.request(() =>
+      CapacitorHttp.get({
+        url: fullUrl,
         headers: cleanHeaders
       })
     );
@@ -89,7 +96,7 @@ export class CapacitorAdapter extends BaseClient {
   protected async _post<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     const fullUrl = this.buildUrl(url);
     const cleanHeaders = this.getHeaders(headers);
-    
+
     return this.request(() =>
       CapacitorHttp.post({
         url: fullUrl,
@@ -102,9 +109,22 @@ export class CapacitorAdapter extends BaseClient {
   protected async _put<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     const fullUrl = this.buildUrl(url);
     const cleanHeaders = this.getHeaders(headers);
-    
+
     return this.request(() =>
       CapacitorHttp.put({
+        url: fullUrl,
+        data: data,
+        headers: cleanHeaders
+      })
+    );
+  }
+
+  protected async _patch<T>(url: string, data: any, headers?: Record<string, string>): Promise<ApiResponse<T>> {
+    const fullUrl = this.buildUrl(url);
+    const cleanHeaders = this.getHeaders(headers);
+
+    return this.request(() =>
+      CapacitorHttp.patch({
         url: fullUrl,
         data: data,
         headers: cleanHeaders
@@ -115,10 +135,10 @@ export class CapacitorAdapter extends BaseClient {
   protected async _delete<T>(url: string, headers?: Record<string, string>): Promise<ApiResponse<T>> {
     const fullUrl = this.buildUrl(url);
     const cleanHeaders = this.getHeaders(headers);
-    
-    return this.request(() => 
-      CapacitorHttp.del({ 
-        url: fullUrl, 
+
+    return this.request(() =>
+      CapacitorHttp.delete({
+        url: fullUrl,
         headers: cleanHeaders
       })
     );

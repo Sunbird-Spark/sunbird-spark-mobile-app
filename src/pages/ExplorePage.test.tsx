@@ -2,6 +2,35 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import ExplorePage from './ExplorePage';
 
+// ── Mock react-i18next ──
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        exploreTitle: 'Start Exploring',
+        filters: 'Filters',
+        clearFilters: 'Clear Filters',
+        close: 'Close',
+        sortBy: 'Sort By',
+        newestFirst: 'Newest First',
+        oldestFirst: 'Oldest First',
+        noResults: 'No results found',
+        failedToLoad: 'Failed to load content',
+        retry: 'Retry',
+        noContentFound: 'No content found',
+        searchContentPlaceholder: 'Search content...',
+      };
+      return translations[key] ?? key;
+    },
+    i18n: { language: 'en', changeLanguage: vi.fn() },
+  }),
+}));
+
+// ── Mock LanguageSelector ──
+vi.mock('../components/common/LanguageSelector', () => ({
+  LanguageSelector: () => null,
+}));
+
 // ── Mock react-router-dom ──
 let mockLocationSearch = '';
 vi.mock('react-router-dom', () => ({
@@ -35,6 +64,16 @@ vi.mock('../components/layout/BottomNavigation', () => ({
 
 // ── Mock CSS ──
 vi.mock('./ExplorePage.css', () => ({}));
+
+// ── Mock PageLoader ──
+vi.mock('../components/common/PageLoader', () => ({
+  default: ({ message, error, onRetry }: any) => (
+    <div data-testid="page-loader">
+      {message && <><div data-testid="ion-spinner" /><span>{message}</span></>}
+      {error && <><span>{error}</span>{onRetry && <button onClick={onRetry}>Retry</button>}</>}
+    </div>
+  ),
+}));
 
 // ── Mock child cards ──
 vi.mock('../components/content/CollectionCard', () => ({
@@ -233,7 +272,7 @@ describe('ExplorePage', () => {
       expect(screen.queryByTestId('ion-modal')).not.toBeInTheDocument();
 
       // The filter button is the second action button
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
       expect(screen.getByText('Filters')).toBeInTheDocument();
@@ -248,7 +287,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       expect(screen.getByText('Category')).toBeInTheDocument();
       expect(screen.getByText('Medium')).toBeInTheDocument();
@@ -264,7 +303,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       // Default active tab is first group (Category)
       expect(screen.getByText('Course')).toBeInTheDocument();
@@ -280,7 +319,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       // Click Medium tab
       fireEvent.click(screen.getByText('Medium'));
@@ -296,7 +335,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       // Click Sort By
       fireEvent.click(screen.getByText('Sort By'));
@@ -313,7 +352,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       // Select a checkbox
       const checkbox = screen.getByLabelText('Course');
@@ -335,7 +374,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
 
       // Click Close button in footer
@@ -354,7 +393,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter modal
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       // Modal opens and shows skeleton placeholders instead of filter tabs
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
@@ -374,7 +413,7 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       // Open filter and select an option
-      fireEvent.click(screen.getByLabelText('Open filters'));
+      fireEvent.click(screen.getByLabelText('Filters'));
 
       const checkbox = screen.getByLabelText('Course');
       fireEvent.click(checkbox);

@@ -1,21 +1,11 @@
 import React from 'react';
 import { IonToolbar } from '@ionic/react';
 import sunbirdLogo from '../../assets/sunbird-logo-new.png';
-import { useAuth } from '../../contexts/AuthContext';
 import { LanguageSelector } from '../common/LanguageSelector';
-import { useHistory } from 'react-router-dom';
-
-const DemoToggleIcon = ({ isActive }: { isActive: boolean }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="8" r="4" stroke={isActive ? 'var(--ion-color-primary)' : 'var(--ion-color-medium, var(--color-757575, #757575))'} strokeWidth="2" />
-    <path d="M4 20C4 16.686 7.582 14 12 14C16.418 14 20 16.686 20 20" stroke={isActive ? 'var(--ion-color-primary)' : 'var(--ion-color-medium, var(--color-757575, #757575))'} strokeWidth="2" strokeLinecap="round" />
-    {isActive && <circle cx="19" cy="6" r="3" fill="var(--ion-color-primary)" />}
-  </svg>
-);
+import { useIonRouter } from '@ionic/react';
 
 export const PublicWelcomeHeader: React.FC = () => {
-  const { isAuthenticated, login, logout } = useAuth();
-  const history = useHistory();
+  const router = useIonRouter();
 
   return (
     <IonToolbar
@@ -52,7 +42,7 @@ export const PublicWelcomeHeader: React.FC = () => {
         }}>
           {/* Search icon */}
           <button
-            onClick={() => history.push('/search')}
+            onClick={() => router.push('/search', 'forward', 'push')}
             style={{
               background: 'none',
               border: 'none',
@@ -84,23 +74,6 @@ export const PublicWelcomeHeader: React.FC = () => {
             <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
               <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
             </svg>
-          </button>
-
-          {/* Demo view toggle */}
-          <button
-            onClick={() => isAuthenticated ? logout() : login()}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '4px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-            }}
-            aria-label={isAuthenticated ? 'Switch to public view' : 'Switch to learning view'}
-            title={isAuthenticated ? 'Switch to public view' : 'Switch to learning started view'}
-          >
-            <DemoToggleIcon isActive={isAuthenticated} />
           </button>
 
           {/* Language dropdown */}

@@ -1,11 +1,11 @@
 import React from 'react';
 import { IonButton, IonIcon, IonGrid, IonRow, IonCol } from '@ionic/react';
 import { bookOutline, qrCodeOutline, downloadOutline, personOutline } from 'ionicons/icons';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
 const QuickActions: React.FC = () => {
-  const history = useHistory();
+  const router = useIonRouter();
   const { t } = useTranslation();
 
   const actions = [
@@ -23,7 +23,7 @@ const QuickActions: React.FC = () => {
             <div style={{ textAlign: 'center' }}>
               <IonButton
                 fill="clear"
-                onClick={() => history.push(action.path)}
+                onClick={() => router.push(action.path, 'forward', 'push')}
                 style={{ flexDirection: 'column', height: 'auto' }}
               >
                 <IonIcon icon={action.icon} style={{ fontSize: '2rem' }} color={action.color} />

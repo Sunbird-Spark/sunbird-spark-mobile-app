@@ -31,6 +31,7 @@ vi.mock('@ionic/react', () => ({
   IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   setupIonicReact: vi.fn(),
+  useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
 
 // Mock Ionic React Router
@@ -129,16 +130,25 @@ vi.mock('./pages/CourseDetailsPage', () => ({
   default: () => <div data-testid="course-details-page">Course Details Page</div>,
 }));
 
-vi.mock('./pages/CollectionDetailsPage', () => ({
-  default: () => <div data-testid="collection-details-page">Collection Details Page</div>,
-}));
-
-vi.mock('./pages/CourseLearningPage', () => ({
-  default: () => <div data-testid="course-learning-page">Course Learning Page</div>,
-}));
 
 vi.mock('./pages/ContentPlayerPage', () => ({
   default: () => <div data-testid="content-player-page">Content Player Page</div>,
+}));
+
+vi.mock('./pages/SignInPage', () => ({
+  default: () => <div data-testid="sign-in-page">Sign In Page</div>,
+}));
+
+vi.mock('./pages/CollectionPage', () => ({
+  default: () => <div data-testid="collection-page">Collection Page</div>,
+}));
+
+vi.mock('./pages/ProfileLearningPage', () => ({
+  default: () => <div data-testid="profile-learning-page">Profile Learning Page</div>,
+}));
+
+vi.mock('./components/common/BackButtonHandler', () => ({
+  default: () => null,
 }));
 
 // Mock CSS imports
@@ -153,6 +163,7 @@ vi.mock('@ionic/react/css/text-transformation.css', () => ({}));
 vi.mock('@ionic/react/css/flex-utils.css', () => ({}));
 vi.mock('@ionic/react/css/display.css', () => ({}));
 vi.mock('./theme/variables.css', () => ({}));
+vi.mock('./theme/overrides.css', () => ({}));
 
 // Mock i18next
 vi.mock('react-i18next', () => ({
@@ -197,6 +208,25 @@ vi.mock('./hooks/useAppInitialized', () => ({
 // Mock PageLoader
 vi.mock('./components/common/PageLoader', () => ({
   default: () => <div data-testid="page-loader">Loading...</div>,
+}));
+
+// Mock AuthContext so TnCGuard doesn't crash
+vi.mock('./contexts/AuthContext', () => ({
+  useAuth: () => ({
+    isAuthenticated: false,
+    userId: null,
+    login: vi.fn(),
+    loginWithCredentials: vi.fn(),
+    logout: vi.fn(),
+    needsTnC: false,
+    tncData: null,
+    completeTnC: vi.fn(),
+  }),
+}));
+
+// Mock TermsAndConditionsPage
+vi.mock('./pages/TermsAndConditionsPage', () => ({
+  default: () => <div data-testid="tnc-page">TnC Page</div>,
 }));
 
 describe('App', () => {

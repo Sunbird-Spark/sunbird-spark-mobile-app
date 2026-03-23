@@ -5,7 +5,9 @@ import {
     IonRefresherContent, IonSpinner,
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
+import { LanguageSelector } from '../components/common/LanguageSelector';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useFormRead } from '../hooks/useFormRead';
 import useDebounce from '../hooks/useDebounce';
@@ -13,6 +15,7 @@ import type { ContentSearchItem } from '../types/contentTypes';
 import type { ExploreFilterGroup, ExploreFilterOption, FilterState } from '../types/formTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
+import PageLoader from '../components/common/PageLoader';
 import './ExplorePage.css';
 
 // ── Icons ──
@@ -38,8 +41,8 @@ const CloseIcon = () => (
 const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
 const SORT_OPTIONS = [
-    { label: 'Newest First', value: { lastUpdatedOn: 'desc' } },
-    { label: 'Oldest First', value: { lastUpdatedOn: 'asc' } },
+    { labelKey: 'newestFirst', value: { lastUpdatedOn: 'desc' } },
+    { labelKey: 'oldestFirst', value: { lastUpdatedOn: 'asc' } },
 ];
 
 const LIMIT = 9;
@@ -81,6 +84,7 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
 
 // ── Component ──
 const ExplorePage: React.FC = () => {
+    const { t } = useTranslation();
     // ── Read query param from URL ──
     const location = useLocation();
     const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);
@@ -246,7 +250,7 @@ const ExplorePage: React.FC = () => {
     // All sidebar tabs = form groups + Sort By
     const sidebarTabs = [
         ...filterGroups.map((g) => ({ id: g.id, label: g.label })),
-        { id: '__sort__', label: 'Sort By' },
+        { id: '__sort__', label: t('sortBy') },
     ];
 
     return (
@@ -262,8 +266,8 @@ const ExplorePage: React.FC = () => {
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder="Search content..."
-                                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontFamily: "'Rubik', sans-serif", fontSize: '15px', color: 'var(--ion-color-dark, #222222)' }}
+                                    placeholder={t('searchContentPlaceholder')}
+                                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: 'var(--ion-color-dark, #222222)' }}
                                 />
                                 <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }}>
                                     <CloseIcon />
@@ -271,8 +275,8 @@ const ExplorePage: React.FC = () => {
                             </div>
                         ) : (
                             <>
-                                <h1 style={{ fontFamily: "'Rubik', sans-serif", fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, #222222)', margin: 0 }}>
-                                    Start Exploring
+                                <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, #222222)', margin: 0 }}>
+                                    {t('exploreTitle')}
                                 </h1>
                                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                     <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
@@ -280,7 +284,7 @@ const ExplorePage: React.FC = () => {
                                     </button>
                                     <button
                                         onClick={handleOpenFilter}
-                                        aria-label="Open filters"
+                                        aria-label={t('filters')}
                                         style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', position: 'relative' }}
                                     >
                                         <FilterIcon />
@@ -290,6 +294,7 @@ const ExplorePage: React.FC = () => {
                                             </span>
                                         )}
                                     </button>
+                                    <LanguageSelector />
                                 </div>
                             </>
                         )}
@@ -303,26 +308,16 @@ const ExplorePage: React.FC = () => {
                 </IonRefresher>
 
                 {isInitialLoading && (
-                    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
-                        <IonSpinner name="bubbles" color="primary" />
-                    </div>
+                    <PageLoader message="Loading..." />
                 )}
 
                 {queryError && pagination.displayItems.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
-                        <p style={{ marginBottom: '12px' }}>Failed to load content</p>
-                        <button
-                            onClick={() => refetch()}
-                            style={{ background: 'var(--ion-color-primary)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 20px', cursor: 'pointer', fontFamily: "'Rubik', sans-serif" }}
-                        >
-                            Retry
-                        </button>
-                    </div>
+                    <PageLoader error="Failed to load content" onRetry={() => refetch()} />
                 )}
 
                 {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)', fontFamily: "'Rubik', sans-serif" }}>
-                        <p>No content found</p>
+                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)' }}>
+                        <p>{t('noContentFound')}</p>
                     </div>
                 )}
 
@@ -369,7 +364,7 @@ const ExplorePage: React.FC = () => {
                 <div className="filter-sheet-container">
                     {/* Header */}
                     <div className="filter-sheet-header">
-                        <h2>Filters</h2>
+                        <h2>{t('filters')}</h2>
                         <button onClick={() => setShowFilter(false)} className="close-btn">
                             <CloseIcon />
                         </button>
@@ -402,14 +397,14 @@ const ExplorePage: React.FC = () => {
                                     {SORT_OPTIONS.map((opt) => {
                                         const isSelected = JSON.stringify(sortBy) === JSON.stringify(opt.value);
                                         return (
-                                            <label key={opt.label} className="checkbox-item">
+                                            <label key={opt.labelKey} className="checkbox-item">
                                                 <input
                                                     type="checkbox"
                                                     className="custom-checkbox"
                                                     checked={isSelected}
                                                     onChange={() => setSortBy(opt.value)}
                                                 />
-                                                <span>{opt.label}</span>
+                                                <span>{t(opt.labelKey)}</span>
                                             </label>
                                         );
                                     })}
@@ -434,7 +429,7 @@ const ExplorePage: React.FC = () => {
 
                             {!isSortTab && !activeGroup && !isFormLoading && (
                                 <p style={{ color: 'var(--ion-color-medium, #757575)', fontSize: '14px', margin: '4px 0' }}>
-                                    No options available
+                                    {t('noResults')}
                                 </p>
                             )}
                         </div>
@@ -443,10 +438,10 @@ const ExplorePage: React.FC = () => {
                     {/* Footer */}
                     <div className="filter-sheet-footer">
                         <button className="clear-filters-btn" onClick={handleClearFilters}>
-                            Clear Filters
+                            {t('clearFilters')}
                         </button>
                         <button className="apply-filters-btn" onClick={() => setShowFilter(false)}>
-                            Close
+                            {t('close')}
                         </button>
                     </div>
                 </div>

@@ -1,7 +1,8 @@
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { useEffect } from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, useLocation } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext';
 import { AppInitializer } from './AppInitializer';
 import { useAppInitialized } from './hooks/useAppInitialized';
 import PageLoader from './components/common/PageLoader';
@@ -17,6 +18,7 @@ import MyLearningPage from './pages/MyLearningPage';
 import DownloadedContentsPage from './pages/DownloadedContentsPage';
 import HelpAndSupportPage from './pages/HelpAndSupportPage';
 import FaqDetailPage from './pages/FaqDetailPage';
+import SignInPage from './pages/SignInPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -36,14 +38,28 @@ import '@ionic/react/css/text-transformation.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import './theme/overrides.css';
 import VideoContentPage from './pages/VideoContentPage';
 import SearchPage from './pages/SearchPage';
 import CourseDetailsPage from './pages/CourseDetailsPage';
-import CollectionDetailsPage from './pages/CollectionDetailsPage';
-import CourseLearningPage from './pages/CourseLearningPage';
+import CollectionPage from './pages/CollectionPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
+import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import ProfileLearningPage from './pages/ProfileLearningPage';
+import BackButtonHandler from './components/common/BackButtonHandler';
 
 setupIonicReact();
+
+/** Redirects to /terms-and-conditions when TnC is pending after login */
+const TnCGuard: React.FC = () => {
+  const { needsTnC } = useAuth();
+  const location = useLocation();
+
+  if (needsTnC && location.pathname !== '/terms-and-conditions') {
+    return <Redirect to="/terms-and-conditions" />;
+  }
+  return null;
+};
 
 const App: React.FC = () => {
   const isInitialized = useAppInitialized();
@@ -65,6 +81,8 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
+        <TnCGuard />
+        <BackButtonHandler />
         <IonRouterOutlet>
           <Route exact path="/search">
             <SearchPage />
@@ -93,6 +111,9 @@ const App: React.FC = () => {
           <Route exact path="/profile/my-learning">
             <MyLearningPage />
           </Route>
+          <Route exact path="/profile/learning">
+            <ProfileLearningPage />
+          </Route>
           <Route exact path="/profile/downloaded-contents">
             <DownloadedContentsPage />
           </Route>
@@ -111,17 +132,20 @@ const App: React.FC = () => {
           <Route exact path="/course-details">
             <CourseDetailsPage />
           </Route>
-          <Route exact path="/collection-details">
-            <CollectionDetailsPage />
-          </Route>
-          <Route exact path="/course-learning">
-            <CourseLearningPage />
+          <Route exact path="/collection/:collectionId">
+            <CollectionPage />
           </Route>
           <Route exact path="/content/:contentId">
             <ContentPlayerPage />
           </Route>
           <Route exact path="/">
             <Redirect to="/home" />
+          </Route>
+          <Route exact path="/sign-in">
+            <SignInPage />
+          </Route>
+          <Route exact path="/terms-and-conditions">
+            <TermsAndConditionsPage />
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>

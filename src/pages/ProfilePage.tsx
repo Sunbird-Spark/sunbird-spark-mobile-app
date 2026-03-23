@@ -1,10 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   IonContent,
-  IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
   IonIcon,
   IonList,
   IonItem,
@@ -15,40 +12,136 @@ import {
 } from '@ionic/react';
 import {
   timeOutline,
-  ribbonOutline,
   chevronForwardOutline,
 } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
+import { useHistory } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
+import { AppHeader } from '../components/layout/AppHeader';
 import Avatar from 'react-avatar';
+import { useUser } from '../hooks/useUser';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 
 const ProfilePage: React.FC = () => {
-  const { logout } = useAuth();
+  const { logout, userId, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
+  const history = useHistory();
 
+  const { data: profile } = useUser(userId);
+  const { data: enrollmentResponse } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+
+  const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
+
+  const fullName = useMemo(() => {
+    const parts = [profile?.firstName, profile?.lastName].filter(Boolean);
+    return parts.length > 0 ? parts.join(' ') : 'User';
+  }, [profile]);
+
+  const roles = useMemo(() => {
+    const roleSet = new Set<string>();
+    const addRole = (r: string | { role?: string } | unknown) => {
+      if (typeof r === 'string') {
+        roleSet.add(r);
+      } else if (r && typeof r === 'object' && 'role' in r && typeof (r as any).role === 'string') {
+        roleSet.add((r as any).role);
+      }
+    };
+    profile?.organisations?.forEach(org => org.roles?.forEach(addRole));
+    profile?.roles?.forEach(addRole);
+    return Array.from(roleSet);
+  }, [profile]);
+
+  const totalCourses = courses.length;
+
+  const inProgressCount = useMemo(
+    () => courses.filter(c => c.status === 1).length,
+    [courses]
+  );
+
+  const completedCount = useMemo(
+    () => courses.filter(c => c.status === 2).length,
+    [courses]
+  );
+
+  const certificatesEarned = useMemo(
+    () => courses.reduce((acc, course) => acc + (course.issuedCertificates?.length ?? 0), 0),
+    [courses]
+  );
+
+  const handleLogout = async () => {
+    await logout();
+    history.replace('/home');
+  };
+
+  // ── Unauthenticated view ─────────────────────────────────────────────────────
+  if (!isAuthenticated) {
+    return (
+      <IonPage>
+        <AppHeader title={t('profile')} transparent />
+
+        <IonContent fullscreen className="profile-content">
+          {/* Guest profile card */}
+          <div className="profile-info-card">
+            <div className="profile-avatar-wrapper">
+              <Avatar name={t('guestUser')} round={true} size="133" color="var(--ion-color-medium)" className="profile-avatar" />
+            </div>
+            <h2 className="profile-name">{t('guestUser')}</h2>
+          </div>
+
+          {/* Sign-in prompt */}
+          <div style={{ textAlign: 'center', padding: '1.5rem 2rem 1rem' }}>
+            <p style={{ color: 'var(--ion-color-medium)', marginBottom: '1.25rem', fontSize: '0.95rem', lineHeight: 1.5 }}>
+              {t('signInToAccess')}
+            </p>
+            <button
+              className="my-learning__sign-in-button"
+              onClick={() => history.push('/sign-in')}
+            >
+              {t('signIn')}
+            </button>
+          </div>
+
+          {/* Downloaded Contents — always visible */}
+          <IonList className="profile-actions-list" lines="none" style={{ marginTop: '1rem' }}>
+            <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
+              <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
+          </IonList>
+
+          <div className="profile-bottom-spacer"></div>
+        </IonContent>
+
+        <BottomNavigation />
+      </IonPage>
+    );
+  }
+
+  // ── Authenticated view ───────────────────────────────────────────────────────
   return (
     <IonPage>
-      <IonHeader className="profile-header ion-no-border">
-        <IonToolbar className="profile-toolbar">
-          <IonTitle className="profile-page-title">Profile</IonTitle>
-        </IonToolbar>
-      </IonHeader>
+      <AppHeader title={t('profile')} transparent />
 
       <IonContent fullscreen className="profile-content">
         {/* Profile Info Card */}
         <div className="profile-info-card">
           <div className="profile-avatar-wrapper">
-            <Avatar name="Prachi desai" round={true} size="133" color="var(--ion-color-primary-tint)" className="profile-avatar" />
+            <Avatar name={fullName} round={true} size="133" color="var(--ion-color-primary-tint)" className="profile-avatar" />
           </div>
 
-          <h2 className="profile-name">Prachi desai</h2>
-          <p className="profile-email">Sunbird ID : prachi@gmail.com</p>
+          <h2 className="profile-name">{fullName}</h2>
+          <p className="profile-email">{t('sunbirdId')} : {profile?.userName ?? ''}</p>
 
           <div className="profile-roles">
-            <span className="profile-role">Learner</span>
-            <span className="profile-role-dot"></span>
-            <span className="profile-role">Creator</span>
-            <span className="profile-role-dot"></span>
-            <span className="profile-role">Reviewer</span>
+            {roles.length > 0 ? roles.map((role, i) => (
+              <React.Fragment key={role}>
+                {i > 0 && <span className="profile-role-dot"></span>}
+                <span className="profile-role">{role}</span>
+              </React.Fragment>
+            )) : (
+              <span className="profile-role">{t('learner')}</span>
+            )}
           </div>
         </div>
 
@@ -60,8 +153,8 @@ const ProfilePage: React.FC = () => {
                 <div className="profile-stat-icon-badge profile-stat-icon-time">
                   <IonIcon icon={timeOutline} />
                 </div>
-                <div className="profile-stat-value">30</div>
-                <div className="profile-stat-label">Time Spent (Hrs)</div>
+                <div className="profile-stat-value">{String(totalCourses).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('totalCourses')}</div>
               </div>
             </IonCol>
             <IonCol size="6">
@@ -69,7 +162,7 @@ const ProfilePage: React.FC = () => {
                 <div className="profile-stat-icon-badge profile-stat-icon-badges">
                   <svg className="profile-stat-svg-icon" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <g clipPath="url(#clip0_2049_8759)">
-                      <path d="M0.0601749 17.226L3.90055 10.1241C3.50877 9.23489 3.28958 8.25248 3.28958 7.21823C3.28958 3.23348 6.51964 0.00341797 10.5044 0.00341797C14.4898 0.00341797 17.7199 3.23414 17.7199 7.21823C17.7199 8.27742 17.4895 9.28214 17.0807 10.1871L20.9381 17.2228C21.0628 17.4492 21.0418 17.7281 20.8863 17.9341C20.7307 18.1402 20.4676 18.2367 20.2156 18.1776L16.9219 17.4223L15.7944 20.5624C15.7065 20.8065 15.4834 20.9759 15.2255 20.9949C15.209 20.9962 15.1926 20.9969 15.1769 20.9969C14.9367 20.9969 14.7136 20.8649 14.5987 20.651L11.2414 14.3969C10.9992 14.4219 10.7531 14.4344 10.5044 14.4344C10.2767 14.4344 10.0516 14.4225 9.82911 14.4015L6.39889 20.6569C6.28274 20.8689 6.06158 20.9982 5.82336 20.9982C5.8063 20.9982 5.78924 20.9975 5.77217 20.9962C5.51492 20.9752 5.29311 20.8065 5.20583 20.5637L4.07839 17.4236L0.784018 18.1789C0.531363 18.2399 0.27083 18.1415 0.114643 17.9368C-0.041544 17.732 -0.0625439 17.4544 0.0595188 17.2274L0.0601749 17.226ZM15.0568 18.7308L15.8824 16.4307C15.9952 16.1176 16.3227 15.9359 16.6469 16.0126L19.0829 16.5718L16.3063 11.5068C15.3921 12.7425 14.0928 13.6744 12.5854 14.1279L15.0568 18.7308ZM16.4015 7.21823C16.4015 3.96651 13.7555 1.32117 10.5044 1.32117C7.25333 1.32117 4.60799 3.96651 4.60799 7.21823C4.60799 10.4699 7.25333 13.1153 10.505 13.1153C13.7568 13.1153 16.4015 10.4693 16.4015 7.21823ZM4.35271 16.0126C4.67821 15.9359 5.00436 16.1176 5.11724 16.43L5.94871 18.7466L8.47461 14.1417C6.92783 13.6882 5.5963 12.732 4.67033 11.4609L1.90489 16.5737L4.35271 16.0126Z" fill="white" />
+                      <path d="M0.0601749 17.226L3.90055 10.1241C3.50877 9.23489 3.28958 8.25248 3.28958 7.21823C3.28958 3.23348 6.51964 0.00341797 10.5044 0.00341797C14.4898 0.00341797 17.7199 3.23414 17.7199 7.21823C17.7199 8.27742 17.4895 9.28214 17.0807 10.1871L20.9381 17.2228C21.0628 17.4492 21.0418 17.7281 20.8863 17.9341C20.7307 18.1402 20.4676 18.2367 20.2156 18.1776L16.9219 17.4223L15.7944 20.5624C15.7065 20.8065 15.4834 20.9759 15.2255 20.9949C15.209 20.9962 15.1926 20.9969 15.1769 20.9969C14.9367 20.9969 14.7136 20.8649 14.5987 20.651L11.2414 14.3969C10.9992 14.4219 10.7531 14.4344 10.5044 14.4344C10.2767 14.4344 10.0516 14.4225 9.82911 14.4015L6.39889 20.6569C6.28274 20.8689 6.06158 20.9982 5.82336 20.9982C5.8063 20.9982 5.78924 20.9975 5.77217 20.9962C5.51492 20.9752 5.29311 20.8065 5.20583 20.5637L4.07839 17.4236L0.784018 18.1789C0.531363 18.2399 0.27083 18.1415 0.114643 17.9368C-0.041544 17.732 -0.0625439 17.4544 0.0595188 17.2274L0.0601749 17.226ZM15.0568 18.7308L15.8824 16.4307C15.9952 16.1176 16.3227 15.9359 16.6469 16.0126L19.0829 16.5718L16.3063 11.5068C15.3921 12.7425 14.0928 13.6744 12.5854 14.1279L15.0568 18.7308ZM16.4015 7.21823C16.4015 3.96651 13.7555 1.32117 10.5044 1.32117C7.25333 1.32117 4.60799 3.96651 4.60799 7.21823C4.60799 10.4699 7.25333 13.1153 10.505 13.1153C13.7568 13.1153 16.4015 10.4693 16.4015 7.21823ZM4.35271 16.0126C4.67821 15.9359 5.00436 16.1176 5.11724 16.43L5.94871 18.7466L8.47461 14.1417C6.92783 13.6882 5.5963 12.732 4.67033 11.4609L1.90489 16.5737L4.34271 16.0126Z" fill="white" />
                       <circle cx="10.5" cy="7.38892" r="2.75" stroke="white" strokeWidth="1.5" />
                     </g>
                     <defs>
@@ -79,8 +172,8 @@ const ProfilePage: React.FC = () => {
                     </defs>
                   </svg>
                 </div>
-                <div className="profile-stat-value">05</div>
-                <div className="profile-stat-label">Badges</div>
+                <div className="profile-stat-value">{String(inProgressCount).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('inProgress')}</div>
               </div>
             </IonCol>
           </IonRow>
@@ -93,8 +186,8 @@ const ProfilePage: React.FC = () => {
                     <path d="M5.51855 7.32626L6.68441 8.49479C7.03686 8.84725 7.61518 8.84725 7.96764 8.49479L10.941 5.5188" stroke="white" strokeWidth="2" strokeLinecap="round" />
                   </svg>
                 </div>
-                <div className="profile-stat-value">13</div>
-                <div className="profile-stat-label">Contents Completed</div>
+                <div className="profile-stat-value">{String(completedCount).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('completed')}</div>
               </div>
             </IonCol>
             <IonCol size="6">
@@ -111,8 +204,8 @@ const ProfilePage: React.FC = () => {
                     </defs>
                   </svg>
                 </div>
-                <div className="profile-stat-value">06</div>
-                <div className="profile-stat-label">Certifications Earned</div>
+                <div className="profile-stat-value">{String(certificatesEarned).padStart(2, '0')}</div>
+                <div className="profile-stat-label">{t('certificates')}</div>
               </div>
             </IonCol>
           </IonRow>
@@ -121,35 +214,34 @@ const ProfilePage: React.FC = () => {
         {/* Action Items */}
         <IonList className="profile-actions-list" lines="none">
           <IonItem className="profile-action-item" button detail={false} routerLink="/profile/personal-details">
-            <IonLabel className="profile-action-label">Personal Information</IonLabel>
+            <IonLabel className="profile-action-label">{t('personalInformation')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/my-learning">
-            <IonLabel className="profile-action-label">My Learning</IonLabel>
+          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/learning">
+            <IonLabel className="profile-action-label">{t('myLearning')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
           <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
-            <IonLabel className="profile-action-label">Downloaded Contents</IonLabel>
+            <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item profile-action-logout" button detail={false} onClick={logout}>
+          <IonItem className="profile-action-item profile-action-logout" button detail={false} onClick={handleLogout}>
             <svg slot="start" className="profile-logout-icon" viewBox="0 0 17 16" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M0.937881 7.58364L0.366072 7.12605L0 7.58364L0.366072 8.04123L0.937881 7.58364ZM7.52718 8.31579C7.93132 8.31579 8.25932 7.98779 8.25932 7.58364C8.25932 7.1795 7.93132 6.8515 7.52718 6.8515V8.31579ZM3.29465 3.46533L0.366072 7.12605L1.50969 8.04123L4.43827 4.38051L3.29465 3.46533ZM0.366072 8.04123L3.29465 11.702L4.43827 10.7868L1.50969 7.12605L0.366072 8.04123ZM0.937881 8.31579H7.52718V6.8515H0.937881V8.31579Z" fill="var(--ion-color-primary-tint)" />
               <path d="M6.79541 4.75143V4.20746C6.79541 3.02212 6.79541 2.42982 7.14245 2.02055C7.48948 1.61055 8.07372 1.51316 9.24222 1.31841L10.4664 1.11415C12.8407 0.718792 14.0275 0.521123 14.8044 1.17859C15.5812 1.83679 15.5811 3.04043 15.5811 5.44772V9.71903C15.5811 12.1263 15.5812 13.33 14.8044 13.9882C14.0275 14.6456 12.8407 14.448 10.4664 14.0526L9.24222 13.8483C8.07372 13.6536 7.48948 13.5562 7.14245 13.1462C6.79541 12.7369 6.79541 12.1446 6.79541 10.9593V10.5603" stroke="var(--ion-color-primary-tint)" strokeWidth="1.5" />
             </svg>
-            <IonLabel className="profile-action-label">Logout</IonLabel>
+            <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
           </IonItem>
         </IonList>
 
-        {/* Bottom spacing for navigation */}
         <div className="profile-bottom-spacer"></div>
       </IonContent>
 
       <BottomNavigation />
-    </IonPage >
+    </IonPage>
   );
 };
 

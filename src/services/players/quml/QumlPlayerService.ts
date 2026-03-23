@@ -32,8 +32,7 @@ export class QumlPlayerService {
   ): Promise<QumlPlayerConfig> {
     await this.loadScript();
 
-    const baseContext = await buildPlayerContext(contextProps);
-    const context = { ...baseContext, userData: { firstName: '', lastName: '' } };
+    const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
     return { context, config: {}, metadata };
   }

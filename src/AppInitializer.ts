@@ -1,6 +1,11 @@
 import { initializeApiClient } from './api/config';
 import { AppConsumerAuthService } from './services/AppConsumerAuthService';
+import { databaseService } from './services/db/DatabaseService';
+import { downloadManager } from './services/download_manager';
 import { getClient } from './lib/http-client';
+import { userService } from './services/UserService';
+import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
+import { SystemSettingService } from './services/SystemSettingService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -20,6 +25,12 @@ export class AppInitializer {
     }
 
     try {
+      // Initialize SQLite database first — all other services depend on it
+      await databaseService.initialize();
+
+      // Initialize download manager (depends on DB)
+      await downloadManager.init();
+
       // Initialize API client
       await initializeApiClient();
 
@@ -31,11 +42,31 @@ export class AppInitializer {
       const kongToken = await authService.getAuthenticatedToken();
       
       // Set Authorization header with device JWT from Kong
-      // Note: X-Authenticated-User-Token is set separately after user login
       const httpClient = getClient();
       httpClient.updateHeaders([
         { key: 'Authorization', value: `Bearer ${kongToken}`, action: 'add' },
       ]);
+
+      // Recover user session and set user token header if logged in
+      await userService.init();
+      if (userService.isLoggedIn()) {
+        httpClient.updateHeaders([
+          { key: 'X-Authenticated-User-Token', value: userService.getAccessToken()!, action: 'add' },
+        ]);
+      }
+
+      // Initialize Google Sign-In plugin (non-blocking — don't fail app init)
+      try {
+        const systemSettings = new SystemSettingService();
+        const response = await systemSettings.read<any>('googleClientId');
+        // CapacitorAdapter extracts `result` → data is `{ response: { value: "..." } }`
+        const clientId = response.data?.response?.value ?? response.data?.value;
+        if (clientId && typeof clientId === 'string') {
+          await socialLoginService.initGoogle(clientId);
+        }
+      } catch {
+        // Google Sign-In init failed — Google login will be unavailable
+      }
 
       this.initialized = true;
       this.notifyListeners();

@@ -1,0 +1,979 @@
+/* ── Page Background ── */
+.collection-page {
+  --background: #f4f4f4;
+}
+
+.collection-page ion-content {
+  --background: #f4f4f4;
+}
+
+/* ── Header ── */
+.collection-page-header {
+  --background: var(--ion-color-light);
+  padding: 0.5rem 1rem;
+  box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+}
+
+.collection-page-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.collection-page-header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.collection-page-icon-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Loading / Error ── */
+.collection-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  gap: 1rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   1. CollectionOverview — Title + Overview + Best Suited
+      Single white card block
+   ══════════════════════════════════════════════════════════════ */
+.cp-overview-wrapper {
+  background: white;
+  margin-bottom: 0.5rem;
+  border-radius: 0 0 0.75rem 0.75rem;
+}
+
+/* ── Title Section (inside overview wrapper) ── */
+.cp-title-section {
+  padding: 1.5rem 1rem 1rem;
+}
+
+.cp-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
+}
+
+.cp-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+/* ── Overview section (inside overview wrapper) ── */
+.cp-overview-section {
+  padding: 1rem 1rem;
+}
+
+/* ── Best Suited section (inside overview wrapper) ── */
+.cp-best-suited-section {
+  padding: 1rem 1rem 1.5rem;
+}
+
+/* ── Progress section (inside overview wrapper, enrolled trackable) ── */
+.cp-progress-section {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0;
+}
+
+.cp-progress-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.cp-progress-percentage {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+}
+
+.cp-progress-date {
+  font-size: 0.75rem;
+  color: var(--ion-color-primary, #8B5E3C);
+  font-weight: 400;
+}
+
+/* ── Shared section title ── */
+.cp-section-title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--ion-color-dark, #000000);
+  margin: 0 0 1rem 0;
+}
+
+/* ── Course Overview meta ── */
+.cp-overview-meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-dark, #000000);
+}
+
+.cp-overview-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cp-description {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Check List (Best Suited For) ── */
+.cp-check-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.cp-check-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+.cp-check-list li:last-child {
+  margin-bottom: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   2. CollectionAccordion — Course Curriculum
+      Title on gray bg, each unit is a separate white card
+   ══════════════════════════════════════════════════════════════ */
+.cp-curriculum-section {
+  padding: 1.5rem 1rem 0.5rem;
+}
+
+.cp-curriculum-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #000000);
+  margin: 0 0 1rem 0;
+}
+
+/* Each unit = separate white rounded card */
+.cp-curriculum-unit {
+  background: white;
+  border-radius: 0.75rem;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+
+/* Unit header: chevron left, title right */
+.cp-curriculum-unit-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cp-curriculum-chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.125rem;
+}
+
+.cp-curriculum-unit-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cp-curriculum-unit-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #111111);
+  line-height: 1.4;
+}
+
+.cp-curriculum-subtitle {
+  font-size: 0.8125rem;
+  color: var(--ion-color-medium, #757575);
+  font-weight: 400;
+  margin-top: 0.25rem;
+  line-height: 1.4;
+}
+
+/* Override default Ionic Accordion toggle icon styling */
+.cp-curriculum-unit .ion-accordion-toggle-icon {
+  color: var(--ion-color-primary) !important;
+  opacity: 1 !important;
+  margin-inline-end: 4px !important;
+  width: 20px;
+  height: 20px;
+}
+
+/* Expanded content area */
+.cp-curriculum-unit-content {
+  padding: 0 0.75rem 0.75rem;
+}
+
+.cp-curriculum-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  margin-bottom: 0.5rem;
+  background: white;
+  border-radius: 0.625rem;
+  box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.cp-curriculum-item:last-child {
+  margin-bottom: 0;
+}
+
+.cp-curriculum-item-left {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.cp-curriculum-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cp-curriculum-item-title {
+  font-size: 0.875rem;
+  color: var(--ion-color-dark, #222222);
+  line-height: 1.4;
+}
+
+.cp-curriculum-item-duration {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium, #757575);
+  flex-shrink: 0;
+}
+
+/* Unit header row: title + status/download icon */
+.cp-curriculum-unit-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Nested sub-units (multi-level accordion) */
+.cp-curriculum-nested-indented {
+  margin-left: 0.75rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid #e8e8e8;
+}
+
+.cp-curriculum-subunit {
+  margin-bottom: 0.5rem;
+}
+
+.cp-curriculum-subunit-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.cp-curriculum-subunit-name {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ion-color-medium, #757575);
+  line-height: 1.4;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   3. RelatedContent — Horizontally scrollable cards
+   ══════════════════════════════════════════════════════════════ */
+.cp-related-section {
+  padding: 1rem 0 1rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.cp-related-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #000000);
+  margin: 0;
+}
+
+.cp-related-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  color: var(--ion-color-primary);
+  padding-right: 1rem;
+}
+
+.cp-related-scroll {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  padding-right: 1rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cp-related-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cp-related-card-wrapper {
+  min-width: 14rem;
+  width: 14rem;
+  flex-shrink: 0;
+}
+
+/* Consistent card height inside related scroll */
+.cp-related-card-wrapper .collection-card {
+  height: 100%;
+}
+
+.cp-related-card-wrapper .resource-card {
+  height: 100%;
+  aspect-ratio: auto;
+  min-height: 16rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   4. CollectionFAQ — Title on gray bg, each accordion is a white card
+   ══════════════════════════════════════════════════════════════ */
+.cp-faq-section {
+  padding: 1.5rem 1rem 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.cp-faq-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #000000);
+  margin: 0 0 1rem 0;
+}
+
+.cp-faq-group {
+  margin-bottom: 0;
+}
+
+.cp-faq-accordion {
+  background: white;
+  margin-bottom: 0.75rem;
+  border: 1px solid var(--ion-color-step-150, #e0e0e0);
+  border-radius: 0.75rem;
+}
+
+.cp-faq-accordion:last-child {
+  margin-bottom: 0;
+}
+
+.cp-faq-header {
+  --background: transparent;
+  --color: var(--ion-color-dark, #000000);
+  --padding-start: 1rem;
+  --padding-end: 1rem;
+  --padding-top: 1rem;
+  --padding-bottom: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+.cp-faq-content {
+  padding: 0 1rem 1rem 1rem;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  line-height: 1.6;
+}
+
+/* ── Bottom CTA ── */
+.cp-bottom-cta {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--ion-color-primary);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 100;
+  padding-bottom: calc(0.2rem + env(safe-area-inset-bottom));
+  cursor: pointer;
+  color: white;
+}
+
+.cp-bottom-cta-text {
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+}
+
+/* ── Batch Modal ── */
+.cp-batch-modal {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}
+
+.cp-batch-modal::part(handle) {
+  background: transparent;
+  display: none;
+}
+
+.cp-batch-modal-inner {
+  background-color: var(--ion-color-light);
+}
+
+.cp-batch-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 1.5rem 0.5rem 1.5rem;
+}
+
+.cp-batch-modal-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0;
+}
+
+.cp-batch-modal-close {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-batch-modal-content {
+  padding: 0 1.5rem 1rem 1.5rem;
+}
+
+.cp-batch-modal-subtitle {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.5;
+}
+
+.cp-batch-select-container {
+  position: relative;
+  width: 100%;
+}
+
+.cp-batch-select {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  background: white;
+  border: 1px solid var(--ion-color-step-150, #D4D4D4);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--ion-color-dark, #222222);
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.cp-batch-select:focus {
+  outline: none;
+  border-color: var(--ion-color-primary);
+  box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.15);
+}
+
+.cp-batch-select-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.cp-batch-modal-cta-wrap {
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
+}
+
+.cp-batch-modal-cta {
+  background: var(--ion-color-primary);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+  transition: opacity 0.2s;
+}
+
+/* ── Accordion inline-style replacements ── */
+.cp-curriculum-unit-header-item {
+  --background: transparent;
+  --padding-start: 0.5rem;
+  --inner-padding-end: 1rem;
+}
+
+.cp-curriculum-subunit-label {
+  padding: 0.625rem 0.5rem 0.25rem;
+}
+
+/* ── Login Prompt Modal ── */
+.cp-login-prompt-modal {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}
+
+.cp-login-prompt-modal::part(handle) {
+  background: transparent;
+  display: none;
+}
+
+.cp-login-prompt-inner {
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.cp-login-prompt-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+  color: var(--ion-color-dark, #222222);
+}
+
+.cp-login-prompt-subtitle {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 1.5rem;
+}
+
+.cp-login-prompt-btn {
+  width: 100%;
+  padding: 0.875rem;
+  border-radius: 0.75rem;
+  border: none;
+  background: var(--ion-color-primary);
+  color: white;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ── Course Completion Dialog — centered rectangular popup ── */
+.cp-completion-dialog {
+  --width: 85%;
+  --max-width: 340px;
+  --height: auto;
+  --border-radius: 1rem;
+  --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.cp-completion-dialog::part(content) {
+  margin: auto;
+  max-width: min(var(--max-width, 340px), calc(100vw - 2rem));
+}
+
+.cp-completion-dialog::part(backdrop) {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.cp-completion-dialog-content {
+  padding: 2rem 1.5rem;
+  text-align: center;
+  background: white;
+  border-radius: 1rem;
+}
+
+.cp-completion-dialog-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--ion-color-success, #2dd36f);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.cp-completion-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-success, #2dd36f);
+  margin: 0 0 0.5rem;
+}
+
+.cp-completion-dialog-desc {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #92949c);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.cp-completion-dialog-note {
+  font-size: 0.8125rem;
+  color: var(--ion-color-dark, #222);
+  margin: 0;
+}
+
+.cp-completion-dialog-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--ion-color-dark, #222);
+}
+
+.cp-completion-dialog-btn {
+  margin-top: 0;
+  padding: 0.625rem 2rem;
+  border-radius: 0.5rem;
+  border: none;
+  background-color: var(--ion-color-primary);
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Enrolled Progress Row — inside overview card
+   ══════════════════════════════════════════════════════════════ */
+.cp-enrolled-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem 1rem;
+  border-top: 1px solid rgba(139, 94, 60, 0.1);
+}
+
+.cp-enrolled-progress-row .cp-progress-section {
+  flex: 1;
+  padding: 0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   View Downloaded Toggle — with gap highlight
+   ══════════════════════════════════════════════════════════════ */
+.cp-toggle-section {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 0.75rem 1.25rem;
+  background: white;
+  margin: 0.75rem 0 0 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
+}
+
+.cp-toggle-label {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium, #757575);
+  margin-right: 0.75rem;
+}
+
+.custom-toggle {
+  --track-background: var(--ion-color-step-100, #e0e0e0);
+  --track-background-checked: var(--ion-color-primary);
+  padding: 0;
+}
+
+/* ── Progress complete icon ── */
+.cp-progress-complete-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ── 3-dot kebab menu ── */
+.cp-menu-wrapper {
+  position: relative;
+}
+
+.cp-menu-trigger {
+  background: none;
+  border: none;
+  padding: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.cp-menu-trigger:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.cp-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+}
+
+.cp-menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 100;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 10rem;
+  overflow: hidden;
+}
+
+.cp-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  font-size: 0.875rem;
+  color: var(--ion-color-dark, #222);
+  cursor: pointer;
+}
+
+.cp-menu-item:active {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.cp-menu-item+.cp-menu-item {
+  border-top: 1px solid var(--ion-color-step-100, #e8e8e8);
+}
+
+.cp-menu-item-danger {
+  color: var(--ion-color-danger, #eb445a);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Certificate Preview Modal — in-app
+   ══════════════════════════════════════════════════════════════ */
+.cp-cert-preview-modal {
+  --width: 92%;
+  --max-width: 480px;
+  --height: auto;
+  --max-height: 90vh;
+  --border-radius: 1rem;
+  --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+}
+
+.cp-cert-preview-modal::part(content) {
+  margin: auto;
+  max-width: min(var(--max-width, 480px), calc(100vw - 2rem));
+}
+
+.cp-cert-preview-modal::part(backdrop) {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.cp-cert-preview-content {
+  background: white;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+.cp-cert-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid var(--ion-color-step-100, #e8e8e8);
+}
+
+.cp-cert-preview-title {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222);
+  margin: 0;
+}
+
+.cp-cert-preview-close {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.cp-cert-preview-close:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.cp-cert-preview-body {
+  padding: 1rem;
+  overflow: auto;
+  max-height: 70vh;
+}
+
+.cp-cert-preview-img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.5rem;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Info Cards — Certificate & Profile Data Sharing
+   ══════════════════════════════════════════════════════════════ */
+.info-cards-container {
+  padding: 0.75rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-card {
+  background: white;
+  border-radius: 0.75rem;
+  padding: 1rem 1rem 1.125rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.info-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.info-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222);
+  margin: 0 0 0.375rem;
+}
+
+.info-card-header .info-card-title {
+  margin-bottom: 0;
+}
+
+.info-card-desc {
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 0.75rem;
+}
+
+.info-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.info-card-date {
+  font-size: 0.75rem;
+  color: var(--ion-color-medium, #757575);
+}
+
+.info-card .btn-primary {
+  display: inline-block;
+  background: var(--ion-color-primary, #A14F34);
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.info-card .btn-primary:active {
+  opacity: 0.85;
+}
+
+.info-card .btn-link {
+  background: none;
+  border: none;
+  color: var(--ion-color-primary, #A14F34);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.25rem 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.info-card .btn-link:active {
+  opacity: 0.7;
+}
+
+.info-card .btn-link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ── Creator Warning Toast ── */
+.cp-creator-toast {
+  --border-radius: 14px;
+  --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  --max-width: 90%;
+  --start: 5%;
+  --end: 5%;
+  font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.01em;
+}
+
+.cp-creator-toast::part(icon) {
+  font-size: 1.3rem;
+}
+
+.cp-creator-toast::part(container) {
+  padding: 10px 14px;
+}
+
+/* ── Consent Modal ── */
+.cp-consent-modal {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}

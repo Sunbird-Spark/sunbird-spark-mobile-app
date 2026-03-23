@@ -1,64 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import _ from 'lodash';
 import {
   IonContent,
   IonHeader,
   IonPage,
-  IonToolbar, IonImg
 } from '@ionic/react';
+import PageLoader from '../components/common/PageLoader';
+import { useTranslation } from 'react-i18next';
+import { useIonRouter } from '@ionic/react';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
-import { ContentCardCarousel, ContentCardItem } from '../components/home/ContentCardCarousel';
-import { courses as allCourses, getInProgressCourses } from '../data/mockData';
 import { LanguageSelector } from '../components/common/LanguageSelector';
+import { useAuth } from '../contexts/AuthContext';
+import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
+import { useContentSearch } from '../hooks/useContentSearch';
+import type { TrackableCollection } from '../types/collectionTypes';
+import type { ContentSearchItem } from '../types/contentTypes';
+import CollectionCard from '../components/content/CollectionCard';
+import ResourceCard from '../components/content/ResourceCard';
+import './MyLearningPage.css';
 
-// ── Design tokens ──────────────────────────────────────────────────────────
-const BRICK = 'var(--ion-color-primary)';
-const ORANGE = 'var(--ion-color-primary-tint)';
-const FONT = "'Rubik', sans-serif";
+const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
-// ── SVG icons ──────────────────────────────────────────────────────────────
-const BellIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
-    <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
-  </svg>
-);
-
+// ── SVG icons ──
 const ChevronDownIcon = () => (
   <svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M1 1L6 6L11 1" stroke="var(--ion-color-dark, var(--color-222222, #222222))" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M1 1L6 6L11 1" stroke="var(--ion-color-dark, #222222)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-// ── Progress bar ───────────────────────────────────────────────────────────
-const ProgressBar: React.FC<{ progress: number; color?: string }> = ({ progress, color = BRICK }) => (
-  <div style={{ width: '100%', height: '5px', backgroundColor: 'rgb(244, 244, 244)', borderRadius: '10px', overflow: 'hidden' }}>
-    <div style={{ width: `${progress}%`, height: '100%', backgroundColor: color, borderRadius: '10px' }} />
-  </div>
-);
+// ── Donut chart ──
+interface DonutChartProps {
+  lessonsVisited: number;
+  totalLessons: number;
+  coursesCompleted: number;
+  totalCourses: number;
+}
 
-// ── Concentric donut chart ─────────────────────────────────────────────────
-const DonutChart: React.FC = () => {
+const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, coursesCompleted, totalCourses }) => {
   const size = 133;
   const cx = size / 2;
   const cy = size / 2;
 
+  // Outer ring — lessons visited
   const outerR = 52;
   const outerStroke = 10;
   const outerCirc = 2 * Math.PI * outerR;
-  const outerOffset = outerCirc * (1 - 0.72);
+  const outerRatio = _.clamp(totalLessons > 0 ? lessonsVisited / totalLessons : 0, 0, 1);
+  const outerOffset = outerCirc * (1 - outerRatio);
 
+  // Inner ring — courses completed
   const innerR = 32;
   const innerStroke = 10;
   const innerCirc = 2 * Math.PI * innerR;
-  const innerOffset = innerCirc * (1 - 0.55);
+  const innerRatio = _.clamp(totalCourses > 0 ? coursesCompleted / totalCourses : 0, 0, 1);
+  const innerOffset = innerCirc * (1 - innerRatio);
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
       {/* Outer track */}
       <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={outerStroke} />
-      {/* Outer fill */}
+      {/* Outer fill — lessons */}
       <circle
         cx={cx} cy={cy} r={outerR}
-        fill="none" stroke={BRICK} strokeWidth={outerStroke}
+        fill="none" stroke="var(--ion-color-primary)" strokeWidth={outerStroke}
         strokeDasharray={outerCirc}
         strokeDashoffset={outerOffset}
         strokeLinecap="round"
@@ -66,339 +70,323 @@ const DonutChart: React.FC = () => {
       />
       {/* Inner track */}
       <circle cx={cx} cy={cy} r={innerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={innerStroke} />
-      {/* Inner fill */}
+      {/* Inner fill — courses completed */}
       <circle
         cx={cx} cy={cy} r={innerR}
-        fill="none" stroke={ORANGE} strokeWidth={innerStroke}
+        fill="none" stroke="var(--ion-color-primary-tint)" strokeWidth={innerStroke}
         strokeDasharray={innerCirc}
         strokeDashoffset={innerOffset}
         strokeLinecap="round"
         transform={`rotate(-90 ${cx} ${cy})`}
       />
       {/* Center text */}
-      <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--ion-color-dark, var(--color-222222, #222222))" fontFamily={FONT} fontSize="20" fontWeight="700">
-        130
-      </text>
-      <text x={cx} y={cy + 14} textAnchor="middle" fill="rgb(100,100,100)" fontFamily={FONT} fontSize="10" fontWeight="400">
-        Hrs
+      <text x={cx} y={cx + 5} textAnchor="middle" fill="var(--ion-color-dark, #222222)"
+        style={{ fontFamily: 'var(--ion-font-family)' }} fontSize="20" fontWeight="700">
+        {lessonsVisited}
       </text>
     </svg>
   );
 };
 
-// ── Course card ────────────────────────────────────────────────────────────
-interface CourseCardProps {
-  thumbnail: string;
-  title: string;
-  progress: number;
-  badgeLabel: string;
-  badgeBg: string;
-  badgeBorder: string;
+// ── Course card ──
+interface CourseCardItemProps {
+  course: TrackableCollection;
 }
 
-const CourseCard: React.FC<CourseCardProps> = ({ thumbnail, title, progress, badgeLabel, badgeBg, badgeBorder }) => (
-  <div style={{
-    backgroundColor: 'var(--ion-color-light)',
-    borderRadius: '20px',
-    boxShadow: '2px 2px 20px rgba(0,0,0,0.09)',
-    padding: '14px',
-    display: 'flex',
-    gap: '12px',
-    alignItems: 'flex-start',
-  }}>
-    <div style={{ width: '119px', height: '119px', flexShrink: 0, borderRadius: '12px', overflow: 'hidden' }}>
-      <IonImg src={thumbnail} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-    </div>
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '119px', minWidth: 0 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'flex-start' }}>
-        <span style={{
-          alignSelf: 'flex-start',
-          backgroundColor: badgeBg,
-          border: `1px solid ${badgeBorder}`,
-          borderRadius: '36px',
-          padding: '3px 10px',
-          fontFamily: FONT,
-          fontSize: '12px',
-          fontWeight: 400,
-          color: 'var(--ion-color-dark, var(--color-000000, #000000))',
-          whiteSpace: 'nowrap',
-        }}>
-          {badgeLabel}
-        </span>
-        <p style={{
-          fontFamily: FONT,
-          fontSize: '14px',
-          fontWeight: 500,
-          color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-          margin: 0,
-          lineHeight: 1.3,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
-        } as React.CSSProperties}>
-          {title}
-        </p>
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' }}>
-        <div style={{ flex: 1 }}>
-          <ProgressBar progress={progress} />
-        </div>
-        <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>
-          {progress}%
-        </span>
-      </div>
-    </div>
-  </div>
-);
+const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
+  const { t } = useTranslation();
+  const router = useIonRouter();
 
-// ── Types ──────────────────────────────────────────────────────────────────
-type Tab = 'Active Courses' | 'Completed' | 'Upcoming' | 'Paused';
+  const collectionId = course.collectionId || course.courseId;
+  const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
+  const thumbnail = _.get(course, 'content.posterImage') || _.get(course, 'content.appIcon', '');
+  const progress = _.clamp(Math.round(course.completionPercentage ?? 0), 0, 100);
 
-const upcomingClasses = [
-  {
-    id: 1,
-    time: '09:00 AM',
-    title: 'Digital Literacy Fundamentals',
-    subtitle: 'Module 3: Internet Safety',
-    bg: 'rgb(245, 241, 243)',
-  },
-  {
-    id: 2,
-    time: '11:30 AM',
-    title: 'Sustainable Development Goals',
-    subtitle: 'Module 2: People-Focused Goals',
-    bg: 'rgb(240, 246, 242)',
-  },
-];
-
-// ── Page ───────────────────────────────────────────────────────────────────
-const MyLearningPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<Tab>('Active Courses');
-
-  const inProgressCourses = getInProgressCourses();
-  const completedCourses = allCourses.filter(c => c.enrolled && c.progress === 100);
-  const activeCoursesFull = [...inProgressCourses, ...inProgressCourses].slice(0, 4);
-
-  const recommendedItems: ContentCardItem[] = allCourses.slice(0, 4).map(c => ({
-    id: c.id,
-    title: c.title,
-    thumbnail: c.thumbnail,
-    tag: 'Course',
-    rating: c.rating,
-    lessons: c.lessons,
-  }));
-
-  const tabs: Tab[] = ['Active Courses', 'Completed', 'Upcoming', 'Paused'];
+  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
 
   return (
-    <IonPage>
-      {/* ── Header ── */}
-      <IonHeader className="ion-no-border">
-        <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--border-width': '0', '--padding-start': '0', '--padding-end': '0' } as React.CSSProperties}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
-            <h1 style={{ fontFamily: FONT, fontSize: '20px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
-              My Learning
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  padding: '4px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  position: 'relative',
-                }}
-                aria-label="Notifications"
-              >
-                <BellIcon />
-              </button>
+    <div
+      className="my-learning__card"
+      role="button"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNavigate();
+        }
+      }}>
+      <div className="my-learning__card-thumbnail">
+        {thumbnail
+          ? <img src={thumbnail} alt={title} />
+          : <div className="my-learning__card-thumbnail-placeholder" />
+        }
+      </div>
+
+      <div className="my-learning__card-content">
+        <div className="my-learning__card-top">
+          <p className="my-learning__card-title">{title}</p>
+        </div>
+        <div className="my-learning__card-bottom">
+          <p className="my-learning__card-progress-text">
+            {t('completedPercent', { percent: progress })}
+          </p>
+          <div className="my-learning__card-progress-row">
+            <div className="my-learning__progress-bar-track">
+              <div className="my-learning__progress-bar-fill" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ── Recommended section ──
+const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolledCourseIds }) => {
+  const { t } = useTranslation();
+  const router = useIonRouter();
+  const { data, isLoading } = useContentSearch({
+    request: {
+      filters: { status: ['Live'], objectType: ['Content'] },
+      sort_by: { lastUpdatedOn: 'desc' },
+      limit: 10,
+    },
+  });
+
+  const recommended = useMemo(() => {
+    const content: ContentSearchItem[] = _.get(data, 'data.content', []);
+    return _.take(
+      _.reject(content, item => _.includes(enrolledCourseIds, item.identifier)),
+      3
+    );
+  }, [data, enrolledCourseIds]);
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
+
+  if (_.isEmpty(recommended)) return null;
+
+  return (
+    <section className="content-carousel-section">
+      <div className="content-carousel-header">
+        <h2 className="content-carousel-title">{t('recommendedContent')}</h2>
+        <button
+          className="content-carousel-arrow"
+          onClick={() => router.push('/explore', 'forward', 'push')}
+          aria-label={t('viewAll')}
+        >
+          <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8.5 0L7.09 1.41L9.67 4H0V6H9.67L7.09 8.59L8.5 10L13 5L8.5 0Z" transform="translate(0, -0.5)" />
+          </svg>
+        </button>
+      </div>
+      <div className="content-carousel-scroll">
+        {recommended.map((item) =>
+          item.mimeType === COLLECTION_MIME_TYPE
+            ? <CollectionCard key={item.identifier} item={item} />
+            : <ResourceCard key={item.identifier} item={item} />
+        )}
+      </div>
+    </section>
+  );
+};
+
+// ── Types ──
+type Tab = 'activeCourses' | 'completed' | 'upcoming';
+
+// ── Page ──
+const MyLearningPage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
+  const { t } = useTranslation();
+  const { isAuthenticated, userId } = useAuth();
+  const router = useIonRouter();
+
+  const {
+    data: enrollmentData,
+    isLoading,
+    error,
+    refetch,
+  } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+
+  const enrolledCourses: TrackableCollection[] = _.get(enrollmentData, 'data.courses', []);
+  const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
+
+  // Tab filtering
+  const now = new Date();
+  const activeCourses = _.filter(enrolledCourses, c => {
+    if ((c.completionPercentage ?? 0) >= 100) return false;
+    const startDate = _.get(c, 'batch.startDate');
+    return !startDate || new Date(startDate) <= now;
+  });
+  const completedCourses = _.filter(enrolledCourses, c => c.completionPercentage === 100);
+  const upcomingCourses = _.filter(enrolledCourses, c => {
+    if ((c.completionPercentage ?? 0) > 0) return false;
+    const startDate = _.get(c, 'batch.startDate');
+    return startDate && new Date(startDate) > now;
+  });
+
+  // Progress metrics
+  const lessonsVisited = _.sumBy(enrolledCourses, c => c.progress || 0);
+  const totalLessons = _.sumBy(enrolledCourses, c => c.leafNodesCount || 0);
+  const coursesCompleted = _.filter(enrolledCourses, c => c.completionPercentage === 100).length;
+  const totalCourses = _.size(enrolledCourses);
+
+  // Tab content
+  const getTabCourses = (): TrackableCollection[] => {
+    switch (activeTab) {
+      case 'activeCourses': return activeCourses;
+      case 'completed': return completedCourses;
+      case 'upcoming': return upcomingCourses;
+      default: return [];
+    }
+  };
+
+  const getEmptyMessage = (): string => {
+    switch (activeTab) {
+      case 'activeCourses': return t('noActiveCourses');
+      case 'completed': return t('noCompletedCourses');
+      case 'upcoming': return t('noUpcomingCourses');
+      default: return '';
+    }
+  };
+
+  const tabs: Tab[] = ['activeCourses', 'completed', 'upcoming'];
+  const tabCourses = getTabCourses();
+
+  // Unauthenticated guard
+  if (!isAuthenticated) {
+    return (
+      <IonPage>
+        <IonHeader className="ion-no-border">
+          <div className="my-learning__header">
+            <span className="my-learning__header-title">{t('myLearning')}</span>
+            <div className="my-learning__header-actions">
               <LanguageSelector />
             </div>
           </div>
-        </IonToolbar>
-      </IonHeader>
+        </IonHeader>
+        <IonContent fullscreen>
+          <div className="my-learning__sign-in">
+            <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
+            <button
+              className="my-learning__sign-in-button"
+              onClick={() => router.push('/sign-in', 'forward', 'push')}
+            >
+              {t('signIn')}
+            </button>
+          </div>
+        </IonContent>
+        <BottomNavigation />
+      </IonPage>
+    );
+  }
 
-      <IonContent fullscreen>
-        {/* ── Courses heading ── */}
-        <div style={{ padding: '8px 16px' }}>
-          <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ fontFamily: FONT, fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))' }}>
-              Courses
-            </span>
-            <ChevronDownIcon />
-          </button>
+  return (
+    <IonPage>
+      <IonHeader className="ion-no-border">
+        <div className="my-learning__header">
+          <span className="my-learning__header-title">{t('myLearning')}</span>
+          <div className="my-learning__header-actions">
+            <button className="my-learning__icon-btn" aria-label={t('notifications')} disabled>
+              <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
+                <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
+              </svg>
+            </button>
+            <LanguageSelector />
+          </div>
         </div>
 
-        {/* ── Tab bar ── */}
-        <div style={{
-          display: 'flex',
-          borderBottom: '1px solid rgb(230, 230, 230)',
-          overflowX: 'auto',
-          scrollbarWidth: 'none',
-          marginBottom: '16px',
-        }}>
+        {/* Courses heading */}
+        <div className="my-learning__heading-wrapper">
+          <div className="my-learning__heading-btn" role="heading" aria-level={2}>
+            <span className="my-learning__heading-text">{t('courses')}</span>
+            <ChevronDownIcon />
+          </div>
+        </div>
+
+        {/* Tab bar */}
+        <div className="my-learning__tab-bar">
           {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              style={{
-                flexShrink: 0,
-                padding: '10px 16px',
-                border: 'none',
-                borderBottom: activeTab === tab ? `2px solid ${BRICK}` : '2px solid transparent',
-                marginBottom: '-1px',
-                backgroundColor: 'transparent',
-                color: activeTab === tab ? BRICK : 'rgb(130, 130, 130)',
-                fontFamily: FONT,
-                fontSize: '14px',
-                fontWeight: activeTab === tab ? 600 : 400,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
+              className={`my-learning__tab ${activeTab === tab ? 'my-learning__tab--active' : ''}`}
             >
-              {tab}
+              {t(tab)}
             </button>
           ))}
         </div>
+      </IonHeader>
 
-        {/* ── Active Courses tab ── */}
-        {activeTab === 'Active Courses' && (
+      <IonContent fullscreen>
+        {isLoading ? (
+          <PageLoader message={t('loading')} />
+        ) : error ? (
+          <PageLoader error={error.message} onRetry={() => refetch()} />
+        ) : (
           <>
-            {/* Upcoming Classes */}
-            <div style={{ padding: '0 16px 12px' }}>
-              <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 12px 0' }}>
-                Upcoming Classes
-              </h3>
-              <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', scrollbarWidth: 'none', paddingBottom: '4px' }}>
-                {upcomingClasses.map(cls => (
-                  <div
-                    key={cls.id}
-                    style={{
-                      flexShrink: 0,
-                      width: '220px',
-                      backgroundColor: cls.bg,
-                      borderRadius: '16px',
-                      padding: '14px',
-                      display: 'flex',
-                      gap: '10px',
-                      alignItems: 'flex-start',
-                    }}
-                  >
-                    <span style={{ fontFamily: FONT, fontSize: '12px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0, paddingTop: '1px' }}>
-                      {cls.time}
-                    </span>
-                    <div style={{ width: '1px', alignSelf: 'stretch', backgroundColor: 'rgba(0,0,0,0.15)', flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 500, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 4px 0', lineHeight: 1.3 }}>
-                        {cls.title}
-                      </p>
-                      <p style={{ fontFamily: FONT, fontSize: '11px', fontWeight: 400, color: 'rgb(100,100,100)', margin: 0, lineHeight: 1.3 }}>
-                        {cls.subtitle}
-                      </p>
+
+            {/* Tab content */}
+            {_.isEmpty(tabCourses) ? (
+              <p className="my-learning__empty">{getEmptyMessage()}</p>
+            ) : (
+              <div className="my-learning__course-list">
+                {tabCourses.map((course) => (
+                  <CourseCardItem
+                    key={course.collectionId || course.courseId || course.batchId}
+                    course={course}
+                  />
+                ))}
+              </div>
+            )}
+
+            {/* View more link */}
+            {activeTab === 'activeCourses' && !_.isEmpty(tabCourses) && (
+              <div className="my-learning__view-more">
+                <button
+                  className="my-learning__view-more-link"
+                  onClick={() => router.push('/explore', 'forward', 'push')}
+                >
+                  {t('viewMoreCourses')}
+                </button>
+              </div>
+            )}
+
+            {/* Learning Progress */}
+            <div className="my-learning__progress-section">
+              <div className="my-learning__progress-card">
+                <h3 className="my-learning__progress-title">{t('learningProgress')}</h3>
+                <div className="my-learning__progress-body">
+                  <DonutChart
+                    lessonsVisited={lessonsVisited}
+                    totalLessons={totalLessons}
+                    coursesCompleted={coursesCompleted}
+                    totalCourses={totalCourses}
+                  />
+                  <div className="my-learning__progress-metrics">
+                    <div className="my-learning__metric-row">
+                      <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary)' }} />
+                      <span className="my-learning__metric-value">{lessonsVisited}/{totalLessons}</span>
+                      <span className="my-learning__metric-label">{t('lessonsVisited')}</span>
+                    </div>
+                    <div className="my-learning__metric-row">
+                      <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary-tint)' }} />
+                      <span className="my-learning__metric-value">{coursesCompleted}/{totalCourses}</span>
+                      <span className="my-learning__metric-label">{t('coursesCompleted')}</span>
                     </div>
                   </div>
-                ))}
+                </div>
               </div>
             </div>
 
-            {/* Active Course Cards */}
-            <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {activeCoursesFull.map((course, idx) => (
-                <CourseCard
-                  key={`${course.id}-${idx}`}
-                  thumbnail={course.thumbnail}
-                  title={course.title}
-                  progress={course.progress}
-                  badgeLabel="Course"
-                  badgeBg="rgb(255, 241, 199)"
-                  badgeBorder={ORANGE}
-                />
-              ))}
-            </div>
-
-            {/* View More */}
-            <div style={{ padding: '16px' }}>
-              <button style={{
-                width: '100%',
-                padding: '12px',
-                borderRadius: '10px',
-                border: `1px solid ${BRICK}`,
-                backgroundColor: 'transparent',
-                color: BRICK,
-                fontFamily: FONT,
-                fontSize: '14px',
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}>
-                View More Courses
-              </button>
-            </div>
+            {/* Recommended Content */}
+            <RecommendedSection enrolledCourseIds={enrolledCourseIds} />
           </>
         )}
 
-        {/* ── Completed tab ── */}
-        {activeTab === 'Completed' && (
-          <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {completedCourses.length === 0 ? (
-              <p style={{ fontFamily: FONT, fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
-                No completed courses yet.
-              </p>
-            ) : (
-              completedCourses.map(course => (
-                <CourseCard
-                  key={course.id}
-                  thumbnail={course.thumbnail}
-                  title={course.title}
-                  progress={100}
-                  badgeLabel="Completed"
-                  badgeBg="rgb(220, 242, 226)"
-                  badgeBorder="rgb(49, 134, 86)"
-                />
-              ))
-            )}
-          </div>
-        )}
-
-        {/* ── Upcoming / Paused tabs ── */}
-        {(activeTab === 'Upcoming' || activeTab === 'Paused') && (
-          <p style={{ fontFamily: FONT, fontSize: '14px', color: 'rgb(100,100,100)', textAlign: 'center', padding: '32px 0' }}>
-            No {activeTab.toLowerCase()} courses yet.
-          </p>
-        )}
-
-        {/* ── Total Hrs Spent ── */}
-        <div style={{ padding: '16px' }}>
-          <div style={{ backgroundColor: 'rgb(255, 241, 199)', borderRadius: '20px', padding: '16px' }}>
-            <h3 style={{ fontFamily: FONT, fontSize: '16px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: '0 0 16px 0' }}>
-              Total Hrs Spent
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <DonutChart />
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {[
-                  { label: 'Courses', value: '72 Hrs', color: BRICK },
-                  { label: 'Assessments', value: '38 Hrs', color: ORANGE },
-                  { label: 'Practice', value: '20 Hrs', color: 'rgb(102, 166, 130)' },
-                ].map(stat => (
-                  <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <div style={{ width: '32px', height: '8px', borderRadius: '4px', backgroundColor: stat.color, flexShrink: 0 }} />
-                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 400, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flex: 1 }}>{stat.label}</span>
-                    <span style={{ fontFamily: FONT, fontSize: '13px', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', flexShrink: 0 }}>{stat.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* ── Recommended Content ── */}
-        <ContentCardCarousel title="Recommended Content" items={recommendedItems} />
-
-        {/* Bottom spacing */}
-        <div style={{ height: '100px' }} />
+        <div className="my-learning__bottom-spacer" />
       </IonContent>
 
       <BottomNavigation />

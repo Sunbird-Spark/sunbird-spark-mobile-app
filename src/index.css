@@ -1,4 +1,5 @@
 /* Rubik Font - Local Files */
+/* en / fr / pt */
 @font-face {
     font-family: 'Rubik';
     font-style: normal;
@@ -63,12 +64,51 @@
     src: url('./assets/fonts/rubik-latin-700-normal.woff2') format('woff2');
 }
 
+/* Noto Sans Devanagari - Local Files */
+/* hi (Hindi) */
+@font-face {
+    font-family: 'Noto Sans Devanagari';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/noto-sans-devanagari-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Noto Sans Devanagari';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/noto-sans-devanagari-700-normal.woff2') format('woff2');
+}
+
+/* Noto Sans Arabic - Local Files */
+/* ar (Arabic) */
+@font-face {
+    font-family: 'Noto Sans Arabic';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/noto-sans-arabic-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Noto Sans Arabic';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/noto-sans-arabic-700-normal.woff2') format('woff2');
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
     :root {
+        /* Default application font family */
+        --ion-font-family: 'Rubik', sans-serif;
+
         /* Brand Palette CSS Variables for Tailwind */
         --primary: 15 52% 44%;
         /* BRICK var(--ion-color-primary) */
@@ -135,7 +175,7 @@
     }
 
     body {
-        font-family: 'Rubik', sans-serif;
+        font-family: var(--ion-font-family);
         background-color: var(--ion-color-light);
         color: var(--ion-color-tertiary);
     }
@@ -383,7 +423,8 @@ ion-tab-button:hover {
 /* --- Hero Section --- */
 .hero-section {
     position: relative;
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.5rem 1rem 2rem;
+    margin-left: 0.9375rem;
     overflow: hidden;
     background: var(--ion-color-light);
 }
@@ -437,7 +478,6 @@ ion-tab-button:hover {
 }
 
 .hero-title {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.875rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -447,7 +487,6 @@ ion-tab-button:hover {
 }
 
 .hero-subtitle {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -462,7 +501,6 @@ ion-tab-button:hover {
     gap: 0.625rem;
     background: var(--ion-color-primary);
     color: var(--ion-color-light);
-    font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
     border: none;
@@ -488,7 +526,7 @@ ion-tab-button:hover {
     background: var(--ion-color-light);
     border-radius: 1.25rem;
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
-    margin: -1rem 0.9375rem 1.5rem;
+    margin: -1rem 1rem 1.5rem;
     padding: 1.25rem 0.75rem;
     position: relative;
     z-index: 3;
@@ -510,7 +548,6 @@ ion-tab-button:hover {
 }
 
 .stats-value {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 600;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -518,7 +555,6 @@ ion-tab-button:hover {
 }
 
 .stats-label {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -541,12 +577,12 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.25rem;
+    padding: 0 1rem 0 0;
+    margin-left: 0.9375rem !important;
     margin-bottom: 1rem;
 }
 
 .content-carousel-title {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -566,7 +602,8 @@ ion-tab-button:hover {
     display: flex;
     gap: 1rem;
     overflow-x: auto;
-    padding: 0 1.25rem 0.5rem;
+    padding: 0 1rem 0.5rem 0;
+    margin-left: 0.9375rem !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -579,6 +616,7 @@ ion-tab-button:hover {
 .content-card {
     flex: 0 0 auto;
     width: 14rem;
+    margin: 0;
     background: var(--ion-color-light);
     border-radius: 0.875rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
@@ -611,7 +649,6 @@ ion-tab-button:hover {
 
 .content-card-tag {
     display: inline-block;
-    font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -622,7 +659,6 @@ ion-tab-button:hover {
 }
 
 .content-card-title {
-    font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -645,7 +681,6 @@ ion-tab-button:hover {
 }
 
 .content-card-rating {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -657,7 +692,6 @@ ion-tab-button:hover {
 }
 
 .content-card-lessons {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -672,12 +706,12 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 1.25rem;
+    padding: 0 1rem 0 0;
+    margin-left: 0.9375rem !important;
     margin-bottom: 1rem;
 }
 
 .categories-title {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -697,7 +731,8 @@ ion-tab-button:hover {
     display: flex;
     gap: 0.75rem;
     overflow-x: auto;
-    padding: 0 1.25rem 0.5rem;
+    padding: 0 1rem 0.5rem 0;
+    margin-left: 0.9375rem !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -709,6 +744,7 @@ ion-tab-button:hover {
 
 .category-tile {
     flex: 0 0 auto;
+    margin: 0;
     width: 9.625rem;
     height: 8.6875rem;
     border-radius: 0.625rem;
@@ -747,7 +783,6 @@ ion-tab-button:hover {
 }
 
 .category-tile-name {
-    font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-light);
@@ -781,7 +816,6 @@ ion-tab-button:hover {
 }
 
 .category-browse-all-text {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.6875rem;
     font-weight: 500;
     color: var(--ion-color-primary);
@@ -800,7 +834,7 @@ ion-tab-button:hover {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 0 1.25rem;
+    padding: 0 1rem;
     margin-bottom: 0.75rem;
 }
 
@@ -811,7 +845,6 @@ ion-tab-button:hover {
 }
 
 .resource-center-label {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -820,19 +853,19 @@ ion-tab-button:hover {
 }
 
 .resource-center-heading {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: center;
-    margin: 0 1.25rem 1.25rem;
+    margin: 0 1rem 1.25rem;
 }
 
 .resource-center-scroll {
     display: flex;
     gap: 1rem;
     overflow-x: auto;
-    padding: 0 1.25rem 0.5rem;
+    padding: 0 1rem 0.5rem 0;
+    margin-left: 0.9375rem !important;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
@@ -886,7 +919,6 @@ ion-tab-button:hover {
 
 .resource-card-tag {
     display: inline-block;
-    font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -897,7 +929,6 @@ ion-tab-button:hover {
 }
 
 .resource-card-title {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.25rem;
     font-weight: 500;
     color: var(--ion-color-light);
@@ -913,7 +944,6 @@ ion-tab-button:hover {
 }
 
 .resource-card-action-label {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 500;
     color: var(--ion-color-light);
@@ -921,11 +951,10 @@ ion-tab-button:hover {
 
 /* --- FAQ Section --- */
 .faq-section {
-    padding: 1.5rem 1.25rem 2rem;
+    padding: 1.5rem 1rem 2rem;
 }
 
 .faq-heading {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -964,7 +993,6 @@ ion-tab-button:hover {
 }
 
 .faq-question-text {
-    font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
@@ -987,7 +1015,6 @@ ion-tab-button:hover {
 }
 
 .faq-answer p {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -1006,7 +1033,6 @@ ion-tab-button:hover {
 }
 
 .profile-header .profile-toolbar .profile-page-title {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -1017,6 +1043,13 @@ ion-tab-button:hover {
 /* Content background */
 .profile-content {
     --background: rgb(244, 244, 244);
+}
+
+/* --- Language Selector Popover --- */
+.language-selector-popover {
+    --width: 7.5rem;
+    --border-radius: 0.75rem;
+    --box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
 }
 
 /* --- Profile Info Card --- */
@@ -1052,7 +1085,6 @@ ion-tab-button:hover {
 }
 
 .profile-update-photo {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 500;
     color: rgb(161, 79, 52);
@@ -1062,7 +1094,6 @@ ion-tab-button:hover {
 }
 
 .profile-name {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -1071,7 +1102,6 @@ ion-tab-button:hover {
 }
 
 .profile-email {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -1086,7 +1116,6 @@ ion-tab-button:hover {
 }
 
 .profile-role {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.75rem;
     font-weight: 400;
     color: var(--ion-color-medium, var(--color-757575, #757575));
@@ -1134,7 +1163,6 @@ ion-tab-button:hover {
 }
 
 .profile-stat-value {
-    font-family: 'Rubik', sans-serif;
     font-size: 1.5rem;
     font-weight: 600;
     color: var(--ion-color-light);
@@ -1142,18 +1170,17 @@ ion-tab-button:hover {
 }
 
 .profile-stat-label {
-    font-family: 'Rubik', sans-serif;
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-light);
     margin-top: 0.25rem;
 }
 
-/* Icon badge in top-right of stat card */
+/* Icon badge in top-right of stat card (inset-inline-end flips to left in RTL) */
 .profile-stat-icon-badge {
     position: absolute;
     top: 0.75rem;
-    right: 0.75rem;
+    inset-inline-end: 0.75rem;
     width: 2rem;
     height: 2.0625rem;
     border-radius: 0.5rem;
@@ -1208,7 +1235,6 @@ ion-tab-button:hover {
 }
 
 .profile-action-label {
-    font-family: 'Rubik', sans-serif;
     font-size: 1rem;
     font-weight: 400;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -1235,8 +1261,50 @@ ion-tab-button:hover {
     height: 6.25rem;
 }
 
+/* --- RTL overrides for profile --- */
+[dir="rtl"] .profile-action-chevron {
+    transform: scaleX(-1);
+}
+
+[dir="rtl"] .profile-logout-icon {
+    transform: scaleX(-1);
+}
+
 /* --- Override header white style for public page --- */
 ion-header ion-toolbar[style*="background: var(--ion-color-light)"],
 ion-header ion-toolbar[style*="background: white"] {
     --color: var(--ion-color-dark, var(--color-222222, #222222));
+}
+
+/* --- Resources Masonry Grid --- */
+.resources-masonry-section {
+    padding: 0.5rem 0 1.5rem;
+}
+
+.resources-masonry-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+}
+
+.resources-masonry-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
+    margin: 0;
+}
+
+.resources-masonry-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    padding: 0 1rem;
+}
+
+.resources-masonry-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 }

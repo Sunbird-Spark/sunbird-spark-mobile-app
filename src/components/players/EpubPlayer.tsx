@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { EpubPlayerService } from '../../services/players/epub';
 import type { EpubPlayerEvent, EpubPlayerContextProps, EpubPlayerMetadata } from '../../services/players/epub';
 
@@ -24,13 +24,12 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const serviceRef = useRef<EpubPlayerService>(new EpubPlayerService());
 
-  const handlePlayerEvent = useCallback((event: EpubPlayerEvent) => {
-    onPlayerEvent?.(event);
-  }, [onPlayerEvent]);
-
-  const handleTelemetryEvent = useCallback((event: any) => {
-    onTelemetryEvent?.(event);
-  }, [onTelemetryEvent]);
+  // Store callbacks in refs so the player init useEffect doesn't re-run
+  // when callback identities change (e.g. after content state updates).
+  const onPlayerEventRef = useRef(onPlayerEvent);
+  useEffect(() => { onPlayerEventRef.current = onPlayerEvent; }, [onPlayerEvent]);
+  const onTelemetryEventRef = useRef(onTelemetryEvent);
+  useEffect(() => { onTelemetryEventRef.current = onTelemetryEvent; }, [onTelemetryEvent]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -44,6 +43,14 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
       ...(cdata !== undefined && { cdata }),
       ...(contextRollup !== undefined && { contextRollup }),
       ...(objectRollup !== undefined && { objectRollup }),
+    };
+
+    const handlePlayerEvent = (event: EpubPlayerEvent) => {
+      onPlayerEventRef.current?.(event);
+    };
+
+    const handleTelemetryEvent = (event: any) => {
+      onTelemetryEventRef.current?.(event);
     };
 
     const initPlayer = async () => {
@@ -72,7 +79,7 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata, handlePlayerEvent, handleTelemetryEvent]);
+  }, [metadata.identifier]);
 
   return (
     <div

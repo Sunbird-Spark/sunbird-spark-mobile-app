@@ -1,142 +1,65 @@
 import React from 'react';
-import { getInProgressCourses } from '../../../data/mockData';
+import _ from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { useIonRouter } from '@ionic/react';
+import type { TrackableCollection } from '../../../types/collectionTypes';
+import './InProgressContents.css';
 
-interface ContentBadgeProps {
-  label: string;
+interface InProgressContentsProps {
+  courses: TrackableCollection[];
 }
 
-const ContentBadge: React.FC<ContentBadgeProps> = ({ label }) => (
-  <span style={{
-    display: 'inline-block',
-    alignSelf: 'flex-start',
-    backgroundColor: 'rgb(255, 241, 199)',
-    border: '1px solid var(--ion-color-primary-tint)',
-    borderRadius: '36px',
-    padding: '4px 10px',
-    fontFamily: "'Rubik', sans-serif",
-    fontSize: '14px',
-    fontWeight: 400,
-    color: 'var(--ion-color-dark, var(--color-000000, #000000))',
-    whiteSpace: 'nowrap',
-  }}>
-    {label}
-  </span>
-);
+export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses }) => {
+  const { t } = useTranslation();
+  const router = useIonRouter();
 
-interface ProgressBarProps {
-  progress: number; // 0–100
-  totalWidth?: number;
-}
+  const inProgressCourses = _.filter(courses, c => (c.completionPercentage ?? 0) < 100);
+  const completedCourses = _.filter(courses, c => (c.completionPercentage ?? 0) >= 100);
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => (
-  <div style={{ position: 'relative', width: '151px', flexShrink: 0 }}>
-    {/* Track */}
-    <div style={{
-      width: '100%',
-      height: '6px',
-      backgroundColor: 'rgb(244, 244, 244)',
-      borderRadius: '10px',
-      overflow: 'hidden',
-    }}>
-      {/* Fill */}
-      <div style={{
-        width: `${progress}%`,
-        height: '100%',
-        backgroundColor: 'var(--ion-color-primary)',
-        borderRadius: '10px',
-      }} />
-    </div>
-  </div>
-);
+  const displayCourses = _.isEmpty(inProgressCourses) ? completedCourses : inProgressCourses;
+  const sectionTitle = _.isEmpty(inProgressCourses) ? t('completedCourses') : t('inProgressCourses');
 
-export const InProgressContents: React.FC = () => {
-  const inProgressCourses = getInProgressCourses();
-
-  // Extend the list for display – show each course twice to match the design's 4-item list
-  const displayCourses = [...inProgressCourses, ...inProgressCourses].slice(0, 4);
+  if (_.isEmpty(displayCourses)) return null;
 
   return (
-    <section style={{ padding: '0 16px 16px' }}>
-      <h2 style={{
-        fontFamily: "'Rubik', sans-serif",
-        fontSize: '18px',
-        fontWeight: 500,
-        color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-        margin: '0 0 12px 0',
-      }}>
-        In Progress Contents
-      </h2>
+    <section className="in-progress">
+      <h2 className="in-progress__heading">{sectionTitle}</h2>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-        {displayCourses.map((course, idx) => {
-          const isTextbook = idx % 2 === 1;
-          const badgeLabel = isTextbook ? 'Textbook' : 'Course';
+      <div className="in-progress__list">
+        {displayCourses.map((course) => {
+          const collectionId = course.collectionId || course.courseId;
+          const badge = _.get(course, 'content.primaryCategory', t('course'));
+          const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
+          const thumbnail = _.get(course, 'content.posterImage')
+            || _.get(course, 'content.appIcon', '');
+          const progress = course.completionPercentage ?? 0;
 
           return (
             <div
-              key={`${course.id}-${idx}`}
-              style={{
-                backgroundColor: 'var(--ion-color-light)',
-                borderRadius: '16px',
-                boxShadow: '2px 2px 20px rgba(0, 0, 0, 0.09)',
-                padding: '14px',
-                display: 'flex',
-                flexDirection: 'row',
-                gap: '12px',
-                alignItems: 'flex-start',
-              }}
+              key={collectionId || course.batchId}
+              className="in-progress__card"
+              onClick={() => collectionId && router.push(`/collection/${collectionId}`, 'forward', 'push')}
             >
-              {/* Left: text content */}
-              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <ContentBadge label={badgeLabel} />
-
-                <p style={{
-                  fontFamily: "'Rubik', sans-serif",
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-                  margin: 0,
-                  lineHeight: 1.3,
-                }}>
-                  {course.title}
-                </p>
-
-                {/* Progress row */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                }}>
-                  <ProgressBar progress={course.progress} />
-                  <span style={{
-                    fontFamily: "'Rubik', sans-serif",
-                    fontSize: '14px',
-                    fontWeight: 400,
-                    color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-                    flexShrink: 0,
-                  }}>
-                    {course.progress}%
-                  </span>
+              <div className="in-progress__card-content">
+                <span className="in-progress__badge">{badge}</span>
+                <p className="in-progress__title">{title}</p>
+                <div className="in-progress__progress-row">
+                  <div className="in-progress__progress-bar-track">
+                    <div className="in-progress__progress-bar-bg">
+                      <div
+                        className="in-progress__progress-bar-fill"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  <span className="in-progress__progress-text">{progress}%</span>
                 </div>
               </div>
 
-              {/* Right: thumbnail */}
-              <div style={{
-                width: '70px',
-                height: '70px',
-                flexShrink: 0,
-                borderRadius: '10px',
-                overflow: 'hidden',
-              }}>
-                <img
-                  src={course.thumbnail}
-                  alt={course.title}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                  }}
-                />
+              <div className="in-progress__thumbnail-wrapper">
+                {thumbnail && (
+                  <img src={thumbnail} alt={title} className="in-progress__thumbnail" />
+                )}
               </div>
             </div>
           );

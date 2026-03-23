@@ -1,29 +1,28 @@
 import React from 'react';
-import { currentUser } from '../../../data/mockData';
+import _ from 'lodash';
+import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../../contexts/AuthContext';
+import { useUser } from '../../../hooks/useUser';
+import { userService } from '../../../services/UserService';
+import './LearningGreeting.css';
 
-export const LearningGreeting: React.FC = () => {
-  const firstName = currentUser.name.split(' ')[0];
+interface LearningGreetingProps {
+  enrolledCount: number;
+}
+
+export const LearningGreeting: React.FC<LearningGreetingProps> = ({ enrolledCount }) => {
+  const { userId } = useAuth();
+  const { data: userProfile } = useUser(userId);
+  const { t } = useTranslation();
+
+  const name = userService.getDisplayName(userProfile);
+  const greeting = _.isEmpty(name) ? t('hiGuest') : t('hiUser', { name });
+  const subtitle = _.isEqual(enrolledCount, 0) ? t('journeyStart') : t('welcomeMessage');
 
   return (
-    <div style={{ padding: '20px 16px 8px' }}>
-      <h1 style={{
-        fontFamily: "'Rubik', sans-serif",
-        fontSize: '20px',
-        fontWeight: 500,
-        color: 'var(--ion-color-dark, var(--color-222222, #222222))',
-        margin: '0 0 4px 0',
-      }}>
-        Hi {firstName}
-      </h1>
-      <p style={{
-        fontFamily: "'Rubik', sans-serif",
-        fontSize: '14px',
-        fontWeight: 400,
-        color: 'var(--ion-color-medium, var(--color-757575, #757575))',
-        margin: 0,
-      }}>
-        Your exciting learning journey starts here. Dive in!
-      </p>
+    <div className="learning-greeting">
+      <h1 className="learning-greeting__title">{greeting}</h1>
+      <p className="learning-greeting__subtitle">{subtitle}</p>
     </div>
   );
 };
