@@ -7,7 +7,7 @@ import { useCallback, useEffect, useRef } from 'react';
  * - `cancel`: explicitly cancels any pending timer.
  * The timer is also cleared on unmount.
  */
-export function useRatingTimer(onOpen: () => void, delayMs = 5000) {
+export function useRatingTimer(onOpen: () => void, delayMs = 2000) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const cancel = useCallback(() => {
