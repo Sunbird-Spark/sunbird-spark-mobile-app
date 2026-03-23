@@ -1,19 +1,22 @@
 import React, { useState, useMemo } from 'react';
 import {
+  IonActionSheet,
+  IonBackButton,
+  IonButtons,
   IonContent,
   IonHeader,
   IonPage,
-  IonTitle,
-  IonToolbar,
-  IonButtons,
-  IonBackButton,
   IonSpinner,
+  IonTitle,
+  IonToast,
+  IonToolbar,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { certificateService } from '../services/CertificateService';
+import type { CertificateFormat } from '../utils/svg-converter';
 import type { TrackableCollection } from '../types/collectionTypes';
 import './ProfileLearningPage.css';
 
@@ -143,6 +146,10 @@ const ProfileLearningPage: React.FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
+  const [successToast, setSuccessToast] = useState(false);
+
+  // Track which course the format picker is open for
+  const [pendingCourse, setPendingCourse] = useState<TrackableCollection | null>(null);
 
   const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmentList(userId);
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
@@ -153,20 +160,29 @@ const ProfileLearningPage: React.FC = () => {
     return courses;
   }, [courses, filter]);
 
-  const handleDownloadCertificate = async (course: TrackableCollection) => {
+  const runDownload = async (course: TrackableCollection, format: CertificateFormat) => {
     const certId = course.issuedCertificates?.[0]?.identifier;
     if (!certId) return;
 
     const courseId = course.courseId ?? course.contentId ?? '';
+    const courseName = course.courseName ?? course.name ?? 'certificate';
+    const templateUrl = course.issuedCertificates?.[0]?.templateUrl;
+
     setDownloadingId(courseId);
     setDownloadError(null);
     try {
-      await certificateService.downloadAndSave(certId);
-    } catch {
+      await certificateService.downloadAndSave(certId, courseName, format, templateUrl);
+      setSuccessToast(true);
+    } catch (err) {
+      console.error('Certificate download error:', err);
       setDownloadError(t('certificateDownloadError'));
     } finally {
       setDownloadingId(null);
     }
+  };
+
+  const handleDownloadCertificate = (course: TrackableCollection) => {
+    setPendingCourse(course);
   };
 
   const filterOptions: { key: FilterOption; label: string }[] = [
@@ -277,6 +293,40 @@ const ProfileLearningPage: React.FC = () => {
         )}
 
       </IonContent>
+
+      {/* Format picker */}
+      <IonActionSheet
+        isOpen={pendingCourse !== null}
+        onDidDismiss={() => setPendingCourse(null)}
+        buttons={[
+          {
+            text: t('downloadAsPdf'),
+            handler: () => {
+              if (pendingCourse) runDownload(pendingCourse, 'pdf');
+            },
+          },
+          {
+            text: t('downloadAsPng'),
+            handler: () => {
+              if (pendingCourse) runDownload(pendingCourse, 'png');
+            },
+          },
+          {
+            text: t('cancel'),
+            role: 'cancel',
+          },
+        ]}
+      />
+
+      {/* Success toast */}
+      <IonToast
+        isOpen={successToast}
+        onDidDismiss={() => setSuccessToast(false)}
+        message={t('certificateSavedToDocuments')}
+        duration={3000}
+        position="bottom"
+        color="success"
+      />
     </IonPage>
   );
 };
