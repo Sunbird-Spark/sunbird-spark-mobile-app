@@ -36,7 +36,7 @@ export class EpubPlayerService {
 
     const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
-    return { context, config: {}, metadata };
+    return { context, config: { apislug: '/action' }, metadata };
   }
 
   private async fetchStyles(): Promise<string> {

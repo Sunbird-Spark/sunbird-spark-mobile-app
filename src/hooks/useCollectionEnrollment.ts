@@ -1,4 +1,4 @@
-import { useMemo, useSyncExternalStore } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
@@ -135,28 +135,24 @@ export function useCollectionEnrollment(
     return null;
   }, [collectionData, contentStatusMap]);
 
-  // 8. Certificate — read batch detail for cert_templates
+  // 8. Certificate — read batch detail for certTemplates
   const batchReadQuery = useBatchRead(enrolledBatchId ?? undefined, {
     enabled: isEnrolled && !!enrolledBatchId,
   });
 
   const hasCertificate = useMemo(() => {
-    const templates = batchReadQuery.data?.data?.response?.cert_templates;
+    const templates = batchReadQuery.data?.data?.response?.certTemplates;
     return !!templates && Object.keys(templates).length > 0;
   }, [batchReadQuery.data]);
 
   const certPreviewUrl = useMemo(() => {
     return getFirstCertPreviewUrl(
-      batchReadQuery.data?.data?.response?.cert_templates,
+      batchReadQuery.data?.data?.response?.certTemplates,
     );
   }, [batchReadQuery.data]);
 
-  // 9. Batch dates
-  // Use useSyncExternalStore so Date.now() is read as external state (pure during render).
-  const now = useSyncExternalStore(
-    (cb) => { const id = setInterval(cb, 60_000); return () => clearInterval(id); },
-    () => Date.now(),
-  );
+  // 9. Batch dates — captured once on mount
+  const [now] = useState(Date.now);
 
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
