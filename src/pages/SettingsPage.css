@@ -3,24 +3,24 @@
    ============================================= */
 
 .settings-page {
-    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
+    --background: var(--ion-color-step-50);
 }
 
 /* ── Header ── */
 .settings-page .settings-header {
-    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+    box-shadow: 0 0.875rem 0.875rem rgba(var(--ion-color-dark-rgb, 0, 0, 0), 0.05);
     background: var(--ion-color-light);
 }
 
 .settings-page .settings-toolbar {
     --background: var(--ion-color-light) !important;
-    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
+    --color: var(--ion-color-dark) !important;
     --border-width: 0 !important;
 }
 
 .settings-page .settings-toolbar .settings-title,
 .settings-page .settings-toolbar .settings-back-btn {
-    color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
+    color: var(--ion-color-dark) !important;
 }
 
 .settings-title {
@@ -37,7 +37,7 @@
 
 /* ── Content ── */
 .settings-content {
-    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
+    --background: var(--ion-color-step-50);
 }
 
 .settings-section {
