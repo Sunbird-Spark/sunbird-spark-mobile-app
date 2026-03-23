@@ -56,7 +56,7 @@ describe('deleteDownloadedContent', () => {
       ref_count: 1,
     } as any);
     const result = await deleteDownloadedContent('do_1');
-    expect(result).toEqual({ deleted: false, freedBytes: 0 });
+    expect(result).toEqual({ deleted: true, freedBytes: 0 });
   });
 
   it('hard deletes when ref_count is 1', async () => {

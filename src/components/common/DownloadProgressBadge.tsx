@@ -2,7 +2,6 @@ import React from 'react';
 import { IonIcon, IonSpinner } from '@ionic/react';
 import {
   downloadOutline,
-  checkmarkCircle,
   alertCircleOutline,
   pause,
   play,
@@ -37,7 +36,7 @@ export const DownloadProgressBadge: React.FC<DownloadProgressBadgeProps> = ({
   // Priority: isLocal > downloadState > default
   if (isLocal) {
     return (
-      <button className="dpb-btn dpb-delete" onClick={onDelete} title={t('download.delete', 'Delete')}>
+      <button className="dpb-btn dpb-delete" onClick={onDelete} aria-label={t('download.delete', 'Delete')} title={t('download.delete', 'Delete')}>
         <IonIcon icon={trashOutline} />
       </button>
     );
@@ -45,7 +44,7 @@ export const DownloadProgressBadge: React.FC<DownloadProgressBadgeProps> = ({
 
   if (!downloadState) {
     return (
-      <button className="dpb-btn dpb-available" onClick={onDownload} title={t('download.download', 'Download')}>
+      <button className="dpb-btn dpb-available" onClick={onDownload} aria-label={t('download.download', 'Download')} title={t('download.download', 'Download')}>
         <IonIcon icon={downloadOutline} />
       </button>
     );
@@ -55,7 +54,7 @@ export const DownloadProgressBadge: React.FC<DownloadProgressBadgeProps> = ({
     case 'QUEUED':
     case 'RETRY_WAIT':
       return (
-        <span className="dpb-btn dpb-queued" title={t('download.queued', 'Queued')}>
+        <span className="dpb-btn dpb-queued" aria-label={t('download.queued', 'Queued')} title={t('download.queued', 'Queued')}>
           <IonIcon icon={timeOutline} />
         </span>
       );
@@ -68,11 +67,16 @@ export const DownloadProgressBadge: React.FC<DownloadProgressBadgeProps> = ({
       const offset = circ - (pct / 100) * circ;
       const isPaused = downloadState.state === 'PAUSED';
 
+      const label = isPaused
+        ? t('download.resume', 'Resume downloading')
+        : t('download.downloading', 'Downloading {{pct}}%', { pct });
+
       return (
         <button
-          className={isPaused ? "dpb-btn dpb-paused" : "dpb-btn dpb-downloading"}
+          className={isPaused ? 'dpb-btn dpb-paused' : 'dpb-btn dpb-downloading'}
           onClick={isPaused ? onResume : onPause}
-          title={isPaused ? t('download.resume', 'Resume downloading') : t('download.pause', 'Pause downloading')}
+          aria-label={label}
+          title={label}
         >
           <svg width="26" height="26" viewBox="0 0 26 26" className="dpb-ring">
             <circle cx="13" cy="13" r={r} fill="none" stroke="var(--ion-color-light)" strokeWidth="2.5" />
@@ -98,35 +102,35 @@ export const DownloadProgressBadge: React.FC<DownloadProgressBadgeProps> = ({
 
     case 'IMPORTING':
       return (
-        <span className="dpb-btn dpb-importing" title={t('download.processing', 'Processing')}>
+        <span className="dpb-btn dpb-importing" aria-label={t('download.processing', 'Processing')} title={t('download.processing', 'Processing')}>
           <IonSpinner name="crescent" />
         </span>
       );
 
     case 'COMPLETED':
       return (
-        <button className="dpb-btn dpb-delete" onClick={onDelete} title={t('download.delete', 'Delete')}>
+        <button className="dpb-btn dpb-delete" onClick={onDelete} aria-label={t('download.delete', 'Delete')} title={t('download.delete', 'Delete')}>
           <IonIcon icon={trashOutline} />
         </button>
       );
 
     case 'FAILED':
       return (
-        <button className="dpb-btn dpb-failed" onClick={onRetry} title={t('download.error', 'Failed')}>
+        <button className="dpb-btn dpb-failed" onClick={onRetry} aria-label={t('download.retry', 'Retry download')} title={t('download.error', 'Failed')}>
           <IonIcon icon={alertCircleOutline} />
         </button>
       );
 
     case 'CANCELLED':
       return (
-        <button className="dpb-btn dpb-available" onClick={onDownload} title={t('download.download', 'Download')}>
+        <button className="dpb-btn dpb-available" onClick={onDownload} aria-label={t('download.download', 'Download')} title={t('download.download', 'Download')}>
           <IonIcon icon={downloadOutline} />
         </button>
       );
 
     default:
       return (
-        <button className="dpb-btn dpb-available" onClick={onDownload} title={t('download.download', 'Download')}>
+        <button className="dpb-btn dpb-available" onClick={onDownload} aria-label={t('download.download', 'Download')} title={t('download.download', 'Download')}>
           <IonIcon icon={downloadOutline} />
         </button>
       );

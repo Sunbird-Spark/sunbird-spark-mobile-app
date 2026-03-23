@@ -78,12 +78,9 @@ const ContentPlayerPage: React.FC = () => {
   const rawDownloadState = useDownloadState(contentId);
   const rawIsLocal = useIsContentLocal(contentId);
 
-  const [deletedLocal, setDeletedLocal] = useState(false);
-
-  // Reset override if route changes
-  useEffect(() => {
-    setDeletedLocal(false);
-  }, [contentId]);
+  // Track which contentId was optimistically marked as deleted
+  const deletedIdRef = useRef<string | null>(null);
+  const deletedLocal = deletedIdRef.current === contentId;
 
   const isLocal = deletedLocal ? false : rawIsLocal;
   const downloadState = deletedLocal ? null : rawDownloadState;
@@ -111,7 +108,7 @@ const ContentPlayerPage: React.FC = () => {
   }, [contentId, t]);
 
   const handleDownload = useCallback(async () => {
-    setDeletedLocal(false);
+    deletedIdRef.current = null;
     if (isOffline) {
       setToastConfig({ message: t('download.noInternet', 'No Internet connection'), color: 'dark' });
       return;
@@ -149,7 +146,7 @@ const ContentPlayerPage: React.FC = () => {
       const result = await deleteDownloadedContent(contentId);
       console.debug('[ContentPlayerPage] delete result:', result, 'for', contentId);
       if (result.deleted) {
-        setDeletedLocal(true);
+        deletedIdRef.current = contentId;
         setToastConfig({ message: t('download.deleted', 'Content deleted'), color: 'success', icon: checkmarkCircle });
       }
     } catch (error) {
