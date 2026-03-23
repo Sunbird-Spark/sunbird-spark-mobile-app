@@ -1,7 +1,6 @@
 import { networkService } from './network/networkService';
-import { keyValueDbService } from './db/KeyValueDbService';
+import { keyValueDbService, KVKey } from './db/KeyValueDbService';
 import { BatchService } from './course/BatchService';
-import { KVKey } from './db/KeyValueDbService';
 import type { ContentStateUpdateRequest } from '../types/collectionTypes';
 
 class OfflineSyncService {
@@ -29,17 +28,17 @@ class OfflineSyncService {
 
   // ── Flush ────────────────────────────────────────────────────────────────────
 
+  private static readonly MAX_RETRIES = 5;
+
   private async flushContentStateQueue(): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(KVKey.PENDING_CONTENT_STATE_Q);
-      if (!raw) return;
-
-      const queue: Array<ContentStateUpdateRequest & { queuedAt: number }> = JSON.parse(raw);
-      if (queue.length === 0) return;
+      type QueueItem = ContentStateUpdateRequest & { queuedAt: number; retryCount: number };
+      const queue = await keyValueDbService.getJSON<QueueItem[]>(KVKey.PENDING_CONTENT_STATE_Q);
+      if (!queue || queue.length === 0) return;
 
       console.debug(`[OfflineSyncService] Flushing ${queue.length} pending content state update(s)`);
 
-      const failed: typeof queue = [];
+      const failed: QueueItem[] = [];
 
       for (const item of queue) {
         const request: ContentStateUpdateRequest = {
@@ -52,15 +51,16 @@ class OfflineSyncService {
         try {
           await this.batchService.contentStateUpdate(request);
         } catch {
-          // Keep failed items so they are retried on the next reconnect
-          failed.push(item);
+          const retryCount = (item.retryCount ?? 0) + 1;
+          if (retryCount < OfflineSyncService.MAX_RETRIES) {
+            failed.push({ ...item, retryCount });
+          } else {
+            console.warn(`[OfflineSyncService] Dropping content state update after ${retryCount} failures`, item);
+          }
         }
       }
 
-      await keyValueDbService.setRaw(
-        KVKey.PENDING_CONTENT_STATE_Q,
-        JSON.stringify(failed),
-      );
+      await keyValueDbService.setJSON(KVKey.PENDING_CONTENT_STATE_Q, failed);
 
       if (failed.length > 0) {
         console.warn(`[OfflineSyncService] ${failed.length} item(s) failed to sync and will be retried`);
@@ -76,25 +76,28 @@ class OfflineSyncService {
 
   private async flushEnrolQueue(): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(KVKey.PENDING_ENROL_Q);
-      if (!raw) return;
-
-      const queue: Array<{ courseId: string; userId: string; batchId: string; queuedAt: number }> = JSON.parse(raw);
-      if (queue.length === 0) return;
+      type EnrolItem = { courseId: string; userId: string; batchId: string; queuedAt: number; retryCount: number };
+      const queue = await keyValueDbService.getJSON<EnrolItem[]>(KVKey.PENDING_ENROL_Q);
+      if (!queue || queue.length === 0) return;
 
       console.debug(`[OfflineSyncService] Flushing ${queue.length} pending enrol request(s)`);
 
-      const failed: typeof queue = [];
+      const failed: EnrolItem[] = [];
 
       for (const item of queue) {
         try {
           await this.batchService.enrol(item.courseId, item.userId, item.batchId);
         } catch {
-          failed.push(item);
+          const retryCount = (item.retryCount ?? 0) + 1;
+          if (retryCount < OfflineSyncService.MAX_RETRIES) {
+            failed.push({ ...item, retryCount });
+          } else {
+            console.warn(`[OfflineSyncService] Dropping enrol after ${retryCount} failures`, item);
+          }
         }
       }
 
-      await keyValueDbService.setRaw(KVKey.PENDING_ENROL_Q, JSON.stringify(failed));
+      await keyValueDbService.setJSON(KVKey.PENDING_ENROL_Q, failed);
 
       if (failed.length > 0) {
         console.warn(`[OfflineSyncService] ${failed.length} enrol request(s) failed and will be retried`);

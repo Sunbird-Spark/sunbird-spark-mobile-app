@@ -136,12 +136,9 @@ export class BatchService {
   /** Append the request to the persistent pending queue. */
   private async addToPendingQueue(request: ContentStateUpdateRequest): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(KVKey.PENDING_CONTENT_STATE_Q);
-      const queue: Array<ContentStateUpdateRequest & { queuedAt: number }> = raw
-        ? JSON.parse(raw)
-        : [];
-      queue.push({ ...request, queuedAt: Date.now() });
-      await keyValueDbService.setRaw(KVKey.PENDING_CONTENT_STATE_Q, JSON.stringify(queue));
+      const queue = await keyValueDbService.getJSON<Array<ContentStateUpdateRequest & { queuedAt: number; retryCount: number }>>(KVKey.PENDING_CONTENT_STATE_Q) ?? [];
+      queue.push({ ...request, queuedAt: Date.now(), retryCount: 0 });
+      await keyValueDbService.setJSON(KVKey.PENDING_CONTENT_STATE_Q, queue);
     } catch (err) {
       console.warn('[BatchService] Failed to enqueue content state update:', err);
     }
@@ -224,17 +221,14 @@ export class BatchService {
 
   private async addToEnrolQueue(courseId: string, userId: string, batchId: string): Promise<void> {
     try {
-      const raw = await keyValueDbService.getRaw(KVKey.PENDING_ENROL_Q);
-      const queue: Array<{ courseId: string; userId: string; batchId: string; queuedAt: number }> = raw
-        ? JSON.parse(raw)
-        : [];
+      const queue = await keyValueDbService.getJSON<Array<{ courseId: string; userId: string; batchId: string; queuedAt: number; retryCount: number }>>(KVKey.PENDING_ENROL_Q) ?? [];
       // Avoid duplicate entries for the same course+user+batch
       const isDuplicate = queue.some(
         item => item.courseId === courseId && item.userId === userId && item.batchId === batchId
       );
       if (!isDuplicate) {
-        queue.push({ courseId, userId, batchId, queuedAt: Date.now() });
-        await keyValueDbService.setRaw(KVKey.PENDING_ENROL_Q, JSON.stringify(queue));
+        queue.push({ courseId, userId, batchId, queuedAt: Date.now(), retryCount: 0 });
+        await keyValueDbService.setJSON(KVKey.PENDING_ENROL_Q, queue);
       }
     } catch (err) {
       console.warn('[BatchService] Failed to enqueue enrol request:', err);

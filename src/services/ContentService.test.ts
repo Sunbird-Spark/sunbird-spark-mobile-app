@@ -8,16 +8,35 @@ vi.mock('../lib/http-client', () => ({
   getClient: vi.fn()
 }));
 
+vi.mock('./db/ContentDbService', () => ({
+  contentDbService: {
+    upsert: vi.fn().mockResolvedValue(undefined),
+    getByIdentifier: vi.fn().mockResolvedValue(null),
+  },
+}));
+
+vi.mock('./network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
+import { networkService } from './network/networkService';
+import { contentDbService } from './db/ContentDbService';
+
 describe('ContentService', () => {
   let contentService: ContentService;
   let mockHttpClient: any;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     contentService = new ContentService();
     mockHttpClient = {
-      post: vi.fn()
+      post: vi.fn(),
+      get: vi.fn(),
     };
     (getClient as any).mockReturnValue(mockHttpClient);
+    (networkService.isConnected as any).mockReturnValue(true);
+    (contentDbService.getByIdentifier as any).mockResolvedValue(null);
+    (contentDbService.upsert as any).mockResolvedValue(undefined);
   });
 
   describe('getContent', () => {
@@ -232,6 +251,148 @@ describe('ContentService', () => {
       mockHttpClient.post.mockRejectedValue(new Error('Network error'));
 
       await expect(contentService.contentSearch()).rejects.toThrow('Network error');
+    });
+  });
+
+  describe('contentRead', () => {
+    const mockContent = {
+      identifier: 'do_content_001',
+      name: 'Test Content',
+      contentType: 'Resource',
+      mimeType: 'video/mp4',
+      visibility: 'Default',
+      lastUpdatedOn: '2026-01-01',
+      pkgVersion: 2,
+      audience: ['Learner'],
+      dialcodes: ['D1'],
+      childNodes: ['child-1'],
+      primaryCategory: 'Explanation Content',
+    };
+
+    const mockReadResponse = {
+      data: { content: mockContent },
+      status: 200,
+      headers: {},
+    };
+
+    it('should call GET with default fields when none provided', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+
+      await contentService.contentRead('do_content_001');
+
+      const calledUrl: string = mockHttpClient.get.mock.calls[0][0];
+      expect(calledUrl).toMatch(/^\/content\/v1\/read\/do_content_001/);
+      expect(calledUrl).toContain('fields=');
+    });
+
+    it('should call GET with custom fields when provided', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+
+      await contentService.contentRead('do_content_001', ['name', 'mimeType']);
+
+      const calledUrl: string = mockHttpClient.get.mock.calls[0][0];
+      expect(calledUrl).toContain('fields=name%2CmimeType');
+    });
+
+    it('should include mode param when provided', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+
+      await contentService.contentRead('do_content_001', undefined, 'edit');
+
+      const calledUrl: string = mockHttpClient.get.mock.calls[0][0];
+      expect(calledUrl).toContain('mode=edit');
+    });
+
+    it('should cache content to DB after successful fetch', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+
+      await contentService.contentRead('do_content_001');
+
+      expect(contentDbService.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          identifier: 'do_content_001',
+          mime_type: 'video/mp4',
+          content_state: 0,
+        })
+      );
+    });
+
+    it('should map array audience to comma-separated string', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+
+      await contentService.contentRead('do_content_001');
+
+      expect(contentDbService.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ audience: 'Learner' })
+      );
+    });
+
+    it('should map array dialcodes and childNodes to strings', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+
+      await contentService.contentRead('do_content_001');
+
+      expect(contentDbService.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({ dialcodes: 'D1', child_nodes: 'child-1' })
+      );
+    });
+
+    it('should not crash if DB upsert fails (swallows cache error)', async () => {
+      mockHttpClient.get.mockResolvedValue(mockReadResponse);
+      (contentDbService.upsert as any).mockRejectedValueOnce(new Error('DB error'));
+
+      const result = await contentService.contentRead('do_content_001');
+
+      expect(result).toEqual(mockReadResponse);
+    });
+
+    it('should skip DB upsert when content has no identifier', async () => {
+      mockHttpClient.get.mockResolvedValue({ data: { content: { name: 'no-id' } }, status: 200, headers: {} });
+
+      await contentService.contentRead('do_content_001');
+
+      expect(contentDbService.upsert).not.toHaveBeenCalled();
+    });
+
+    it('should return offline DB content when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (contentDbService.getByIdentifier as any).mockResolvedValue({
+        server_data: JSON.stringify(mockContent),
+      });
+
+      const result = await contentService.contentRead('do_content_001');
+
+      expect(mockHttpClient.get).not.toHaveBeenCalled();
+      expect((result.data as any).content.identifier).toBe('do_content_001');
+    });
+
+    it('should return null content when offline and no DB entry', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (contentDbService.getByIdentifier as any).mockResolvedValue(null);
+
+      const result = await contentService.contentRead('do_content_001');
+
+      expect((result.data as any).content).toBeNull();
+    });
+
+    it('should fall back to DB when API throws', async () => {
+      mockHttpClient.get.mockRejectedValue(new Error('Network error'));
+      (contentDbService.getByIdentifier as any).mockResolvedValue({
+        server_data: JSON.stringify(mockContent),
+      });
+
+      const result = await contentService.contentRead('do_content_001');
+
+      expect((result.data as any).content).toBeDefined();
+    });
+
+    it('should return null content when API fails and DB has no entry', async () => {
+      mockHttpClient.get.mockRejectedValue(new Error('Network error'));
+
+      const result = await contentService.contentRead('do_content_001');
+
+      expect((result.data as any).content).toBeNull();
+      expect(result.status).toBe(200);
     });
   });
 });

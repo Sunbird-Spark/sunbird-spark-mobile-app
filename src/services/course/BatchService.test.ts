@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BatchService } from './BatchService';
 import { getClient } from '../../lib/http-client';
+import { networkService } from '../network/networkService';
+import { keyValueDbService } from '../db/KeyValueDbService';
+import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import type {
   ContentStateReadRequest,
   ContentStateUpdateRequest,
@@ -15,7 +18,13 @@ vi.mock('../network/networkService', () => ({
 }));
 
 vi.mock('../db/KeyValueDbService', () => ({
+  KVKey: {
+    PENDING_CONTENT_STATE_Q: 'pending_content_state_q',
+    PENDING_ENROL_Q: 'pending_enrol_q',
+  },
   keyValueDbService: {
+    getJSON: vi.fn().mockResolvedValue(null),
+    setJSON: vi.fn().mockResolvedValue(undefined),
     getRaw: vi.fn().mockResolvedValue(null),
     setRaw: vi.fn().mockResolvedValue(undefined),
   },
@@ -34,6 +43,7 @@ describe('BatchService', () => {
   let mockHttpClient: any;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     service = new BatchService();
     mockHttpClient = {
       get: vi.fn(),
@@ -268,6 +278,157 @@ describe('BatchService', () => {
           batchId: 'batch-1',
         },
       });
+    });
+  });
+
+  describe('enrol — offline path', () => {
+    it('should queue and return offline response when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+
+      const result = await service.enrol('course-1', 'user-1', 'batch-1');
+
+      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+    });
+
+    it('should not add duplicate enrol entries to the queue', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (keyValueDbService.getJSON as any).mockResolvedValue([
+        { courseId: 'course-1', userId: 'user-1', batchId: 'batch-1', queuedAt: 1, retryCount: 0 },
+      ]);
+
+      await service.enrol('course-1', 'user-1', 'batch-1');
+
+      expect(keyValueDbService.setJSON).not.toHaveBeenCalled();
+    });
+
+    it('should insert stub enrollment when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+
+      await service.enrol('course-1', 'user-1', 'batch-1');
+
+      expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith([
+        expect.objectContaining({ course_id: 'course-1', user_id: 'user-1', status: 'active' }),
+      ]);
+    });
+  });
+
+  describe('contentStateRead — offline path', () => {
+    it('should return cached data when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (keyValueDbService.getRaw as any).mockResolvedValue(
+        JSON.stringify({ contentList: [{ contentId: 'c1', status: 2 }] })
+      );
+
+      const request: ContentStateReadRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contentIds: ['c1'],
+      };
+
+      const result = await service.contentStateRead(request);
+
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
+      expect((result.data as any).contentList).toHaveLength(1);
+    });
+
+    it('should return empty contentList when offline and no cache', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (keyValueDbService.getRaw as any).mockResolvedValue(null);
+
+      const request: ContentStateReadRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contentIds: [],
+      };
+
+      const result = await service.contentStateRead(request);
+
+      expect((result.data as any).contentList).toEqual([]);
+    });
+
+    it('should fall back to cache when API fails', async () => {
+      mockHttpClient.post.mockRejectedValue(new Error('Network error'));
+      (keyValueDbService.getRaw as any).mockResolvedValue(
+        JSON.stringify({ contentList: [{ contentId: 'c1', status: 1 }] })
+      );
+
+      const request: ContentStateReadRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contentIds: ['c1'],
+      };
+
+      const result = await service.contentStateRead(request);
+
+      expect((result.data as any).contentList).toHaveLength(1);
+    });
+  });
+
+  describe('contentStateUpdate — offline path', () => {
+    it('should queue and return offline response when offline', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      const result = await service.contentStateUpdate(request);
+
+      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
+      expect(mockHttpClient.patch).not.toHaveBeenCalled();
+      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+    });
+
+    it('should queue when API fails and update local caches', async () => {
+      mockHttpClient.patch.mockRejectedValue(new Error('Server error'));
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      const result = await service.contentStateUpdate(request);
+
+      expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
+      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+    });
+
+    it('should update local course progress when content reaches status 2', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      (enrolledCoursesDbService.getByUser as any).mockResolvedValue([{
+        course_id: 'course-1',
+        user_id: 'user-1',
+        details: { courseId: 'course-1', name: 'Test', leafNodesCount: 2 },
+        enrolled_on: Date.now(),
+        progress: 0,
+        status: 'active',
+      }]);
+      (keyValueDbService.getRaw as any).mockResolvedValue(
+        JSON.stringify({ contentList: [{ contentId: 'c1', status: 2 }, { contentId: 'c2', status: 2 }] })
+      );
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      await service.contentStateUpdate(request);
+
+      expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
+        'course-1', 'user-1', 100, 'completed'
+      );
     });
   });
 });
