@@ -9,7 +9,7 @@ import {
   IonToolbar,
   IonTitle,
 } from '@ionic/react';
-import { chevronBackOutline, syncOutline, downloadOutline } from 'ionicons/icons';
+import { chevronBackOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
 import {
   settingsService,
   SYNC_DATA_OPTIONS,
@@ -17,6 +17,7 @@ import {
   type SyncDataValue,
   type DownloadContentValue,
 } from '../services/SettingsService';
+import { useSystemSetting } from '../hooks/useSystemSetting';
 import './SettingsPage.css';
 
 const SettingsPage: React.FC = () => {
@@ -24,6 +25,10 @@ const SettingsPage: React.FC = () => {
   const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');
   const [appBuild, setAppBuild] = useState<string>('');
+
+  const appNameQuery = useSystemSetting('sunbird');
+  const appName: string | undefined =
+    appNameQuery.data?.data?.response?.value ?? appNameQuery.data?.data?.value;
 
   // Load persisted values from DB and app version on mount
   useEffect(() => {
@@ -123,16 +128,23 @@ const SettingsPage: React.FC = () => {
           </div>
 
           {/* App Version Card */}
-          <div className="profile-settings-version-card">
-            <span className="profile-settings-version-label">System</span>
-            <h4 className="profile-settings-version-name">Sunbird</h4>
-            <div className="profile-settings-version-row">
-              <span className="profile-settings-version-desc">Build version</span>
-              {appVersion && (
-                <span className="profile-settings-version-badge">
-                  v{appVersion}{appBuild ? ` (${appBuild})` : ''}
-                </span>
-              )}
+          <div className="profile-settings-card profile-settings-version-card">
+            <div className="profile-settings-icon-badge profile-settings-icon-system">
+              <IonIcon icon={informationCircleOutline} />
+            </div>
+            <div className="profile-settings-card-content">
+              <div>
+                <span className="profile-settings-version-label">System</span>
+                <h4 className="profile-settings-version-name">{appName || 'Sunbird'}</h4>
+              </div>
+              <div className="profile-settings-version-row">
+                <span className="profile-settings-version-desc">Build version</span>
+                {appVersion && (
+                  <span className="profile-settings-version-badge">
+                    v{appVersion}{appBuild ? ` (${appBuild})` : ''}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>

@@ -1367,14 +1367,12 @@ ion-tab-button:hover {
     box-shadow: 0 0.25rem 0.75rem rgba(var(--ion-color-tertiary-rgb), 0.25);
 }
 
-.profile-settings-version-card {
-    background: rgba(var(--ion-color-success-rgb), 0.15);
-    border: 0.0625rem solid rgba(var(--ion-color-success-rgb), 0.2);
-    border-radius: 0.75rem;
-    padding: 1.25rem;
-    margin-bottom: 1rem;
-    display: flex;
-    flex-direction: column;
+.profile-settings-icon-system {
+    background: rgba(var(--ion-color-success-rgb), 0.1);
+}
+
+.profile-settings-icon-system ion-icon {
+    color: var(--ion-color-success);
 }
 
 .profile-settings-version-label {
@@ -1388,8 +1386,8 @@ ion-tab-button:hover {
 .profile-settings-version-name {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--ion-color-success-shade);
-    margin: 0.25rem 0 2rem;
+    color: var(--ion-color-dark);
+    margin: 0.25rem 0 0;
 }
 
 .profile-settings-version-row {
@@ -1401,7 +1399,7 @@ ion-tab-button:hover {
 .profile-settings-version-desc {
     font-size: 0.875rem;
     font-weight: 500;
-    color: rgba(var(--ion-color-success-rgb), 0.7);
+    color: var(--ion-color-medium);
 }
 
 .profile-settings-version-badge {
