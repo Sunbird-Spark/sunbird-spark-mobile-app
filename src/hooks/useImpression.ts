@@ -88,7 +88,7 @@ const useImpression = ({
 
       const exitInput: Parameters<typeof telemetry.impression>[0] = { edata: exitEdata };
       if (envRef.current) exitInput.context = { env: envRef.current };
-      if (Object.keys(objectRef.current).length > 0) exitInput.object = objectRef.current as any;
+      if (Object.keys(objectRef.current).length > 0) exitInput.object = objectRef.current as TelemetryEventInput['object'];
 
       void telemetryRef.current.impression(exitInput);
     };
