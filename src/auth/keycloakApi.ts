@@ -39,8 +39,10 @@ export const loginWithCredentials = async (
 
 /**
  * Calls POST /mobile/google/auth/android on the backend.
- * Sends the Google ID token + emailId. Backend verifies token with Google,
- * finds/creates the Sunbird user, and returns Keycloak session tokens.
+ * Sends the Google ID token (via X-GOOGLE-ID-TOKEN header), emailId, and optional
+ * display name in the request body. Also attaches the device Kong token as Authorization.
+ * Backend verifies the token with Google, finds/creates the Sunbird user, and returns
+ * Keycloak session tokens.
  */
 export const loginWithGoogleToken = async (
   idToken: string,
