@@ -80,20 +80,19 @@ const ContentPlayerPage: React.FC = () => {
   // Resolve URLs to local filesystem paths for offline playback.
   // When online, players use remote streamingUrl/artifactUrl directly (works fine).
   // When offline, we need to rewrite URLs to local Capacitor file paths.
-  const [resolvedMetadata, setResolvedMetadata] = useState<any>(null);
+  const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
   useEffect(() => {
     if (!rawPlayerMetadata?.identifier || !isLocal || !isOffline) {
-      setResolvedMetadata(null);
       return;
     }
     let cancelled = false;
     resolveContentForPlayer(rawPlayerMetadata.identifier, rawPlayerMetadata).then((resolved) => {
-      if (!cancelled) setResolvedMetadata(resolved);
+      if (!cancelled) setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
     });
     return () => { cancelled = true; };
-  }, [rawPlayerMetadata?.identifier, isLocal, isOffline]);
+  }, [rawPlayerMetadata, isLocal, isOffline]);
 
-  const playerMetadata = (isOffline && isLocal && resolvedMetadata) ? resolvedMetadata : rawPlayerMetadata;
+  const playerMetadata = (isOffline && isLocal && resolvedMetadata?.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
 
   // Related content
   const contentLoaded = !isLoading && !!contentData;
