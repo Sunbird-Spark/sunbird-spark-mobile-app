@@ -1,5 +1,12 @@
 /* Ionic Variables and Theming - Brand Palette */
 :root {
+  /** Safe Area Insets — use these everywhere instead of env() directly **/
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+
+
   /** Category Gradient Variables **/
   --category-gradient-1: linear-gradient(to right, #45C0ED, #8E46C5);
   --category-gradient-2: linear-gradient(to right, #D55E1D, #F6C35C);
