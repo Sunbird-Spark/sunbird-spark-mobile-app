@@ -3,8 +3,8 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 // Mock the provider so importing TelemetryContext doesn't pull in heavy Capacitor deps
-vi.mock('../providers/TelemetryProvider', () => {
-  const { createContext } = require('react');
+vi.mock('../providers/TelemetryProvider', async () => {
+  const { createContext } = await import('react');
   return { TelemetryContext: createContext(null) };
 });
 
