@@ -246,6 +246,16 @@ vi.mock('./pages/TermsAndConditionsPage', () => ({
   default: () => <div data-testid="tnc-page">TnC Page</div>,
 }));
 
+// Mock OnboardingPage
+vi.mock('./pages/OnboardingPage', () => ({
+  default: () => <div data-testid="onboarding-page">Onboarding Page</div>,
+}));
+
+// Mock useUser hook for OnboardingGuard
+vi.mock('./hooks/useUser', () => ({
+  useUser: () => ({ data: null, isLoading: false, error: null }),
+}));
+
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);
@@ -269,6 +279,7 @@ describe('App', () => {
     expect(screen.getByTestId('route-/search')).toBeInTheDocument();
     expect(screen.getByTestId('route-/content/:contentId')).toBeInTheDocument();
     expect(screen.getByTestId('route-/notifications')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/onboarding')).toBeInTheDocument();
   });
 
   it('renders redirect component', () => {

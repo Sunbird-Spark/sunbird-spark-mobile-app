@@ -51,6 +51,12 @@ vi.mock('../lib/http-client', () => ({
   }),
 }));
 
+// Mock App's resetOnboardingComplete
+const mockResetOnboardingComplete = vi.fn();
+vi.mock('../App', () => ({
+  resetOnboardingComplete: () => mockResetOnboardingComplete(),
+}));
+
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
@@ -130,6 +136,21 @@ describe('AuthContext', () => {
     }).toThrow('useAuth must be used within AuthProvider');
 
     consoleSpy.mockRestore();
+  });
+
+  it('resets onboarding flag on logout', async () => {
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('logout-btn'));
+    await waitFor(() => {
+      expect(mockResetOnboardingComplete).toHaveBeenCalled();
+    });
   });
 
   it('maintains authentication state across multiple interactions', async () => {
