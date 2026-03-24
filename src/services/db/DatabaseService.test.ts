@@ -443,9 +443,9 @@ describe('DatabaseService', () => {
       const svc = getInitializedService();
       const fn = vi.fn().mockResolvedValue('result');
       const result = await svc.transaction(fn);
-      expect(mockConn.execute).toHaveBeenCalledWith('BEGIN;');
+      expect(mockConn.run).toHaveBeenCalledWith('BEGIN', [], false);
       expect(fn).toHaveBeenCalledOnce();
-      expect(mockConn.execute).toHaveBeenCalledWith('COMMIT;');
+      expect(mockConn.run).toHaveBeenCalledWith('COMMIT', [], false);
       expect(result).toBe('result');
     });
 
@@ -454,9 +454,9 @@ describe('DatabaseService', () => {
       const err = new Error('insert failed');
       const fn = vi.fn().mockRejectedValue(err);
       await expect(svc.transaction(fn)).rejects.toThrow('insert failed');
-      expect(mockConn.execute).toHaveBeenCalledWith('BEGIN;');
-      expect(mockConn.execute).toHaveBeenCalledWith('ROLLBACK;');
-      expect(mockConn.execute).not.toHaveBeenCalledWith('COMMIT;');
+      expect(mockConn.run).toHaveBeenCalledWith('BEGIN', [], false);
+      expect(mockConn.run).toHaveBeenCalledWith('ROLLBACK', [], false);
+      expect(mockConn.run).not.toHaveBeenCalledWith('COMMIT', [], false);
     });
   });
 

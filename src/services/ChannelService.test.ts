@@ -8,6 +8,14 @@ vi.mock('../lib/http-client', () => ({
   getClient: vi.fn()
 }));
 
+vi.mock('./db/ConfigDbService', () => ({
+  configDbService: { get: vi.fn().mockResolvedValue(null), set: vi.fn().mockResolvedValue(undefined) },
+}));
+
+vi.mock('./network/networkService', () => ({
+  networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
+}));
+
 describe('ChannelService', () => {
   let channelService: ChannelService;
   let mockHttpClient: any;
@@ -43,12 +51,15 @@ describe('ChannelService', () => {
     });
 
     it('should handle API errors', async () => {
-      // Arrange
+      // Arrange — service falls back to cache (null) and returns offline response
       const channelId = 'invalid-channel-id';
       mockHttpClient.get.mockRejectedValue(mockApiError);
 
-      // Act & Assert
-      await expect(channelService.read(channelId)).rejects.toThrow('API Error');
+      // Act
+      const result = await channelService.read(channelId);
+
+      // Assert
+      expect(result).toMatchObject({ data: null, status: 200 });
       expect(mockHttpClient.get).toHaveBeenCalledWith(
         `/channel/v1/read/${channelId}`,
         {

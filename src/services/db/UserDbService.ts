@@ -1,7 +1,7 @@
 import { DatabaseService, databaseService } from './DatabaseService';
 import { KeyValueDbService, KVKey, keyValueDbService } from './KeyValueDbService';
 
-export type UserType = 'GUEST' | 'GOOGLE';
+export type UserType = 'GUEST' | 'GOOGLE' | 'KEYCLOAK';
 
 export interface UserDetails {
   displayName?: string;

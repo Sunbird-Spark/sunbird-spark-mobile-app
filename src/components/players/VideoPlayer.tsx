@@ -23,6 +23,9 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const serviceRef = useRef<VideoPlayerService>(new VideoPlayerService());
+  // Guard against double-init: React StrictMode / fast re-renders can cause the
+  // effect to fire a second time before the first async init completes.
+  const initializingRef = useRef(false);
 
   // Store callbacks in refs so the player init useEffect doesn't re-run
   // when callback identities change (e.g. after content state updates).
@@ -33,6 +36,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
   useEffect(() => {
     if (!containerRef.current) return;
+    if (initializingRef.current) return;
+    initializingRef.current = true;
 
     const service = serviceRef.current;
     let playerElement: HTMLElement | null = null;
@@ -74,6 +79,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
 
     return () => {
       cancelled = true;
+      initializingRef.current = false;
       if (playerElement) {
         service.removeEventListeners(playerElement);
         playerElement.remove();

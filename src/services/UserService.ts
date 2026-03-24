@@ -2,6 +2,12 @@ import { SecureStoragePlugin } from 'capacitor-secure-storage-plugin';
 import { decodeJwt } from 'jose';
 import type { AuthTokens, AuthSession } from '../auth/types';
 import { getClient, ApiResponse } from '../lib/http-client';
+import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
+import { userDbService } from './db/UserDbService';
+import type { UserType } from './db/UserDbService';
+import { enrolledCoursesDbService } from './db/EnrolledCoursesDbService';
+import { keyValueDbService, KVKey } from './db/KeyValueDbService';
+import { networkService } from './network/networkService';
 
 const STORAGE_KEY = 'USER_ACCOUNT';
 
@@ -103,8 +109,19 @@ class UserService {
     this.account = account;
   }
 
-  /** Clear account on logout */
+  /** Clear account on logout — removes session token and all user-specific SQLite data. */
   async clearAccount(): Promise<void> {
+    const userId = this.getUserId();
+
+    if (userId) {
+      await Promise.allSettled([
+        enrolledCoursesDbService.deleteAllForUser(userId),
+        userDbService.delete(userId),
+        keyValueDbService.delete(KVKey.PENDING_CONTENT_STATE_Q),
+        keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
+      ]);
+    }
+
     try {
       await SecureStoragePlugin.remove({ key: STORAGE_KEY });
     } catch {
@@ -122,18 +139,54 @@ class UserService {
 
   /** Fetch user profile from server */
   async userRead(userId: string): Promise<ApiResponse<any>> {
-    const fields = [
-      'promptTnC',
-      'tncLatestVersion',
-      'tncLatestVersionUrl',
-      'userName',
-      'phone',
-      'email',
-      'recoveryEmail',
-      'roles',
-      'organisations',
-    ].join(',');
-    return getClient().get(`/user/v5/read/${userId}?fields=${fields}`);
+    if (!networkService.isConnected()) {
+      return this.readUserFromDb(userId);
+    }
+
+    try {
+      const fields = [
+        'promptTnC',
+        'tncLatestVersion',
+        'tncLatestVersionUrl',
+        'userName',
+        'phone',
+        'email',
+        'recoveryEmail',
+        'roles',
+        'organisations',
+      ].join(',');
+      const response = await getClient().get(`/user/v5/read/${userId}?fields=${fields}`);
+
+      try {
+        const profile = (response.data as any)?.response;
+        if (profile) {
+          const provider = this.getLoginProvider();
+          const userType: UserType = provider === 'google' ? 'GOOGLE' : 'KEYCLOAK';
+          await userDbService.upsert({
+            id: userId,
+            details: {
+              displayName: [profile.firstName, profile.lastName].filter(Boolean).join(' ') || undefined,
+              email: profile.email,
+              imageUrl: profile.avatar,
+              roles: Array.isArray(profile.roles) ? profile.roles : undefined,
+            },
+            user_type: userType,
+            created_on: profile.createdDate ? new Date(profile.createdDate).getTime() : Date.now(),
+          });
+        }
+      } catch (err) {
+        console.warn('[UserService] Failed to cache user profile to SQLite:', err);
+      }
+
+      return response;
+    } catch {
+      return this.readUserFromDb(userId);
+    }
+  }
+
+  private async readUserFromDb(userId: string): Promise<ApiResponse<any>> {
+    const user = await userDbService.getById(userId);
+    return buildOfflineResponse({ response: user?.details ?? {} });
   }
 
   /** Update user profile fields */
