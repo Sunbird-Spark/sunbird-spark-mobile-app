@@ -19,9 +19,10 @@ vi.mock('../auth/keycloakApi', () => ({
   loginWithGoogleToken: vi.fn().mockResolvedValue({ access_token: 'token' }),
 }));
 
-// Mock useUser hook to avoid real API calls
+// Mock useUser hook — vi.fn() so individual tests can override
+const mockUseUser = vi.fn(() => ({ data: null, isLoading: false, error: null }));
 vi.mock('../hooks/useUser', () => ({
-  useUser: () => ({ data: null, isLoading: false, error: null }),
+  useUser: (...args: Parameters<typeof mockUseUser>) => mockUseUser(...args),
 }));
 
 // Mock UserService — using vi.fn() so individual tests can override
@@ -123,6 +124,7 @@ const ExtendedTestComponent = () => {
 describe('AuthContext', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseUser.mockReturnValue({ data: null, isLoading: false, error: null });
     // Re-establish default return values after clearAllMocks
     vi.mocked(userService.isLoggedIn).mockReturnValue(false);
     vi.mocked(userService.getUserId).mockReturnValue(null);
@@ -391,6 +393,39 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
     });
+  });
+
+  it('needsTnC and tncData are derived from profile when profile is present', () => {
+    mockUseUser.mockReturnValue({
+      data: {
+        id: 'u1', identifier: 'u1', userId: 'u1', firstName: 'Test', userName: 'test',
+        promptTnC: true,
+        tncLatestVersion: '4.0',
+        tncLatestVersionUrl: 'https://example.com/tnc',
+      },
+      isLoading: false,
+      error: null,
+    });
+
+    const TnCComponent = () => {
+      const { needsTnC, tncData } = useAuth();
+      return (
+        <>
+          <div data-testid="needs-tnc">{needsTnC ? 'yes' : 'no'}</div>
+          <div data-testid="tnc-version">{tncData?.version ?? ''}</div>
+        </>
+      );
+    };
+
+    render(
+      <AuthProvider>
+        <TnCComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    expect(screen.getByTestId('needs-tnc')).toHaveTextContent('yes');
+    expect(screen.getByTestId('tnc-version')).toHaveTextContent('4.0');
   });
 
   it('logout falls back to trySilentGoogleLogin when logoutGoogle fails', async () => {
