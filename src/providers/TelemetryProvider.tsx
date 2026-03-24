@@ -122,6 +122,12 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           platform,
         });
 
+        // Fire app-level START on every launch (anonymous or logged-in)
+        void telemetryService.start(
+          { type: 'app', mode: '', duration: 0, pageid: '' },
+          '', '', {}
+        );
+
         // B10 — capture UTM/campaign parameters from app launch URL
         try {
           const launchUrl = await App.getLaunchUrl().catch(() => ({ url: '' }));

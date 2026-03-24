@@ -88,6 +88,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(true);
     // New session UUID on every login
     telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
+    void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
     // Update channel from user's rootOrg (best-effort, non-blocking)
     if (currentUserId) {
       userService.userRead(currentUserId).then((res) => {
@@ -126,6 +127,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setIsAuthenticated(true);
       // New session UUID on every login
       telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
+      void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
       // Update channel from user's rootOrg (best-effort, non-blocking)
       if (currentUserId) {
         userService.userRead(currentUserId).then((res) => {
