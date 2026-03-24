@@ -89,6 +89,14 @@ export class EcmlPlayerService {
       version: '',
     };
 
+    // Ensure the legacy renderer's GlobalContext.user is populated for plugin compatibility (like Endpage)
+    if (context && !context['user']) {
+      context['user'] = {
+        name: context.userData?.firstName || 'Guest',
+        handle: context.userData?.firstName || 'Guest',
+      };
+    }
+
     return {
       context,
       config,
