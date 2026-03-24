@@ -276,7 +276,11 @@ const ContentPlayerPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="cp-toolbar">
           <div className="cp-toolbar-inner">
-            <button onClick={() => router.goBack()} className="cp-icon-btn">
+            <button type="button"
+              onClick={() => router.goBack()}
+              className="cp-icon-btn"
+              aria-label={t('back')}
+            >
               <BackIcon />
             </button>
             <div className="cp-header-actions">
@@ -289,7 +293,10 @@ const ContentPlayerPage: React.FC = () => {
                 onPause={handlePauseDownload}
                 onResume={handleResumeDownload}
               />
-              <button className="cp-icon-btn">
+              <button type="button"
+                className="cp-icon-btn"
+                aria-label="Share"
+              >
                 <IonIcon icon={shareSocialOutline} color="primary" />
               </button>
             </div>

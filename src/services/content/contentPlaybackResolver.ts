@@ -68,8 +68,15 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
     resolved.isAvailableLocally = true;
 
     return resolved as T;
-  } catch {
-    // If resolution fails, return original metadata (online playback still works)
+  } catch (error) {
+    // If resolution fails, log the error for diagnostics and return original metadata
+    // so that online playback still works.
+    if (typeof console !== 'undefined' && typeof console.warn === 'function') {
+      console.warn(
+        '[contentPlaybackResolver] Failed to resolve content for offline playback:',
+        error,
+      );
+    }
     return metadata;
   }
 }
