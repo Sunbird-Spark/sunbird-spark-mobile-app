@@ -20,7 +20,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   title,
   showBack = false,
   transparent = false,
-  showNotifications = true,
+  showNotifications = false,
 }) => {
   return (
     <IonHeader className={transparent ? 'profile-header ion-no-border' : ''}>
