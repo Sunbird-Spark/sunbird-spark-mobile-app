@@ -189,6 +189,7 @@
   "noNotifications": "No notifications yet",
   "noNotificationsDesc": "You're all caught up! Check back later for updates.",
   "offlineNotifications": "You are offline, connect to get notifications",
+  "deleteNotification": "Delete notification",
   "all": "All",
   "ongoing": "Ongoing",
   "dueDate": "Due Date",

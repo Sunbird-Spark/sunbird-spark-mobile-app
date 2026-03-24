@@ -31,7 +31,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   onTap,
 }) => {
   const { getMessage } = useNotificationMessage();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const isUnread = notification.status === 'unread';
   const message = getMessage(notification);
   const timestamp = formatTimestamp(notification.createdOn, i18n.language);
@@ -60,7 +60,7 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
           e.stopPropagation();
           onDelete(notification);
         }}
-        aria-label="Delete notification"
+        aria-label={t('deleteNotification')}
       >
         <TrashIcon />
       </button>

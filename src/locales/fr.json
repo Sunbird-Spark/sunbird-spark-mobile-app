@@ -95,6 +95,7 @@
   "noNotifications": "Aucune notification pour le moment",
   "noNotificationsDesc": "Vous êtes à jour ! Revenez plus tard pour les mises à jour.",
   "offlineNotifications": "Vous êtes hors ligne, connectez-vous pour recevoir les notifications",
+  "deleteNotification": "Supprimer la notification",
   "verifyDetails": "Vérifier les informations",
   "yes": "Oui",
   "no": "Non",
