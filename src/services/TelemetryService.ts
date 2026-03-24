@@ -7,8 +7,8 @@ import type { TelemetryDecoratorContext, TelemetryEventInput } from './Telemetry
 export type { TelemetryEventInput };
 
 export class TelemetryService {
-  // Current session id — '1' for anonymous, uuidv4() for logged-in
-  private _sid = '1';
+  // Current session id — always a UUID, set by initialize() and updated on login/logout
+  private _sid = '';
   // Post-init context overrides (channel/rollup updated after login)
   private _contextOverrides: Record<string, any> = {};
   // B10 — UTM/campaign parameters
@@ -26,7 +26,7 @@ export class TelemetryService {
    * timeDiff is expected in milliseconds (server - client); converted to seconds for the SDK.
    */
   initialize(ctx: TelemetryDecoratorContext): void {
-    this._sid = ctx.sid || '1';
+    this._sid = ctx.sid ?? '';
 
     $t.initialize({
       pdata: ctx.pdata,
