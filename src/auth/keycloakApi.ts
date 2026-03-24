@@ -1,5 +1,6 @@
 import { HttpService } from '../services/HttpService';
 import { NativeConfigServiceInstance } from '../services/NativeConfigService';
+import { AppConsumerAuthService } from '../services/AppConsumerAuthService';
 import type { AuthTokens, AuthApiError } from './types';
 
 const httpService = new HttpService();
@@ -44,14 +45,21 @@ export const loginWithCredentials = async (
 export const loginWithGoogleToken = async (
   idToken: string,
   emailId: string,
+  name?: string,
 ): Promise<AuthTokens> => {
   const config = await NativeConfigServiceInstance.load();
   const baseUrl = config.baseUrl;
 
+  const authService = AppConsumerAuthService.getInstance();
+  const kongToken = await authService.getAuthenticatedToken();
+
   const data = await httpService.post<any>(
     `${baseUrl}/mobile/google/auth/android`,
-    { emailId },
-    { 'X-GOOGLE-ID-TOKEN': idToken },
+    { emailId, name },
+    {
+      'X-GOOGLE-ID-TOKEN': idToken,
+      'Authorization': `Bearer ${kongToken}`,
+    },
   );
 
   // Backend returns { error, msg } on failure
@@ -63,8 +71,7 @@ export const loginWithGoogleToken = async (
 
   // Backend returns { msg } without error field for some failures
   if (data && typeof data === 'object' && 'msg' in data && !('access_token' in data)) {
-    const err = new Error(data.msg || 'Google sign-in failed');
-    throw err;
+    throw new Error(data.msg || 'Google sign-in failed');
   }
 
   // Verify we got tokens

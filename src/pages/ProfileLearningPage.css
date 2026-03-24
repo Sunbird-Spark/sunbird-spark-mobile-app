@@ -49,7 +49,7 @@
 /* Filter dropdown — fixed below header */
 .pl-filter-dropdown {
     position: fixed;
-    top: calc(var(--ion-safe-area-top, 0px) + 3.5rem);
+    top: calc(var(--safe-area-top) + 3.5rem);
     right: 0.75rem;
     background: var(--ion-color-light);
     border-radius: 0.75rem;

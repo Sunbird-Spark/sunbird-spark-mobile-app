@@ -45,7 +45,7 @@ export const BottomNavigation: React.FC = () => {
         justifyContent: 'space-around',
         alignItems: 'center',
         padding: '8px 0',
-        paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
+        paddingBottom: 'max(8px, var(--safe-area-bottom))',
         boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
       }}
     >

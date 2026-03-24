@@ -320,6 +320,7 @@
     border: none;
     border-radius: 0;
     padding: 1.125rem;
+    padding-bottom: calc(1.125rem + var(--safe-area-bottom));
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
