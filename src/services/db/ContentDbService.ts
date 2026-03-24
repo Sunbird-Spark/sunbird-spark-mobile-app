@@ -47,6 +47,7 @@ export class ContentDbService {
   async getDownloadedContent(): Promise<ContentEntry[]> {
     return this.db.select<ContentEntry>(TABLE, {
       where: { eq: { content_state: 2 } },
+      orderBy: [{ column: 'local_last_updated_on', direction: 'DESC' }],
     });
   }
 

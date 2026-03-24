@@ -5,6 +5,12 @@ import type { DownloadRequest } from '../download_manager/types';
 
 const TAG = '[contentDownloadHelper]';
 
+// Content types that are streaming-only and cannot play offline
+const STREAMING_ONLY_MIME_TYPES = [
+  'video/x-youtube',
+  'text/x-url',
+];
+
 export type ContentMeta = {
   identifier: string;
   downloadUrl?: string;
@@ -35,6 +41,12 @@ export async function startContentDownload(
 
   if (!contentMeta.downloadUrl) {
     console.warn(TAG, 'No downloadUrl for', contentMeta.identifier, '— returning not_available');
+    return 'not_available';
+  }
+
+  // Streaming-only content (YouTube, external URLs) cannot play offline
+  if (contentMeta.mimeType && STREAMING_ONLY_MIME_TYPES.includes(contentMeta.mimeType)) {
+    console.warn(TAG, contentMeta.identifier, 'is streaming-only (mimeType:', contentMeta.mimeType, ')');
     return 'not_available';
   }
 

@@ -1,6 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
-  IonButtons,
   IonContent,
   IonHeader,
   IonIcon,
@@ -18,13 +17,18 @@ import { useTranslation } from 'react-i18next';
 import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
 import { useQumlContent } from '../hooks/useQumlContent';
+import { useContentSearch } from '../hooks/useContentSearch';
 import { useDownloadState } from '../hooks/useDownloadState';
 import { useIsContentLocal } from '../hooks/useIsContentLocal';
 import { useNetwork } from '../providers/NetworkProvider';
 import { DownloadProgressBadge } from '../components/common/DownloadProgressBadge';
+import RelatedContent from '../components/collection/RelatedContent';
 import { startContentDownload } from '../services/content/contentDownloadHelper';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
+import { resolveContentForPlayer } from '../services/content/contentPlaybackResolver';
+import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { downloadManager } from '../services/download_manager';
+import { BackIcon } from '../components/icons/CollectionIcons';
 import PageLoader from '../components/common/PageLoader';
 import { telemetryService } from '../services/TelemetryService';
 import './ContentPlayerPage.css';
@@ -32,20 +36,6 @@ import './ContentPlayerPage.css';
 const QUML_MIME_TYPES = [
   'application/vnd.sunbird.questionset',
   'application/vnd.sunbird.question',
-];
-
-const MOCK_RELATED_VIDEOS = [
-  { id: '1', title: 'The AI Engineer Course 2026: Complete AI...', rating: 4.5, views: '3k Views', thumbnail: 'https://images.pexels.com/photos/3153198/pexels-photo-3153198.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: '2', title: 'Data Engineering Foundations', rating: 4.5, views: '9k Views', thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: '3', title: 'The AI Engineer Course 2026: Complete AI...', rating: 4.5, views: '3k Views', thumbnail: 'https://images.pexels.com/photos/3153198/pexels-photo-3153198.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: '4', title: 'Data Engineering Foundations', rating: 4.5, views: '9k Views', thumbnail: 'https://images.pexels.com/photos/8386440/pexels-photo-8386440.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: '5', title: 'The AI Engineer Course 2026: Complete AI...', rating: 4.5, views: '3k Views', thumbnail: 'https://images.pexels.com/photos/3153198/pexels-photo-3153198.jpeg?auto=compress&cs=tinysrgb&w=400' },
-];
-
-const MOCK_RELATED_CONTENT = [
-  { id: '1', title: 'The AI Engineer Course 2026: Complete AI Engine...', badge: 'Course', rating: 4.5, lessons: '25 Lessons', thumbnail: 'https://images.pexels.com/photos/9026290/pexels-photo-9026290.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: '2', title: 'Data Engineering Foundation', badge: 'Textbook', rating: 4.5, lessons: '25 Lessons', thumbnail: 'https://images.pexels.com/photos/2582937/pexels-photo-2582937.jpeg?auto=compress&cs=tinysrgb&w=400' },
-  { id: '3', title: 'Machine Learning Basics', badge: 'Course', rating: 4.3, lessons: '18 Lessons', thumbnail: 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=400' },
 ];
 
 const ContentPlayerPage: React.FC = () => {
@@ -70,10 +60,10 @@ const ContentPlayerPage: React.FC = () => {
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const playerMetadata = isQumlContent ? qumlData : contentData;
+  const rawPlayerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
   const playerError = error || (isQumlContent ? qumlError : null);
-  const mimeType = playerMetadata?.mimeType;
+  const mimeType = rawPlayerMetadata?.mimeType;
 
   // Download state (with optimistic UI override for post-delete snapping)
   const rawDownloadState = useDownloadState(contentId);
@@ -86,6 +76,34 @@ const ContentPlayerPage: React.FC = () => {
 
   const isLocal = deletedLocal ? false : rawIsLocal;
   const downloadState = deletedLocal ? null : rawDownloadState;
+
+  // Resolve URLs to local filesystem paths for offline playback.
+  // When online, players use remote streamingUrl/artifactUrl directly (works fine).
+  // When offline, we need to rewrite URLs to local Capacitor file paths.
+  const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+  useEffect(() => {
+    if (!rawPlayerMetadata?.identifier || !isLocal || !isOffline) {
+      return;
+    }
+    let cancelled = false;
+    resolveContentForPlayer(rawPlayerMetadata.identifier, rawPlayerMetadata).then((resolved) => {
+      if (!cancelled) setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
+    });
+    return () => { cancelled = true; };
+  }, [rawPlayerMetadata, isLocal, isOffline]);
+
+  const playerMetadata = (isOffline && isLocal && resolvedMetadata?.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+
+  // Related content
+  const contentLoaded = !isLoading && !!contentData;
+  const { data: searchData } = useContentSearch({
+    request: { limit: 20, offset: 0 },
+    enabled: contentLoaded,
+  });
+  const relatedItems = useMemo(
+    () => mapSearchContentToRelatedContentItems(searchData?.data?.content, contentId, 3),
+    [searchData, contentId],
+  );
 
   const handleRetry = useCallback(() => {
     refetch();
@@ -257,27 +275,32 @@ const ContentPlayerPage: React.FC = () => {
     <IonPage className="cp-page">
       <IonHeader className="ion-no-border">
         <IonToolbar className="cp-toolbar">
-          <IonButtons slot="start">
-            <button className="cp-action-btn" onClick={() => router.goBack()}>
-              <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+          <div className="cp-toolbar-inner">
+            <button type="button"
+              onClick={() => router.goBack()}
+              className="cp-icon-btn"
+              aria-label={t('back')}
+            >
+              <BackIcon />
             </button>
-          </IonButtons>
-          <IonButtons slot="end" className="cp-header-actions">
-            <DownloadProgressBadge
-              downloadState={downloadState}
-              isLocal={isLocal}
-              onDownload={handleDownload}
-              onRetry={handleRetryDownload}
-              onDelete={requestDelete}
-              onPause={handlePauseDownload}
-              onResume={handleResumeDownload}
-            />
-            <button className="cp-action-btn">
-              <IonIcon icon={shareSocialOutline} color="primary" />
-            </button>
-          </IonButtons>
+            <div className="cp-header-actions">
+              <DownloadProgressBadge
+                downloadState={downloadState}
+                isLocal={isLocal}
+                onDownload={handleDownload}
+                onRetry={handleRetryDownload}
+                onDelete={requestDelete}
+                onPause={handlePauseDownload}
+                onResume={handleResumeDownload}
+              />
+              <button type="button"
+                className="cp-icon-btn"
+                aria-label="Share"
+              >
+                <IonIcon icon={shareSocialOutline} color="primary" />
+              </button>
+            </div>
+          </div>
         </IonToolbar>
       </IonHeader>
 
@@ -295,11 +318,9 @@ const ContentPlayerPage: React.FC = () => {
             <div className="cp-hero">
               <div className="cp-meta">
                 <h1>{playerMetadata.name}</h1>
-                <div className="cp-meta-stats">
-                  <span className="cp-rating">4.5 <span className="cp-star">★</span></span>
-                  <span className="cp-dot">•</span>
-                  <span>25 Lessons</span>
-                </div>
+                {playerMetadata.description && (
+                  <p className="cp-description">{playerMetadata.description}</p>
+                )}
               </div>
 
               {/* Thumbnail with play button */}
@@ -322,58 +343,7 @@ const ContentPlayerPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Related Videos */}
-            <div className="cp-related-videos">
-              <h2>Related Videos</h2>
-              <div className="cp-rv-list">
-                {MOCK_RELATED_VIDEOS.map((video) => (
-                  <div key={video.id} className="cp-rv-card">
-                    <div className="cp-rv-thumb">
-                      <IonImg src={video.thumbnail} alt={video.title} className="cp-rv-img" />
-                      <div className="cp-rv-play">
-                        <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M8 4L0.5 8.33013L0.5 -0.330127L8 4Z" fill="var(--ion-color-primary)" />
-                        </svg>
-                      </div>
-                    </div>
-                    <div className="cp-rv-info">
-                      <h3>{video.title}</h3>
-                      <div className="cp-meta-stats">
-                        <span className="cp-rating">{video.rating} <span className="cp-star">★</span></span>
-                        <span className="cp-dot">•</span>
-                        <span>{video.views}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Related Content */}
-            <div className="cp-related-content">
-              <div className="cp-section-header">
-                <h2>Related Content</h2>
-                <svg width="12" height="6" viewBox="0 0 12 6" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M11.2687 3L6.31135 0.449666V5.55033L11.2687 3ZM0.90625 3.5H6.80709V2.5H0.90625V3.5Z" fill="var(--ion-color-primary)" />
-                </svg>
-              </div>
-              <div className="cp-horizontal-scroll">
-                {MOCK_RELATED_CONTENT.map((item) => (
-                  <div key={item.id} className="cp-content-card">
-                    <IonImg src={item.thumbnail} alt={item.title} className="cp-card-img" />
-                    <div className={`cp-card-badge ${item.badge === 'Textbook' ? 'cp-badge-textbook' : ''}`}>
-                      {item.badge}
-                    </div>
-                    <h3>{item.title}</h3>
-                    <div className="cp-meta-stats">
-                      <span className="cp-rating">{item.rating} <span className="cp-star">★</span></span>
-                      <span className="cp-dot">•</span>
-                      <span>{item.lessons}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <RelatedContent items={relatedItems} t={t} />
           </div>
         )}
       </IonContent>

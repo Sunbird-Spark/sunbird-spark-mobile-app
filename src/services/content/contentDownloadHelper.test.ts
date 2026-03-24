@@ -34,6 +34,16 @@ describe('startContentDownload', () => {
     expect(downloadManager.enqueue).not.toHaveBeenCalled();
   });
 
+  it('returns not_available when mimeType is streaming-only', async () => {
+    const result = await startContentDownload({
+      identifier: 'do_1',
+      downloadUrl: 'https://youtube.com/watch?v=123',
+      mimeType: 'video/x-youtube'
+    });
+    expect(result).toBe('not_available');
+    expect(downloadManager.enqueue).not.toHaveBeenCalled();
+  });
+
   it('returns already_downloaded when content_state is 2', async () => {
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
       identifier: 'do_1',
