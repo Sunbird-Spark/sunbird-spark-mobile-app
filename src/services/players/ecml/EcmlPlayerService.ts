@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
+import { EcmlPlayerConfig, EcmlPlayerContextProps, EcmlPlayerMetadata } from './types';
 import { buildEcmlPlayerContext } from '../PlayerContextService';
 
 // webview=true: renderer enters preview mode (needed for postMessage config delivery)
@@ -20,7 +20,7 @@ export class EcmlPlayerService {
     // Standard core plugins directory relative to the app origin.
     const repos: string[] = ['/content-player/coreplugins/'];
 
-    const config: any = {
+    const config: EcmlPlayerConfig["config"] = {
       showEndPage: false,
       endPage: [{ template: 'assessment', contentType: ['SelfAssess'] }],
       showStartPage: true,
@@ -40,7 +40,7 @@ export class EcmlPlayerService {
         showPrint: true,
         showReplay: true,
       },
-      enableTelemetryValidation: false,
+      enableTelemetryValidation: false
     };
 
     if (isLocal && basePath) {

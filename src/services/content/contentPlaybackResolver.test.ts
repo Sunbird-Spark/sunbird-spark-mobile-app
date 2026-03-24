@@ -1,12 +1,19 @@
 import { resolveContentForPlayer } from './contentPlaybackResolver';
+import { Filesystem } from '@capacitor/filesystem';
 
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: { getByIdentifier: vi.fn() },
 }));
 
+vi.mock('@capacitor/filesystem', () => ({
+  Filesystem: { readFile: vi.fn() },
+  Encoding: { UTF8: 'utf8' },
+}));
+
 import { contentDbService } from '../db/ContentDbService';
 
 const mockGetByIdentifier = vi.mocked(contentDbService.getByIdentifier);
+const mockReadFile = vi.mocked(Filesystem.readFile);
 
 describe('resolveContentForPlayer', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -102,5 +109,55 @@ describe('resolveContentForPlayer', () => {
     mockGetByIdentifier.mockRejectedValue(new Error('DB error'));
     const result = await resolveContentForPlayer('do_123', metadata);
     expect(result).toBe(metadata);
+  });
+
+  describe('loadLocalBody for ECML', () => {
+    const ecmlMeta = {
+      identifier: 'do_ecml',
+      mimeType: 'application/vnd.ekstep.ecml-archive',
+    };
+
+    it('loads body from index.json when available', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_ecml',
+      } as any);
+      mockReadFile.mockResolvedValueOnce({ data: '{"theme": "json"}' } as any);
+
+      const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
+
+      expect(mockReadFile).toHaveBeenCalledWith(expect.objectContaining({
+        path: expect.stringContaining('index.json'),
+      }));
+      expect((result as any).body).toEqual({ theme: 'json' });
+    });
+
+    it('falls back to index.ecml when index.json is missing', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_ecml',
+      } as any);
+      // index.json fails, index.ecml succeeds
+      mockReadFile
+        .mockRejectedValueOnce(new Error('no json'))
+        .mockResolvedValueOnce({ data: '{"theme": "ecml"}' } as any);
+
+      const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
+
+      expect(mockReadFile).toHaveBeenCalledTimes(2);
+      expect((result as any).body).toEqual({ theme: 'ecml' });
+    });
+
+    it('sets body to null when both files are missing', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_ecml',
+      } as any);
+      mockReadFile.mockRejectedValue(new Error('missing files'));
+
+      const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
+
+      expect((result as any).body).toBeNull();
+    });
   });
 });

@@ -123,7 +123,12 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
     });
 
     return resolved as T;
-  } catch {
+  } catch (error) {
+    console.warn(
+      TAG,
+      'offline playback resolution failed; falling back to original metadata',
+      { contentId, error },
+    );
     // If resolution fails, return original metadata (online playback still works)
     return metadata;
   }
