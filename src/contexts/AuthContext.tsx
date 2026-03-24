@@ -8,6 +8,7 @@ import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
 import { telemetryService } from '../services/TelemetryService';
+import { deviceService } from '../services/device/deviceService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -70,7 +71,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (currentUserId) {
       userService.userRead(currentUserId).then((res) => {
         const userData = (res.data as any)?.response;
-        const channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
+        const channel = (userData?.rootOrg as any)?.hashTagId || userData?.channel || '';
         if (channel) {
           telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
         }
@@ -174,8 +175,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(null);
     setIsAuthenticated(false);
     setTncDismissed(false);
-    // Reset to anonymous guest session: sid = '1' (fixed static)
-    telemetryService.updateContext({ uid: 'anonymous', sid: '1' });
+    const did = await deviceService.getHashedDeviceId().catch(() => '');
+    telemetryService.updateContext({ uid: did || 'anonymous', sid: uuidv4() });
   }, []);
 
   return (

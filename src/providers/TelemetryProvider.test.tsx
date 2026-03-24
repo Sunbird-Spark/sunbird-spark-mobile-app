@@ -313,17 +313,18 @@ describe('TelemetryProvider', () => {
       });
     });
 
-    it('resolves channel and sid for a logged-in user', async () => {
+    it('resolves channel from rootOrg.hashTagId (not slug) for a logged-in user', async () => {
       vi.mocked(userService.getUserId).mockReturnValue('logged-user');
+      // rootOrg.hashTagId is the correct channel ID; channel field is the human-readable slug
       vi.mocked(userService.userRead).mockResolvedValue({
-        data: { response: { channel: 'user-channel' } },
+        data: { response: { channel: 'sunbirdco', rootOrg: { hashTagId: '0128abc123' } } },
       } as any);
 
       render(<TelemetryProvider><div /></TelemetryProvider>);
 
       await waitFor(() => {
         expect(mockInitialize).toHaveBeenCalledWith(
-          expect.objectContaining({ uid: 'logged-user', channel: 'user-channel' }),
+          expect.objectContaining({ uid: 'logged-user', channel: '0128abc123' }),
         );
       });
       // sid must be a UUID (not '1') for logged-in users
@@ -364,13 +365,13 @@ describe('TelemetryProvider', () => {
       });
     });
 
-    it('uses sid="1" and empty channel for anonymous user', async () => {
+    it('uses device ID as uid and a UUID sid for anonymous user', async () => {
       render(<TelemetryProvider><div /></TelemetryProvider>);
 
       await waitFor(() => {
-        expect(mockInitialize).toHaveBeenCalledWith(
-          expect.objectContaining({ uid: '', sid: '1' }),
-        );
+        const call = mockInitialize.mock.calls[0][0];
+        expect(call.uid).toBe('did123');
+        expect(call.sid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
       });
     });
   });

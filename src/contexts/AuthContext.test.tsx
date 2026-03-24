@@ -68,6 +68,13 @@ vi.mock('../services/TelemetryService', () => ({
   },
 }));
 
+// Mock deviceService — used in logout to get anonymous uid
+vi.mock('../services/device/deviceService', () => ({
+  deviceService: {
+    getHashedDeviceId: vi.fn().mockResolvedValue('did123'),
+  },
+}));
+
 import { userService } from '../services/UserService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
@@ -238,7 +245,9 @@ describe('AuthContext', () => {
   it('loginWithCredentials calls applyLoginTelemetry with userId', async () => {
     const { telemetryService } = await import('../services/TelemetryService');
     vi.mocked(userService.getUserId).mockReturnValue('user-abc');
-    vi.mocked(userService.userRead).mockResolvedValue({ data: { response: { channel: 'mychannel' } } } as any);
+    vi.mocked(userService.userRead).mockResolvedValue({
+      data: { response: { channel: 'sunbirdco', rootOrg: { hashTagId: 'mychannel-id' } } },
+    } as any);
 
     render(
       <AuthProvider>
@@ -253,7 +262,7 @@ describe('AuthContext', () => {
     });
 
     expect(telemetryService.updateContext).toHaveBeenCalledWith(
-      expect.objectContaining({ uid: 'user-abc' }),
+      expect.objectContaining({ uid: 'user-abc' }), // initial context update
     );
     expect(telemetryService.start).toHaveBeenCalled();
   });
@@ -262,7 +271,7 @@ describe('AuthContext', () => {
     const { telemetryService } = await import('../services/TelemetryService');
     vi.mocked(userService.getUserId).mockReturnValue('user-abc');
     vi.mocked(userService.userRead).mockResolvedValue({
-      data: { response: { rootOrg: { hashTagId: 'rootchannel' } } },
+      data: { response: { channel: 'sunbirdco', rootOrg: { hashTagId: 'rootchannel-id' } } },
     } as any);
 
     render(
@@ -279,7 +288,7 @@ describe('AuthContext', () => {
 
     await waitFor(() => {
       expect(telemetryService.updateContext).toHaveBeenCalledWith(
-        expect.objectContaining({ channel: 'rootchannel' }),
+        expect.objectContaining({ channel: 'rootchannel-id' }),
       );
     });
   });
@@ -426,6 +435,29 @@ describe('AuthContext', () => {
 
     expect(screen.getByTestId('needs-tnc')).toHaveTextContent('yes');
     expect(screen.getByTestId('tnc-version')).toHaveTextContent('4.0');
+  });
+
+  it('logout resets telemetry context with device ID uid and a fresh UUID sid', async () => {
+    const { telemetryService } = await import('../services/TelemetryService');
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('logout-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+    });
+
+    const calls = vi.mocked(telemetryService.updateContext).mock.calls;
+    const logoutCall = calls[calls.length - 1][0];
+    expect(logoutCall.uid).toBe('did123');
+    expect(logoutCall.sid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
   });
 
   it('logout falls back to trySilentGoogleLogin when logoutGoogle fails', async () => {

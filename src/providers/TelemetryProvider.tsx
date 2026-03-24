@@ -42,12 +42,10 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           })),
         ]);
 
-        // Anonymous: uid = '' (empty string), sid = '1' (fixed static)
-        // Logged-in: uid = real userId, sid = new UUID (regenerated per session)
         const rawUid = userService.getUserId();
-        const uid = rawUid || '';
         const isLoggedIn = !!rawUid;
-        const sid = isLoggedIn ? uuidv4() : '1';
+        const uid = rawUid || did;   // anonymous: device ID as actor; logged-in: real userId
+        const sid = uuidv4();        // always a fresh UUID per session
         const platform = Capacitor.getPlatform();
 
         // Resolve channel and clock skew
@@ -58,18 +56,21 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
         if (isLoggedIn) {
           // Logged-in: channel from user's rootOrg (mirrors SunbirdEd-portal behaviour)
+          let channelSlug = '';
           try {
             const userResponse = await userService.userRead(uid);
             const userData = (userResponse.data as any)?.response;
-            channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
+            // hashTagId is the actual channel ID used in telemetry; channel is the human-readable slug
+            channel = (userData?.rootOrg as any)?.hashTagId || userData?.channel || '';
+            channelSlug = userData?.channel || '';
             tags = channel ? [channel] : [];
           } catch { /* fall through to anonymous channel resolution */ }
 
-          // Get server clock skew from org API using user's channel as slug
-          if (channel) {
+          // Get server clock skew from org API — search by slug (not the hashTagId)
+          if (channelSlug) {
             try {
               const orgResponse = await orgService.search({
-                request: { filters: { isTenant: true, slug: channel } },
+                request: { filters: { isTenant: true, slug: channelSlug } },
               });
               const serverDate = orgResponse?.headers?.['date'] as string | undefined;
               if (serverDate) {
@@ -92,7 +93,8 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               request: { filters: { isTenant: true, slug } },
             });
             const org = orgResponse?.data?.response?.content?.[0];
-            channel = org?.hashTagId || org?.channel || '';
+            // org.channel is the slug — only hashTagId is the correct telemetry channel ID
+            channel = org?.hashTagId || '';
             tags = channel ? [channel] : [];
             const serverDate = orgResponse?.headers?.['date'] as string | undefined;
             if (serverDate) {
