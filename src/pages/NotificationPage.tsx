@@ -3,7 +3,6 @@ import {
   IonPage,
   IonHeader,
   IonToolbar,
-  IonButtons,
   IonContent,
   IonRefresher,
   IonRefresherContent,
@@ -69,14 +68,14 @@ const NotificationPage: React.FC = () => {
     <IonPage className="notification-page">
       <IonHeader className="ion-no-border">
         <IonToolbar className="notification-page__header">
-          <IonButtons slot="start">
-            <button className="cp-action-btn" onClick={() => router.goBack()}>
+          <div className="notification-page__header-inner">
+            <button className="notification-page__back-btn" onClick={() => router.goBack()}>
               <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
                 <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
-          </IonButtons>
-          <h1 className="notification-page__title">{t('notifications')}</h1>
+            <h1 className="notification-page__title">{t('notifications')}</h1>
+          </div>
         </IonToolbar>
       </IonHeader>
 
