@@ -30,6 +30,7 @@ vi.mock('@ionic/react', () => ({
   IonBackButton: ({ defaultHref }: any) => <button data-testid="ion-back-button" data-href={defaultHref}>Back</button>,
   IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
+  IonBadge: ({ children }: any) => <span data-testid="ion-badge">{children}</span>,
   setupIonicReact: vi.fn(),
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
@@ -64,6 +65,7 @@ vi.mock('ionicons/icons', () => ({
   chevronBack: 'chevron-back-icon',
   logIn: 'log-in-icon',
   notifications: 'notifications-icon',
+  notificationsOutline: 'notifications-outline-icon',
   searchOutline: 'search-outline-icon',
   helpCircleOutline: 'help-circle-outline-icon',
   chevronBackOutline: 'chevron-back-outline-icon',
@@ -144,6 +146,10 @@ vi.mock('./pages/CollectionPage', () => ({
   default: () => <div data-testid="collection-page">Collection Page</div>,
 }));
 
+vi.mock('./pages/NotificationPage', () => ({
+  default: () => <div data-testid="notification-page">Notification Page</div>,
+}));
+
 vi.mock('./pages/ProfileLearningPage', () => ({
   default: () => <div data-testid="profile-learning-page">Profile Learning Page</div>,
 }));
@@ -215,6 +221,12 @@ vi.mock('./components/common/PageLoader', () => ({
   default: () => <div data-testid="page-loader">Loading...</div>,
 }));
 
+// Mock notification hooks (used by AppHeader)
+vi.mock('./hooks/useNotifications', () => ({
+  useNotificationRead: () => ({ notifications: [], isLoading: false, error: null, refetch: vi.fn() }),
+  useNotificationGrouping: () => ({ groupedNotifications: [], unreadCount: 0 }),
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -256,6 +268,7 @@ describe('App', () => {
     expect(screen.getByTestId('route-/explore')).toBeInTheDocument();
     expect(screen.getByTestId('route-/search')).toBeInTheDocument();
     expect(screen.getByTestId('route-/content/:contentId')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/notifications')).toBeInTheDocument();
   });
 
   it('renders redirect component', () => {

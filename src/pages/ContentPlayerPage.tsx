@@ -11,7 +11,7 @@ import {
 } from '@ionic/react';
 import { useParams } from 'react-router-dom';
 import { useIonRouter } from '@ionic/react';
-import { cloudOfflineOutline, checkmarkCircle, alertCircleOutline, shareSocialOutline } from 'ionicons/icons';
+import { shareSocialOutline, cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { useTranslation } from 'react-i18next';
 import { ContentPlayer } from '../components/players/ContentPlayer';

@@ -121,7 +121,7 @@ const DownloadsPage: React.FC = () => {
                         <button
                           className="dl-icon-btn"
                           onClick={() => downloadManager.pause(entry.identifier)}
-                          aria-label="Pause"
+                          aria-label={t('pause', 'Pause')}
                         >
                           <IonIcon icon={pauseCircleOutline} />
                         </button>
@@ -130,7 +130,7 @@ const DownloadsPage: React.FC = () => {
                         <button
                           className="dl-icon-btn"
                           onClick={() => downloadManager.resume(entry.identifier)}
-                          aria-label="Resume"
+                          aria-label={t('download.resume', 'Resume')}
                         >
                           <IonIcon icon={playCircleOutline} />
                         </button>
@@ -139,7 +139,7 @@ const DownloadsPage: React.FC = () => {
                         <button
                           className="dl-icon-btn dl-icon-danger"
                           onClick={() => downloadManager.cancel(entry.identifier)}
-                          aria-label="Cancel"
+                          aria-label={t('cancel', 'Cancel')}
                         >
                           <IonIcon icon={closeCircleOutline} />
                         </button>
@@ -169,7 +169,7 @@ const DownloadsPage: React.FC = () => {
                       <button
                         className="dl-icon-btn dl-icon-danger"
                         onClick={() => downloadManager.cancel(entry.identifier)}
-                        aria-label="Cancel"
+                        aria-label={t('cancel', 'Cancel')}
                       >
                         <IonIcon icon={closeCircleOutline} />
                       </button>
@@ -206,7 +206,7 @@ const DownloadsPage: React.FC = () => {
                       <button
                         className="dl-icon-btn"
                         onClick={() => downloadManager.retry(entry.identifier)}
-                        aria-label="Retry"
+                        aria-label={t('retry', 'Retry')}
                       >
                         <IonIcon icon={refreshOutline} />
                       </button>
