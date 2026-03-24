@@ -83,7 +83,6 @@ const ContentPlayerPage: React.FC = () => {
   const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
   useEffect(() => {
     if (!rawPlayerMetadata?.identifier || !isLocal) {
-      setResolvedMetadata(current => current === null ? null : null);
       return;
     }
     let cancelled = false;
