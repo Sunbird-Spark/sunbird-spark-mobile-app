@@ -185,6 +185,18 @@
   "feedbackToastMessage": "شكراً لملاحظاتك. قد لا نتمكن من الرد على كل اقتراح، لكن ملاحظاتك تساعد في تحسين هذا التطبيق للجميع.",
   "faqCount": "{{count}} أسئلة شائعة",
 
+  "onboarding": {
+    "subtitle": "نود مساعدتك في تخصيص تجربتك!",
+    "saveAndProceed": "حفظ والمتابعة",
+    "submit": "إرسال",
+    "skipOnboarding": "تخطي الإعداد",
+    "enterPreference": "أدخل تفضيلك",
+    "failedToLoad": "فشل تحميل الإعداد.",
+    "skip": "تخطي",
+    "somethingWentWrong": "حدث خطأ ما.",
+    "goToHome": "الذهاب إلى الرئيسية",
+    "goBack": "رجوع"
+  },
   "months": {
     "jan": "يناير",
     "feb": "فبراير",

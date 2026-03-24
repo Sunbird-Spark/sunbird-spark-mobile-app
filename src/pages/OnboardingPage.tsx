@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { IonPage, IonContent, IonSpinner, useIonRouter } from '@ionic/react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormRead } from '../hooks/useFormRead';
 import { userService } from '../services/UserService';
@@ -31,6 +32,7 @@ const OnboardingPage: React.FC = () => {
   const { userId } = useAuth();
   const router = useIonRouter();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
 
   const [screenHistory, setScreenHistory] = useState<string[]>([]);
   const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
@@ -157,9 +159,9 @@ const OnboardingPage: React.FC = () => {
         <IonContent fullscreen className="onboarding-content">
           <div className="onboarding-loader">
             <p className="onboarding-error-text">
-              Failed to load onboarding.{' '}
+              {t('onboarding.failedToLoad')}{' '}
               <button type="button" onClick={() => router.push('/home', 'root', 'replace')} className="onboarding-error-link">
-                Skip
+                {t('onboarding.skip')}
               </button>
             </p>
           </div>
@@ -175,9 +177,9 @@ const OnboardingPage: React.FC = () => {
         <IonContent fullscreen className="onboarding-content">
           <div className="onboarding-loader">
             <p className="onboarding-error-text">
-              Something went wrong.{' '}
+              {t('onboarding.somethingWentWrong')}{' '}
               <button type="button" onClick={() => router.push('/home', 'root', 'replace')} className="onboarding-error-link">
-                Go to Home
+                {t('onboarding.goToHome')}
               </button>
             </p>
           </div>
@@ -209,7 +211,7 @@ const OnboardingPage: React.FC = () => {
 
           {/* Subtitle */}
           <h1 className="onboarding-subtitle">
-            We would love to help you personalize your experience!
+            {t('onboarding.subtitle')}
           </h1>
 
           {/* Progress with integrated back button */}
@@ -241,7 +243,7 @@ const OnboardingPage: React.FC = () => {
               <input
                 type="text"
                 className="onboarding-text-input"
-                placeholder="Enter your preference"
+                placeholder={t('onboarding.enterPreference')}
                 value={otherText}
                 onChange={(e) =>
                   setOtherTexts((prev) => ({ ...prev, [currentScreenId]: e.target.value }))
@@ -261,7 +263,7 @@ const OnboardingPage: React.FC = () => {
               disabled={!selectedFieldId}
               onClick={handleNext}
             >
-              Save and Proceed
+              {t('onboarding.saveAndProceed')}
             </button>
           ) : (
             <button
@@ -270,7 +272,7 @@ const OnboardingPage: React.FC = () => {
               disabled={isSubmitDisabled}
               onClick={handleSubmit}
             >
-              {isSubmitting ? <IonSpinner name="crescent" color="light" /> : 'Submit'}
+              {isSubmitting ? <IonSpinner name="crescent" color="light" /> : t('onboarding.submit')}
             </button>
           )}
 
@@ -281,7 +283,7 @@ const OnboardingPage: React.FC = () => {
             onClick={handleSkip}
             disabled={isSubmitting}
           >
-            Skip Onboarding
+            {t('onboarding.skipOnboarding')}
           </button>
         </div>
       </IonContent>

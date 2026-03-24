@@ -14,6 +14,14 @@ vi.mock('@ionic/react', () => ({
 // Mock CSS
 vi.mock('./OnboardingPage.css', () => ({}));
 
+// Mock i18next - returns the key path for easy assertions
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { dir: () => 'ltr' },
+  }),
+}));
+
 const mockRouterPush = vi.fn();
 
 // Mock AuthContext
@@ -110,14 +118,14 @@ describe('OnboardingPage', () => {
     mockFormError = true;
     mockFormResponse = null;
     renderPage();
-    expect(screen.getByText('Failed to load onboarding.')).toBeInTheDocument();
-    expect(screen.getByText('Skip')).toBeInTheDocument();
+    expect(screen.getByText('onboarding.failedToLoad')).toBeInTheDocument();
+    expect(screen.getByText('onboarding.skip')).toBeInTheDocument();
   });
 
   it('renders the first screen with brand logo and subtitle', () => {
     renderPage();
     expect(screen.getByAltText('Sunbird')).toBeInTheDocument();
-    expect(screen.getByText('We would love to help you personalize your experience!')).toBeInTheDocument();
+    expect(screen.getByText('onboarding.subtitle')).toBeInTheDocument();
     expect(screen.getByText('What is your language preference?')).toBeInTheDocument();
   });
 
@@ -135,21 +143,21 @@ describe('OnboardingPage', () => {
 
   it('disables Save and Proceed when no option selected', () => {
     renderPage();
-    const btn = screen.getByText('Save and Proceed');
+    const btn = screen.getByText('onboarding.saveAndProceed');
     expect(btn).toBeDisabled();
   });
 
   it('enables Save and Proceed after selecting an option', () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    const btn = screen.getByText('Save and Proceed');
+    const btn = screen.getByText('onboarding.saveAndProceed');
     expect(btn).not.toBeDisabled();
   });
 
   it('navigates to next screen on Save and Proceed', () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    fireEvent.click(screen.getByText('Save and Proceed'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
     expect(screen.getByText('What is your role?')).toBeInTheDocument();
     expect(screen.getByText('Teacher')).toBeInTheDocument();
     expect(screen.getByText('Student')).toBeInTheDocument();
@@ -158,14 +166,14 @@ describe('OnboardingPage', () => {
   it('shows back button on second screen', () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    fireEvent.click(screen.getByText('Save and Proceed'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
     expect(screen.getByLabelText('Go back')).toBeInTheDocument();
   });
 
   it('navigates back and preserves selection', () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    fireEvent.click(screen.getByText('Save and Proceed'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
 
     // Go back
     fireEvent.click(screen.getByLabelText('Go back'));
@@ -178,29 +186,29 @@ describe('OnboardingPage', () => {
   it('shows text input when Other is selected', () => {
     renderPage();
     fireEvent.click(screen.getByText('Other'));
-    expect(screen.getByPlaceholderText('Enter your preference')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('onboarding.enterPreference')).toBeInTheDocument();
   });
 
   it('shows Submit button on last screen', () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    fireEvent.click(screen.getByText('Save and Proceed'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
     fireEvent.click(screen.getByText('Teacher'));
-    expect(screen.getByText('Submit')).toBeInTheDocument();
+    expect(screen.getByText('onboarding.submit')).toBeInTheDocument();
   });
 
   it('shows Submit button when Other is selected (terminal field)', () => {
     renderPage();
     fireEvent.click(screen.getByText('Other'));
-    expect(screen.getByText('Submit')).toBeInTheDocument();
+    expect(screen.getByText('onboarding.submit')).toBeInTheDocument();
   });
 
   it('calls updateUser on submit', async () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    fireEvent.click(screen.getByText('Save and Proceed'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
     fireEvent.click(screen.getByText('Teacher'));
-    fireEvent.click(screen.getByText('Submit'));
+    fireEvent.click(screen.getByText('onboarding.submit'));
 
     await waitFor(() => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
@@ -220,7 +228,7 @@ describe('OnboardingPage', () => {
 
   it('calls updateUser with isSkipped on skip', async () => {
     renderPage();
-    fireEvent.click(screen.getByText('Skip Onboarding'));
+    fireEvent.click(screen.getByText('onboarding.skipOnboarding'));
 
     await waitFor(() => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
@@ -238,9 +246,9 @@ describe('OnboardingPage', () => {
   it('submits custom text for Other field', async () => {
     renderPage();
     fireEvent.click(screen.getByText('Other'));
-    const input = screen.getByPlaceholderText('Enter your preference');
+    const input = screen.getByPlaceholderText('onboarding.enterPreference');
     fireEvent.change(input, { target: { value: 'Kannada' } });
-    fireEvent.click(screen.getByText('Submit'));
+    fireEvent.click(screen.getByText('onboarding.submit'));
 
     await waitFor(() => {
       expect(mockUpdateUser).toHaveBeenCalledWith({
@@ -260,9 +268,9 @@ describe('OnboardingPage', () => {
   it('navigates to home after successful submit', async () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
-    fireEvent.click(screen.getByText('Save and Proceed'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
     fireEvent.click(screen.getByText('Teacher'));
-    fireEvent.click(screen.getByText('Submit'));
+    fireEvent.click(screen.getByText('onboarding.submit'));
 
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith('/home', 'root', 'replace');
@@ -271,7 +279,7 @@ describe('OnboardingPage', () => {
 
   it('navigates to home after skip', async () => {
     renderPage();
-    fireEvent.click(screen.getByText('Skip Onboarding'));
+    fireEvent.click(screen.getByText('onboarding.skipOnboarding'));
 
     await waitFor(() => {
       expect(mockRouterPush).toHaveBeenCalledWith('/home', 'root', 'replace');

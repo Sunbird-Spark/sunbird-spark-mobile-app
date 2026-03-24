@@ -218,6 +218,18 @@
   "submit": "Soumettre",
   "fieldUpdatedSuccessfully": "{{field}} mis à jour avec succès",
 
+  "onboarding": {
+    "subtitle": "Nous aimerions vous aider à personnaliser votre expérience !",
+    "saveAndProceed": "Enregistrer et continuer",
+    "submit": "Soumettre",
+    "skipOnboarding": "Passer l'intégration",
+    "enterPreference": "Entrez votre préférence",
+    "failedToLoad": "Échec du chargement de l'intégration.",
+    "skip": "Passer",
+    "somethingWentWrong": "Quelque chose s'est mal passé.",
+    "goToHome": "Aller à l'accueil",
+    "goBack": "Retour"
+  },
   "months": {
     "jan": "Janv",
     "feb": "Févr",
