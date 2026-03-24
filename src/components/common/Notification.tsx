@@ -1,6 +1,7 @@
 import React from 'react';
 import { useIonRouter } from '@ionic/react';
 import { useNotificationRead, useNotificationGrouping } from '../../hooks/useNotifications';
+import './Notification.css';
 
 const BellIcon = () => (
   <svg width="17" height="19" viewBox="0 0 17 19" fill="none">
