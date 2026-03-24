@@ -82,16 +82,8 @@ export class ContentService {
     const raw = entry.local_data || entry.server_data;
     const content = raw ? JSON.parse(raw) : null;
 
-    // Resolve artifact URL to the local filesystem for downloaded content.
-    // entry.path is the content directory (file:///…/content/<id>/).
-    // The artifactUrl from the manifest may be a relative filename or a CDN URL;
-    // in both cases the actual file is at {path}/{basename}.
-    if (content && entry.path && entry.content_state === 2 && content.artifactUrl) {
-      const basename = content.artifactUrl.split('/').pop();
-      if (basename) {
-        content.artifactUrl = `${entry.path}/${basename}`;
-      }
-    }
+    // URL resolution for offline playback is handled by contentPlaybackResolver
+    // in ContentPlayerPage. Keep raw metadata here to avoid double resolution.
 
     return buildOfflineResponse<T>({ content } as T);
   }

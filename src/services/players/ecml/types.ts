@@ -22,6 +22,7 @@ export interface EcmlPlayerConfig {
     endPage?: Array<{ template: string; contentType: string[] }>;
     showStartPage: boolean;
     host: string;
+    baseURL: string;
     overlay: {
       showUser: boolean;
     };
@@ -32,6 +33,8 @@ export interface EcmlPlayerConfig {
       webLink: string;
     };
     apislug: string;
+    devicePluginspath?: string;
+    previewPluginspath?: string;
     repos: string[];
     plugins: Array<{ id: string; ver: number; type: string }>;
     sideMenu: {

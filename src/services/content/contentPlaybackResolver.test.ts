@@ -45,8 +45,8 @@ describe('resolveContentForPlayer', () => {
     const result = await resolveContentForPlayer('do_123', metadata);
     // artifactUrl becomes just the basename (players concat basePath + artifactUrl)
     expect(result.artifactUrl).toBe('video.mp4');
-    // streamingUrl is resolved to an absolute local path
-    expect(result.streamingUrl).toContain('video.mp4');
+    // streamingUrl is resolved to the base directory for video content
+    expect(result.streamingUrl).toBe('file:///data/content/do_123');
     expect(result.isAvailableLocally).toBe(true);
     expect(result.basePath).toBeDefined();
   });
@@ -63,8 +63,8 @@ describe('resolveContentForPlayer', () => {
     };
     const result = await resolveContentForPlayer('do_vid', videoMeta);
     expect(result.artifactUrl).toBe('clip.mp4');
-    // streamingUrl auto-set for video content
-    expect(result.streamingUrl).toContain('clip.mp4');
+    // streamingUrl auto-set to directory for video content
+    expect(result.streamingUrl).toBe('file:///data/content/do_vid');
   });
 
   it('does not set streamingUrl for non-video content without streamingUrl', async () => {
@@ -94,8 +94,8 @@ describe('resolveContentForPlayer', () => {
       streamingUrl: 'https://cdn.example.com/content/do_123/master.m3u8',
     };
     const result = await resolveContentForPlayer('do_123', hlsMeta);
-    // HLS can't play offline — streamingUrl falls back to local video file
-    expect(result.streamingUrl).toContain('video.mp4');
+    // HLS can't play offline — streamingUrl falls back to local base directory for videos
+    expect(result.streamingUrl).toBe('file:///data/content/do_123');
   });
 
   it('returns original metadata on error', async () => {
