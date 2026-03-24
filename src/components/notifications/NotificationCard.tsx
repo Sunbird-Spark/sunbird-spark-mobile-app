@@ -1,4 +1,10 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import dayjs from 'dayjs';
+import 'dayjs/locale/hi';
+import 'dayjs/locale/ar';
+import 'dayjs/locale/fr';
+import 'dayjs/locale/pt';
 import type { NotificationFeed } from '../../types/notificationTypes';
 import { useNotificationMessage } from '../../hooks/useNotifications';
 
@@ -8,22 +14,8 @@ interface NotificationCardProps {
   onTap: (notification: NotificationFeed) => void;
 }
 
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-
-function formatTimestamp(dateStr: string): string {
-  const d = new Date(dateStr);
-  const day = DAYS[d.getDay()];
-  const date = d.getDate().toString().padStart(2, '0');
-  const month = MONTHS[d.getMonth()];
-  const hours = d.getHours();
-  const minutes = d.getMinutes().toString().padStart(2, '0');
-  const ampm = hours >= 12 ? 'pm' : 'am';
-  const h = hours % 12 || 12;
-  return `${day}, ${date} ${month}, ${h.toString().padStart(2, '0')}:${minutes} ${ampm}`;
+function formatTimestamp(dateStr: string, locale: string): string {
+  return dayjs(dateStr).locale(locale).format('ddd, DD MMMM, hh:mm a');
 }
 
 const TrashIcon = () => (
@@ -39,9 +31,10 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
   onTap,
 }) => {
   const { getMessage } = useNotificationMessage();
+  const { i18n } = useTranslation();
   const isUnread = notification.status === 'unread';
   const message = getMessage(notification);
-  const timestamp = formatTimestamp(notification.createdOn);
+  const timestamp = formatTimestamp(notification.createdOn, i18n.language);
 
   return (
     <div

@@ -62,24 +62,39 @@ export function useNotificationDelete() {
 
   const deleteNotification = useCallback(async (notification: NotificationFeed) => {
     setDeletedIds(prev => new Set(prev).add(notification.id));
-    await deleteApi({
-      ids: [notification.id],
-      userId: notification.userId,
-      category: notification.action.category,
-    });
+    try {
+      await deleteApi({
+        ids: [notification.id],
+        userId: notification.userId,
+        category: notification.action.category,
+      });
+    } catch {
+      // Rollback: remove from deletedIds so item reappears
+      setDeletedIds(prev => {
+        const next = new Set(prev);
+        next.delete(notification.id);
+        return next;
+      });
+    }
   }, [deleteApi]);
 
   const deleteAll = useCallback(async (notifications: NotificationFeed[]) => {
-    setDeletedIds(new Set(notifications.map(n => n.id)));
-    await Promise.all(
-      notifications.map(n =>
-        deleteApi({
-          ids: [n.id],
-          userId: n.userId,
-          category: n.action.category,
-        }),
-      ),
-    );
+    const ids = notifications.map(n => n.id);
+    setDeletedIds(new Set(ids));
+    try {
+      await Promise.all(
+        notifications.map(n =>
+          deleteApi({
+            ids: [n.id],
+            userId: n.userId,
+            category: n.action.category,
+          }),
+        ),
+      );
+    } catch {
+      // Rollback: restore all items
+      setDeletedIds(new Set());
+    }
   }, [deleteApi]);
 
   const filterDeleted = useCallback(
