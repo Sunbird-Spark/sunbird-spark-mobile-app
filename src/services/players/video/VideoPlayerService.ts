@@ -34,7 +34,20 @@ export class VideoPlayerService {
 
     const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
-    return { context, config: { apislug: '/action' }, metadata };
+    return {
+      context,
+      config: {
+        apislug: '/action',
+        sideMenu: {
+          showShare: true,
+          showDownload: false,
+          showExit: false,
+          showPrint: false,
+          showReplay: true,
+        },
+      },
+      metadata,
+    };
   }
 
   async createElement(config: VideoPlayerConfig): Promise<HTMLElement> {

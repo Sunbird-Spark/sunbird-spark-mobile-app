@@ -77,12 +77,12 @@ const ContentPlayerPage: React.FC = () => {
   const isLocal = deletedLocal ? false : rawIsLocal;
   const downloadState = deletedLocal ? null : rawDownloadState;
 
-  // Resolve URLs to local filesystem paths for offline playback.
-  // When online, players use remote streamingUrl/artifactUrl directly (works fine).
-  // When offline, we need to rewrite URLs to local Capacitor file paths.
+  // Resolve URLs to local filesystem paths when content is downloaded.
+  // The resolver rewrites artifactUrl/streamingUrl/basePath to local Capacitor
+  // webview URLs so players can load files from disk (both online and offline).
   const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
   useEffect(() => {
-    if (!rawPlayerMetadata?.identifier || !isLocal || !isOffline) {
+    if (!rawPlayerMetadata?.identifier || !isLocal) {
       return;
     }
     let cancelled = false;
@@ -90,9 +90,9 @@ const ContentPlayerPage: React.FC = () => {
       if (!cancelled) setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
     });
     return () => { cancelled = true; };
-  }, [rawPlayerMetadata, isLocal, isOffline]);
+  }, [rawPlayerMetadata, isLocal]);
 
-  const playerMetadata = (isOffline && isLocal && resolvedMetadata?.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+  const playerMetadata = (isLocal && resolvedMetadata?.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
 
   // Related content
   const contentLoaded = !isLoading && !!contentData;
@@ -208,11 +208,11 @@ const ContentPlayerPage: React.FC = () => {
   }, []);
 
   const handlePlayerEvent = (event: any) => {
-    console.log('[ContentPlayerPage] Player event:', event);
+    console.debug('[ContentPlayerPage] Player event:', event);
   };
 
   const handleTelemetryEvent = (event: any) => {
-    console.log('[ContentPlayerPage] Telemetry event:', event);
+    console.debug('[ContentPlayerPage] Telemetry event:', event);
     void telemetryService.save(event);
   };
 
