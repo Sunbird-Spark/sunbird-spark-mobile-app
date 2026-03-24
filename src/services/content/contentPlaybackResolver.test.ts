@@ -1,0 +1,106 @@
+import { resolveContentForPlayer } from './contentPlaybackResolver';
+
+vi.mock('../db/ContentDbService', () => ({
+  contentDbService: { getByIdentifier: vi.fn() },
+}));
+
+import { contentDbService } from '../db/ContentDbService';
+
+const mockGetByIdentifier = vi.mocked(contentDbService.getByIdentifier);
+
+describe('resolveContentForPlayer', () => {
+  beforeEach(() => vi.clearAllMocks());
+
+  const metadata: Record<string, any> = {
+    identifier: 'do_123',
+    name: 'Test Video',
+    mimeType: 'video/mp4',
+    artifactUrl: 'https://cdn.example.com/content/do_123/video.mp4',
+    streamingUrl: 'https://cdn.example.com/content/do_123/video.mp4',
+  };
+
+  it('returns original metadata when content is not local', async () => {
+    mockGetByIdentifier.mockResolvedValue(null);
+    const result = await resolveContentForPlayer('do_123', metadata);
+    expect(result).toBe(metadata);
+  });
+
+  it('returns original metadata when content_state is not 2', async () => {
+    mockGetByIdentifier.mockResolvedValue({ content_state: 1, path: '/some/path' } as any);
+    const result = await resolveContentForPlayer('do_123', metadata);
+    expect(result).toBe(metadata);
+  });
+
+  it('returns original metadata when path is null', async () => {
+    mockGetByIdentifier.mockResolvedValue({ content_state: 2, path: null } as any);
+    const result = await resolveContentForPlayer('do_123', metadata);
+    expect(result).toBe(metadata);
+  });
+
+  it('resolves artifactUrl to basename and sets basePath + isAvailableLocally', async () => {
+    mockGetByIdentifier.mockResolvedValue({
+      content_state: 2,
+      path: 'file:///data/content/do_123',
+    } as any);
+    const result = await resolveContentForPlayer('do_123', metadata);
+    // artifactUrl becomes just the basename (players concat basePath + artifactUrl)
+    expect(result.artifactUrl).toBe('video.mp4');
+    // streamingUrl is resolved to an absolute local path
+    expect(result.streamingUrl).toContain('video.mp4');
+    expect(result.isAvailableLocally).toBe(true);
+    expect(result.basePath).toBeDefined();
+  });
+
+  it('sets streamingUrl for video content even when no streamingUrl exists', async () => {
+    mockGetByIdentifier.mockResolvedValue({
+      content_state: 2,
+      path: 'file:///data/content/do_vid',
+    } as any);
+    const videoMeta: Record<string, any> = {
+      identifier: 'do_vid',
+      artifactUrl: 'https://cdn.example.com/do_vid/clip.mp4',
+      mimeType: 'video/mp4',
+    };
+    const result = await resolveContentForPlayer('do_vid', videoMeta);
+    expect(result.artifactUrl).toBe('clip.mp4');
+    // streamingUrl auto-set for video content
+    expect(result.streamingUrl).toContain('clip.mp4');
+  });
+
+  it('does not set streamingUrl for non-video content without streamingUrl', async () => {
+    mockGetByIdentifier.mockResolvedValue({
+      content_state: 2,
+      path: 'file:///data/content/do_pdf',
+    } as any);
+    const pdfMeta: Record<string, any> = {
+      identifier: 'do_pdf',
+      artifactUrl: 'https://cdn.example.com/do_pdf/doc.pdf',
+      mimeType: 'application/pdf',
+    };
+    const result = await resolveContentForPlayer('do_pdf', pdfMeta);
+    expect(result.artifactUrl).toBe('doc.pdf');
+    // Non-video content without streamingUrl stays undefined
+    expect(result.streamingUrl).toBeUndefined();
+    expect(result.basePath).toBeDefined();
+  });
+
+  it('falls back to artifactUrl for HLS streams (.m3u8)', async () => {
+    mockGetByIdentifier.mockResolvedValue({
+      content_state: 2,
+      path: 'file:///data/content/do_123',
+    } as any);
+    const hlsMeta = {
+      ...metadata,
+      streamingUrl: 'https://cdn.example.com/content/do_123/master.m3u8',
+    };
+    const result = await resolveContentForPlayer('do_123', hlsMeta);
+    // HLS can't play offline — streamingUrl falls back to local video file
+    expect(result.streamingUrl).toContain('video.mp4');
+  });
+
+  it('returns original metadata on error', async () => {
+    mockGetByIdentifier.mockRejectedValue(new Error('DB error'));
+    const result = await resolveContentForPlayer('do_123', metadata);
+    expect(result).toBe(metadata);
+  });
+});

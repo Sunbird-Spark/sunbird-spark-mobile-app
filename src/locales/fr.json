@@ -13,7 +13,6 @@
   "completionRate": "Taux de complétion",
   "averageCompletion": "complétion moyenne",
   "scan": "Scanner",
-
   "loading": "Chargement...",
   "error": "Erreur",
   "success": "Succès",
@@ -23,7 +22,6 @@
   "search": "Rechercher",
   "cancel": "Annuler",
   "ok": "OK",
-
   "startLearning": "Commencer à apprendre",
   "continueLearning": "Continuer l'apprentissage",
   "completed": "Terminé",
@@ -50,7 +48,6 @@
   "resourceCenter": "Centre de ressources",
   "resourceCenterSubtitle": "Gardez une longueur d'avance. Ce qui vient commence ici.",
   "selectLanguage": "Choisir la langue",
-
   "logout": "Se déconnecter",
   "settings": "Paramètres",
   "login": "Se connecter",
@@ -58,7 +55,6 @@
   "changePassword": "Changer le mot de passe",
   "sunbirdId": "Identifiant Sunbird",
   "updatePhoto": "Mettre à jour la photo",
-
   "downloads": "Téléchargements",
   "downloadedContents": "Contenus téléchargés",
   "personalDetails": "Informations personnelles",
@@ -87,15 +83,22 @@
   "rate": "Évaluer",
   "star": "étoile",
   "stars": "étoiles",
+  "notifications": "Notifications",
+  "today": "Aujourd'hui",
+  "yesterday": "Hier",
+  "older": "Plus ancien",
+  "deleteAll": "Tout supprimer",
+  "noNotifications": "Aucune notification pour le moment",
+  "noNotificationsDesc": "Vous êtes à jour ! Revenez plus tard pour les mises à jour.",
+  "offlineNotifications": "Vous êtes hors ligne, connectez-vous pour recevoir les notifications",
+  "deleteNotification": "Supprimer la notification",
   "verifyDetails": "Vérifier les informations",
   "yes": "Oui",
   "no": "Non",
-
   "contactUs": "Nous contacter",
   "reportIssue": "Signaler un problème",
   "helpAndSupport": "Aide et assistance",
   "frequentlyAsked": "Questions fréquemment posées",
-
   "courseProgress": "Progression du cours",
   "lessons": "Leçons",
   "duration": "Durée",
@@ -109,7 +112,6 @@
   "inProgress": "En cours",
   "welcomeBack": "Bienvenue à nouveau",
   "welcome": "Bienvenue",
-
   "faqSection": {
     "heading": "Questions fréquemment posées",
     "loading": "Chargement des FAQ...",
@@ -138,17 +140,14 @@
     "notFound": "Collection introuvable.",
     "errorLoading": "Échec du chargement de la collection."
   },
-
   "heroSection": {
     "title": "Le savoir qui vous propulse vers l'avant.",
     "subtitle": "Libérez votre potentiel et explorez un monde de connaissances. Commencez avec plus de 100 cours conçus pour votre avenir.",
     "ctaButton": "Commençons"
   },
-
   "activeLearners": "Apprenants actifs",
   "certifications": "Certifications",
   "howCanWeHelp": "Comment pouvons-nous vous aider aujourd'hui ?",
-
   "browseCategories": "Parcourir les catégories",
   "browseAllCategories": "Parcourir toutes les catégories",
   "continueFromWhereLeft": "Reprendre là où vous en étiez",
@@ -182,7 +181,6 @@
   "tellUsMore": "Dites-nous en plus",
   "feedbackToastMessage": "Merci pour votre retour. Nous ne pourrons peut-être pas répondre à chaque suggestion, mais votre retour aide à améliorer cette application pour tous.",
   "faqCount": "{{count}} FAQ",
-
   "all": "Tout",
   "ongoing": "En cours",
   "dueDate": "Date limite",
@@ -193,7 +191,6 @@
   "noCertificate": "Aucun certificat",
   "noEnrolledCourses": "Aucun cours inscrit pour l'instant.",
   "certificateDownloadError": "Échec du téléchargement du certificat",
-
   "personalInformation": "Informations personnelles",
   "learner": "Apprenant",
   "fullName": "Nom complet",
@@ -208,7 +205,39 @@
   "verifying": "Vérification en cours…",
   "submit": "Soumettre",
   "fieldUpdatedSuccessfully": "{{field}} mis à jour avec succès",
-
+  "download": {
+    "download": "Télécharger",
+    "resume": "Reprendre le téléchargement",
+    "retry": "Réessayer le téléchargement",
+    "error": "Échoué",
+    "started": "Téléchargement lancé",
+    "alreadyDownloaded": "Déjà téléchargé",
+    "inProgress": "Téléchargement en cours",
+    "notAvailable": "Non disponible au téléchargement",
+    "noInternet": "Pas de connexion internet",
+    "deleted": "Contenu supprimé",
+    "youreOffline": "Vous êtes hors ligne",
+    "downloadToPlayOffline": "Téléchargez ce contenu pour le lire hors ligne.",
+    "downloadSuccess": "Contenu téléchargé avec succès",
+    "noActiveDownloads": "Aucun téléchargement actif",
+    "noActiveDownloadsDesc": "Les téléchargements que vous lancez apparaîtront ici.",
+    "noDownloadedContent": "Aucun contenu téléchargé pour le moment.",
+    "cancelAll": "Tout annuler",
+    "downloading": "Téléchargement",
+    "processing": "Traitement...",
+    "queued": "En file d'attente",
+    "waiting": "En attente...",
+    "failed": "Échoué",
+    "retryAll": "Tout réessayer",
+    "item": "élément",
+    "items": "éléments",
+    "used": "utilisé",
+    "deleteTitle": "Supprimer le contenu",
+    "deleteMessage": "Supprimer {{name}} ? Cela supprimera le contenu téléchargé.",
+    "delete": "Supprimer",
+    "deleteFailed": "Échec de la suppression du contenu",
+    "downloadFailed": "Échec du téléchargement du contenu."
+  },
   "months": {
     "jan": "Janv",
     "feb": "Févr",
