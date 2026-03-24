@@ -2,8 +2,10 @@ import React from 'react';
 import { IonContent, IonPage } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../components/layout/AppHeader';
+import useImpression from '../hooks/useImpression';
 
 const DownloadsPage: React.FC = () => {
+  useImpression({ pageid: 'DownloadsPage', env: 'downloads' });
   const { t } = useTranslation();
   return (
     <IonPage>

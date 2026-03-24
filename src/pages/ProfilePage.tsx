@@ -22,8 +22,10 @@ import { AppHeader } from '../components/layout/AppHeader';
 import Avatar from 'react-avatar';
 import { useUser } from '../hooks/useUser';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
+import useImpression from '../hooks/useImpression';
 
 const ProfilePage: React.FC = () => {
+  useImpression({ pageid: 'ProfilePage', env: 'profile' });
   const { logout, userId, isAuthenticated } = useAuth();
   const { t } = useTranslation();
   const history = useHistory();

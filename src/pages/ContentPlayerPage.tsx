@@ -16,8 +16,11 @@ import { ContentPlayer } from '../components/players/ContentPlayer';
 import { useContentRead } from '../hooks/useContent';
 import { useQumlContent } from '../hooks/useQumlContent';
 import PageLoader from '../components/common/PageLoader';
+import RatingDialog from '../components/common/RatingDialog';
 import { telemetryService } from '../services/TelemetryService';
 import './ContentPlayerPage.css';
+import useImpression from '../hooks/useImpression';
+import { TelemetryTracker } from '../components/telemetry/TelemetryTracker';
 
 const QUML_MIME_TYPES = [
   'application/vnd.sunbird.questionset',
@@ -39,9 +42,11 @@ const MOCK_RELATED_CONTENT = [
 ];
 
 const ContentPlayerPage: React.FC = () => {
+  useImpression({ pageid: 'ContentPlayerPage', env: 'contentplayer' });
   const { contentId } = useParams<{ contentId: string }>();
   const router = useIonRouter();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [showRating, setShowRating] = useState(false);
 
   const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
@@ -73,8 +78,23 @@ const ContentPlayerPage: React.FC = () => {
 
   const handleClosePlayer = useCallback(() => {
     setIsPlaying(false);
+    setShowRating(true);
     ScreenOrientation.unlock().catch(() => { });
   }, []);
+
+  const handleShare = useCallback(() => {
+    void telemetryService.share({
+      edata: {
+        dir: 'Out',
+        type: 'Link',
+        items: [{
+          id: contentId,
+          type: contentData?.contentType || 'Content',
+          ver: String(contentData?.pkgVersion || '1'),
+        }],
+      },
+    });
+  }, [contentId, contentData]);
 
   // Unlock orientation on unmount
   useEffect(() => {
@@ -91,6 +111,10 @@ const ContentPlayerPage: React.FC = () => {
     console.log('[ContentPlayerPage] Telemetry event:', event);
     void telemetryService.save(event);
   };
+
+  const telemetryObject = contentData
+    ? { id: contentId, type: contentData.contentType || 'Content', ver: String(contentData.pkgVersion || '1') }
+    : undefined;
 
   // ── Fullscreen player mode (landscape, no header) ──
   if (isPlaying && playerMetadata && mimeType) {
@@ -122,6 +146,14 @@ const ContentPlayerPage: React.FC = () => {
   // ── Detail view (portrait, with header) ──
   return (
     <IonPage className="cp-page">
+      <TelemetryTracker
+        disabled={!contentData}
+        startEventInput={{ type: 'START', mode: 'play', pageid: 'ContentPlayerPage' }}
+        endEventInput={{ type: 'END', mode: 'play', pageid: 'ContentPlayerPage', summary: [] }}
+        startOptions={telemetryObject ? { object: telemetryObject } : undefined}
+        endOptions={telemetryObject ? { object: telemetryObject } : undefined}
+        summaryOptions={telemetryObject ? { object: telemetryObject } : undefined}
+      />
       <IonHeader className="ion-no-border">
         <IonToolbar className="cp-toolbar">
           <IonButtons slot="start">
@@ -135,7 +167,7 @@ const ContentPlayerPage: React.FC = () => {
             <button className="cp-action-btn">
               <IonIcon icon={downloadOutline} color="primary" />
             </button>
-            <button className="cp-action-btn">
+            <button className="cp-action-btn" onClick={handleShare}>
               <IonIcon icon={shareSocialOutline} color="primary" />
             </button>
           </IonButtons>
@@ -238,6 +270,12 @@ const ContentPlayerPage: React.FC = () => {
           </div>
         )}
       </IonContent>
+
+      <RatingDialog
+        open={showRating}
+        onClose={() => setShowRating(false)}
+        contentMeta={telemetryObject ? { id: telemetryObject.id, type: telemetryObject.type, ver: telemetryObject.ver } : undefined}
+      />
     </IonPage>
   );
 };

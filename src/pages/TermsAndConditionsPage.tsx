@@ -17,11 +17,14 @@ import { close } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { useTnCAccept } from '../hooks/useTnC';
+import { telemetryService } from '../services/TelemetryService';
 import PageLoader from '../components/common/PageLoader';
 import './TermsAndConditionsPage.css';
+import useImpression from '../hooks/useImpression';
 
 const TermsAndConditionsPage: React.FC = () => {
-  const { tncData, completeTnC } = useAuth();
+  useImpression({ pageid: 'TermsAndConditionsPage', env: 'user' });
+  const { tncData, completeTnC, userId } = useAuth();
   const { t } = useTranslation();
   const router = useIonRouter();
 
@@ -48,6 +51,10 @@ const TermsAndConditionsPage: React.FC = () => {
 
     try {
       await acceptTnC.mutateAsync({ version: tncData.version });
+      void telemetryService.audit({
+        edata: { props: ['tncAccepted'], state: 'Accepted' },
+        object: { id: userId || '', type: 'User', ver: '1' },
+      });
       completeTnC();
       router.push('/home', 'root', 'replace');
     } catch {

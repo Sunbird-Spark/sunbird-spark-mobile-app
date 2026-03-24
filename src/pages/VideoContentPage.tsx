@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import {
     IonContent,
     IonHeader,
@@ -11,11 +11,20 @@ import {
 import { useParams } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { shareSocialOutline, downloadOutline } from 'ionicons/icons';
+import { telemetryService } from '../services/TelemetryService';
 import './VideoContentPage.css';
+import useImpression from '../hooks/useImpression';
 
 const VideoContentPage: React.FC = () => {
+    useImpression({ pageid: 'VideoContentPage', env: 'contentplayer' });
     const { id } = useParams<{ id: string }>();
     const history = useHistory();
+
+    const handleShare = useCallback(() => {
+        void telemetryService.share({
+            edata: { dir: 'Out', type: 'Link', items: [{ id: id || '', type: 'Content', ver: '1' }] },
+        });
+    }, [id]);
 
     return (
         <IonPage className="video-content-page">
@@ -32,7 +41,7 @@ const VideoContentPage: React.FC = () => {
                         <button className="action-btn">
                             <IonIcon icon={downloadOutline} color="primary" />
                         </button>
-                        <button className="action-btn">
+                        <button className="action-btn" onClick={handleShare}>
                             <IonIcon icon={shareSocialOutline} color="primary" />
                         </button>
                     </IonButtons>

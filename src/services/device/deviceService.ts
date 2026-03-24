@@ -228,6 +228,27 @@ class DeviceService {
     }
   }
 
+  /**
+   * getSpec()
+   * - returns device spec object for telemetry START events (B18)
+   * - synchronous — uses already-initialized state
+   */
+  getSpec(): Record<string, unknown> {
+    return {
+      os: this.state.operatingSystem,
+      make: `${this.state.manufacturer} ${this.state.model}`.trim(),
+      id: this.state.deviceId,
+      mem: '',
+      idisk: '',
+      edisk: '',
+      scrn: '',
+      camera: '',
+      cpu: '',
+      sims: '',
+      cap: [],
+    };
+  }
+
   /** Internal helper to broadcast changes */
   private notify() {
     for (const listener of this.listeners) {

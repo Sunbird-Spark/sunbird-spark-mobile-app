@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, startTransition, ReactNode } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
@@ -6,6 +7,7 @@ import { useUser } from '../hooks/useUser';
 import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
+import { telemetryService } from '../services/TelemetryService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -61,7 +63,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [profile, tncDismissed]);
 
   // Demo toggle (keeps backward compat with existing code)
-  const login = useCallback(() => setIsAuthenticated(true), []);
+  const login = useCallback(() => {
+    setIsAuthenticated(true);
+    const uid = userService.getUserId();
+    if (uid) telemetryService.updateContext({ uid: uid || 'anonymous', sid: uuidv4() });
+  }, []);
 
   // Real login via backend
   const handleLoginWithCredentials = useCallback(async (email: string, password: string) => {
@@ -80,7 +86,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTncDismissed(false);
     setUserId(currentUserId);
     setIsAuthenticated(true);
-
+    // New session UUID on every login
+    telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
+    // Update channel from user's rootOrg (best-effort, non-blocking)
+    if (currentUserId) {
+      userService.userRead(currentUserId).then((res) => {
+        const userData = (res.data as any)?.response;
+        const channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
+        if (channel) {
+          telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
+        }
+      }).catch(() => { /* keep existing channel if fetch fails */ });
+    }
   }, []);
 
   // Google login via native plugin + backend
@@ -107,6 +124,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setTncDismissed(false);
       setUserId(currentUserId);
       setIsAuthenticated(true);
+      // New session UUID on every login
+      telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
+      // Update channel from user's rootOrg (best-effort, non-blocking)
+      if (currentUserId) {
+        userService.userRead(currentUserId).then((res) => {
+          const userData = (res.data as any)?.response;
+          const channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
+          if (channel) {
+            telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
+          }
+        }).catch(() => { /* keep existing channel if fetch fails */ });
+      }
     } catch (err) {
       // Backend call failed — clean up the Google session to prevent stale state
       try {
@@ -151,6 +180,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(null);
     setIsAuthenticated(false);
     setTncDismissed(false);
+    // Reset to anonymous guest session: sid = '1' (fixed static)
+    telemetryService.updateContext({ uid: 'anonymous', sid: '1' });
   }, []);
 
   return (

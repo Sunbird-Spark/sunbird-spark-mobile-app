@@ -18,6 +18,7 @@ import type { ContentSearchItem } from '../types/contentTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
 import './MyLearningPage.css';
+import useImpression from '../hooks/useImpression';
 
 const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
@@ -198,6 +199,7 @@ type Tab = 'activeCourses' | 'completed' | 'upcoming';
 
 // ── Page ──
 const MyLearningPage: React.FC = () => {
+  useImpression({ pageid: 'MyLearningPage', env: 'profile' });
   const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
   const { t } = useTranslation();
   const { isAuthenticated, userId } = useAuth();

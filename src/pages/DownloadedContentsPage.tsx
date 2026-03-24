@@ -11,6 +11,7 @@ import {
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import './DownloadedContentsPage.css';
+import useImpression from '../hooks/useImpression';
 
 interface DownloadedItem {
     id: number;
@@ -157,6 +158,7 @@ const SwipeableCard: React.FC<{
 
 /* ── Main page ── */
 const DownloadedContentsPage: React.FC = () => {
+    useImpression({ pageid: 'DownloadedContentsPage', env: 'profile' });
     const [items, setItems] = useState(initialItems);
     const [deleteTarget, setDeleteTarget] = useState<DownloadedItem | null>(null);
     const [showAlert, setShowAlert] = useState(false);
