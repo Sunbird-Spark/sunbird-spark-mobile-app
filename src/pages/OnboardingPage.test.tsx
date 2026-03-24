@@ -8,6 +8,7 @@ vi.mock('@ionic/react', () => ({
   IonPage: ({ children, className }: any) => <div data-testid="ion-page" className={className}>{children}</div>,
   IonContent: ({ children }: any) => <div data-testid="ion-content">{children}</div>,
   IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
+  IonToast: ({ isOpen, message }: any) => isOpen ? <div data-testid="ion-toast">{message}</div> : null,
   useIonRouter: () => ({ push: mockRouterPush, goBack: vi.fn() }),
 }));
 
@@ -25,16 +26,21 @@ vi.mock('react-i18next', () => ({
 const mockRouterPush = vi.fn();
 
 // Mock AuthContext
+const mockCompleteOnboarding = vi.fn();
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     userId: 'test-user-123',
     isAuthenticated: true,
+    completeOnboarding: mockCompleteOnboarding,
   }),
 }));
 
-// Mock App exports
-vi.mock('../App', () => ({
-  markOnboardingComplete: vi.fn(),
+// Mock Capacitor
+vi.mock('@capacitor/app', () => ({
+  App: { addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }) },
+}));
+vi.mock('@capacitor/core', () => ({
+  Capacitor: { isNativePlatform: () => false },
 }));
 
 // Mock UserService

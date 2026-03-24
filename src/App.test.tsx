@@ -31,6 +31,7 @@ vi.mock('@ionic/react', () => ({
   IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   IonBadge: ({ children }: any) => <span data-testid="ion-badge">{children}</span>,
+  IonToast: () => null,
   setupIonicReact: vi.fn(),
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
@@ -238,6 +239,8 @@ vi.mock('./contexts/AuthContext', () => ({
     needsTnC: false,
     tncData: null,
     completeTnC: vi.fn(),
+    onboardingDismissed: false,
+    completeOnboarding: vi.fn(),
   }),
 }));
 

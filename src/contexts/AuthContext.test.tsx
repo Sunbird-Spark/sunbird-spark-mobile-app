@@ -51,12 +51,6 @@ vi.mock('../lib/http-client', () => ({
   }),
 }));
 
-// Mock App's resetOnboardingComplete
-const mockResetOnboardingComplete = vi.fn();
-vi.mock('../App', () => ({
-  resetOnboardingComplete: () => mockResetOnboardingComplete(),
-}));
-
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
 });
@@ -67,18 +61,24 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 // Test component to use the AuthContext
 const TestComponent = () => {
-  const { isAuthenticated, login, logout } = useAuth();
+  const { isAuthenticated, login, logout, onboardingDismissed, completeOnboarding } = useAuth();
 
   return (
     <div>
       <div data-testid="auth-status">
         {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
       </div>
+      <div data-testid="onboarding-status">
+        {onboardingDismissed ? 'Dismissed' : 'Pending'}
+      </div>
       <button data-testid="login-btn" onClick={login}>
         Login
       </button>
       <button data-testid="logout-btn" onClick={logout}>
         Logout
+      </button>
+      <button data-testid="complete-onboarding-btn" onClick={completeOnboarding}>
+        Complete Onboarding
       </button>
     </div>
   );
@@ -138,7 +138,7 @@ describe('AuthContext', () => {
     consoleSpy.mockRestore();
   });
 
-  it('resets onboarding flag on logout', async () => {
+  it('resets onboarding dismissed state on logout', async () => {
     render(
       <AuthProvider>
         <TestComponent />
@@ -147,9 +147,12 @@ describe('AuthContext', () => {
     );
 
     fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('complete-onboarding-btn'));
+    expect(screen.getByTestId('onboarding-status')).toHaveTextContent('Dismissed');
+
     fireEvent.click(screen.getByTestId('logout-btn'));
     await waitFor(() => {
-      expect(mockResetOnboardingComplete).toHaveBeenCalled();
+      expect(screen.getByTestId('onboarding-status')).toHaveTextContent('Pending');
     });
   });
 

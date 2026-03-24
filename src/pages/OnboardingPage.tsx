@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { IonPage, IonContent, IonSpinner, useIonRouter } from '@ionic/react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { IonPage, IonContent, IonSpinner, IonToast, useIonRouter } from '@ionic/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
+import { App as CapApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormRead } from '../hooks/useFormRead';
 import { userService } from '../services/UserService';
-import { markOnboardingComplete } from '../App';
 import { OnboardingFormData, OnboardingScreen, OnboardingField } from '../types/onboardingTypes';
 import ProgressBar from '../components/onboarding/ProgressBar';
 import OptionChip from '../components/onboarding/OptionChip';
@@ -29,7 +30,7 @@ const computeTotalSteps = (data: OnboardingFormData): number => {
 };
 
 const OnboardingPage: React.FC = () => {
-  const { userId } = useAuth();
+  const { userId, completeOnboarding } = useAuth();
   const router = useIonRouter();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
@@ -39,6 +40,8 @@ const OnboardingPage: React.FC = () => {
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const skipRef = useRef<() => void>(() => {});
 
   const { data: formApiData, isLoading, isError } = useFormRead({
     request: {
@@ -112,15 +115,16 @@ const OnboardingPage: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to save onboarding', err);
+      setToastMessage(t('onboarding.failedToLoad'));
     } finally {
-      markOnboardingComplete();
+      completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       router.push('/home', 'root', 'replace');
       setIsSubmitting(false);
     }
   };
 
-  const handleSkip = async () => {
+  const handleSkip = useCallback(async () => {
     if (isSubmitting || userId === undefined) return;
     if (userId === null) { router.push('/', 'root', 'replace'); return; }
     setIsSubmitting(true);
@@ -131,13 +135,30 @@ const OnboardingPage: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to skip onboarding', err);
+      setToastMessage(t('onboarding.failedToLoad'));
     } finally {
-      markOnboardingComplete();
+      completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       router.push('/home', 'root', 'replace');
       setIsSubmitting(false);
     }
-  };
+  }, [isSubmitting, userId, router, completeOnboarding, queryClient, t]);
+
+  // Keep skipRef in sync so the back button listener always calls the latest handleSkip
+  skipRef.current = handleSkip;
+
+  // Android hardware back button: treat as skip onboarding
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    const handler = CapApp.addListener('backButton', () => {
+      skipRef.current();
+    });
+
+    return () => {
+      handler.then((h) => h.remove());
+    };
+  }, []);
 
   // Loading state
   if (isLoading || (onboardingData && !currentScreenId)) {
@@ -287,6 +308,14 @@ const OnboardingPage: React.FC = () => {
           </button>
         </div>
       </IonContent>
+
+      <IonToast
+        isOpen={!!toastMessage}
+        onDidDismiss={() => setToastMessage('')}
+        message={toastMessage}
+        duration={3000}
+        position="bottom"
+      />
     </IonPage>
   );
 };

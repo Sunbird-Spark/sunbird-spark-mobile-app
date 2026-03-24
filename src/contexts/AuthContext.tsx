@@ -6,7 +6,6 @@ import { useUser } from '../hooks/useUser';
 import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
-import { resetOnboardingComplete } from '../App';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -21,6 +20,8 @@ interface AuthContextType {
   needsTnC: boolean;
   tncData: TnCData | null;
   completeTnC: () => void;
+  onboardingDismissed: boolean;
+  completeOnboarding: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(() => userService.isLoggedIn());
   const [userId, setUserId] = useState(() => userService.getUserId());
   const [tncDismissed, setTncDismissed] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   const isAppInitialized = useAppInitialized();
 
@@ -123,6 +125,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTncDismissed(true);
   }, []);
 
+  const completeOnboarding = useCallback(() => {
+    setOnboardingDismissed(true);
+  }, []);
+
   const logout = useCallback(async () => {
     // Disconnect Google session if logged in via Google
     if (userService.getLoginProvider() === 'google') {
@@ -152,7 +158,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(null);
     setIsAuthenticated(false);
     setTncDismissed(false);
-    resetOnboardingComplete();
+    setOnboardingDismissed(false);
   }, []);
 
   return (
@@ -167,6 +173,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         needsTnC,
         tncData,
         completeTnC,
+        onboardingDismissed,
+        completeOnboarding,
       }}
     >
       {children}

@@ -65,20 +65,15 @@ const TnCGuard: React.FC = () => {
   return null;
 };
 
-/** Flag set by OnboardingPage after submit/skip to prevent guard redirect loop */
-let onboardingCompleted = false;
-export const markOnboardingComplete = () => { onboardingCompleted = true; };
-export const resetOnboardingComplete = () => { onboardingCompleted = false; };
-
 /** Redirects to /onboarding when onboarding is not yet completed */
 const OnboardingGuard: React.FC = () => {
-  const { isAuthenticated, userId, needsTnC } = useAuth();
+  const { isAuthenticated, userId, needsTnC, onboardingDismissed } = useAuth();
   const { data: profile } = useUser(userId);
   const location = useLocation();
   const router = useIonRouter();
 
   useEffect(() => {
-    if (onboardingCompleted || !isAuthenticated || needsTnC || location.pathname === '/onboarding') {
+    if (onboardingDismissed || !isAuthenticated || needsTnC || location.pathname === '/onboarding') {
       return;
     }
     if (!profile) return;
@@ -87,7 +82,7 @@ const OnboardingGuard: React.FC = () => {
     if (!onboardingDetails) {
       router.push('/onboarding', 'root', 'replace');
     }
-  }, [isAuthenticated, needsTnC, profile, location.pathname, router]);
+  }, [isAuthenticated, needsTnC, onboardingDismissed, profile, location.pathname, router]);
 
   return null;
 };
