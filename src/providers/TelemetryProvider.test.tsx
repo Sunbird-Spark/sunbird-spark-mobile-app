@@ -347,6 +347,26 @@ describe('TelemetryProvider', () => {
       });
     });
 
+    it('resolves channel from org search when rootOrg.hashTagId is absent for logged-in user', async () => {
+      vi.mocked(userService.getUserId).mockReturnValue('logged-user');
+      // Profile has channel slug but no rootOrg.hashTagId
+      vi.mocked(userService.userRead).mockResolvedValue({
+        data: { response: { channel: 'sunbirdco', rootOrg: {} } },
+      } as any);
+      (OrganizationService.prototype as any).search = vi.fn().mockResolvedValue({
+        data: { response: { content: [{ hashTagId: 'resolved-hashtag-id' }] } },
+        headers: {},
+      });
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalledWith(
+          expect.objectContaining({ channel: 'resolved-hashtag-id' }),
+        );
+      });
+    });
+
     it('captures UTM parameters from launch URL', async () => {
       mockGetLaunchUrl.mockResolvedValue({
         url: 'https://example.com/?utm_source=google&utm_medium=cpc&utm_campaign=spring',

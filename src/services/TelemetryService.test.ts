@@ -124,10 +124,10 @@ describe('TelemetryService', () => {
       );
     });
 
-    it('uses sid="1" when sid is not provided', () => {
+    it('uses empty string sid when sid is not provided', () => {
       service.initialize({ ...baseCtx, sid: undefined as any });
       expect(mockSdkInitialize).toHaveBeenCalledWith(
-        expect.objectContaining({ sid: '1' }),
+        expect.objectContaining({ sid: '' }),
       );
     });
 

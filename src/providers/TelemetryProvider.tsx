@@ -55,18 +55,18 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         let tags: string[] = [];
 
         if (isLoggedIn) {
-          // Logged-in: channel from user's rootOrg (mirrors SunbirdEd-portal behaviour)
+          // Logged-in: channel from user's rootOrg hashTagId (never the slug)
           let channelSlug = '';
           try {
             const userResponse = await userService.userRead(uid);
             const userData = (userResponse.data as any)?.response;
-            // hashTagId is the actual channel ID used in telemetry; channel is the human-readable slug
-            channel = (userData?.rootOrg as any)?.hashTagId || userData?.channel || '';
+            // hashTagId is the correct telemetry channel ID; channel/slug must not be used
+            channel = (userData?.rootOrg as any)?.hashTagId || '';
             channelSlug = userData?.channel || '';
             tags = channel ? [channel] : [];
           } catch { /* fall through to anonymous channel resolution */ }
 
-          // Get server clock skew from org API — search by slug (not the hashTagId)
+          // Search org by slug — get clock skew AND resolve hashTagId if not on profile
           if (channelSlug) {
             try {
               const orgResponse = await orgService.search({
@@ -75,6 +75,12 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
               const serverDate = orgResponse?.headers?.['date'] as string | undefined;
               if (serverDate) {
                 timeDiff = new Date(serverDate).getTime() - Date.now();
+              }
+              // hashTagId missing from profile — resolve it from org search result
+              if (!channel) {
+                const org = orgResponse?.data?.response?.content?.[0];
+                channel = org?.hashTagId || '';
+                tags = channel ? [channel] : [];
               }
             } catch { /* use stored timeDiff */ }
           }

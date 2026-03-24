@@ -9,6 +9,7 @@ import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService'
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
 import { telemetryService } from '../services/TelemetryService';
 import { deviceService } from '../services/device/deviceService';
+import { OrganizationService } from '../services/OrganizationService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -69,13 +70,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
     void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
     if (currentUserId) {
-      userService.userRead(currentUserId).then((res) => {
-        const userData = (res.data as any)?.response;
-        const channel = (userData?.rootOrg as any)?.hashTagId || userData?.channel || '';
-        if (channel) {
-          telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
-        }
-      }).catch(() => { /* keep existing channel if fetch fails */ });
+      void (async () => {
+        try {
+          const res = await userService.userRead(currentUserId);
+          const userData = (res.data as any)?.response;
+          // Use hashTagId as channel — never fall back to the human-readable slug
+          let channel = (userData?.rootOrg as any)?.hashTagId || '';
+          const channelSlug = userData?.channel || '';
+          // Resolve hashTagId via org search when it is absent from the profile
+          if (!channel && channelSlug) {
+            const orgService = new OrganizationService();
+            const orgResponse = await orgService.search({
+              request: { filters: { isTenant: true, slug: channelSlug } },
+            });
+            channel = orgResponse?.data?.response?.content?.[0]?.hashTagId || '';
+          }
+          if (channel) {
+            telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
+          }
+        } catch { /* keep existing channel if fetch fails */ }
+      })();
     }
   }, []);
 

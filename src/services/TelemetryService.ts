@@ -170,7 +170,8 @@ export class TelemetryService {
   ): Promise<void> {
     if (!$t.isInitialized) return;
     const sdkOptions = options ? this._buildOptions({ edata: {}, ...options }) : {};
-    await $t.start(config, contentId, contentVer, data, sdkOptions);
+    // SDK uses 4th arg (data) as edata; merge config fields (type/mode/dspec…) into data.
+    await $t.start({}, contentId, contentVer, { ...config, ...data }, sdkOptions);
   }
 
   async end(input: TelemetryEventInput): Promise<void> {

@@ -75,8 +75,19 @@ vi.mock('../services/device/deviceService', () => ({
   },
 }));
 
+// Mock OrganizationService — used in applyLoginTelemetry to resolve hashTagId from slug
+vi.mock('../services/OrganizationService', () => {
+  function OrganizationService() {}
+  OrganizationService.prototype.search = vi.fn().mockResolvedValue({
+    data: { response: { content: [] } },
+    headers: {},
+  });
+  return { OrganizationService };
+});
+
 import { userService } from '../services/UserService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
+import { OrganizationService } from '../services/OrganizationService';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 
 const queryClient = new QueryClient({
@@ -289,6 +300,37 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(telemetryService.updateContext).toHaveBeenCalledWith(
         expect.objectContaining({ channel: 'rootchannel-id' }),
+      );
+    });
+  });
+
+  it('resolves channel from org search when rootOrg.hashTagId is absent on login', async () => {
+    const { telemetryService } = await import('../services/TelemetryService');
+    vi.mocked(userService.getUserId).mockReturnValue('user-abc');
+    // Profile has slug but no hashTagId on rootOrg
+    vi.mocked(userService.userRead).mockResolvedValue({
+      data: { response: { channel: 'sunbirdco', rootOrg: {} } },
+    } as any);
+    (OrganizationService.prototype as any).search = vi.fn().mockResolvedValue({
+      data: { response: { content: [{ hashTagId: 'resolved-hashtag-id' }] } },
+      headers: {},
+    });
+
+    render(
+      <AuthProvider>
+        <ExtendedTestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('cred-login-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+    });
+
+    await waitFor(() => {
+      expect(telemetryService.updateContext).toHaveBeenCalledWith(
+        expect.objectContaining({ channel: 'resolved-hashtag-id' }),
       );
     });
   });
