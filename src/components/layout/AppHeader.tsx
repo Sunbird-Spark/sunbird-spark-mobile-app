@@ -5,13 +5,9 @@ import {
   IonTitle,
   IonButtons,
   IonBackButton,
-  IonIcon,
-  IonBadge,
-  useIonRouter,
 } from '@ionic/react';
-import { notificationsOutline } from 'ionicons/icons';
 import { LanguageSelector } from '../common/LanguageSelector';
-import { useNotificationRead, useNotificationGrouping } from '../../hooks/useNotifications';
+import Notification from '../common/Notification';
 
 interface AppHeaderProps {
   title: string;
@@ -26,10 +22,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   transparent = false,
   showNotifications = true,
 }) => {
-  const router = useIonRouter();
-  const { notifications } = useNotificationRead();
-  const { unreadCount } = useNotificationGrouping(notifications);
-
   return (
     <IonHeader className={transparent ? 'profile-header ion-no-border' : ''}>
       <IonToolbar className={transparent ? 'profile-toolbar' : ''}>
@@ -40,20 +32,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         )}
         <IonTitle className={transparent ? 'profile-page-title' : ''}>{title}</IonTitle>
         <IonButtons slot="end">
-          {showNotifications && (
-            <button
-              className="app-header__notification-btn"
-              onClick={() => router.push('/notifications')}
-              aria-label="Notifications"
-            >
-              <IonIcon icon={notificationsOutline} className="app-header__notification-icon" />
-              {unreadCount > 0 && (
-                <IonBadge className="app-header__notification-badge" color="danger">
-                  {unreadCount}
-                </IonBadge>
-              )}
-            </button>
-          )}
+          {showNotifications && <Notification />}
           <LanguageSelector />
         </IonButtons>
       </IonToolbar>
