@@ -85,6 +85,7 @@
   "deleteAll": "حذف الكل",
   "noNotifications": "لا توجد إشعارات بعد",
   "noNotificationsDesc": "أنت على اطلاع! تحقق لاحقاً للحصول على التحديثات.",
+  "offlineNotifications": "أنت غير متصل، اتصل للحصول على الإشعارات",
   "verifyDetails": "التحقق من التفاصيل",
   "yes": "نعم",
   "no": "لا",

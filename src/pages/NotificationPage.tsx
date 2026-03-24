@@ -10,6 +10,7 @@ import {
   useIonRouter,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
+import { useNetwork } from '../providers/NetworkProvider';
 import {
   useNotificationRead,
   useNotificationUpdate,
@@ -24,6 +25,7 @@ import './NotificationPage.css';
 const NotificationPage: React.FC = () => {
   const { t } = useTranslation();
   const router = useIonRouter();
+  const { isOffline } = useNetwork();
   const { notifications, isLoading, error, refetch } = useNotificationRead();
   const { mutateAsync: updateNotification } = useNotificationUpdate();
   const { deleteNotification, deleteAll, filterDeleted } = useNotificationDelete();
@@ -83,7 +85,11 @@ const NotificationPage: React.FC = () => {
           <IonRefresherContent />
         </IonRefresher>
 
-        {isLoading ? (
+        {isOffline ? (
+          <div className="notification-offline">
+            <p className="notification-offline__message">{t('offlineNotifications')}</p>
+          </div>
+        ) : isLoading ? (
           <PageLoader message={t('loading')} />
         ) : error ? (
           <PageLoader error={error.message} onRetry={() => refetch()} />

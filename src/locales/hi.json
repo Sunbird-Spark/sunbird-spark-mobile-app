@@ -84,6 +84,7 @@
   "deleteAll": "सभी हटाएं",
   "noNotifications": "अभी कोई सूचना नहीं",
   "noNotificationsDesc": "आप अप टू डेट हैं! बाद में अपडेट के लिए जांचें।",
+  "offlineNotifications": "आप ऑफ़लाइन हैं, सूचनाएं प्राप्त करने के लिए कनेक्ट करें",
   "verifyDetails": "विवरण सत्यापित करें",
   "yes": "हाँ",
   "no": "नहीं",
