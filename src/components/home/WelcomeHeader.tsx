@@ -14,7 +14,7 @@ export const WelcomeHeader: React.FC = () => {
         '--background': 'linear-gradient(135deg, hsl(15 51% 44%) 0%, hsl(15 51% 54%) 100%)',
         '--color': 'white',
         padding: '24px 16px',
-        paddingTop: 'env(safe-area-inset-top, 24px)' // Handle safe area
+        paddingTop: 'calc(var(--safe-area-top) + 24px)'
       }}
     >
       <div style={{

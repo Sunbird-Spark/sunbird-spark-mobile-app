@@ -142,7 +142,7 @@ const ContentPlayerPage: React.FC = () => {
         </IonToolbar>
       </IonHeader>
 
-      <IonContent fullscreen>
+      <IonContent>
         {playerIsLoading ? (
           <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (

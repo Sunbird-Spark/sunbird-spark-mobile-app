@@ -1,3 +1,4 @@
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { initializeApiClient } from './api/config';
 import { AppConsumerAuthService } from './services/AppConsumerAuthService';
 import { databaseService } from './services/db/DatabaseService';
@@ -27,6 +28,10 @@ export class AppInitializer {
     }
 
     try {
+      // Ensure dark status bar icons (visible on the app's light headers).
+      // overlaysWebView stays true so Ionic's IonHeader safe-area handling is unaffected.
+      try { await StatusBar.setStyle({ style: Style.Light }); } catch { /* browser */ }
+
       // Initialize SQLite database first — all other services depend on it
       await databaseService.initialize();
 

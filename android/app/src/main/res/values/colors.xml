@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Matches ion-color-light in src/theme/variables.css -->
+    <color name="colorPrimary">#a85236</color>
+    <color name="colorPrimaryDark">#8f4630</color>
+    <color name="colorAccent">#70adbf</color>
+    <color name="colorStatusBar">#fffef4</color>
+</resources>
