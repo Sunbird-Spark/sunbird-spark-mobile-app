@@ -18,7 +18,7 @@ export function useNotificationRead() {
     queryFn: async () => {
       if (!userId) throw new Error('User ID not available');
       const response = await notificationService.notificationsRead(userId);
-      return (response.data as any).feeds as NotificationFeed[] ?? [];
+      return response?.data?.feeds ?? [];
     },
     enabled: !!userId,
     retry: 1,
