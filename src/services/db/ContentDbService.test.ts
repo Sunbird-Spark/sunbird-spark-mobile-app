@@ -174,6 +174,7 @@ describe('ContentDbService', () => {
       await svc.getDownloadedContent();
       expect(db.select).toHaveBeenCalledWith('content', {
         where: { eq: { content_state: 2 } },
+        orderBy: [{ column: 'local_last_updated_on', direction: 'DESC' }],
       });
     });
   });

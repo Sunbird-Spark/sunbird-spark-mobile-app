@@ -1,0 +1,79 @@
+.dpb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dpb-btn ion-icon {
+  font-size: 22px;
+}
+
+.dpb-btn ion-spinner {
+  width: 22px;
+  height: 22px;
+}
+
+.dpb-available ion-icon {
+  color: var(--ion-color-primary, #024f9d);
+}
+
+.dpb-downloaded ion-icon {
+  color: var(--ion-color-success, #2dd36f);
+}
+
+.dpb-delete ion-icon {
+  color: var(--ion-color-danger, #eb445a);
+}
+
+.dpb-failed ion-icon {
+  color: var(--ion-color-danger, #eb445a);
+}
+
+.dpb-queued ion-icon {
+  color: var(--ion-color-medium, #92949c);
+}
+
+.dpb-paused ion-icon {
+  color: var(--ion-color-warning, #ffc409);
+}
+
+.dpb-importing ion-spinner {
+  color: var(--ion-color-primary, #024f9d);
+}
+
+.dpb-downloading {
+  position: relative;
+}
+
+.dpb-ring {
+  display: block;
+}
+
+.dpb-pct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--ion-color-primary, #024f9d);
+  pointer-events: none;
+}
+
+.dpb-pct ion-icon {
+  font-size: 14px;
+  color: var(--ion-color-primary, #024f9d);
+}
+
+.dpb-paused .dpb-pct ion-icon {
+  color: var(--ion-color-primary, #024f9d);
+}

@@ -13,6 +13,8 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:background">@null</item>
+        <!-- Dark status bar icons, visible on the app's light headers (API 23+) -->
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
 

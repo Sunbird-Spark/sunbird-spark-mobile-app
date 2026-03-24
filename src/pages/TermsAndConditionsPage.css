@@ -70,7 +70,7 @@
 
 .tnc-footer-inner {
   padding: 1rem 1.5rem;
-  padding-bottom: calc(1rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(1rem + var(--safe-area-bottom));
   background: #ffffff;
   border-top: 1px solid var(--ion-color-step-100, #e0e0e0);
 }

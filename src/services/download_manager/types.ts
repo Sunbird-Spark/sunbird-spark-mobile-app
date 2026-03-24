@@ -21,7 +21,7 @@ export const VALID_TRANSITIONS: Record<DownloadState, DownloadState[]> = {
     DownloadState.RETRY_WAIT,
     DownloadState.CANCELLED,
   ],
-  [DownloadState.PAUSED]: [DownloadState.DOWNLOADING, DownloadState.CANCELLED],
+  [DownloadState.PAUSED]: [DownloadState.DOWNLOADING, DownloadState.CANCELLED, DownloadState.QUEUED],
   [DownloadState.DOWNLOADED]: [DownloadState.IMPORTING, DownloadState.CANCELLED],
   [DownloadState.IMPORTING]: [DownloadState.COMPLETED, DownloadState.FAILED, DownloadState.CANCELLED],
   [DownloadState.COMPLETED]: [],
@@ -138,10 +138,10 @@ export interface DownloadEvent {
   type: DownloadEventType;
   identifier?: string;
   data?:
-    | DownloadProgress
-    | ImportProgress
-    | DownloadQueueEntry
-    | { errorCode: string; message: string; retryCount: number; maxRetries: number };
+  | DownloadProgress
+  | ImportProgress
+  | DownloadQueueEntry
+  | { errorCode: string; message: string; retryCount: number; maxRetries: number };
 }
 
 export type DownloadListener = (event: DownloadEvent) => void;

@@ -18,14 +18,14 @@ interface ManifestItem {
   contentType?: string;
   artifactUrl?: string;
   visibility?: string;
-  audience?: string;
+  audience?: string | string[];
   primaryCategory?: string;
   status?: string;
   expires?: string;
   pkgVersion?: number;
-  pragma?: string[];
-  dialcodes?: string[];
-  childNodes?: string[];
+  pragma?: string | string[];
+  dialcodes?: string | string[];
+  childNodes?: string | string[];
   [key: string]: unknown;
 }
 
@@ -41,7 +41,7 @@ export class ImportService {
   constructor(
     private db: DatabaseService,
     private contentDb: ContentDbService
-  ) {}
+  ) { }
 
   /**
    * Import a downloaded .ecar file into the content database.
@@ -65,8 +65,9 @@ export class ImportService {
       onProgress?.('EXTRACTING', 0);
 
       tmpDir = `tmp/${identifier}_${Date.now()}`;
-      await Filesystem.mkdir({ path: tmpDir, directory: Directory.Data, recursive: true });
+      await Filesystem.mkdir({ path: tmpDir, directory: Directory.Data, recursive: true }).catch(() => { });
       const tmpUri = (await Filesystem.getUri({ path: tmpDir, directory: Directory.Data })).uri;
+
       await Zip.unzip({ sourceFile: sourcePath, destinationPath: tmpUri });
 
       // ══ VALIDATE: Read manifest + dedup ══
@@ -97,37 +98,35 @@ export class ImportService {
 
       const importedIds: string[] = [];
 
-      await this.db.transaction(async () => {
-        for (const item of itemsToImport) {
-          await this.checkCancelled(isCancelled);
-          const existing = existingMap.get(item.identifier);
-
-          // Create content/{identifier}/ directory
-          const contentPath = `${CONTENT_DIR}/${item.identifier}`;
-          await Filesystem.mkdir({ path: contentPath, directory: Directory.Data, recursive: true });
-          const destUri = (
-            await Filesystem.getUri({ path: contentPath, directory: Directory.Data })
-          ).uri;
-
-          // Extract/copy payload based on contentDisposition + contentEncoding
-          const contentState = await this.extractPayload(item, tmpUri, destUri);
-
-          // Build content DB row + upsert
-          const row = this.constructContentRow(
-            item,
-            destUri,
-            String(manifest.ver),
-            contentState,
-            existing
-          );
-          await this.contentDb.upsert(row);
-          importedIds.push(item.identifier);
-        }
-
+      for (const item of itemsToImport) {
         await this.checkCancelled(isCancelled);
-        onProgress?.('CREATING_MANIFEST', 70);
-        await this.copyManifestToContentDir(identifier, tmpUri);
-      });
+        const existing = existingMap.get(item.identifier);
+
+        // Create content/{identifier}/ directory
+        const contentPath = `${CONTENT_DIR}/${item.identifier}`;
+        await Filesystem.mkdir({ path: contentPath, directory: Directory.Data, recursive: true }).catch(() => { });
+        const destUri = (
+          await Filesystem.getUri({ path: contentPath, directory: Directory.Data })
+        ).uri;
+
+        // Extract/copy payload based on contentDisposition + contentEncoding
+        const contentState = await this.extractPayload(item, tmpUri, destUri);
+
+        // Build content DB row + upsert
+        const row = this.constructContentRow(
+          item,
+          destUri,
+          String(manifest.ver),
+          contentState,
+          existing
+        );
+        await this.contentDb.upsert(row);
+        importedIds.push(item.identifier);
+      }
+
+      await this.checkCancelled(isCancelled);
+      onProgress?.('CREATING_MANIFEST', 70);
+      await this.copyManifestToContentDir(identifier, tmpUri);
 
       // ══ CLEANUP ══
       onProgress?.('CLEANING_UP', 90);
@@ -135,9 +134,9 @@ export class ImportService {
         path: tmpDir,
         directory: Directory.Data,
         recursive: true,
-      }).catch(() => {});
+      }).catch(() => { });
       tmpDir = undefined;
-      await Filesystem.deleteFile({ path: sourcePath }).catch(() => {});
+      await Filesystem.deleteFile({ path: sourcePath }).catch(() => { });
 
       // Deferred size update (5s later)
       setTimeout(() => this.updateSizesOnDevice(importedIds), 5000);
@@ -155,7 +154,7 @@ export class ImportService {
           path: tmpDir,
           directory: Directory.Data,
           recursive: true,
-        }).catch(() => {});
+        }).catch(() => { });
       }
     }
   }
@@ -184,31 +183,27 @@ export class ImportService {
     if (isCollection || isQuestionSet) return 2;
 
     // No artifact URL or remote-only
-    if (!artifactUrl || artifactUrl.startsWith('https:')) return 0;
+    if (!artifactUrl || artifactUrl.startsWith('https:')) return 2;
 
     // Online-only content
     if (disposition === 'online') return 2;
 
     const itemSourcePath = `${tmpUri}/${artifactUrl}`;
 
-    try {
-      if (
-        mimeType === 'application/epub' ||
-        mimeType === 'application/epub+zip'
-      ) {
-        // EPUB → copy directly
-        await this.copyAsset(itemSourcePath, destUri);
-      } else if (disposition === 'inline' && encoding === 'identity') {
-        // Uncompressed (PDF, MP4, WebM) → copy directly
-        await this.copyAsset(itemSourcePath, destUri);
-      } else {
-        // Default (inline + gzip) → unzip
-        await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
-      }
-      return 2; // ARTIFACT_AVAILABLE
-    } catch {
-      return 0; // ONLY_SPINE (unzip/copy failed)
+    if (
+      mimeType === 'application/epub' ||
+      mimeType === 'application/epub+zip'
+    ) {
+      // EPUB → copy directly
+      await this.copyAsset(itemSourcePath, destUri);
+    } else if (disposition === 'inline' && encoding === 'identity') {
+      // Uncompressed (PDF, MP4, WebM) → copy directly
+      await this.copyAsset(itemSourcePath, destUri);
+    } else {
+      // Default (inline + gzip) → unzip
+      await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
     }
+    return 2; // ARTIFACT_AVAILABLE
   }
 
   private async copyAsset(source: string, destDir: string): Promise<void> {
@@ -252,9 +247,9 @@ export class ImportService {
       ref_count: refCount,
       content_state: resolvedState,
       content_type: item.contentType || '',
-      audience: item.audience || 'Learner',
+      audience: this.joinArray(item.audience) || 'Learner',
       size_on_device: 0,
-      pragma: item.pragma?.join(',') || '',
+      pragma: this.joinArray(item.pragma) || '',
       manifest_version: manifestVersion,
       dialcodes: this.joinArray(item.dialcodes),
       child_nodes: this.joinArray(item.childNodes),
@@ -293,11 +288,12 @@ export class ImportService {
   }
 
   private readVisibility(item: ManifestItem): 'Default' | 'Parent' {
-    return item.visibility === 'Default' ? 'Default' : 'Parent';
+    return item.visibility === 'Parent' ? 'Parent' : 'Default';
   }
 
-  private joinArray(arr?: string[]): string {
-    return Array.isArray(arr) ? arr.join(',') : '';
+  private joinArray(arr?: string | string[]): string {
+    if (!arr) return '';
+    return Array.isArray(arr) ? arr.join(',') : String(arr);
   }
 
   private async updateSizesOnDevice(ids: string[]): Promise<void> {
@@ -319,8 +315,10 @@ export class ImportService {
   }
 
   private async readManifest(tmpUri: string): Promise<ManifestData> {
-    // Try hierarchy.json first, fallback to manifest.json
+    // Check which manifest file to read to avoid noisy Capacitor console errors on missing files
     try {
+      await Filesystem.stat({ path: `${tmpUri}/hierarchy.json` });
+      // hierarchy.json exists!
       const r = await Filesystem.readFile({
         path: `${tmpUri}/hierarchy.json`,
         encoding: Encoding.UTF8,
@@ -328,6 +326,7 @@ export class ImportService {
       return JSON.parse(r.data as string) as ManifestData;
     } catch {
       try {
+        // Fallback to manifest.json
         const r = await Filesystem.readFile({
           path: `${tmpUri}/manifest.json`,
           encoding: Encoding.UTF8,
@@ -359,7 +358,7 @@ export class ImportService {
       path: contentPath,
       directory: Directory.Data,
       recursive: true,
-    });
+    }).catch(() => { });
     const destUri = (
       await Filesystem.getUri({ path: contentPath, directory: Directory.Data })
     ).uri;

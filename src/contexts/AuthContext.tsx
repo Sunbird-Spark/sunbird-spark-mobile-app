@@ -93,7 +93,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const tokens = await loginWithGoogleToken(googleResult.idToken, googleResult.email);
+      const tokens = await loginWithGoogleToken(googleResult.idToken, googleResult.email, googleResult.displayName);
       await userService.saveAccount(tokens, 'google');
 
       try {
