@@ -6,6 +6,7 @@ import { useUser } from '../hooks/useUser';
 import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
+import { resetOnboardingComplete } from '../App';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -151,6 +152,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(null);
     setIsAuthenticated(false);
     setTncDismissed(false);
+    resetOnboardingComplete();
   }, []);
 
   return (

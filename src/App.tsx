@@ -1,8 +1,9 @@
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { useEffect } from 'react';
 import { Redirect, Route, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useUser } from './hooks/useUser';
 import { AppInitializer } from './AppInitializer';
 import { useAppInitialized } from './hooks/useAppInitialized';
 import PageLoader from './components/common/PageLoader';
@@ -20,6 +21,7 @@ import HelpAndSupportPage from './pages/HelpAndSupportPage';
 import FaqDetailPage from './pages/FaqDetailPage';
 import SignInPage from './pages/SignInPage';
 import NotificationPage from './pages/NotificationPage';
+import OnboardingPage from './pages/OnboardingPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -63,6 +65,33 @@ const TnCGuard: React.FC = () => {
   return null;
 };
 
+/** Flag set by OnboardingPage after submit/skip to prevent guard redirect loop */
+let onboardingCompleted = false;
+export const markOnboardingComplete = () => { onboardingCompleted = true; };
+export const resetOnboardingComplete = () => { onboardingCompleted = false; };
+
+/** Redirects to /onboarding when onboarding is not yet completed */
+const OnboardingGuard: React.FC = () => {
+  const { isAuthenticated, userId, needsTnC } = useAuth();
+  const { data: profile } = useUser(userId);
+  const location = useLocation();
+  const router = useIonRouter();
+
+  useEffect(() => {
+    if (onboardingCompleted || !isAuthenticated || needsTnC || location.pathname === '/onboarding') {
+      return;
+    }
+    if (!profile) return;
+
+    const onboardingDetails = (profile as Record<string, any>).framework?.onboardingDetails;
+    if (!onboardingDetails) {
+      router.push('/onboarding', 'root', 'replace');
+    }
+  }, [isAuthenticated, needsTnC, profile, location.pathname, router]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   const isInitialized = useAppInitialized();
 
@@ -84,6 +113,7 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <TnCGuard />
+        <OnboardingGuard />
         <BackButtonHandler />
         <IonRouterOutlet>
           <Route exact path="/search">
@@ -154,6 +184,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/terms-and-conditions">
             <TermsAndConditionsPage />
+          </Route>
+          <Route exact path="/onboarding">
+            <OnboardingPage />
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>
