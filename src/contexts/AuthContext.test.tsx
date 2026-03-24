@@ -350,7 +350,9 @@ describe('AuthContext', () => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
     });
 
-    expect(loginWithGoogleToken).toHaveBeenCalledWith('id-token', 'test@example.com');
+    const googleTokenCalls = vi.mocked(loginWithGoogleToken).mock.calls[0];
+    expect(googleTokenCalls[0]).toBe('id-token');
+    expect(googleTokenCalls[1]).toBe('test@example.com');
     expect(userService.saveAccount).toHaveBeenCalledWith(expect.anything(), 'google');
   });
 
