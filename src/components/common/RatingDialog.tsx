@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { telemetryService } from '../../services/TelemetryService';
+import { useTelemetry } from '../../hooks/useTelemetry';
 import './RatingDialog.css';
 
 export interface RatingDialogContentMeta {
@@ -45,13 +45,14 @@ import ratingPopupCheck from '../../assets/rating-popup-check.svg';
 
 const RatingDialog = ({ open, onClose, onSubmit, contentMeta }: RatingDialogProps) => {
   const { t } = useTranslation();
+  const telemetry = useTelemetry();
   const [rating, setRating] = useState(0);
 
   if (!open) return null;
 
   const handleSubmit = () => {
     if (contentMeta?.id) {
-      void telemetryService.feedback({
+      void telemetry.feedback({
         edata: { rating },
         object: { id: contentMeta.id, type: contentMeta.type, ver: contentMeta.ver },
       });

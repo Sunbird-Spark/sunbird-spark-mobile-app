@@ -7,7 +7,7 @@ interface InteractData {
   type?: string;
   subtype?: string;
   pageid?: string;
-  extra?: Record<string, any>;
+  extra?: Record<string, unknown>;
   object?: { id: string; type: string; ver?: string };
   cdata?: Array<{ id: string; type: string }>;
 }

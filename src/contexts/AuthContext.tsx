@@ -62,6 +62,22 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return needsTnCAcceptance(profile);
   }, [profile, tncDismissed]);
 
+  // Shared helper: update telemetry context and fire SESSION START after every login.
+  // Channel is resolved best-effort from user profile (non-blocking).
+  const applyLoginTelemetry = useCallback((currentUserId: string | null) => {
+    telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
+    void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
+    if (currentUserId) {
+      userService.userRead(currentUserId).then((res) => {
+        const userData = (res.data as any)?.response;
+        const channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
+        if (channel) {
+          telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
+        }
+      }).catch(() => { /* keep existing channel if fetch fails */ });
+    }
+  }, []);
+
   // Demo toggle (keeps backward compat with existing code)
   const login = useCallback(() => {
     setIsAuthenticated(true);
@@ -86,20 +102,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTncDismissed(false);
     setUserId(currentUserId);
     setIsAuthenticated(true);
-    // New session UUID on every login
-    telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
-    void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
-    // Update channel from user's rootOrg (best-effort, non-blocking)
-    if (currentUserId) {
-      userService.userRead(currentUserId).then((res) => {
-        const userData = (res.data as any)?.response;
-        const channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
-        if (channel) {
-          telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
-        }
-      }).catch(() => { /* keep existing channel if fetch fails */ });
-    }
-  }, []);
+    applyLoginTelemetry(currentUserId);
+  }, [applyLoginTelemetry]);
 
   // Google login via native plugin + backend
   const handleLoginWithGoogle = useCallback(async () => {
@@ -125,19 +129,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setTncDismissed(false);
       setUserId(currentUserId);
       setIsAuthenticated(true);
-      // New session UUID on every login
-      telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
-      void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
-      // Update channel from user's rootOrg (best-effort, non-blocking)
-      if (currentUserId) {
-        userService.userRead(currentUserId).then((res) => {
-          const userData = (res.data as any)?.response;
-          const channel = userData?.channel || (userData?.rootOrg as any)?.hashTagId || '';
-          if (channel) {
-            telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
-          }
-        }).catch(() => { /* keep existing channel if fetch fails */ });
-      }
+      applyLoginTelemetry(currentUserId);
     } catch (err) {
       // Backend call failed — clean up the Google session to prevent stale state
       try {
@@ -147,7 +139,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       throw err;
     }
-  }, []);
+  }, [applyLoginTelemetry]);
 
   const completeTnC = useCallback(() => {
     setTncDismissed(true);

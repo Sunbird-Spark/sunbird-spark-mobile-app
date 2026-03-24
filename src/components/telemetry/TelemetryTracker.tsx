@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTelemetry } from '../../hooks/useTelemetry';
 import { deviceService } from '../../services/device/deviceService';
 import type { TelemetryEventInput } from '../../services/TelemetryContext';

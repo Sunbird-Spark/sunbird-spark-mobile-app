@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { useTelemetry } from './useTelemetry';
+import { useTelemetry, type TelemetryEventInput } from './useTelemetry';
 import { navigationHelperService } from '../services/NavigationHelperService';
 
 interface ImpressionData {
@@ -62,16 +62,16 @@ const useImpression = ({
       duration,
     };
     if (subtype) edata.subtype = subtype;
-    if (visits && visits.length > 0) edata.visits = visits;
+    if (visitsRef.current?.length) edata.visits = visitsRef.current;
 
     const impressionInput: Parameters<typeof telemetry.impression>[0] = { edata };
-    if (env) impressionInput.context = { env };
-    if (Object.keys(object).length > 0) impressionInput.object = object as any;
+    if (envRef.current) impressionInput.context = { env: envRef.current };
+    if (Object.keys(objectRef.current).length > 0) impressionInput.object = objectRef.current as TelemetryEventInput['object'];
 
     void telemetryRef.current.impression(impressionInput);
     navigationHelperService.resetPageStartTime();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effectivePageId, fullUrl, (location as any).key]);
+  }, [effectivePageId, fullUrl, (location as typeof location & { key?: string }).key]);
 
   // ── Pageexit on unmount ───────────────────────────────────────────────────
   useEffect(() => {
