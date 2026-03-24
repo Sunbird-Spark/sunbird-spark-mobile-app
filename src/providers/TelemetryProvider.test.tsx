@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, act, fireEvent } from '@testing-library/react';
+import { render, act, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 
 // ── Mock Capacitor ─────────────────────────────────────────────────────────
@@ -95,11 +95,29 @@ vi.mock('../services/db/KeyValueDbService', () => ({
 }));
 
 import { TelemetryProvider } from './TelemetryProvider';
+import { userService } from '../services/UserService';
+import { keyValueDbService } from '../services/db/KeyValueDbService';
+import { OrganizationService } from '../services/OrganizationService';
+import { SystemSettingService } from '../services/SystemSettingService';
 
 describe('TelemetryProvider', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAppAddListener.mockResolvedValue({ remove: vi.fn() });
+    mockGetLaunchUrl.mockResolvedValue({ url: '' });
+    // Re-establish userService defaults
+    vi.mocked(userService.getUserId).mockReturnValue(null);
+    vi.mocked(userService.userRead).mockRejectedValue(new Error('not logged in'));
+    // Re-establish keyValueDbService defaults
+    vi.mocked(keyValueDbService.get).mockRejectedValue(new Error('no key'));
+    vi.mocked(keyValueDbService.set).mockResolvedValue(undefined);
+    // Re-establish OrganizationService search default
+    (OrganizationService.prototype as any).search = vi.fn().mockResolvedValue({
+      data: { response: { content: [] } },
+      headers: {},
+    });
+    // Re-establish SystemSettingService read default
+    (SystemSettingService.prototype as any).read = vi.fn().mockRejectedValue(new Error('not found'));
   });
 
   afterEach(() => {
@@ -228,6 +246,132 @@ describe('TelemetryProvider', () => {
           edata: expect.objectContaining({ id: 'card-click' }),
         }),
       );
+    });
+  });
+
+  // ── Init function ─────────────────────────────────────────────────────────
+
+  describe('init function', () => {
+    it('calls initialize and fires app START on mount', async () => {
+      const { getByText } = render(
+        <TelemetryProvider><div>child</div></TelemetryProvider>,
+      );
+      expect(getByText('child')).toBeDefined();
+
+      await act(async () => {}); // flush microtasks
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalled();
+        expect(mockStart).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'app' }),
+          '', '', {},
+        );
+      });
+    });
+
+    it('seeds timeDiff from persisted storedOffset', async () => {
+      vi.mocked(keyValueDbService.get).mockResolvedValue('3000');
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalledWith(
+          expect.objectContaining({ timeDiff: 3000 }),
+        );
+      });
+    });
+
+    it('persists timeDiff when it is non-zero (org serverDate path)', async () => {
+      (OrganizationService.prototype as any).search = vi.fn().mockResolvedValue({
+        data: { response: { content: [{ hashTagId: 'org-channel' }] } },
+        headers: { date: new Date(Date.now() + 5000).toUTCString() },
+      });
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalled();
+        expect(vi.mocked(keyValueDbService.set)).toHaveBeenCalled();
+      });
+    });
+
+    it('resolves channel from anonymous org search (default_channel path)', async () => {
+      (SystemSettingService.prototype as any).read = vi.fn().mockResolvedValue({
+        data: { response: { value: 'test-slug' } },
+      });
+      (OrganizationService.prototype as any).search = vi.fn().mockResolvedValue({
+        data: { response: { content: [{ hashTagId: 'anon-channel' }] } },
+        headers: {},
+      });
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalledWith(
+          expect.objectContaining({ channel: 'anon-channel' }),
+        );
+      });
+    });
+
+    it('resolves channel and sid for a logged-in user', async () => {
+      vi.mocked(userService.getUserId).mockReturnValue('logged-user');
+      vi.mocked(userService.userRead).mockResolvedValue({
+        data: { response: { channel: 'user-channel' } },
+      } as any);
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalledWith(
+          expect.objectContaining({ uid: 'logged-user', channel: 'user-channel' }),
+        );
+      });
+      // sid must be a UUID (not '1') for logged-in users
+      const call = mockInitialize.mock.calls[0][0];
+      expect(call.sid).not.toBe('1');
+    });
+
+    it('resolves channel from rootOrg.hashTagId for logged-in user', async () => {
+      vi.mocked(userService.getUserId).mockReturnValue('logged-user');
+      vi.mocked(userService.userRead).mockResolvedValue({
+        data: { response: { rootOrg: { hashTagId: 'root-channel' } } },
+      } as any);
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalledWith(
+          expect.objectContaining({ channel: 'root-channel' }),
+        );
+      });
+    });
+
+    it('captures UTM parameters from launch URL', async () => {
+      mockGetLaunchUrl.mockResolvedValue({
+        url: 'https://example.com/?utm_source=google&utm_medium=cpc&utm_campaign=spring',
+      });
+
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockUpdateCampaignParameters).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            { id: 'google', type: 'utm_source' },
+            { id: 'cpc', type: 'utm_medium' },
+            { id: 'spring', type: 'utm_campaign' },
+          ]),
+        );
+      });
+    });
+
+    it('uses sid="1" and empty channel for anonymous user', async () => {
+      render(<TelemetryProvider><div /></TelemetryProvider>);
+
+      await waitFor(() => {
+        expect(mockInitialize).toHaveBeenCalledWith(
+          expect.objectContaining({ uid: '', sid: '1' }),
+        );
+      });
     });
   });
 
