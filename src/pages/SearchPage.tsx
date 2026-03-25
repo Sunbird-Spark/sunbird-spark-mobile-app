@@ -9,6 +9,7 @@ import { ContentSearchItem } from '../types/contentTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
 import './SearchPage.css';
+import useImpression from '../hooks/useImpression';
 
 // ── Constants ──
 const PREVIEW_LIMIT = 3;
@@ -35,6 +36,7 @@ const ArrowRightIcon = () => (
 );
 
 const SearchPage: React.FC = () => {
+    useImpression({ pageid: 'SearchPage', env: 'search' });
     const router = useIonRouter();
     const { t } = useTranslation();
     const [searchQuery, setSearchQuery] = useState('');

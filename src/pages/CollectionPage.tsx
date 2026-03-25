@@ -30,6 +30,9 @@ import CourseCompletionDialog from '../components/collection/CourseCompletionDia
 import FAQSection from '../components/home/FAQSection';
 import PageLoader from '../components/common/PageLoader';
 import './CollectionPage.css';
+import useImpression from '../hooks/useImpression';
+import { TelemetryTracker } from '../components/telemetry/TelemetryTracker';
+import { telemetryService } from '../services/TelemetryService';
 
 // ── Circular Progress Widget ──
 const CircularProgress = ({ value, size = 48 }: { value: number; size?: number }) => {
@@ -75,6 +78,7 @@ const CertificateIcon = () => (
 // ══════════════════════════════════════════════════════════════
 
 const CollectionPage: React.FC = () => {
+  useImpression({ pageid: 'CollectionPage', env: 'collection' });
   const { collectionId } = useParams<{ collectionId: string }>();
   const router = useIonRouter();
   const location = useLocation<{ parentRoute?: string }>();
@@ -181,6 +185,10 @@ const CollectionPage: React.FC = () => {
     if (!selectedBatchId || !collectionId || !userId) return;
     try {
       await enrollment.enrol.mutateAsync({ courseId: collectionId, userId, batchId: selectedBatchId });
+      void telemetryService.audit({
+        edata: { props: ['enrollment'], prevstate: 'NotEnrolled', state: 'Enrolled' },
+        object: { id: collectionId, type: 'Collection', ver: '1' },
+      });
       setIsBatchModalOpen(false);
     } catch {
       // Error is available via enrollment.joinError
@@ -271,8 +279,20 @@ const CollectionPage: React.FC = () => {
     );
   }
 
+  const collectionObject = collectionData
+    ? { id: collectionId, type: collectionData.primaryCategory || 'Collection', ver: '1' }
+    : undefined;
+
   return (
     <IonPage className="collection-page">
+      <TelemetryTracker
+        disabled={!collectionData}
+        startEventInput={{ type: 'START', mode: 'play', pageid: 'CollectionPage' }}
+        endEventInput={{ type: 'END', mode: 'play', pageid: 'CollectionPage', summary: [] }}
+        startOptions={collectionObject ? { object: collectionObject } : undefined}
+        endOptions={collectionObject ? { object: collectionObject } : undefined}
+        summaryOptions={collectionObject ? { object: collectionObject } : undefined}
+      />
       <IonHeader className="ion-no-border">
         <IonToolbar className="collection-page-header">
           <div className="collection-page-header-inner">

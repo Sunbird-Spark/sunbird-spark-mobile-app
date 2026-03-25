@@ -56,6 +56,11 @@ vi.mock('../components/content/ResourceCard', () => ({
   default: ({ item }: any) => <div data-testid="resource-card">{item.name}</div>,
 }));
 
+// ── Mock useImpression (requires Router context) ──
+vi.mock('../hooks/useImpression', () => ({
+  default: () => {},
+}));
+
 // ── Mock useDebounce to return value immediately ──
 vi.mock('../hooks/useDebounce', () => ({
   default: (value: string) => value,

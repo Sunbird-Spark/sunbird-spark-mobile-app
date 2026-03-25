@@ -15,8 +15,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../components/layout/AppHeader';
 import { MobileLayout } from '../components/layout/MobileLayout';
+import useImpression from '../hooks/useImpression';
 
 const Dashboard: React.FC = () => {
+  useImpression({ pageid: 'Dashboard', env: 'home' });
   const { t } = useTranslation();
   return (
     <IonPage>

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useMemo, useEffect, useCallback, startTransition, ReactNode } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
 import { getClient } from '../lib/http-client';
@@ -6,6 +7,9 @@ import { useUser } from '../hooks/useUser';
 import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
+import { telemetryService } from '../services/TelemetryService';
+import { deviceService } from '../services/device/deviceService';
+import { OrganizationService } from '../services/OrganizationService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -60,8 +64,41 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return needsTnCAcceptance(profile);
   }, [profile, tncDismissed]);
 
+  // Shared helper: update telemetry context and fire SESSION START after every login.
+  // Channel is resolved best-effort from user profile (non-blocking).
+  const applyLoginTelemetry = useCallback((currentUserId: string | null) => {
+    telemetryService.updateContext({ uid: currentUserId || 'anonymous', sid: uuidv4() });
+    void telemetryService.start({ type: 'session', mode: '', duration: 0, pageid: '' }, '', '', {});
+    if (currentUserId) {
+      void (async () => {
+        try {
+          const res = await userService.userRead(currentUserId);
+          const userData = (res.data as any)?.response;
+          // Use hashTagId as channel — never fall back to the human-readable slug
+          let channel = (userData?.rootOrg as any)?.hashTagId || '';
+          const channelSlug = userData?.channel || '';
+          // Resolve hashTagId via org search when it is absent from the profile
+          if (!channel && channelSlug) {
+            const orgService = new OrganizationService();
+            const orgResponse = await orgService.search({
+              request: { filters: { isTenant: true, slug: channelSlug } },
+            });
+            channel = orgResponse?.data?.response?.content?.[0]?.hashTagId || '';
+          }
+          if (channel) {
+            telemetryService.updateContext({ channel, tags: [channel], rollup: { l1: channel } });
+          }
+        } catch { /* keep existing channel if fetch fails */ }
+      })();
+    }
+  }, []);
+
   // Demo toggle (keeps backward compat with existing code)
-  const login = useCallback(() => setIsAuthenticated(true), []);
+  const login = useCallback(() => {
+    setIsAuthenticated(true);
+    const uid = userService.getUserId();
+    if (uid) telemetryService.updateContext({ uid: uid || 'anonymous', sid: uuidv4() });
+  }, []);
 
   // Real login via backend
   const handleLoginWithCredentials = useCallback(async (email: string, password: string) => {
@@ -80,8 +117,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTncDismissed(false);
     setUserId(currentUserId);
     setIsAuthenticated(true);
-
-  }, []);
+    applyLoginTelemetry(currentUserId);
+  }, [applyLoginTelemetry]);
 
   // Google login via native plugin + backend
   const handleLoginWithGoogle = useCallback(async () => {
@@ -107,6 +144,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setTncDismissed(false);
       setUserId(currentUserId);
       setIsAuthenticated(true);
+      applyLoginTelemetry(currentUserId);
     } catch (err) {
       // Backend call failed — clean up the Google session to prevent stale state
       try {
@@ -116,7 +154,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       }
       throw err;
     }
-  }, []);
+  }, [applyLoginTelemetry]);
 
   const completeTnC = useCallback(() => {
     setTncDismissed(true);
@@ -151,6 +189,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(null);
     setIsAuthenticated(false);
     setTncDismissed(false);
+    const did = await deviceService.getHashedDeviceId().catch(() => '');
+    telemetryService.updateContext({ uid: did || 'anonymous', sid: uuidv4() });
   }, []);
 
   return (

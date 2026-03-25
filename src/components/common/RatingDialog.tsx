@@ -1,11 +1,20 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useTelemetry } from '../../hooks/useTelemetry';
 import './RatingDialog.css';
+
+export interface RatingDialogContentMeta {
+  id: string;
+  type: string;
+  ver: string;
+}
 
 interface RatingDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit?: (rating: number) => void;
+  /** A9: content object for FEEDBACK telemetry event */
+  contentMeta?: RatingDialogContentMeta;
 }
 
 /** Feather-style X icon */
@@ -34,13 +43,20 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
 
 import ratingPopupCheck from '../../assets/rating-popup-check.svg';
 
-const RatingDialog = ({ open, onClose, onSubmit }: RatingDialogProps) => {
+const RatingDialog = ({ open, onClose, onSubmit, contentMeta }: RatingDialogProps) => {
   const { t } = useTranslation();
+  const telemetry = useTelemetry();
   const [rating, setRating] = useState(0);
 
   if (!open) return null;
 
   const handleSubmit = () => {
+    if (contentMeta?.id) {
+      void telemetry.feedback({
+        edata: { rating },
+        object: { id: contentMeta.id, type: contentMeta.type, ver: contentMeta.ver },
+      });
+    }
     onSubmit?.(rating);
     setRating(0);
     onClose();

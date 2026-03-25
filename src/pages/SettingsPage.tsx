@@ -19,8 +19,10 @@ import {
 } from '../services/SettingsService';
 import { useSystemSetting } from '../hooks/useSystemSetting';
 import './SettingsPage.css';
+import useImpression from '../hooks/useImpression';
 
 const SettingsPage: React.FC = () => {
+  useImpression({ pageid: 'SettingsPage', env: 'settings' });
   const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');
   const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');
