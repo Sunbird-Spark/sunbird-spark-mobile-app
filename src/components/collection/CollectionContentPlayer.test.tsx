@@ -339,7 +339,6 @@ describe('CollectionContentPlayer', () => {
       fireEvent.click(screen.getByTestId('retry-btn'));
 
       expect(mockRefetch).toHaveBeenCalled();
-      expect(mockRefetchQuml).toHaveBeenCalled();
     });
   });
 

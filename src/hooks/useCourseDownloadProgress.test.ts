@@ -57,7 +57,7 @@ describe('useCourseDownloadProgress', () => {
     const { result } = renderHook(() =>
       useCourseDownloadProgress(undefined, [], new Set()),
     );
-    await act(async () => {});
+    await act(async () => { });
 
     expect(result.current.isDownloading).toBe(false);
     expect(result.current.total).toBe(0);
@@ -77,7 +77,7 @@ describe('useCourseDownloadProgress', () => {
     const { result } = renderHook(() =>
       useCourseDownloadProgress('course1', children, new Set()),
     );
-    await act(async () => {});
+    await act(async () => { });
 
     expect(result.current.total).toBe(5);
     expect(result.current.completed).toBe(2);
@@ -100,13 +100,14 @@ describe('useCourseDownloadProgress', () => {
     const { result } = renderHook(() =>
       useCourseDownloadProgress('course1', children, new Set()),
     );
-    await act(async () => {});
+    await act(async () => { });
 
     expect(result.current.allDownloaded).toBe(true);
     expect(result.current.isDownloading).toBe(false);
   });
 
   it('refreshes on progress events', async () => {
+    vi.useFakeTimers();
     vi.mocked(downloadManager.getAggregateProgress)
       .mockResolvedValueOnce({
         parentIdentifier: 'course1',
@@ -125,14 +126,18 @@ describe('useCourseDownloadProgress', () => {
     const { result } = renderHook(() =>
       useCourseDownloadProgress('course1', children, new Set()),
     );
-    await act(async () => {});
+    await act(async () => {
+      vi.runAllTimers();
+    });
     expect(result.current.overallPercent).toBe(0);
 
     await act(async () => {
       capturedListener?.({ type: 'progress', identifier: 'a' });
+      vi.runAllTimers();
     });
 
     expect(result.current.overallPercent).toBe(50);
+    vi.useRealTimers();
   });
 
   it('unsubscribes on unmount', async () => {
@@ -146,7 +151,7 @@ describe('useCourseDownloadProgress', () => {
     const { unmount } = renderHook(() =>
       useCourseDownloadProgress('course1', [], new Set()),
     );
-    await act(async () => {});
+    await act(async () => { });
     unmount();
     expect(unsubMock).toHaveBeenCalled();
   });

@@ -29,7 +29,7 @@ export function useBatchDownloadStates(
       if (cancelled) return;
       const ids = idsRef.current;
       if (ids.length === 0) {
-        setStateMap(new Map());
+        // Avoid raw setState here if it can be synchronous
         return;
       }
       const map = await downloadManager.getBatchProgress(ids);

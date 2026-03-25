@@ -188,14 +188,14 @@ const CollectionPage: React.FC = () => {
       if (result.enqueued === 0 && result.skippedLocal > 0) {
         setToastMessage(t('download.allDownloaded'));
       } else if (result.enqueued > 0) {
-        setToastMessage(t('download.downloadingItems', { count: result.enqueued }));
+        setToastMessage(t('download.downloadingItems'));
       }
     } catch {
       setToastMessage(t('download.failedToStart'));
     } finally {
       setIsDownloadStarting(false);
     }
-  }, [collectionData, collectionId, isOffline]);
+  }, [collectionData, collectionId, isOffline, t]);
 
   // Delete all downloaded content for this collection
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
@@ -309,7 +309,7 @@ const CollectionPage: React.FC = () => {
         const entry = await downloadManager.getEntry(event.identifier);
         if (entry?.state === 'FAILED') {
           setDownloadToast({
-            message: t('download.downloadFailed', 'Failed to download content.'),
+            message: t('download.downloadFailed'),
             color: 'danger',
             icon: alertCircleOutline,
           });
@@ -1102,7 +1102,7 @@ const CollectionPage: React.FC = () => {
         isOpen={showDeleteAlert}
         onDidDismiss={() => setShowDeleteAlert(false)}
         header="Delete Collection"
-        message={t('download.deleteCollectionMessage', { title: collectionData?.title || t('collection.collectionOverview') })}
+        message={t('download.deleteCollectionMessage')}
         buttons={[
           { text: t('cancel'), role: 'cancel' },
           { text: t('download.delete'), role: 'destructive', handler: handleDeleteAll },

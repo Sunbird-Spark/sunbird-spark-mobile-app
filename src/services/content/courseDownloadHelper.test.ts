@@ -15,6 +15,7 @@ vi.mock('../download_manager', () => ({
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: {
     getByIdentifier: vi.fn(),
+    getByIdentifiers: vi.fn().mockResolvedValue([]),
   },
 }));
 
@@ -56,6 +57,7 @@ describe('startBulkDownload', () => {
     vi.clearAllMocks();
     vi.mocked(databaseService.initialize).mockResolvedValue(undefined);
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue(null);
+    vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([]);
     vi.mocked(downloadManager.enqueue).mockResolvedValue(undefined);
   });
 
@@ -75,9 +77,9 @@ describe('startBulkDownload', () => {
   });
 
   it('skips already downloaded content', async () => {
-    vi.mocked(contentDbService.getByIdentifier).mockImplementation(async (id) => {
-      if (id === 'a') return { identifier: 'a', content_state: 2 } as any;
-      return null;
+    vi.mocked(contentDbService.getByIdentifiers).mockImplementation(async (ids) => {
+      if (ids.includes('a')) return [{ identifier: 'a', content_state: 2 }] as any;
+      return [];
     });
 
     const nodes = [makeUnit('u1', [makeLeaf('a'), makeLeaf('b')])];
@@ -104,10 +106,10 @@ describe('startBulkDownload', () => {
   });
 
   it('does not call enqueue when nothing to download', async () => {
-    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+    vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([{
       identifier: 'a',
       content_state: 2,
-    } as any);
+    } as any]);
 
     const nodes = [makeUnit('u1', [makeLeaf('a')])];
     const result = await startBulkDownload('course1', nodes);
@@ -133,6 +135,11 @@ describe('startBulkDownload', () => {
 
   it('triggers spine download when spineDownloadUrl is provided', async () => {
     vi.mocked(downloadSpineEcar).mockResolvedValue('started');
+    // Mock successful spine import so the sequential loop finishes
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'course1',
+      content_state: 2,
+    } as any);
 
     const nodes = [makeUnit('u1', [makeLeaf('a')])];
     const result = await startBulkDownload('course1', nodes, {

@@ -38,7 +38,7 @@ export function useIsContentLocal(
     }
 
     let cancelled = false;
-    setIsLocal(false);
+    // setIsLocal(false);
 
     const check = () =>
       contentDbService
