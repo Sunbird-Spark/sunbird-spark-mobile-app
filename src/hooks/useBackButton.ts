@@ -17,7 +17,10 @@ const overrides = new Map<string, BackButtonOverride>();
  */
 export const useBackButtonOverride = (path: string, handler: BackButtonOverride) => {
   const handlerRef = useRef(handler);
-  handlerRef.current = handler;
+
+  useEffect(() => {
+    handlerRef.current = handler;
+  });
 
   useEffect(() => {
     const wrapped: BackButtonOverride = () => handlerRef.current();
