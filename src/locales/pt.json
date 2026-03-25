@@ -238,6 +238,13 @@
     "deleteFailed": "Falha ao excluir o conteúdo",
     "downloadFailed": "Falha ao baixar conteúdo."
   },
+  "scanQRCode": "Digitalizar código QR",
+  "cameraDeniedTitle": "Acesso à câmera negado",
+  "cameraDeniedMessage": "Por favor, permita o acesso à câmera para digitalizar códigos QR.",
+  "invalidQRTitle": "Código QR inválido",
+  "invalidQRMessage": "Este código QR não é um código DIAL válido. Por favor, tente novamente.",
+  "tryAgain": "Tentar novamente",
+  "dialCodeResults": "Resultados do código QR",
   "months": {
     "jan": "Jan",
     "feb": "Fev",

@@ -1030,6 +1030,8 @@ ion-tab-button:hover {
 .profile-header .profile-toolbar {
     --background: var(--ion-color-light);
     --border-width: 0;
+    --padding-start: 16px;
+    --padding-end: 16px;
 }
 
 .profile-header .profile-toolbar .profile-page-title {
@@ -1037,7 +1039,6 @@ ion-tab-button:hover {
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: left;
-    padding-inline-start: 1rem;
 }
 
 /* Content background */

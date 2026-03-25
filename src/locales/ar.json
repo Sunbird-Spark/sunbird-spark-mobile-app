@@ -245,5 +245,12 @@
     "delete": "حذف",
     "deleteFailed": "فشل في حذف المحتوى",
     "downloadFailed": "فشل تنزيل المحتوى."
-  }
+  },
+  "scanQRCode": "مسح رمز QR",
+  "cameraDeniedTitle": "تم رفض الوصول إلى الكاميرا",
+  "cameraDeniedMessage": "يرجى السماح بالوصول إلى الكاميرا لمسح رموز QR.",
+  "invalidQRTitle": "رمز QR غير صالح",
+  "invalidQRMessage": "رمز QR هذا ليس رمز DIAL صالحاً. يرجى المحاولة مرة أخرى.",
+  "tryAgain": "حاول مرة أخرى",
+  "dialCodeResults": "نتائج رمز QR"
 }
