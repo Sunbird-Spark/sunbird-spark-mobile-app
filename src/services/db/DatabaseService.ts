@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
 const DB_NAME = 'sunbird_spark';
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 // ── Allowlisted identifiers (guards against SQL injection via identifiers) ────
 
@@ -14,6 +14,8 @@ const ALLOWED_TABLES = new Set([
   'configs',
   'download_queue',
   'content',
+  'network_queue',
+  'course_assessment',
 ]);
 
 function assertTable(table: string): void {
@@ -136,6 +138,31 @@ const SCHEMA_STATEMENTS = [
   primary_category       TEXT DEFAULT ''
 )`,
   `CREATE INDEX IF NOT EXISTS idx_content_state ON content(content_state)`,
+  `CREATE TABLE IF NOT EXISTS network_queue (
+  _id           INTEGER PRIMARY KEY AUTOINCREMENT,
+  msg_id        TEXT    UNIQUE NOT NULL,
+  type          TEXT    NOT NULL,
+  priority      INTEGER NOT NULL DEFAULT 2,
+  timestamp     INTEGER NOT NULL,
+  data          TEXT    NOT NULL,
+  item_count    INTEGER NOT NULL DEFAULT 0,
+  retry_count   INTEGER NOT NULL DEFAULT 0,
+  max_retries   INTEGER NOT NULL DEFAULT 5,
+  next_retry_at INTEGER NOT NULL DEFAULT 0,
+  last_error    TEXT,
+  status        TEXT    NOT NULL DEFAULT 'PENDING'
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_nq_status_priority ON network_queue(status, priority, next_retry_at)`,
+  `CREATE TABLE IF NOT EXISTS course_assessment (
+  _id              INTEGER PRIMARY KEY AUTOINCREMENT,
+  assessment_event TEXT    NOT NULL,
+  content_id       TEXT    NOT NULL,
+  created_at       INTEGER NOT NULL,
+  uid              TEXT    NOT NULL,
+  course_id        TEXT    NOT NULL,
+  batch_id         TEXT    NOT NULL
+)`,
+  `CREATE INDEX IF NOT EXISTS idx_ca_context ON course_assessment(uid, course_id, batch_id, content_id)`,
 ];
 
 export class DatabaseService {
@@ -395,13 +422,46 @@ export class DatabaseService {
 
     if (currentVersion < SCHEMA_VERSION) {
       // ── Run migrations ────────────────────────────────────────────────────
-      // TODO: Add ALTER TABLE / data migrations here whenever SCHEMA_VERSION is
-      // bumped. Execute each migration inside its own version guard so it runs
-      // exactly once per install. Use db.run(sql, [], false) — not db.execute()
-      // — to avoid CapacitorSQLite v7 auto-transaction wrapping. Example:
-      //   if (currentVersion < 2) {
-      //     await db.run('ALTER TABLE telemetry ADD COLUMN source TEXT', [], false);
-      //   }
+      // Execute each migration inside its own version guard so it runs exactly
+      // once per install. Use db.run(sql, [], false) — not db.execute() — to
+      // avoid CapacitorSQLite v7 auto-transaction wrapping.
+
+      if (currentVersion < 3) {
+        await db.run(`CREATE TABLE IF NOT EXISTS network_queue (
+          _id           INTEGER PRIMARY KEY AUTOINCREMENT,
+          msg_id        TEXT    UNIQUE NOT NULL,
+          type          TEXT    NOT NULL,
+          priority      INTEGER NOT NULL DEFAULT 2,
+          timestamp     INTEGER NOT NULL,
+          data          TEXT    NOT NULL,
+          item_count    INTEGER NOT NULL DEFAULT 0,
+          retry_count   INTEGER NOT NULL DEFAULT 0,
+          max_retries   INTEGER NOT NULL DEFAULT 5,
+          next_retry_at INTEGER NOT NULL DEFAULT 0,
+          last_error    TEXT,
+          status        TEXT    NOT NULL DEFAULT 'PENDING'
+        )`, [], false);
+        await db.run(
+          `CREATE INDEX IF NOT EXISTS idx_nq_status_priority
+             ON network_queue(status, priority, next_retry_at)`,
+          [], false
+        );
+        await db.run(`CREATE TABLE IF NOT EXISTS course_assessment (
+          _id              INTEGER PRIMARY KEY AUTOINCREMENT,
+          assessment_event TEXT    NOT NULL,
+          content_id       TEXT    NOT NULL,
+          created_at       INTEGER NOT NULL,
+          uid              TEXT    NOT NULL,
+          course_id        TEXT    NOT NULL,
+          batch_id         TEXT    NOT NULL
+        )`, [], false);
+        await db.run(
+          `CREATE INDEX IF NOT EXISTS idx_ca_context
+             ON course_assessment(uid, course_id, batch_id, content_id)`,
+          [], false
+        );
+      }
+
       const now = Date.now();
       await db.run(
         'INSERT OR REPLACE INTO key_value (key, value, updated_at) VALUES (?, ?, ?)',
