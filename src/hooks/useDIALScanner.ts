@@ -37,7 +37,7 @@ export function useDIALScanner() {
       }
 
       const dialCode = match[1];
-      router.push(`/explore?dialCode=${dialCode}`, 'forward', 'push');
+      router.push(`/explore?dialCode=${encodeURIComponent(dialCode)}`, 'forward', 'push');
     } catch (err: any) {
       const message: string = err?.message ?? '';
       if (message.includes('cancelled') || message.includes('canceled')) return;

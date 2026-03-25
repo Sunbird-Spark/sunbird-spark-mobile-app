@@ -89,7 +89,10 @@ const ExplorePage: React.FC = () => {
     // ── Read query param from URL ──
     const location = useLocation();
     const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);
-    const urlDialCode = useMemo(() => new URLSearchParams(location.search).get('dialCode') || '', [location.search]);
+    const urlDialCode = useMemo(() => {
+        const rawDialCode = new URLSearchParams(location.search).get('dialCode') || '';
+        return /^[A-Za-z0-9]+$/.test(rawDialCode) ? rawDialCode : '';
+    }, [location.search]);
 
     // ── Search ──
     const [showSearch, setShowSearch] = useState(!!urlQuery);

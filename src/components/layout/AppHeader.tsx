@@ -34,7 +34,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
           </IonButtons>
         )}
         <IonTitle className={transparent ? 'profile-page-title' : ''}>{title}</IonTitle>
-        <IonButtons slot="end">
+        <IonButtons slot="end" style={{ gap: '16px' }}>
           {showNotifications && <Notification />}
           {showScan && <QRScanButton />}
           <LanguageSelector />
