@@ -15,9 +15,12 @@ export function useBatchDownloadStates(
   const idsKey = identifiers.join(',');
   const stableIds = useMemo(() => identifiers, [idsKey]);
 
-  // Keep a ref to avoid stale closure in the subscriber
+  // Keep a ref to avoid stale closure in the subscriber.
+  // Updated inside an effect to comply with React's rules (no ref writes during render).
   const idsRef = useRef(stableIds);
-  idsRef.current = stableIds;
+  useEffect(() => {
+    idsRef.current = stableIds;
+  }, [stableIds]);
 
   useEffect(() => {
     let cancelled = false;
