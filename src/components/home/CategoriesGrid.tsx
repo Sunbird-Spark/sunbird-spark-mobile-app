@@ -25,7 +25,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 <h2 className="categories-title">{title || t('browseCategories')}</h2>
                 <button
                     className="categories-arrow"
-                    onClick={() => router.push('/explore', 'forward', 'push')}
+                    onClick={() => router.push('/explore', 'root', 'replace')}
                     aria-label={t('browseAllCategories')}
                 >
                     <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
@@ -38,7 +38,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                     <IonCard
                         key={cat.name}
                         className="category-tile"
-                        onClick={() => router.push('/explore', 'forward', 'push')}
+                        onClick={() => router.push('/explore', 'root', 'replace')}
                         style={{ '--background': cat.gradient, margin: 0 } as React.CSSProperties}
                     >
                         <div className="category-tile-overlay-gradient">
@@ -48,7 +48,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 ))}
                 <div
                     className="category-browse-all"
-                    onClick={() => router.push('/explore', 'forward', 'push')}
+                    onClick={() => router.push('/explore', 'root', 'replace')}
                     role="button"
                     tabIndex={0}
                 >

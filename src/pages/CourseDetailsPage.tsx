@@ -1,15 +1,9 @@
 import React from 'react';
 import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonImg } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
+import { AppBackIcon } from '../components/common/AppBackIcon';
 import './CourseDetailsPage.css';
 import useImpression from '../hooks/useImpression';
-
-// ── Icons ──
-const BackIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M15 18L9 12L15 6" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-);
 
 const SearchIcon = () => (
     <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
@@ -82,7 +76,7 @@ const CourseDetailsPage: React.FC = () => {
                 <IonToolbar className="course-details-header">
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <button onClick={() => history.goBack()} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                            <BackIcon />
+                            <AppBackIcon />
                         </button>
                         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
                             <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>

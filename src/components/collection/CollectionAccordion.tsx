@@ -205,6 +205,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
             className="cp-curriculum-unit"
             toggleIconSlot="start"
             toggleIcon={chevronDownOutline}
+            style={{ '--color': 'var(--ion-color-primary)' } as React.CSSProperties}
           >
             <IonItem slot="header" lines="none" className="cp-curriculum-unit-header-item">
               <IonLabel className="ion-text-wrap">

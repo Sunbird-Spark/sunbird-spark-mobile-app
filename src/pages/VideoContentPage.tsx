@@ -5,12 +5,12 @@ import {
     IonPage,
     IonToolbar,
     IonButtons,
-    IonBackButton,
     IonIcon, IonImg
 } from '@ionic/react';
 import { useParams } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { shareSocialOutline, downloadOutline } from 'ionicons/icons';
+import { AppBackIcon } from '../components/common/AppBackIcon';
 import { telemetryService } from '../services/TelemetryService';
 import './VideoContentPage.css';
 import useImpression from '../hooks/useImpression';
@@ -32,9 +32,7 @@ const VideoContentPage: React.FC = () => {
                 <IonToolbar style={{ '--background': 'transparent', '--min-height': '60px' }}>
                     <IonButtons slot="start">
                         <button className="action-btn" onClick={() => history.goBack()} style={{ padding: '8px' }}>
-                            <svg width="12" height="20" viewBox="0 0 12 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
+                            <AppBackIcon />
                         </button>
                     </IonButtons>
                     <IonButtons slot="end" className="header-actions">
