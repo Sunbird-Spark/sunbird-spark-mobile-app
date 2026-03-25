@@ -247,6 +247,13 @@
     "deleteFailed": "Failed to delete content",
     "downloadFailed": "Failed to download content."
   },
+  "scanQRCode": "Scan QR Code",
+  "cameraDeniedTitle": "Camera Access Denied",
+  "cameraDeniedMessage": "Please allow camera access to scan QR codes.",
+  "invalidQRTitle": "Invalid QR Code",
+  "invalidQRMessage": "This QR code is not a valid DIAL code. Please try again.",
+  "tryAgain": "Try Again",
+  "dialCodeResults": "QR Code Results",
   "months": {
     "jan": "Jan",
     "feb": "Feb",

@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
+import { QRScanButton } from '../components/common/QRScanButton';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useFormRead } from '../hooks/useFormRead';
 import useDebounce from '../hooks/useDebounce';
@@ -88,6 +89,7 @@ const ExplorePage: React.FC = () => {
     // ── Read query param from URL ──
     const location = useLocation();
     const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);
+    const urlDialCode = useMemo(() => new URLSearchParams(location.search).get('dialCode') || '', [location.search]);
 
     // ── Search ──
     const [showSearch, setShowSearch] = useState(!!urlQuery);
@@ -143,7 +145,8 @@ const ExplorePage: React.FC = () => {
         ...Object.fromEntries(
             Object.entries(filters).filter(([, values]) => values.length > 0)
         ),
-    }), [filters]);
+        ...(urlDialCode ? { dialcodes: [urlDialCode] } : {}),
+    }), [filters, urlDialCode]);
 
     // ── Reset pagination when search params change ──
     const searchParamsKey = useMemo(
@@ -282,6 +285,7 @@ const ExplorePage: React.FC = () => {
                                     <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
                                         <SearchIcon />
                                     </button>
+                                    <QRScanButton />
                                     <button
                                         onClick={handleOpenFilter}
                                         aria-label={t('filters')}
@@ -303,6 +307,18 @@ const ExplorePage: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen style={{ '--background': 'rgb(244, 244, 244)' }}>
+                {urlDialCode && (
+                    <div style={{
+                        background: 'var(--ion-color-primary)',
+                        color: '#ffffff',
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                    }}>
+                        {t('dialCodeResults')}: {urlDialCode}
+                    </div>
+                )}
+
                 <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
                     <IonRefresherContent />
                 </IonRefresher>

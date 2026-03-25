@@ -53,6 +53,11 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
+// Mock QRScanButton to prevent Capacitor calls during tests
+vi.mock('../components/common/QRScanButton', () => ({
+  QRScanButton: () => null,
+}));
+
 // Mock components
 vi.mock('../components/common/LanguageSelector', () => ({
   LanguageSelector: () => <div data-testid="language-selector" />,

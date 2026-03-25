@@ -8,12 +8,14 @@ import {
 } from '@ionic/react';
 import { LanguageSelector } from '../common/LanguageSelector';
 import Notification from '../common/Notification';
+import { QRScanButton } from '../common/QRScanButton';
 
 interface AppHeaderProps {
   title: string;
   showBack?: boolean;
   transparent?: boolean;
   showNotifications?: boolean;
+  showScan?: boolean;
 }
 
 export const AppHeader: React.FC<AppHeaderProps> = ({
@@ -21,6 +23,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   showBack = false,
   transparent = false,
   showNotifications = false,
+  showScan = true,
 }) => {
   return (
     <IonHeader className={transparent ? 'profile-header ion-no-border' : ''}>
@@ -33,6 +36,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
         <IonTitle className={transparent ? 'profile-page-title' : ''}>{title}</IonTitle>
         <IonButtons slot="end">
           {showNotifications && <Notification />}
+          {showScan && <QRScanButton />}
           <LanguageSelector />
         </IonButtons>
       </IonToolbar>
