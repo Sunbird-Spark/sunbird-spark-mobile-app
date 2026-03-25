@@ -5,7 +5,6 @@ import {
     IonPage,
     IonToolbar,
     IonButtons,
-    IonBackButton,
     IonIcon, IonImg
 } from '@ionic/react';
 import { useParams } from 'react-router';

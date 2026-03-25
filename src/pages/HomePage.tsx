@@ -172,12 +172,12 @@ const HomePage: React.FC = () => {
   const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
 
   return (
-    <IonPage style={{ '--background': 'var(--ion-color-step-50, #f4f4f4)' } as React.CSSProperties}>
+    <IonPage>
       <IonHeader>
         <PublicWelcomeHeader />
       </IonHeader>
 
-      <IonContent fullscreen style={{ '--background': 'var(--ion-color-step-50, #f4f4f4)' } as React.CSSProperties}>
+      <IonContent fullscreen>
         {isAuthenticated ? (
           <>
             <LearningGreeting enrolledCount={enrolledCount} />

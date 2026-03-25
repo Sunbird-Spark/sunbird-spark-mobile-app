@@ -94,24 +94,12 @@ const ProfileIcon: React.FC<{ isActive: boolean }> = ({ isActive }) =>
 
 const HelpSupportIcon: React.FC<{ isActive: boolean }> = ({ isActive }) =>
   isActive ? (
-    <svg width="20" height="20" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path
-        d="M14.75 7.75C14.75 4.45038 14.75 2.80012 13.7262 1.7755C12.7025 0.749997 11.0487 0.75 7.75 0.75C4.45125 0.75 2.79754 0.749997 1.77379 1.7755C0.750038 2.80012 0.75 4.45038 0.75 7.75V13C0.75 13.8251 0.750034 14.2373 1.00378 14.4936C1.26628 14.75 1.6775 14.75 2.5 14.75H7.75C11.0487 14.75 12.7025 14.75 13.7262 13.7245C14.75 12.6999 14.75 11.0496 14.75 7.75Z"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M19.4889 4.11555C20 5.34111 20 6.89333 20 10C20 13.1067 20 14.6589 19.4889 15.8845C18.8112 17.5178 17.5223 18.8156 15.8889 19.4922C14.6556 20 13.1111 20 10 20H6.66667C3.52222 20 1.95556 20 0.977783 19.0233C5.43892e-06 18.0478 0 16.4756 0 13.3333V10C0 6.89333 -4.34369e-05 5.34111 0.511068 4.11555C1.18885 2.48222 2.47772 1.18445 4.11106 0.507779C5.34439 8.19564e-07 6.88889 0 10 0C13.1111 0 14.6556 8.19564e-07 15.8889 0.507779C17.5223 1.18445 18.8112 2.48222 19.4889 4.11555ZM5.55556 7.77778C5.55556 7.16333 6.05556 6.66667 6.66667 6.66667H13.3333C13.9444 6.66667 14.4444 7.16333 14.4444 7.77778C14.4444 8.39111 13.9444 8.88889 13.3333 8.88889H6.66667C6.05556 8.88889 5.55556 8.39111 5.55556 7.77778ZM5.55556 12.2222C5.55556 11.6078 6.05556 11.1111 6.66667 11.1111H10C10.6111 11.1111 11.1111 11.6078 11.1111 12.2222C11.1111 12.8356 10.6111 13.3333 10 13.3333H6.66667C6.05556 13.3333 5.55556 12.8356 5.55556 12.2222Z"
         fill="currentColor"
-      />
-      <path
-        d="M5.125 6H10.375"
-        stroke="var(--ion-background-color, #fff)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M5.125 9.5H7.75"
-        stroke="var(--ion-background-color, #fff)"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
       />
     </svg>
   ) : (
@@ -162,8 +150,8 @@ interface NavItem {
   renderIcon: (isActive: boolean) => React.ReactNode;
 }
 
-// Only Home switches between outline and filled (matching portal: FiHome → GoHomeFill).
-// All other icons stay the same shape; only color changes via currentColor.
+// Each nav item renders an active/inactive icon variant.
+// Home uses IonIcon (outline vs filled); other items use custom SVGs that rely on currentColor for tinting.
 const navItems: NavItem[] = [
   {
     id: 'home',
@@ -215,7 +203,7 @@ export const BottomNavigation: React.FC = () => {
         right: 0,
         zIndex: 1000,
         backgroundColor: 'var(--ion-color-light)',
-        borderTop: '1px solid var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0))',
+        borderTop: '1px solid var(--ion-color-step-100, var(--color-e0e0e0))',
         display: 'flex',
         justifyContent: 'space-around',
         alignItems: 'center',

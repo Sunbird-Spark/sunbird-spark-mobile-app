@@ -271,7 +271,7 @@ const MyLearningPage: React.FC = () => {
             </div>
           </div>
         </IonHeader>
-        <IonContent fullscreen className="my-learning__content">
+        <IonContent className="my-learning__content" style={{ '--background': 'var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4))' } as React.CSSProperties}>
           <div className="my-learning__sign-in">
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
             <button
@@ -325,7 +325,7 @@ const MyLearningPage: React.FC = () => {
         </div>
       </IonHeader>
 
-      <IonContent fullscreen className="my-learning__content">
+      <IonContent className="my-learning__content" style={{ '--background': 'var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4))' } as React.CSSProperties}>
         {isLoading ? (
           <PageLoader message={t('loading')} />
         ) : error ? (
