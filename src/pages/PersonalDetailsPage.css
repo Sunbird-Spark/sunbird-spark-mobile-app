@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--ion-color-light);
+    background: var(--ion-background-color, #ffffff);
 }
 
 /* ── Page header ── */
@@ -121,13 +121,16 @@
     border-radius: 1.25rem 1.25rem 0 0;
 }
 
-/* Modal toolbar — close button row */
-.pd-modal-toolbar {
+/* Modal header — plain flex row, icon pinned to top-right */
+.pd-modal-header {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    background: var(--ion-background-color, #ffffff);
     display: flex;
-    align-items: center;
     justify-content: flex-end;
-    padding: 1rem 1rem 0.5rem;
-    background: var(--ion-color-light);
+    align-items: flex-start;
+    padding-top: 0.625rem;
+    padding-right: 0.75rem;
 }
 
 /* Close ✕ button */
@@ -135,7 +138,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem 1rem;
+    padding: 0.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -143,7 +146,7 @@
 
 /* Modal content area */
 .pd-modal-content {
-    --background: var(--ion-color-light);
+    --background: var(--ion-background-color, #ffffff);
 }
 
 .pd-modal-form {

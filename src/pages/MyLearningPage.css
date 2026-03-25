@@ -2,7 +2,7 @@
   --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 
-.my-learning-page ion-content {
+.my-learning__content {
   --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
 }
 

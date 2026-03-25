@@ -144,17 +144,15 @@ const HelpAndSupportPage: React.FC = () => {
                 className="hs-report-modal"
             >
                 <IonPage>
-                    <IonHeader className="ion-no-border">
-                        <div className="hs-modal-toolbar">
-                            <span className="hs-modal-title">{t('reportIssue')}</span>
-                            <button className="hs-modal-close" onClick={() => setShowModal(false)}>
-                                <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                    <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                </svg>
-                            </button>
-                        </div>
-                    </IonHeader>
+                    <div className="hs-modal-header">
+                        <span className="hs-modal-title">{t('reportIssue')}</span>
+                        <button className="hs-modal-close" onClick={() => setShowModal(false)}>
+                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <IonContent className="hs-modal-content ion-padding">
                         <div className="hs-modal-form">
