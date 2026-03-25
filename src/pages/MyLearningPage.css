@@ -1,3 +1,11 @@
+.my-learning-page {
+  --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
+}
+
+.my-learning__content {
+  --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
+}
+
 /* ── Header ── */
 .my-learning__header {
   background-color: #ffffff;

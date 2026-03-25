@@ -107,6 +107,7 @@
 .curriculum-accordion {
     background: transparent;
     margin-bottom: 0.75rem;
+    --color: var(--ion-color-primary);
 }
 
 .curriculum-accordion::part(content) {
@@ -186,6 +187,7 @@
     margin-bottom: 0.75rem;
     border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
     border-radius: 0.75rem;
+    --color: var(--ion-color-primary);
 }
 
 .faq-header {
