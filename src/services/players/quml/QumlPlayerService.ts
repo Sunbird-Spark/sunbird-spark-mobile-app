@@ -40,7 +40,6 @@ export class QumlPlayerService {
         sideMenu: {
           enable: true,
           showShare: true,
-          showDownload: true,
           showExit: true,
         },
       },
