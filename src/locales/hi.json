@@ -196,6 +196,18 @@
   "verifying": "सत्यापित हो रहा है…",
   "submit": "सबमिट करें",
   "fieldUpdatedSuccessfully": "{{field}} सफलतापूर्वक अपडेट किया गया",
+  "onboarding": {
+    "subtitle": "हम आपके अनुभव को व्यक्तिगत बनाने में आपकी मदद करना चाहेंगे!",
+    "saveAndProceed": "सहेजें और आगे बढ़ें",
+    "submit": "जमा करें",
+    "skipOnboarding": "ऑनबोर्डिंग छोड़ें",
+    "enterPreference": "अपनी प्राथमिकता दर्ज करें",
+    "failedToLoad": "ऑनबोर्डिंग लोड करने में विफल।",
+    "skip": "छोड़ें",
+    "somethingWentWrong": "कुछ गलत हो गया।",
+    "goToHome": "होम पर जाएं",
+    "goBack": "वापस जाएं"
+  },
   "scanQRCode": "QR कोड स्कैन करें",
   "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",
   "cameraDeniedMessage": "QR कोड स्कैन करने के लिए कृपया कैमरा एक्सेस की अनुमति दें।",

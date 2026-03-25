@@ -205,6 +205,18 @@
   "verifying": "Vérification en cours…",
   "submit": "Soumettre",
   "fieldUpdatedSuccessfully": "{{field}} mis à jour avec succès",
+  "onboarding": {
+    "subtitle": "Nous aimerions vous aider à personnaliser votre expérience !",
+    "saveAndProceed": "Enregistrer et continuer",
+    "submit": "Soumettre",
+    "skipOnboarding": "Passer l'intégration",
+    "enterPreference": "Entrez votre préférence",
+    "failedToLoad": "Échec du chargement de l'intégration.",
+    "skip": "Passer",
+    "somethingWentWrong": "Quelque chose s'est mal passé.",
+    "goToHome": "Aller à l'accueil",
+    "goBack": "Retour"
+  },
   "download": {
     "download": "Télécharger",
     "resume": "Reprendre le téléchargement",

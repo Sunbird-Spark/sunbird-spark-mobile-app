@@ -214,6 +214,18 @@
   "verifying": "Verifying…",
   "submit": "Submit",
   "fieldUpdatedSuccessfully": "{{field}} updated successfully",
+  "onboarding": {
+    "subtitle": "We would love to help you personalize your experience!",
+    "saveAndProceed": "Save and Proceed",
+    "submit": "Submit",
+    "skipOnboarding": "Skip Onboarding",
+    "enterPreference": "Enter your preference",
+    "failedToLoad": "Failed to load onboarding.",
+    "skip": "Skip",
+    "somethingWentWrong": "Something went wrong.",
+    "goToHome": "Go to Home",
+    "goBack": "Go back"
+  },
   "download": {
     "download": "Download",
     "resume": "Resume downloading",

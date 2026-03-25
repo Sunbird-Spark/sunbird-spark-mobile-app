@@ -205,6 +205,18 @@
   "verifying": "Verificando…",
   "submit": "Enviar",
   "fieldUpdatedSuccessfully": "{{field}} atualizado com sucesso",
+  "onboarding": {
+    "subtitle": "Gostaríamos de ajudá-lo a personalizar sua experiência!",
+    "saveAndProceed": "Salvar e continuar",
+    "submit": "Enviar",
+    "skipOnboarding": "Pular integração",
+    "enterPreference": "Digite sua preferência",
+    "failedToLoad": "Falha ao carregar a integração.",
+    "skip": "Pular",
+    "somethingWentWrong": "Algo deu errado.",
+    "goToHome": "Ir para o início",
+    "goBack": "Voltar"
+  },
   "download": {
     "download": "Baixar",
     "resume": "Retomar download",

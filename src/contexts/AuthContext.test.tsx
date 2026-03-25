@@ -100,18 +100,24 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 
 // Base test component
 const TestComponent = () => {
-  const { isAuthenticated, login, logout } = useAuth();
+  const { isAuthenticated, login, logout, onboardingDismissed, completeOnboarding } = useAuth();
 
   return (
     <div>
       <div data-testid="auth-status">
         {isAuthenticated ? 'Authenticated' : 'Not Authenticated'}
       </div>
+      <div data-testid="onboarding-status">
+        {onboardingDismissed ? 'Dismissed' : 'Pending'}
+      </div>
       <button data-testid="login-btn" onClick={login}>
         Login
       </button>
       <button data-testid="logout-btn" onClick={logout}>
         Logout
+      </button>
+      <button data-testid="complete-onboarding-btn" onClick={completeOnboarding}>
+        Complete Onboarding
       </button>
     </div>
   );
@@ -208,6 +214,24 @@ describe('AuthContext', () => {
     }).toThrow('useAuth must be used within AuthProvider');
 
     consoleSpy.mockRestore();
+  });
+
+  it('resets onboarding dismissed state on logout', async () => {
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('complete-onboarding-btn'));
+    expect(screen.getByTestId('onboarding-status')).toHaveTextContent('Dismissed');
+
+    fireEvent.click(screen.getByTestId('logout-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('onboarding-status')).toHaveTextContent('Pending');
+    });
   });
 
   it('maintains authentication state across multiple interactions', async () => {
