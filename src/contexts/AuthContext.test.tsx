@@ -53,6 +53,7 @@ vi.mock('../lib/http-client', () => ({
   getClient: () => ({
     updateHeaders: vi.fn(),
   }),
+  setLogoutCallback: vi.fn(),
 }));
 
 // Mock useAppInitialized to return true (sync)
@@ -75,6 +76,13 @@ vi.mock('../services/device/deviceService', () => ({
   },
 }));
 
+// Mock networkService — used in logout to skip Google disconnect when offline
+vi.mock('../services/network/networkService', () => ({
+  networkService: {
+    isConnected: vi.fn().mockReturnValue(true),
+  },
+}));
+
 // Mock OrganizationService — used in applyLoginTelemetry to resolve hashTagId from slug
 vi.mock('../services/OrganizationService', () => {
   function OrganizationService() {}
@@ -89,6 +97,8 @@ import { userService } from '../services/UserService';
 import { socialLoginService } from '../services/auth/socialLogin/socialLogin.service';
 import { OrganizationService } from '../services/OrganizationService';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
+import { networkService } from '../services/network/networkService';
+import { setLogoutCallback } from '../lib/http-client';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -162,6 +172,7 @@ describe('AuthContext', () => {
     vi.mocked(socialLoginService.trySilentGoogleLogin).mockResolvedValue(null as any);
     vi.mocked(loginWithCredentials).mockResolvedValue({ access_token: 'token' } as any);
     vi.mocked(loginWithGoogleToken).mockResolvedValue({ access_token: 'token' } as any);
+    vi.mocked(networkService.isConnected).mockReturnValue(true);
   });
   it('provides initial authentication state as false', () => {
     render(
@@ -551,5 +562,113 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
     });
+  });
+
+  it('logout skips Google disconnect and still clears local account when offline', async () => {
+    vi.mocked(userService.getLoginProvider).mockReturnValue('google');
+    vi.mocked(networkService.isConnected).mockReturnValue(false);
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('logout-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+    });
+
+    expect(socialLoginService.logoutGoogle).not.toHaveBeenCalled();
+    expect(userService.clearAccount).toHaveBeenCalled();
+  });
+
+  it('logout skips Google disconnect for keycloak provider even when online', async () => {
+    vi.mocked(userService.getLoginProvider).mockReturnValue('keycloak');
+    vi.mocked(networkService.isConnected).mockReturnValue(true);
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('logout-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+    });
+
+    expect(socialLoginService.logoutGoogle).not.toHaveBeenCalled();
+    expect(userService.clearAccount).toHaveBeenCalled();
+  });
+
+  it('logout calls clearAccount even when Google disconnect fails entirely', async () => {
+    vi.mocked(userService.getLoginProvider).mockReturnValue('google');
+    vi.mocked(networkService.isConnected).mockReturnValue(true);
+    vi.mocked(socialLoginService.logoutGoogle).mockRejectedValue(new Error('disconnect failed'));
+    vi.mocked(socialLoginService.trySilentGoogleLogin).mockRejectedValue(new Error('silent login failed'));
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    fireEvent.click(screen.getByTestId('logout-btn'));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+    });
+
+    expect(userService.clearAccount).toHaveBeenCalled();
+  });
+
+  it('registers logout callback with http-client on mount', async () => {
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    await waitFor(() => {
+      expect(setLogoutCallback).toHaveBeenCalledWith(expect.any(Function));
+    });
+  });
+
+  it('registered logout callback triggers full logout when called', async () => {
+    let capturedCallback: (() => Promise<void>) | null = null;
+    vi.mocked(setLogoutCallback).mockImplementation((fn) => {
+      capturedCallback = fn;
+    });
+
+    render(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('login-btn'));
+    expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+
+    await waitFor(() => {
+      expect(capturedCallback).not.toBeNull();
+    });
+
+    await act(async () => {
+      await capturedCallback!();
+    });
+
+    expect(screen.getByTestId('auth-status')).toHaveTextContent('Not Authenticated');
+    expect(userService.clearAccount).toHaveBeenCalled();
   });
 });

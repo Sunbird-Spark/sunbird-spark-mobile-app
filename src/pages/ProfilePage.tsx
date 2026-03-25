@@ -73,7 +73,6 @@ const ProfilePage: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    router.push('/home', 'root', 'replace');
   };
 
   // ── Unauthenticated view ─────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Redirect, Route, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
@@ -65,6 +65,25 @@ const TnCGuard: React.FC = () => {
   return null;
 };
 
+/** Navigates to /home when the user is logged out (handles auto-logout from token refresh failure) */
+const LogoutGuard: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const router = useIonRouter();
+  const prevAuthRef = useRef(isAuthenticated);
+
+  useEffect(() => {
+    const wasAuthenticated = prevAuthRef.current;
+    prevAuthRef.current = isAuthenticated;
+
+    // Only fire on true → false transition, not on initial load
+    if (wasAuthenticated && !isAuthenticated) {
+      router.push('/home', 'root', 'replace');
+    }
+  }, [isAuthenticated, router]);
+
+  return null;
+};
+
 /** Redirects to /onboarding when onboarding is not yet completed */
 const OnboardingGuard: React.FC = () => {
   const { isAuthenticated, userId, needsTnC, onboardingDismissed } = useAuth();
@@ -108,6 +127,7 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <TnCGuard />
+        <LogoutGuard />
         <OnboardingGuard />
         <BackButtonHandler />
         <IonRouterOutlet>
