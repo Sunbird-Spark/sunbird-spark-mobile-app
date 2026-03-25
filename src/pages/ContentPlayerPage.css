@@ -159,20 +159,30 @@
   box-sizing: border-box;
 }
 
-.cp-close-btn {
-  position: absolute;
-  top: calc(0.75rem + var(--safe-area-top));
-  left: calc(0.75rem + var(--safe-area-left));
-  z-index: 100;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+/* ── Video Player Overrides (matching portal) ── */
+
+/* Hide Video.js Big Play Button within the Sunbird video player wrapper */
+[data-video-player-wrapper] .vjs-big-play-button {
+  display: none !important;
+}
+
+/* Make background transparent */
+[data-video-player-wrapper] .video-js {
+  background-color: transparent !important;
+}
+
+/* Ensure control bar is always interactive */
+[data-video-player-wrapper] .vjs-control-bar {
+  z-index: 3 !important;
+  pointer-events: auto !important;
+}
+
+/* Keep control bar visible and clickable when video is paused */
+[data-video-player-wrapper] .vjs-paused .vjs-control-bar,
+[data-video-player-wrapper] .vjs-paused.vjs-user-inactive .vjs-control-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 /* Player embed classes used by player components */

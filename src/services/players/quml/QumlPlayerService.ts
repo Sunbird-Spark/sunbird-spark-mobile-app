@@ -34,7 +34,18 @@ export class QumlPlayerService {
 
     const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
-    return { context, config: {}, metadata };
+    return {
+      context,
+      config: {
+        sideMenu: {
+          enable: true,
+          showShare: true,
+          showDownload: true,
+          showExit: true,
+        },
+      },
+      metadata,
+    };
   }
 
   private loadStyles(): void {

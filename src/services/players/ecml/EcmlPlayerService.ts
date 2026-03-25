@@ -36,7 +36,7 @@ export class EcmlPlayerService {
       sideMenu: {
         showShare: true,
         showDownload: true,
-        showExit: false,
+        showExit: true,
         showPrint: true,
         showReplay: true,
       },
