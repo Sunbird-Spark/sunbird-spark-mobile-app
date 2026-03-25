@@ -1,32 +1,48 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { IonPage, IonContent, IonSpinner, IonToast, useIonRouter } from '@ionic/react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { App as CapApp } from '@capacitor/app';
-import { Capacitor } from '@capacitor/core';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormRead } from '../hooks/useFormRead';
 import { userService } from '../services/UserService';
+import { useBackButtonOverride } from '../hooks/useBackButton';
 import { OnboardingFormData, OnboardingScreen, OnboardingField } from '../types/onboardingTypes';
 import ProgressBar from '../components/onboarding/ProgressBar';
 import OptionChip from '../components/onboarding/OptionChip';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
 import './OnboardingPage.css';
 
-const computeTotalSteps = (data: OnboardingFormData): number => {
-  let current: string | undefined = data.initialScreenId;
-  let count = 0;
+/**
+ * Compute total steps based on the user's actual path:
+ * screens already visited (history) + remaining screens traced forward
+ * from the current screen using the user's selections.
+ */
+const computeTotalSteps = (
+  data: OnboardingFormData,
+  screenHistory: string[],
+  currentScreenId: string,
+  selections: Record<string, string>,
+): number => {
+  // Trace forward from the current screen to count remaining steps (including current)
+  let remaining = 0;
+  let current: string | undefined = currentScreenId;
   const visited = new Set<string>();
 
   while (current && !visited.has(current)) {
     visited.add(current);
-    count++;
+    remaining++;
     const screen: OnboardingScreen | undefined = data.screens[current];
     if (!screen) break;
-    current = screen.nextScreenId ?? screen.fields.find((f: OnboardingField) => f.nextScreenId)?.nextScreenId;
+    const selectedFieldId = selections[current];
+    const selectedField = selectedFieldId ? screen.fields.find((f) => f.id === selectedFieldId) : undefined;
+    current = screen.nextScreenId
+      ?? selectedField?.nextScreenId
+      ?? screen.fields.find((f: OnboardingField) => f.nextScreenId)?.nextScreenId;
   }
 
-  return count;
+  // Past screens (excluding current) + remaining (which includes current)
+  const pastScreens = Math.max(0, screenHistory.length - 1);
+  return pastScreens + remaining;
 };
 
 const OnboardingPage: React.FC = () => {
@@ -41,7 +57,6 @@ const OnboardingPage: React.FC = () => {
   const [otherTexts, setOtherTexts] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const skipRef = useRef<() => void>(() => {});
 
   const { data: formApiData, isLoading, isError } = useFormRead({
     request: {
@@ -58,6 +73,7 @@ const OnboardingPage: React.FC = () => {
   useEffect(() => {
     if (onboardingData && !currentScreenId) {
       if (!onboardingData.isEnabled) {
+        completeOnboarding();
         router.push('/home', 'root', 'replace');
         return;
       }
@@ -68,8 +84,27 @@ const OnboardingPage: React.FC = () => {
 
   const handleSelect = (fieldId: string) => {
     if (!currentScreenId) return;
-    setSelections((prev) => ({ ...prev, [currentScreenId]: fieldId }));
-    setOtherTexts((prev) => ({ ...prev, [currentScreenId]: '' }));
+
+    // If user changed selection on a screen that's not the last in history,
+    // truncate history and clear downstream selections/texts
+    const currentIndex = screenHistory.indexOf(currentScreenId);
+    if (currentIndex >= 0 && currentIndex < screenHistory.length - 1) {
+      const downstreamScreens = screenHistory.slice(currentIndex + 1);
+      setScreenHistory((prev) => prev.slice(0, currentIndex + 1));
+      setSelections((prev) => {
+        const cleaned = { ...prev, [currentScreenId]: fieldId };
+        downstreamScreens.forEach((id) => delete cleaned[id]);
+        return cleaned;
+      });
+      setOtherTexts((prev) => {
+        const cleaned = { ...prev, [currentScreenId]: '' };
+        downstreamScreens.forEach((id) => delete cleaned[id]);
+        return cleaned;
+      });
+    } else {
+      setSelections((prev) => ({ ...prev, [currentScreenId]: fieldId }));
+      setOtherTexts((prev) => ({ ...prev, [currentScreenId]: '' }));
+    }
   };
 
   const handleBack = () => {
@@ -113,13 +148,13 @@ const OnboardingPage: React.FC = () => {
         userId,
         framework: { onboardingDetails: { isSkipped: false, data: formattedData } },
       });
-    } catch (err) {
-      console.error('Failed to save onboarding', err);
-      setToastMessage(t('onboarding.failedToLoad'));
-    } finally {
       completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       router.push('/home', 'root', 'replace');
+    } catch (err) {
+      console.error('Failed to save onboarding', err);
+      setToastMessage(t('onboarding.somethingWentWrong'));
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -133,32 +168,22 @@ const OnboardingPage: React.FC = () => {
         userId,
         framework: { onboardingDetails: { isSkipped: true, data: {} } },
       });
-    } catch (err) {
-      console.error('Failed to skip onboarding', err);
-      setToastMessage(t('onboarding.failedToLoad'));
-    } finally {
       completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       router.push('/home', 'root', 'replace');
+    } catch (err) {
+      console.error('Failed to skip onboarding', err);
+      setToastMessage(t('onboarding.somethingWentWrong'));
+    } finally {
       setIsSubmitting(false);
     }
   }, [isSubmitting, userId, router, completeOnboarding, queryClient, t]);
 
-  // Keep skipRef in sync so the back button listener always calls the latest handleSkip
-  skipRef.current = handleSkip;
-
   // Android hardware back button: treat as skip onboarding
-  useEffect(() => {
-    if (!Capacitor.isNativePlatform()) return;
-
-    const handler = CapApp.addListener('backButton', () => {
-      skipRef.current();
-    });
-
-    return () => {
-      handler.then((h) => h.remove());
-    };
-  }, []);
+  useBackButtonOverride('/onboarding', useCallback(() => {
+    handleSkip();
+    return true;
+  }, [handleSkip]));
 
   // Loading state
   if (isLoading || (onboardingData && !currentScreenId)) {
@@ -181,7 +206,7 @@ const OnboardingPage: React.FC = () => {
           <div className="onboarding-loader">
             <p className="onboarding-error-text">
               {t('onboarding.failedToLoad')}{' '}
-              <button type="button" onClick={() => router.push('/home', 'root', 'replace')} className="onboarding-error-link">
+              <button type="button" onClick={handleSkip} className="onboarding-error-link">
                 {t('onboarding.skip')}
               </button>
             </p>
@@ -199,7 +224,7 @@ const OnboardingPage: React.FC = () => {
           <div className="onboarding-loader">
             <p className="onboarding-error-text">
               {t('onboarding.somethingWentWrong')}{' '}
-              <button type="button" onClick={() => router.push('/home', 'root', 'replace')} className="onboarding-error-link">
+              <button type="button" onClick={handleSkip} className="onboarding-error-link">
                 {t('onboarding.goToHome')}
               </button>
             </p>
@@ -209,7 +234,7 @@ const OnboardingPage: React.FC = () => {
     );
   }
 
-  const totalSteps = computeTotalSteps(onboardingData);
+  const totalSteps = computeTotalSteps(onboardingData, screenHistory, currentScreenId, selections);
   const currentStep = screenHistory.length;
   const isFirstScreen = currentScreenId === onboardingData.initialScreenId;
   const selectedFieldId = selections[currentScreenId] ?? '';
@@ -242,28 +267,31 @@ const OnboardingPage: React.FC = () => {
             onBack={handleBack}
             showBack={!isFirstScreen}
             isSubmitting={isSubmitting}
+            backLabel={t('onboarding.goBack')}
           />
 
           {/* Screen question */}
           <h2 className="onboarding-question">{currentScreen.title}</h2>
 
-          {/* Option chips or text input */}
-          {!showOtherInput ? (
-            <div className="onboarding-grid">
-              {sortedFields.map((field) => (
-                <OptionChip
-                  key={field.id}
-                  field={field}
-                  isSelected={selectedFieldId === field.id}
-                  onClick={() => handleSelect(field.id)}
-                />
-              ))}
-            </div>
-          ) : (
+          {/* Option chips — always visible so users can switch selections */}
+          <div className="onboarding-grid">
+            {sortedFields.map((field) => (
+              <OptionChip
+                key={field.id}
+                field={field}
+                isSelected={selectedFieldId === field.id}
+                onClick={() => handleSelect(field.id)}
+              />
+            ))}
+          </div>
+
+          {/* Text input — shown below chips when "Other" is selected */}
+          {showOtherInput && (
             <div className="onboarding-text-input-wrapper">
               <input
                 type="text"
                 className="onboarding-text-input"
+                aria-label={t('onboarding.enterPreference')}
                 placeholder={t('onboarding.enterPreference')}
                 value={otherText}
                 onChange={(e) =>

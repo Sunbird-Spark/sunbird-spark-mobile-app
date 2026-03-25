@@ -3,6 +3,12 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import OnboardingPage from './OnboardingPage';
 
+const { mockRouterPush, mockCompleteOnboarding, mockUpdateUser } = vi.hoisted(() => ({
+  mockRouterPush: vi.fn(),
+  mockCompleteOnboarding: vi.fn(),
+  mockUpdateUser: vi.fn().mockResolvedValue({}),
+}));
+
 // Mock Ionic components
 vi.mock('@ionic/react', () => ({
   IonPage: ({ children, className }: any) => <div data-testid="ion-page" className={className}>{children}</div>,
@@ -23,10 +29,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-const mockRouterPush = vi.fn();
-
 // Mock AuthContext
-const mockCompleteOnboarding = vi.fn();
 vi.mock('../contexts/AuthContext', () => ({
   useAuth: () => ({
     userId: 'test-user-123',
@@ -35,16 +38,12 @@ vi.mock('../contexts/AuthContext', () => ({
   }),
 }));
 
-// Mock Capacitor
-vi.mock('@capacitor/app', () => ({
-  App: { addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }) },
-}));
-vi.mock('@capacitor/core', () => ({
-  Capacitor: { isNativePlatform: () => false },
+// Mock back button override hook
+vi.mock('../hooks/useBackButton', () => ({
+  useBackButtonOverride: vi.fn(),
 }));
 
 // Mock UserService
-const mockUpdateUser = vi.fn().mockResolvedValue({});
 vi.mock('../services/UserService', () => ({
   userService: {
     updateUser: (...args: any[]) => mockUpdateUser(...args),
@@ -173,7 +172,7 @@ describe('OnboardingPage', () => {
     renderPage();
     fireEvent.click(screen.getByText('English'));
     fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
-    expect(screen.getByLabelText('Go back')).toBeInTheDocument();
+    expect(screen.getByLabelText('onboarding.goBack')).toBeInTheDocument();
   });
 
   it('navigates back and preserves selection', () => {
@@ -182,7 +181,7 @@ describe('OnboardingPage', () => {
     fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
 
     // Go back
-    fireEvent.click(screen.getByLabelText('Go back'));
+    fireEvent.click(screen.getByLabelText('onboarding.goBack'));
     expect(screen.getByText('What is your language preference?')).toBeInTheDocument();
     // English should still be selected (chip has selected class)
     const englishChip = screen.getByText('English').closest('button');

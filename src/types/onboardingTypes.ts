@@ -8,7 +8,7 @@ export interface OnboardingField {
 
 export interface OnboardingScreen {
   title: string;
-  selectionType: 'single' | 'multiple';
+  selectionType: 'single';
   nextScreenId?: string;
   fields: OnboardingField[];
 }

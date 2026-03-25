@@ -6,6 +6,7 @@ interface ProgressBarProps {
   onBack?: () => void;
   showBack?: boolean;
   isSubmitting?: boolean;
+  backLabel?: string;
 }
 
 const ProgressBar: React.FC<ProgressBarProps> = ({
@@ -14,6 +15,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   onBack,
   showBack = false,
   isSubmitting = false,
+  backLabel = 'Go back',
 }) => {
   return (
     <div className="onboarding-progress">
@@ -23,7 +25,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           className="onboarding-progress__back"
           onClick={onBack}
           disabled={isSubmitting}
-          aria-label="Go back"
+          aria-label={backLabel}
         >
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />

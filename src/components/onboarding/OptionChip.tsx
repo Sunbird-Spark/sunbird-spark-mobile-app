@@ -11,6 +11,7 @@ const OptionChip: React.FC<OptionChipProps> = ({ field, isSelected, onClick }) =
   <button
     type="button"
     onClick={onClick}
+    aria-pressed={isSelected}
     className={`onboarding-chip ${isSelected ? 'onboarding-chip--selected' : 'onboarding-chip--default'}`}
   >
     <span className="onboarding-chip__label">{field.label}</span>
