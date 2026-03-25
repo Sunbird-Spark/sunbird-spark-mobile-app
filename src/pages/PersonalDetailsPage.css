@@ -11,7 +11,7 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--ion-color-light);
+    background: var(--ion-background-color, var(--ion-color-light));
 }
 
 /* ── Page header ── */
@@ -23,7 +23,7 @@
 /* Override the global gradient toolbar from index.css */
 .personal-details-page .pd-toolbar {
     --background: var(--ion-color-light) !important;
-    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
+    --color: var(--ion-color-dark, var(--color-222222)) !important;
     --border-width: 0 !important;
 }
 
@@ -31,7 +31,7 @@
 .personal-details-page .pd-toolbar .pd-title,
 .personal-details-page .pd-toolbar .pd-back-btn,
 .personal-details-page .pd-toolbar .pd-edit-btn {
-    color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
+    color: var(--ion-color-dark, var(--color-222222)) !important;
 }
 
 .personal-details-page .pd-title {
@@ -78,19 +78,21 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--ion-color-medium, var(--color-757575));
 }
 
 .pd-input {
+    appearance: none;
+    -webkit-appearance: none;
     width: 100%;
     height: 2.5rem;
-    border: 1px solid var(--color-d7d7d7, #d7d7d7);
+    border: 1px solid var(--ion-color-step-150, var(--color-d7d7d7));
     border-radius: 0.5rem;
     padding: 0 0.75rem;
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
     background: var(--ion-color-light);
     outline: none;
     box-sizing: border-box;
@@ -121,12 +123,16 @@
     border-radius: 1.25rem 1.25rem 0 0;
 }
 
-/* Modal toolbar — white bg, no border */
-.pd-modal-toolbar {
-    --background: var(--ion-color-light) !important;
-    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
-    --border-width: 0;
-    --min-height: 2.75rem;
+/* Modal header — plain flex row, icon pinned to top-right */
+.pd-modal-header {
+    flex-shrink: 0;
+    min-height: 2.75rem;
+    background: var(--ion-background-color, var(--ion-color-light));
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-start;
+    padding-top: 0.625rem;
+    padding-right: 0.75rem;
 }
 
 /* Close ✕ button */
@@ -134,7 +140,7 @@
     background: none;
     border: none;
     cursor: pointer;
-    padding: 0.5rem 1rem;
+    padding: 0.25rem;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -142,7 +148,7 @@
 
 /* Modal content area */
 .pd-modal-content {
-    --background: var(--ion-color-light);
+    --background: var(--ion-background-color, var(--ion-color-light));
 }
 
 .pd-modal-form {
@@ -214,7 +220,7 @@
     font-family: var(--ion-font-family);
     font-size: 1.25rem;
     font-weight: 600;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
     margin: 0 0 0.75rem;
     text-align: center;
 }
@@ -224,7 +230,7 @@
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 400;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--ion-color-medium, var(--color-757575));
     text-align: center;
     margin: 0 0 1.5rem;
     line-height: 1.5;
@@ -235,7 +241,7 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
     margin: 0 0 1rem;
     text-align: center;
 }
@@ -249,6 +255,8 @@
 }
 
 .otp-box {
+    appearance: none;
+    -webkit-appearance: none;
     width: 2.5rem;
     height: 2.5rem;
     border: 1px solid var(--ion-color-primary);
@@ -257,7 +265,7 @@
     font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
     background: var(--ion-color-light);
     outline: none;
     box-sizing: border-box;
@@ -266,7 +274,7 @@
 
 .otp-box:focus {
     border-color: var(--ion-color-primary);
-    box-shadow: 0 0 0 0.125rem rgba(168, 82, 54, 0.15);
+    box-shadow: 0 0 0 0.125rem rgba(var(--ion-color-primary-rgb), 0.15);
 }
 
 /* Timer + Resend row */
@@ -281,7 +289,7 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
 }
 
 .otp-resend {

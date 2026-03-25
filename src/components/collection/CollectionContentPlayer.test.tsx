@@ -190,33 +190,6 @@ describe('CollectionContentPlayer', () => {
     expect(player).toHaveAttribute('data-name', 'Test Video');
   });
 
-  it('renders close button in player view', () => {
-    mockUseContentReadReturn = {
-      data: { data: { content: defaultContentData } },
-      isLoading: false,
-      error: null,
-      refetch: mockRefetch,
-    };
-
-    render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
-    expect(screen.getByLabelText('Close player')).toBeInTheDocument();
-  });
-
-  it('calls onClose and unlocks orientation when close button is clicked', () => {
-    mockUseContentReadReturn = {
-      data: { data: { content: defaultContentData } },
-      isLoading: false,
-      error: null,
-      refetch: mockRefetch,
-    };
-
-    render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
-    fireEvent.click(screen.getByLabelText('Close player'));
-
-    expect(mockUnlock).toHaveBeenCalled();
-    expect(mockOnClose).toHaveBeenCalled();
-  });
-
   it('closes player on EXIT player event', () => {
     mockUseContentReadReturn = {
       data: { data: { content: defaultContentData } },
@@ -229,10 +202,12 @@ describe('CollectionContentPlayer', () => {
 
     expect(capturedOnPlayerEvent).toBeDefined();
     act(() => {
+      // Simulate the actual wrapped event shape from player services:
+      // { type: customEvent.detail.eid, data: customEvent.detail, ... }
       capturedOnPlayerEvent!({
-        type: 'unknown',
-        data: { type: 'EXIT' },
-        playerId: 'do_1',
+        type: 'EXIT',
+        data: { eid: 'EXIT', edata: {} },
+        playerId: 'pdf-player',
         timestamp: Date.now(),
       });
     });
@@ -252,9 +227,12 @@ describe('CollectionContentPlayer', () => {
     render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
 
     act(() => {
+      // Simulate a non-EXIT event with the actual wrapped shape
       capturedOnPlayerEvent!({
-        type: 'unknown',
-        data: { type: 'PLAY' },
+        type: 'INTERACT',
+        data: { eid: 'INTERACT', edata: { type: 'TOUCH' } },
+        playerId: 'pdf-player',
+        timestamp: Date.now(),
       });
     });
 

@@ -231,6 +231,20 @@ const ContentPlayerPage: React.FC = () => {
 
   const handlePlayerEvent = (event: any) => {
     console.debug('[ContentPlayerPage] Player event:', event);
+    // Check all possible event shapes across player types:
+    // - event.data.edata.type: raw web component event structure (pdf, epub, quml, video, ecml)
+    // - event.type / event.data.type: wrapped event from player services
+    // - event.eid / event.data.eid: telemetry event structure
+    const eid = ((
+      event?.data?.edata?.type
+      ?? event?.eid
+      ?? event?.data?.eid
+      ?? event?.data?.type
+      ?? event?.type
+    ) ?? '').toUpperCase();
+    if (eid === 'EXIT') {
+      handleClosePlayer();
+    }
   };
 
   const handleTelemetryEvent = (event: any) => {
@@ -287,15 +301,6 @@ const ContentPlayerPage: React.FC = () => {
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
-          <button
-            className="cp-close-btn"
-            onClick={handleClosePlayer}
-            aria-label="Close player"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
           <div className="cp-player-fullscreen-container">
             <ContentPlayer
               mimeType={mimeType}

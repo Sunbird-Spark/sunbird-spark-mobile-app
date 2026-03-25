@@ -163,6 +163,7 @@ const PersonalDetailsBody: React.FC = () => {
                             text=""
                             icon={chevronBackOutline}
                             className="pd-back-btn"
+                            color="primary"
                         />
                     </IonButtons>
                     <IonTitle className="pd-title">{t('personalDetails')}</IonTitle>
@@ -196,18 +197,14 @@ const PersonalDetailsBody: React.FC = () => {
                 className="pd-edit-modal"
             >
                 <div className="pd-modal-root">
-                    <IonHeader className="ion-no-border">
-                        <IonToolbar className="pd-modal-toolbar">
-                            <IonButtons slot="end">
-                                <button className="pd-modal-close-btn" onClick={closeEdit}>
-                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                        <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
-                                </button>
-                            </IonButtons>
-                        </IonToolbar>
-                    </IonHeader>
+                    <div className="pd-modal-header">
+                        <button className="pd-modal-close-btn" onClick={closeEdit}>
+                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <IonContent className="pd-modal-content">
                         <div className="pd-modal-form">
@@ -247,18 +244,14 @@ const PersonalDetailsBody: React.FC = () => {
                 className="pd-otp-modal"
             >
                 <div className="pd-modal-root">
-                    <IonHeader className="ion-no-border">
-                        <IonToolbar className="pd-modal-toolbar">
-                            <IonButtons slot="end">
-                                <button className="pd-modal-close-btn" onClick={closeOtp}>
-                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                        <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
-                                </button>
-                            </IonButtons>
-                        </IonToolbar>
-                    </IonHeader>
+                    <div className="pd-modal-header">
+                        <button className="pd-modal-close-btn" onClick={closeOtp}>
+                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <IonContent className="pd-modal-content">
                         <div className="otp-body">

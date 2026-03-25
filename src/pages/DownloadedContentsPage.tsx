@@ -223,6 +223,7 @@ const DownloadedContentsPage: React.FC = () => {
               text=""
               icon={chevronBackOutline}
               className="dc-back-btn"
+              color="primary"
             />
           </IonButtons>
           <IonTitle className="dc-title">{t('downloadedContents')}</IonTitle>

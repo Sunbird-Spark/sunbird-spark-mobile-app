@@ -147,7 +147,16 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   const handlePlayerEvent = useCallback((event: any) => {
     console.log('[CollectionContentPlayer] Player event:', event);
-    if (event?.data?.type === 'EXIT') {
+    // Player services wrap events as: { type: customEvent.detail.eid, data: customEvent.detail, ... }
+    // So EXIT events arrive with event.type === 'EXIT' and event.data.eid === 'EXIT'
+    const eid = ((
+      event?.data?.edata?.type
+      ?? event?.eid
+      ?? event?.data?.eid
+      ?? event?.data?.type
+      ?? event?.type
+    ) ?? '').toUpperCase();
+    if (eid === 'EXIT') {
       handleClose();
     }
   }, [handleClose]);
@@ -180,15 +189,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
-          <button
-            className="cp-close-btn"
-            onClick={handleClose}
-            aria-label="Close player"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
           <PageLoader
             error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}
             onRetry={handleRetry}
@@ -201,15 +201,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   return (
     <IonPage className="cp-fullscreen">
       <IonContent scrollY={false}>
-        <button
-          className="cp-close-btn"
-          onClick={handleClose}
-          aria-label="Close player"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
         <div className="cp-player-fullscreen-container">
           <ContentPlayer
             mimeType={mimeType}

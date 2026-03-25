@@ -68,7 +68,7 @@ const SettingsPage: React.FC = () => {
       <IonHeader className="settings-header ion-no-border">
         <IonToolbar className="settings-toolbar">
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label="Back" className="settings-back-btn" />
+            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label="Back" className="settings-back-btn" color="primary" />
           </IonButtons>
           <IonTitle className="settings-title">Settings</IonTitle>
         </IonToolbar>
