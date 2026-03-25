@@ -15,18 +15,20 @@ import {
   chevronForwardOutline,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import { useAuth } from '../contexts/AuthContext';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { AppHeader } from '../components/layout/AppHeader';
 import Avatar from 'react-avatar';
 import { useUser } from '../hooks/useUser';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
+import useImpression from '../hooks/useImpression';
 
 const ProfilePage: React.FC = () => {
+  useImpression({ pageid: 'ProfilePage', env: 'profile' });
   const { logout, userId, isAuthenticated } = useAuth();
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
 
   const { data: profile } = useUser(userId);
   const { data: enrollmentResponse } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
@@ -71,7 +73,7 @@ const ProfilePage: React.FC = () => {
 
   const handleLogout = async () => {
     await logout();
-    history.replace('/home');
+    router.push('/home', 'root', 'replace');
   };
 
   // ── Unauthenticated view ─────────────────────────────────────────────────────
@@ -96,7 +98,7 @@ const ProfilePage: React.FC = () => {
             </p>
             <button
               className="my-learning__sign-in-button"
-              onClick={() => history.push('/sign-in')}
+              onClick={() => router.push('/sign-in', 'forward', 'push')}
             >
               {t('signIn')}
             </button>
@@ -104,11 +106,11 @@ const ProfilePage: React.FC = () => {
 
           {/* Downloaded Contents & Settings — always visible */}
           <IonList className="profile-actions-list" lines="none" style={{ marginTop: '1rem' }}>
-            <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
               <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
             </IonItem>
-            <IonItem className="profile-action-item" button detail={false} routerLink="/profile/settings">
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/settings', 'forward', 'push')}>
               <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
             </IonItem>
@@ -217,22 +219,22 @@ const ProfilePage: React.FC = () => {
 
         {/* Action Items */}
         <IonList className="profile-actions-list" lines="none">
-          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/personal-details">
+          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/personal-details', 'forward', 'push')}>
             <IonLabel className="profile-action-label">{t('personalInformation')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/learning">
+          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/learning', 'forward', 'push')}>
             <IonLabel className="profile-action-label">{t('myLearning')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/downloaded-contents">
+          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
             <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} routerLink="/profile/settings">
+          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/settings', 'forward', 'push')}>
             <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>

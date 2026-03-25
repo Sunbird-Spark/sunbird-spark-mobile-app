@@ -2,6 +2,7 @@ import React from 'react';
 import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonImg } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import './CourseDetailsPage.css';
+import useImpression from '../hooks/useImpression';
 
 // ── Icons ──
 const BackIcon = () => (
@@ -72,6 +73,7 @@ const relatedItems = [
 ];
 
 const CourseDetailsPage: React.FC = () => {
+    useImpression({ pageid: 'CourseDetailsPage', env: 'course' });
     const history = useHistory();
 
     return (

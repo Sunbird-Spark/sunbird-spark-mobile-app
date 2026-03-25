@@ -1,5 +1,6 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Zip } from 'capa-zip';
+import { CapacitorHttp } from '@capacitor/core';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import type { ImportResult, ImportPhase, ContentEntry } from './types';
@@ -112,6 +113,17 @@ export class ImportService {
         // Extract/copy payload based on contentDisposition + contentEncoding
         const contentState = await this.extractPayload(item, tmpUri, destUri);
 
+        // Flatten: move contents of "widgets/" to root if they exist.
+        // Legacy renderers/plugins often expect a flat structure relative to content root.
+        await this.flattenDirectory(destUri);
+
+        // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
+        // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
+        // (using config.s3ContentHost = "/assets/public/content/" and s3_folders).
+        // Move extracted content into that directory structure so the renderer
+        // finds index.html at the expected path.
+        await this.restructureForRenderer(item, destUri);
+
         // Build content DB row + upsert
         const row = this.constructContentRow(
           item,
@@ -137,6 +149,17 @@ export class ImportService {
       }).catch(() => { });
       tmpDir = undefined;
       await Filesystem.deleteFile({ path: sourcePath }).catch(() => { });
+
+      // Download appIcon for offline use (best-effort, non-blocking)
+      if (contentMeta) {
+        const iconUrl = (contentMeta as Record<string, unknown>).appIcon as string
+          || (contentMeta as Record<string, unknown>).posterImage as string;
+        if (iconUrl && iconUrl.startsWith('http')) {
+          await this.downloadIcon(identifier, iconUrl).catch((err) => {
+            console.warn('[ImportService] Icon download failed (non-fatal):', err);
+          });
+        }
+      }
 
       // Deferred size update (5s later)
       setTimeout(() => this.updateSizesOnDevice(importedIds), 5000);
@@ -296,6 +319,45 @@ export class ImportService {
     return Array.isArray(arr) ? arr.join(',') : String(arr);
   }
 
+  /**
+   * Download appIcon/posterImage to the content directory for offline display.
+   * Saves as `content/{identifier}/appIcon.{ext}` and updates local_data JSON.
+   */
+  private async downloadIcon(identifier: string, iconUrl: string): Promise<void> {
+    const ext = iconUrl.split('?')[0].split('.').pop()?.toLowerCase() || 'png';
+    const safeExt = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext) ? ext : 'png';
+    const iconFilename = `appIcon.${safeExt}`;
+    const contentPath = `${CONTENT_DIR}/${identifier}`;
+    const iconPath = `${contentPath}/${iconFilename}`;
+
+    // Download icon bytes using Capacitor HTTP (avoids CORS)
+    const response = await CapacitorHttp.get({
+      url: iconUrl,
+      responseType: 'blob',
+    });
+
+    if (response.status !== 200) return;
+
+    // Write the base64 data to file
+    await Filesystem.writeFile({
+      path: iconPath,
+      directory: Directory.Data,
+      data: response.data,
+    });
+
+    // Update local_data with relative icon filename so it can be resolved later
+    const entry = await this.contentDb.getByIdentifier(identifier);
+    if (entry?.local_data) {
+      try {
+        const localData = JSON.parse(entry.local_data);
+        localData.appIconLocal = iconFilename;
+        await this.contentDb.update(identifier, { local_data: JSON.stringify(localData) });
+      } catch { /* ignore parse errors */ }
+    }
+
+    console.debug('[ImportService] Icon saved:', iconPath);
+  }
+
   private async updateSizesOnDevice(ids: string[]): Promise<void> {
     for (const id of ids) {
       try {
@@ -373,6 +435,98 @@ export class ImportService {
       } catch {
         /* file may not exist */
       }
+    }
+  }
+
+  /**
+   * Mime-type → subfolder used by the genie-canvas htmlrenderer plugin.
+   * Matches the `s3_folders` map in coreplugins.js.
+   */
+  private static readonly RENDERER_S3_FOLDERS: Record<string, string> = {
+    'application/vnd.ekstep.h5p-archive': 'h5p',
+    'application/vnd.ekstep.html-archive': 'html',
+  };
+
+  /**
+   * Move extracted H5P/HTML content into the directory structure expected by
+   * the genie-canvas htmlrenderer plugin.
+   *
+   * The renderer constructs the iframe URL as:
+   *   {host}/assets/public/content/{type}/{id}-{suffix}/index.html
+   *
+   * where {type} is "h5p" or "html", {suffix} is "latest" for Live content.
+   * After this method the content directory looks like:
+   *   content/{id}/assets/public/content/h5p/{id}-latest/index.html
+   *                                                      /content/...
+   *                                                      /js/...
+   */
+  private async restructureForRenderer(
+    item: ManifestItem,
+    destUri: string
+  ): Promise<void> {
+    const folder = ImportService.RENDERER_S3_FOLDERS[item.mimeType || ''];
+    if (!folder) return; // Not H5P or HTML — nothing to do
+
+    const suffix = item.status === 'Live' ? 'latest' : 'snapshot';
+    const subDir = `assets/public/content/${folder}/${item.identifier}-${suffix}`;
+    const targetUri = `${destUri}/${subDir}`;
+
+    try {
+      // Create the nested target directory
+      await Filesystem.mkdir({ path: targetUri, recursive: true }).catch(() => { });
+
+      // Read all entries currently at the content root
+      const { files } = await Filesystem.readdir({ path: destUri });
+
+      for (const entry of files) {
+        // Skip the "assets" directory we just created
+        if (entry.name === 'assets') continue;
+
+        await Filesystem.rename({
+          from: `${destUri}/${entry.name}`,
+          to: `${targetUri}/${entry.name}`,
+        }).catch((err) => {
+          console.warn(`[ImportService] restructure: could not move ${entry.name}:`, err);
+        });
+      }
+
+      console.debug('[ImportService] Restructured for renderer:', subDir);
+    } catch (err) {
+      console.warn('[ImportService] restructureForRenderer failed:', err);
+    }
+  }
+
+  /**
+   * Move everything inside [destUri]/widgets/ to [destUri] root.
+   * This prepares the directory structure for legacy renderer compatibility.
+   */
+  private async flattenDirectory(destUri: string): Promise<void> {
+    try {
+      const widgetsUri = `${destUri}/widgets`;
+
+      // Check if widgets directory exists
+      const stat = await Filesystem.stat({ path: widgetsUri }).catch(() => null);
+      if (!stat || stat.type !== 'directory') return;
+
+      const result = await Filesystem.readdir({ path: widgetsUri });
+      for (const entry of result.files) {
+        const oldPath = `${widgetsUri}/${entry.name}`;
+        const newPath = `${destUri}/${entry.name}`;
+
+        // Move to root. Failure may occur if naming collisions exist (e.g. nested assets folder).
+        await Filesystem.rename({
+          from: oldPath,
+          to: newPath
+        }).catch((err) => {
+          console.warn(`[ImportService] Could not move ${entry.name} from widgets (exists at root?):`, err);
+        });
+      }
+
+      // Cleanup the now-empty widgets folder
+      await Filesystem.rmdir({ path: widgetsUri }).catch(() => { });
+      console.debug('[ImportService] Flattened widgets structure for:', destUri);
+    } catch (err) {
+      console.warn('[ImportService] Flattening failed:', err);
     }
   }
 }

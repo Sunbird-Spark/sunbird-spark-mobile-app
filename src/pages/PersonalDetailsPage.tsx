@@ -17,12 +17,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { useUser } from '../hooks/useUser';
 import { useEditProfile, TriggerCaptcha } from '../hooks/useEditProfile';
 import { useSystemSetting } from '../hooks/useSystemSetting';
+import { useTelemetry } from '../hooks/useTelemetry';
 import './PersonalDetailsPage.css';
+import useImpression from '../hooks/useImpression';
 
 const OTP_LENGTH = 6;
 
 // ── Inner component — consumes the v3 reCAPTCHA context ────────────────────
 const PersonalDetailsBody: React.FC = () => {
+    useImpression({ pageid: 'PersonalDetailsPage', env: 'profile' });
+    const telemetry = useTelemetry();
     const { t } = useTranslation();
     const { userId } = useAuth();
     const { data: profile } = useUser(userId);
@@ -129,6 +133,10 @@ const PersonalDetailsBody: React.FC = () => {
             setIsOtpOpen(false);
             const label = activeOtpField ? OTP_FIELD_LABELS[activeOtpField] : null;
             if (label) setToastMessage(t('fieldUpdatedSuccessfully', { field: label }));
+            void telemetry.audit({
+                edata: { props: ['profileDetails'], state: 'Updated' },
+                object: { id: userId || '', type: 'User', ver: '1' },
+            });
         }
     };
 

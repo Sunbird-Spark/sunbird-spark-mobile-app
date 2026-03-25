@@ -17,6 +17,7 @@ import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
 import PageLoader from '../components/common/PageLoader';
 import './ExplorePage.css';
+import useImpression from '../hooks/useImpression';
 
 // ── Icons ──
 const FilterIcon = () => (
@@ -84,6 +85,7 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
 
 // ── Component ──
 const ExplorePage: React.FC = () => {
+    useImpression({ pageid: 'ExplorePage', env: 'explore' });
     const { t } = useTranslation();
     // ── Read query param from URL ──
     const location = useLocation();

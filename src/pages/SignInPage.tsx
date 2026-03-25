@@ -17,6 +17,7 @@ import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
 import './SignInPage.css';
+import useImpression from '../hooks/useImpression';
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -60,6 +61,7 @@ const isGoogleCancelError = (err: unknown): boolean => {
 };
 
 const SignInPage: React.FC = () => {
+  useImpression({ pageid: 'SignInPage', env: 'user' });
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

@@ -17,6 +17,7 @@ import {
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../components/layout/AppHeader';
+import useImpression from '../hooks/useImpression';
 import { useDownloadQueue } from '../hooks/useDownloadQueue';
 import { useStorageInfo } from '../hooks/useStorageInfo';
 import { downloadManager, DownloadState } from '../services/download_manager';
@@ -52,6 +53,7 @@ const ACTIVE_STATES = new Set<string>([
 const QUEUED_STATES = new Set<string>([DownloadState.QUEUED, DownloadState.RETRY_WAIT]);
 
 const DownloadsPage: React.FC = () => {
+  useImpression({ pageid: 'DownloadsPage', env: 'downloads' });
   const { t } = useTranslation();
   const allEntries = useDownloadQueue();
   const storage = useStorageInfo();

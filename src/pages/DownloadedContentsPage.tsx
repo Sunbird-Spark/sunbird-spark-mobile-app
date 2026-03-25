@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useIonRouter } from '@ionic/react';
 import {
   IonContent,
   IonHeader,
@@ -12,12 +12,14 @@ import {
   IonImg,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
+import { Capacitor } from '@capacitor/core';
 import { useTranslation } from 'react-i18next';
 import { contentDbService } from '../services/db/ContentDbService';
 import { downloadManager } from '../services/download_manager';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import type { ContentEntry } from '../services/download_manager/types';
 import './DownloadedContentsPage.css';
+import useImpression from '../hooks/useImpression';
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -27,10 +29,25 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-function parseLocalData(entry: ContentEntry): { name: string; appIcon?: string } {
+function parseContentMeta(entry: ContentEntry): { name: string; appIcon?: string; description?: string } {
   try {
-    const data = JSON.parse(entry.local_data || '{}');
-    return { name: data.name || entry.identifier, appIcon: data.appIcon };
+    const server = entry.server_data ? JSON.parse(entry.server_data) : null;
+    const local = entry.local_data ? JSON.parse(entry.local_data) : null;
+
+    const name = server?.name || local?.name || entry.identifier;
+    const description = server?.description || local?.description;
+
+    // Prefer locally downloaded icon for offline access.
+    // appIconLocal is a filename (e.g. "appIcon.png") saved by ImportService.
+    let appIcon: string | undefined;
+    if (local?.appIconLocal && entry.path) {
+      const basePath = entry.path.replace(/\/$/, '');
+      appIcon = Capacitor.convertFileSrc(`${basePath}/${local.appIconLocal}`);
+    } else {
+      appIcon = server?.appIcon || server?.posterImage || local?.appIcon || local?.posterImage;
+    }
+
+    return { name, appIcon, description };
   } catch {
     return { name: entry.identifier };
   }
@@ -61,7 +78,7 @@ const SwipeableCard: React.FC<{
   const [isSwiping, setIsSwiping] = useState(false);
   const swipingRef = useRef(false);
 
-  const meta = parseLocalData(entry);
+  const meta = parseContentMeta(entry);
 
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
@@ -135,7 +152,9 @@ const SwipeableCard: React.FC<{
           <div className="dc-card-info">
             <span className="dc-badge dc-badge-ongoing">{entry.primary_category || entry.content_type || 'Content'}</span>
             <h3 className="dc-course-title">{meta.name}</h3>
-            <p className="dc-due-date">{formatBytes(entry.size_on_device)}</p>
+            {entry.size_on_device > 0 && (
+              <p className="dc-due-date">{formatBytes(entry.size_on_device)}</p>
+            )}
           </div>
           <div className="dc-thumbnail">
             {meta.appIcon ? (
@@ -152,8 +171,9 @@ const SwipeableCard: React.FC<{
 
 /* ── Main page ── */
 const DownloadedContentsPage: React.FC = () => {
+  useImpression({ pageid: 'DownloadedContentsPage', env: 'profile' });
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
   const [items, setItems] = useState<ContentEntry[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<ContentEntry | null>(null);
   const [showAlert, setShowAlert] = useState(false);
@@ -191,7 +211,7 @@ const DownloadedContentsPage: React.FC = () => {
     setShowAlert(false);
   };
 
-  const deleteName = deleteTarget ? parseLocalData(deleteTarget).name : '';
+  const deleteName = deleteTarget ? parseContentMeta(deleteTarget).name : '';
 
   return (
     <IonPage className="downloaded-contents-page">
@@ -221,7 +241,7 @@ const DownloadedContentsPage: React.FC = () => {
                 key={entry.identifier}
                 entry={entry}
                 onDelete={handleDeleteRequest}
-                onNavigate={(e) => history.push(`/content/${e.identifier}`)}
+                onNavigate={(e) => router.push(`/content/${e.identifier}`, 'forward', 'push')}
               />
             ))}
           </div>

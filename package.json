@@ -51,6 +51,7 @@
     "@project-sunbird/sunbird-pdf-player-web-component": "^2.0.0",
     "@project-sunbird/sunbird-quml-player-web-component": "^6.0.0",
     "@project-sunbird/sunbird-video-player-web-component": "^2.0.0",
+    "@project-sunbird/telemetry-sdk": "^2.0.1",
     "@tanstack/react-query": "^5.90.20",
     "@types/uuid": "^10.0.0",
     "capa-zip": "^7.0.3",

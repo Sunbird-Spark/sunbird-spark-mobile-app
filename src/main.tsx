@@ -7,6 +7,7 @@ import { NetworkProvider } from './providers/NetworkProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { QueryProvider } from './providers/QueryProvider';
+import { TelemetryProvider } from './providers/TelemetryProvider';
 
 const container = document.getElementById('root');
 const root = createRoot(container!);
@@ -15,9 +16,11 @@ root.render(
     <QueryProvider>
       <NetworkProvider>
         <AuthProvider>
-          <LanguageProvider>
-            <App />
-          </LanguageProvider>
+          <TelemetryProvider>
+            <LanguageProvider>
+              <App />
+            </LanguageProvider>
+          </TelemetryProvider>
         </AuthProvider>
       </NetworkProvider>
     </QueryProvider>
