@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -12,7 +12,7 @@ import {
 } from '@ionic/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useIonRouter, useIonViewDidEnter, useIonViewWillLeave } from '@ionic/react';
-import { warningOutline } from 'ionicons/icons';
+import { warningOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
 import { userService } from '../services/UserService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCollection } from '../hooks/useCollection';
@@ -27,9 +27,11 @@ import { useCourseDownloadProgress } from '../hooks/useCourseDownloadProgress';
 import { useBatchDownloadStates } from '../hooks/useBatchDownloadStates';
 import { downloadManager } from '../services/download_manager';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
-import { flattenLeafNodes, calculateDownloadSize, formatBytes, filterHierarchyTree } from '../services/content/hierarchyUtils';
+import { flattenLeafNodes, calculateDownloadSize, formatBytes, filterHierarchyTree, isDownloadable } from '../services/content/hierarchyUtils';
 import { startBulkDownload } from '../services/content/courseDownloadHelper';
+import { downloadSpineEcar } from '../services/content/spineDownloadHelper';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
+import { contentDbService } from '../services/db/ContentDbService';
 import { BackIcon, SearchIcon, RightArrowIcon } from '../components/icons/CollectionIcons';
 import CollectionOverview from '../components/collection/CollectionOverview';
 import CollectionAccordion from '../components/collection/CollectionAccordion';
@@ -144,13 +146,16 @@ const CollectionPage: React.FC = () => {
   const [isDownloadStarting, setIsDownloadStarting] = useState(false);
   const [isDownloadSheetOpen, setIsDownloadSheetOpen] = useState(false);
 
-  // Collect all leaf identifiers for bulk local-availability check
+  // Auto-download spine ECAR for offline hierarchy support on first visit
+  // Auto-download spine ECAR removed to prevent premature entry in Downloaded Contents list.
+  // Spine is now handled exclusively by startBulkDownload when a manual download is initiated.
+
   const leafIdentifiers = useMemo(() => {
     if (!collectionData?.children) return [];
     return flattenLeafNodes(collectionData.children).map((n) => n.identifier);
   }, [collectionData?.children]);
 
-  const localContentSet = useLocalContentSet(leafIdentifiers);
+  const localContentSet = useLocalContentSet(leafIdentifiers, { includeParentVisibility: true });
   const courseProgress = useCourseDownloadProgress(collectionId, collectionData?.children, localContentSet);
   const downloadStates = useBatchDownloadStates(leafIdentifiers);
 
@@ -181,12 +186,12 @@ const CollectionPage: React.FC = () => {
         pkgVersion,
       });
       if (result.enqueued === 0 && result.skippedLocal > 0) {
-        setToastMessage('All content already downloaded');
+        setToastMessage(t('download.allDownloaded'));
       } else if (result.enqueued > 0) {
-        setToastMessage(`Downloading ${result.enqueued} item${result.enqueued > 1 ? 's' : ''}…`);
+        setToastMessage(t('download.downloadingItems', { count: result.enqueued }));
       }
     } catch {
-      setToastMessage('Failed to start download');
+      setToastMessage(t('download.failedToStart'));
     } finally {
       setIsDownloadStarting(false);
     }
@@ -206,13 +211,17 @@ const CollectionPage: React.FC = () => {
       for (const leaf of localLeaves) {
         await deleteDownloadedContent(leaf.identifier);
       }
+      // Also delete the parent collection entry from ContentDb so it
+      // disappears from DownloadedContentsPage
+      await contentDbService.delete(collectionId);
+      downloadManager.notifyContentDeleted(collectionId);
       setToastMessage(t('download.deleted'));
     } catch {
       setToastMessage(t('download.deleteFailed'));
     } finally {
       setIsDeleting(false);
     }
-  }, [collectionData, localContentSet, t]);
+  }, [collectionData, collectionId, localContentSet, t]);
 
   // Pause / Resume all downloads for this collection
   const handlePauseAll = useCallback(async () => {
@@ -267,6 +276,48 @@ const CollectionPage: React.FC = () => {
   const [consentChecked, setConsentChecked] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [consentToastMessage, setConsentToastMessage] = useState('');
+
+  // Download event toast (success/failure per-item, similar to ContentPlayerPage)
+  type DownloadToastConfig = { message: string; color: 'success' | 'danger'; icon?: string };
+  const [downloadToast, setDownloadToast] = useState<DownloadToastConfig | null>(null);
+
+  // Listen for progress completion to show aggregate success message
+  useEffect(() => {
+    if (!collectionId) return;
+    const unsub = downloadManager.subscribe(async (event) => {
+      // When the entire queue is done, check if we were downloading items for THIS collection
+      if (event.type === 'all_done') {
+        const leaves = flattenLeafNodes(collectionData?.children ?? []);
+        const downloadable = leaves.filter(isDownloadable);
+        const identifiers = downloadable.map(l => l.identifier);
+
+        // Count how many are now local (visibility-aware)
+        const entries = await contentDbService.getByIdentifiers(identifiers);
+        const localCount = entries.filter(e => e.content_state === 2).length;
+
+        // If we have local items and just finished a queue, show summary
+        // (Only if there are at least some items in this collection)
+        if (downloadable.length > 0 && localCount > 0) {
+          setDownloadToast({
+            message: `Downloaded (${localCount}/${downloadable.length} items) successfully.`,
+            color: 'success',
+            icon: checkmarkCircle,
+          });
+        }
+      } else if (event.type === 'state_change' && event.identifier) {
+        // Individual FAILED messages are still useful
+        const entry = await downloadManager.getEntry(event.identifier);
+        if (entry?.state === 'FAILED') {
+          setDownloadToast({
+            message: t('download.downloadFailed', 'Failed to download content.'),
+            color: 'danger',
+            icon: alertCircleOutline,
+          });
+        }
+      }
+    });
+    return unsub;
+  }, [collectionId, collectionData, t]);
 
   // Force sync (enrolled only)
   const forceSync = useForceSync(userId, collectionId, enrollment.enrolledBatchId ?? undefined, enrollment.progressProps, enrollment.isBatchEnded);
@@ -392,6 +443,9 @@ const CollectionPage: React.FC = () => {
     ? { id: collectionId, type: collectionData.primaryCategory || 'Collection', ver: '1' }
     : undefined;
 
+  const spineUrl = collectionData?.hierarchyRoot?.downloadUrl;
+  const spinePkgVersion = collectionData?.hierarchyRoot?.pkgVersion;
+
   return (
     <IonPage className="collection-page">
       <TelemetryTracker
@@ -496,6 +550,8 @@ const CollectionPage: React.FC = () => {
               localContentSet={viewState === 'default' ? localContentSet : undefined}
               isOffline={viewState === 'default' ? isOffline : undefined}
               downloadStates={viewState === 'default' ? downloadStates : undefined}
+              spineDownloadUrl={spineUrl}
+              spinePkgVersion={spinePkgVersion}
             />
 
             <RelatedContent items={relatedItems} t={t} />
@@ -519,8 +575,8 @@ const CollectionPage: React.FC = () => {
                 <div className="cp-progress-section">
                   <CircularProgress value={enrollment.progressProps.percentage} size={48} />
                   <div className="cp-progress-details">
-                    <h3 className="cp-progress-percentage">Completed : {enrollment.progressProps.percentage}%</h3>
-                    {batchStartLabel && <span className="cp-progress-date">Batch Started on : {batchStartLabel}</span>}
+                    <h3 className="cp-progress-percentage">{t('completed')}: {enrollment.progressProps.percentage}%</h3>
+                    {batchStartLabel && <span className="cp-progress-date">{t('collection.batchStartedOn')} : {batchStartLabel}</span>}
                   </div>
                 </div>
                 {/* 3-dot menu only if there are items to show */}
@@ -554,7 +610,7 @@ const CollectionPage: React.FC = () => {
                                 {forceSync.isForceSyncing ? (
                                   <IonSpinner name="crescent" style={{ width: 14, height: 14 }} />
                                 ) : (
-                                  'Sync Progress'
+                                  t('download.syncProgress')
                                 )}
                               </button>
                             )
@@ -566,7 +622,7 @@ const CollectionPage: React.FC = () => {
                                 setShowLeaveConfirm(true);
                               }}
                             >
-                              Leave Course
+                              {t('download.leaveCourse')}
                             </button>
                           )}
                         </div>
@@ -585,7 +641,7 @@ const CollectionPage: React.FC = () => {
             {/* View Downloaded Only toggle — inline below progress */}
             {canDownload && (
               <div className="cp-toggle-section">
-                <span className="cp-toggle-label">View downloaded only</span>
+                <span className="cp-toggle-label">{t('download.viewDownloadedOnly')}</span>
                 <IonToggle
                   className="custom-toggle"
                   checked={viewDownloadedOnly}
@@ -607,6 +663,8 @@ const CollectionPage: React.FC = () => {
               localContentSet={localContentSet}
               isOffline={isOffline}
               downloadStates={downloadStates}
+              spineDownloadUrl={spineUrl}
+              spinePkgVersion={spinePkgVersion}
             />
 
             {/* Info Cards */}
@@ -616,7 +674,7 @@ const CollectionPage: React.FC = () => {
                 <div className="info-card">
                   <div className="info-card-header">
                     <CertificateIcon />
-                    <h3 className="info-card-title">Certificate</h3>
+                    <h3 className="info-card-title">{t('certificate')}</h3>
                   </div>
                   {enrollment.hasCertificate ? (
                     <>
@@ -639,7 +697,7 @@ const CollectionPage: React.FC = () => {
               {/* Profile Data Sharing */}
               {showConsent && (
                 <div className="info-card">
-                  <h3 className="info-card-title" style={{ marginTop: 0 }}>Profile Data Sharing</h3>
+                  <h3 className="info-card-title" style={{ marginTop: 0 }}>{t('personalInformation')}</h3>
                   <p className="info-card-desc">
                     {consent.status === 'ACTIVE'
                       ? 'Profile data sharing is On. You have agreed to share your profile details with the course administrator.'
@@ -685,7 +743,7 @@ const CollectionPage: React.FC = () => {
             >
               <div className="cp-cert-preview-content">
                 <div className="cp-cert-preview-header">
-                  <h2 className="cp-cert-preview-title">Preview Certificate</h2>
+                  <h2 className="cp-cert-preview-title">{t('download.previewCertificate')}</h2>
                   <button className="cp-cert-preview-close" onClick={() => setIsCertPreviewOpen(false)}>
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                       <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="var(--ion-color-dark, #333)" />
@@ -712,10 +770,10 @@ const CollectionPage: React.FC = () => {
             >
               <div className="cp-completion-dialog-content">
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: '0 0 0.75rem', color: 'var(--ion-color-dark)' }}>
-                  Leave Course
+                  {t('download.leaveCourse')}
                 </h2>
                 <p style={{ fontSize: '0.9rem', color: 'var(--ion-color-medium)', lineHeight: 1.5, margin: '0 0 1.5rem' }}>
-                  Are you sure you want to leave this course? Your progress will be lost.
+                  {t('download.leaveCourseConfirm')}
                 </p>
                 <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
                   <button
@@ -731,7 +789,7 @@ const CollectionPage: React.FC = () => {
                     onClick={handleLeaveCourse}
                     disabled={isLeaving}
                   >
-                    {isLeaving ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : 'Leave'}
+                    {isLeaving ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : t('download.leave')}
                   </button>
                 </div>
               </div>
@@ -747,7 +805,7 @@ const CollectionPage: React.FC = () => {
             >
               <div className="cp-consent-modal-wrap" style={{ padding: '1.5rem', background: 'var(--ion-background-color, #fff)', color: 'var(--ion-text-color, #000)', flex: 1, height: '100%' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', borderBottom: '1px solid var(--ion-color-light-shade, #eee)', paddingBottom: '0.5rem' }}>
-                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'var(--ion-text-color)' }}>Profile Data Sharing</h2>
+                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600, color: 'var(--ion-text-color)' }}>{t('personalInformation')}</h2>
                   <button onClick={() => setIsConsentModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', lineHeight: 1, color: 'var(--ion-color-medium)' }}>&times;</button>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--ion-color-dark)', lineHeight: '1.6' }}>
@@ -874,7 +932,7 @@ const CollectionPage: React.FC = () => {
                   </p>
                 ) : enrollment.enrollableBatches.length === 0 ? (
                   <p style={{ textAlign: 'center', color: 'var(--ion-color-medium)' }}>
-                    No batches available for enrollment.
+                    {t('collection.noBatchesAvailable')}
                   </p>
                 ) : (
                   <>
@@ -927,26 +985,17 @@ const CollectionPage: React.FC = () => {
       <IonModal
         isOpen={isDownloadSheetOpen}
         onDidDismiss={() => setIsDownloadSheetOpen(false)}
-        initialBreakpoint={0.45}
-        breakpoints={[0, 0.45, 0.6]}
+        initialBreakpoint={1}
+        breakpoints={[0, 1]}
         className="cp-download-sheet"
       >
         <div className="cp-download-sheet-inner">
-          <div className="cp-download-sheet-header">
-            <h2>Download</h2>
-            <button className="cp-download-sheet-close" onClick={() => setIsDownloadSheetOpen(false)}>
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="var(--ion-color-primary)" />
-              </svg>
-            </button>
-          </div>
-
           <div className="cp-download-sheet-content">
             {/* Aggregate progress bar with pause/resume (when downloading) */}
             {courseProgress.isDownloading && (
               <div className="cp-download-sheet-progress">
                 <div className="cp-download-progress-info">
-                  <span>{hasPausedItems ? 'Paused' : 'Downloading'} {courseProgress.completed}/{courseProgress.total}</span>
+                  <span>{hasPausedItems ? t('paused') : t('download.downloading')} {courseProgress.completed}/{courseProgress.total}</span>
                   <span>{courseProgress.overallPercent}%</span>
                 </div>
                 <div className="cp-download-progress-track">
@@ -961,7 +1010,7 @@ const CollectionPage: React.FC = () => {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                         <path d="M8 5V19L19 12L8 5Z" fill="currentColor" />
                       </svg>
-                      <span>Resume All</span>
+                      <span>{t('download.resumeAll')}</span>
                     </button>
                   ) : (
                     <button className="cp-download-sheet-btn" onClick={handlePauseAll} style={{ flex: 1 }}>
@@ -969,7 +1018,7 @@ const CollectionPage: React.FC = () => {
                         <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
                         <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
                       </svg>
-                      <span>Pause All</span>
+                      <span>{t('download.pauseAll')}</span>
                     </button>
                   )}
                 </div>
@@ -984,7 +1033,7 @@ const CollectionPage: React.FC = () => {
                     <circle cx="8" cy="8" r="8" fill="var(--ion-color-success, #2dd36f)" />
                     <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span>All content downloaded</span>
+                  <span>{t('download.allContentDownloaded')}</span>
                 </div>
                 <button
                   className="cp-download-sheet-btn cp-download-sheet-btn-delete"
@@ -996,7 +1045,7 @@ const CollectionPage: React.FC = () => {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                     <path d="M3 6H21M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6H19ZM10 10V17M14 10V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
-                  <span>Delete All Downloads</span>
+                  <span>{t('download.deleteAllDownloads')}</span>
                 </button>
               </div>
             )}
@@ -1005,7 +1054,7 @@ const CollectionPage: React.FC = () => {
             {!courseProgress.allDownloaded && downloadSizeInfo.downloadableCount > 0 && !courseProgress.isDownloading && (
               <div className="cp-download-sheet-action">
                 <p className="cp-download-sheet-desc">
-                  Download all ({downloadSizeInfo.downloadableCount} items) for {isCourse ? 'Course' : 'Collection'} <strong>{collectionData?.title}</strong>?
+                  Download ({downloadSizeInfo.downloadableCount} items) for {isCourse ? 'Course' : 'Collection'} {collectionData?.title}?
                 </p>
 
                 <button
@@ -1024,7 +1073,7 @@ const CollectionPage: React.FC = () => {
                         <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                       </svg>
-                      <span>Download{downloadSizeInfo.totalBytes > 0 ? ` (${formatBytes(downloadSizeInfo.totalBytes)})` : ''}</span>
+                      <span>{t('download.download')}{downloadSizeInfo.totalBytes > 0 ? ` (${formatBytes(downloadSizeInfo.totalBytes)})` : ''}</span>
                     </>
                   )}
                 </button>
@@ -1034,24 +1083,14 @@ const CollectionPage: React.FC = () => {
             {/* No downloadable items */}
             {downloadSizeInfo.downloadableCount === 0 && !courseProgress.allDownloaded && !courseProgress.isDownloading && (
               <div className="cp-download-sheet-empty">
-                <span>No downloadable items</span>
-              </div>
-            )}
-
-            {/* Non-downloadable content warning */}
-            {downloadSizeInfo.skippedTypes.length > 0 && (
-              <div className="cp-download-sheet-warning">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 9V13M12 17H12.01M5.07 19H18.93C20.47 19 21.45 17.33 20.68 16L13.75 4C12.98 2.67 11.02 2.67 10.25 4L3.32 16C2.55 17.33 3.53 19 5.07 19Z" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
-                <span>{downloadSizeInfo.skippedTypes.join(' and ')} content cannot be downloaded</span>
+                <span>{t('download.noDownloadableItems')}</span>
               </div>
             )}
 
             {/* Offline warning */}
             {isOffline && (
               <div className="cp-download-sheet-offline">
-                <span>No internet connection</span>
+                <span>{t('download.noInternet')}</span>
               </div>
             )}
           </div>
@@ -1062,8 +1101,8 @@ const CollectionPage: React.FC = () => {
       <IonAlert
         isOpen={showDeleteAlert}
         onDidDismiss={() => setShowDeleteAlert(false)}
-        header={t('download.deleteTitle')}
-        message={`Delete all downloaded content for ${collectionData?.title || 'this collection'}?`}
+        header="Delete Collection"
+        message={t('download.deleteCollectionMessage', { title: collectionData?.title || t('collection.collectionOverview') })}
         buttons={[
           { text: t('cancel'), role: 'cancel' },
           { text: t('download.delete'), role: 'destructive', handler: handleDeleteAll },
@@ -1080,6 +1119,17 @@ const CollectionPage: React.FC = () => {
         position="bottom"
         color="warning"
         cssClass="cp-creator-toast"
+      />
+
+      {/* Download success/failure toast */}
+      <IonToast
+        isOpen={!!downloadToast}
+        message={downloadToast?.message || ''}
+        color={downloadToast?.color}
+        icon={downloadToast?.icon}
+        duration={2500}
+        onDidDismiss={() => setDownloadToast(null)}
+        position="bottom"
       />
     </IonPage>
   );

@@ -61,6 +61,9 @@ export async function deleteDownloadedContent(identifier: string): Promise<Delet
     // 4. Clean up download_queue entry
     await downloadDbService.delete(identifier);
 
+    // 5. Notify listeners (UI refresh)
+    downloadManager.notifyContentDeleted(identifier);
+
     console.debug(TAG, identifier, 'deletion complete, freed', freedBytes, 'bytes');
     return { deleted: true, freedBytes };
   } catch (error) {

@@ -85,7 +85,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata.identifier]);
+  }, [metadata.identifier, metadata.isAvailableLocally]);
 
   return (
     <div

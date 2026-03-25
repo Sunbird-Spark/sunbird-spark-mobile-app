@@ -795,44 +795,32 @@
 
 /* ── Download Bottom Sheet ── */
 .cp-download-sheet {
-  --border-radius: 1.875rem 1.875rem 0 0;
+  --border-radius: 1.25rem 1.25rem 0 0;
+  --height: auto;
+  --max-height: 50vh;
+  align-items: flex-end;
+}
+
+.cp-download-sheet::part(content) {
+  border-radius: 1.25rem 1.25rem 0 0;
+  max-height: 50vh;
 }
 
 .cp-download-sheet::part(handle) {
-  background: transparent;
-  display: none;
+  background: var(--ion-color-medium-tint, #ccc);
+  width: 2.5rem;
+  height: 0.25rem;
+  border-radius: 0.125rem;
+  margin: 0.75rem auto 0;
 }
 
 .cp-download-sheet-inner {
   background-color: var(--ion-color-light);
-}
-
-.cp-download-sheet-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem 1.5rem 0.5rem 1.5rem;
-}
-
-.cp-download-sheet-header h2 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--ion-color-dark, #222222);
-  margin: 0;
-}
-
-.cp-download-sheet-close {
-  background: transparent;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .cp-download-sheet-content {
-  padding: 0 1.5rem 1rem 1.5rem;
+  padding: 1rem 1.5rem 1.5rem 1.5rem;
 }
 
 .cp-download-sheet-desc {

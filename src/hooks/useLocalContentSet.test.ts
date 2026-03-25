@@ -35,26 +35,46 @@ describe('useLocalContentSet', () => {
     expect(result.current.size).toBe(0);
   });
 
-  it('returns set of locally available identifiers', async () => {
+  it('returns set of locally available identifiers with Default visibility', async () => {
     vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([
-      { identifier: 'a', content_state: 2 },
-      { identifier: 'b', content_state: 1 },
-      { identifier: 'c', content_state: 2 },
+      { identifier: 'a', content_state: 2, visibility: 'Default' },
+      { identifier: 'b', content_state: 1, visibility: 'Default' },
+      { identifier: 'c', content_state: 2, visibility: 'Default' },
+      { identifier: 'd', content_state: 2, visibility: 'Parent' },
     ] as any);
 
-    const { result } = renderHook(() => useLocalContentSet(['a', 'b', 'c']));
+    const { result } = renderHook(() => useLocalContentSet(['a', 'b', 'c', 'd']));
     await act(async () => {});
 
     expect(result.current.has('a')).toBe(true);
     expect(result.current.has('b')).toBe(false);
     expect(result.current.has('c')).toBe(true);
+    expect(result.current.has('d')).toBe(false); // Parent visibility excluded by default
+    expect(result.current.size).toBe(2);
+  });
+
+  it('includes Parent visibility items when includeParentVisibility is true', async () => {
+    vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([
+      { identifier: 'a', content_state: 2, visibility: 'Default' },
+      { identifier: 'b', content_state: 2, visibility: 'Parent' },
+      { identifier: 'c', content_state: 1, visibility: 'Parent' },
+    ] as any);
+
+    const { result } = renderHook(() =>
+      useLocalContentSet(['a', 'b', 'c'], { includeParentVisibility: true }),
+    );
+    await act(async () => {});
+
+    expect(result.current.has('a')).toBe(true);
+    expect(result.current.has('b')).toBe(true); // Parent included
+    expect(result.current.has('c')).toBe(false); // content_state !== 2
     expect(result.current.size).toBe(2);
   });
 
   it('refreshes on state_change event', async () => {
     vi.mocked(contentDbService.getByIdentifiers)
-      .mockResolvedValueOnce([{ identifier: 'a', content_state: 1 }] as any)
-      .mockResolvedValueOnce([{ identifier: 'a', content_state: 2 }] as any);
+      .mockResolvedValueOnce([{ identifier: 'a', content_state: 1, visibility: 'Default' }] as any)
+      .mockResolvedValueOnce([{ identifier: 'a', content_state: 2, visibility: 'Default' }] as any);
 
     const { result } = renderHook(() => useLocalContentSet(['a']));
     await act(async () => {});
@@ -70,7 +90,7 @@ describe('useLocalContentSet', () => {
   it('refreshes on all_done event', async () => {
     vi.mocked(contentDbService.getByIdentifiers)
       .mockResolvedValueOnce([] as any)
-      .mockResolvedValueOnce([{ identifier: 'a', content_state: 2 }] as any);
+      .mockResolvedValueOnce([{ identifier: 'a', content_state: 2, visibility: 'Default' }] as any);
 
     const { result } = renderHook(() => useLocalContentSet(['a']));
     await act(async () => {});

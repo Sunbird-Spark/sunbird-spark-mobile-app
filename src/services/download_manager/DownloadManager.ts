@@ -26,6 +26,8 @@ export class DownloadManager {
   private maxConcurrent = 2;
   private wifiOnly = false;
   private processing = false;
+  private needsProcessing = false;
+  private lastProgressWrite = new Map<string, { tick: number; percent: number }>();
   private networkState: NetworkState = { connected: true, connectionType: 'unknown' };
   private unsubscribeNetwork: (() => void) | null = null;
   private initialized = false;
@@ -77,32 +79,50 @@ export class DownloadManager {
 
   private setupPluginListeners(): void {
     CapacitorDownloader.addListener('downloadProgress', async ({ id, progress }) => {
-      const entry = await this.downloadDb.getByIdentifier(id);
-      if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
-
-      const bytesDownloaded = Math.floor((entry.total_bytes * progress) / 100);
-
-      await this.downloadDb.update(id, {
-        progress,
-        bytes_downloaded: bytesDownloaded
-      });
-
+      // 1. Emit granular progress event immediately for smooth UI results (no DB hit)
       this.emit({ type: 'progress', identifier: id });
-    }).catch(() => { });
+
+      // 2. Throttle DB updates to reduce SQLite pressure
+      const now = Date.now();
+      const last = this.lastProgressWrite.get(id);
+      const percent = Math.floor(progress);
+
+      // Only write to DB if:
+      // - Progress % has increased by an integer value (or it's the first tick)
+      // - AND at least 500ms has passed since last write (unless it's 100%)
+      if (!last || (percent > last.percent) || (now - last.tick > 500)) {
+        this.lastProgressWrite.set(id, { tick: now, percent });
+
+        const entry = await this.downloadDb.getByIdentifier(id);
+        if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
+
+        const bytesDownloaded = Math.floor((entry.total_bytes * progress) / 100);
+        await this.downloadDb.update(id, {
+          progress,
+          bytes_downloaded: bytesDownloaded
+        });
+      }
+    });
 
     CapacitorDownloader.addListener('downloadCompleted', async ({ id }) => {
+      this.lastProgressWrite.delete(id);
       const entry = await this.downloadDb.getByIdentifier(id);
       if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
 
       this.activeDownloads.delete(id);
       await this.transition(id, DownloadState.DOWNLOADED, { progress: 100 });
       await this.processQueue();
-    }).catch(() => { });
+    });
 
     CapacitorDownloader.addListener('downloadFailed', async ({ id, error }) => {
       this.activeDownloads.delete(id);
       await this.handleDownloadFailure(id, new Error(error));
-    }).catch(() => { });
+    });
+  }
+
+  /** Notify listeners that content has been deleted from the local DB. */
+  notifyContentDeleted(identifier: string): void {
+    this.emit({ type: 'content_deleted', identifier });
   }
 
   // ══════════════════════════════════════════════
@@ -117,12 +137,30 @@ export class DownloadManager {
       const wasCancelled = await this.downloadDb.wasCancelledByUser(req.identifier);
       if (wasCancelled) continue;
 
+      // Fast-path: content already exists locally (e.g. downloaded as part of collection
+      // with visibility='Parent'). Skip actual download — just upgrade visibility + ref_count.
+      const contentEntry = await contentDbService.getByIdentifier(req.identifier);
+      if (contentEntry && contentEntry.content_state === 2) {
+        const updates: Partial<typeof contentEntry> = {};
+        if (contentEntry.visibility === 'Parent' && !req.parentIdentifier) {
+          // Standalone download of content that was previously part of a collection
+          updates.visibility = 'Default';
+        }
+        updates.ref_count = contentEntry.ref_count + 1;
+        await contentDbService.update(req.identifier, updates);
+        this.emit({ type: 'state_change', identifier: req.identifier });
+        continue;
+      }
+
       const existing = await this.downloadDb.getByIdentifier(req.identifier);
       if (existing) {
-        // Already in queue — skip unless it's in a terminal state
+        // Already in queue — skip if it's currently active or importing.
+        // We allow re-enqueuing FAILED, CANCELLED, and COMPLETED states
+        // to support retries and "upgrade" from Parent to Default visibility.
         if (
           existing.state !== DownloadState.FAILED &&
-          existing.state !== DownloadState.CANCELLED
+          existing.state !== DownloadState.CANCELLED &&
+          existing.state !== DownloadState.COMPLETED
         ) {
           continue;
         }
@@ -291,7 +329,9 @@ export class DownloadManager {
   //  PROGRESS & STATE QUERIES
   // ══════════════════════════════════════════════
 
-  async getProgress(identifier: string): Promise<DownloadProgress | null> {
+  async getProgress(
+    identifier: string
+  ): Promise<DownloadProgress | null> {
     const entry = await this.downloadDb.getByIdentifier(identifier);
     if (!entry) return null;
 
@@ -303,6 +343,26 @@ export class DownloadManager {
       bytesDownloaded: entry.bytes_downloaded,
       totalBytes: entry.total_bytes,
     };
+  }
+
+  async getBatchProgress(
+    identifiers: string[]
+  ): Promise<Map<string, DownloadProgress>> {
+    const map = new Map<string, DownloadProgress>();
+    if (identifiers.length === 0) return map;
+
+    const entries = await this.downloadDb.getByIdentifiers(identifiers);
+    for (const entry of entries) {
+      map.set(entry.identifier, {
+        identifier: entry.identifier,
+        parentIdentifier: entry.parent_identifier ?? undefined,
+        state: entry.state,
+        progress: entry.progress,
+        bytesDownloaded: entry.bytes_downloaded,
+        totalBytes: entry.total_bytes,
+      });
+    }
+    return map;
   }
 
   async getAggregateProgress(
@@ -382,33 +442,40 @@ export class DownloadManager {
   // ══════════════════════════════════════════════
 
   private async processQueue(): Promise<void> {
-    if (this.processing) return;
+    if (this.processing) {
+      this.needsProcessing = true;
+      return;
+    }
     this.processing = true;
 
     try {
-      // Check network
-      if (!this.networkState.connected) return;
-      if (this.wifiOnly && this.networkState.connectionType !== 'wifi') return;
+      do {
+        this.needsProcessing = false;
 
-      // Fill download slots
-      const activeCount = this.activeDownloads.size;
-      const slotsAvailable = this.maxConcurrent - activeCount;
+        // Check network state
+        if (!this.networkState.connected) break;
+        if (this.wifiOnly && this.networkState.connectionType !== 'wifi') break;
 
-      if (slotsAvailable > 0) {
-        const queued = await this.downloadDb.getNextQueued(slotsAvailable);
-        for (const entry of queued) {
-          await this.startDownload(entry);
+        // Fill download slots
+        const activeCount = this.activeDownloads.size;
+        const slotsAvailable = this.maxConcurrent - activeCount;
+
+        if (slotsAvailable > 0) {
+          const queued = await this.downloadDb.getNextQueued(slotsAvailable);
+          for (const entry of queued) {
+            await this.startDownload(entry);
+          }
         }
-      }
 
-      // Process downloaded entries → import
-      await this.processDownloadedEntries();
+        // Process downloaded entries → import
+        await this.processDownloadedEntries();
 
-      // Check if all work is done
-      const remaining = await this.downloadDb.countActive();
-      if (remaining === 0) {
-        this.emit({ type: 'all_done' });
-      }
+        // Check if all work is done
+        const remaining = await this.downloadDb.countActive();
+        if (remaining === 0) {
+          this.emit({ type: 'all_done' });
+        }
+      } while (this.needsProcessing);
     } finally {
       this.processing = false;
     }
@@ -519,7 +586,6 @@ export class DownloadManager {
     // Loop until no more DOWNLOADED entries remain.
     // New entries may reach DOWNLOADED state while we're importing previous ones
     // (race condition: downloadCompleted fires but processQueue returns because processing=true).
-    // eslint-disable-next-line no-constant-condition
     while (true) {
       const downloaded = await this.downloadDb.getByState(
         DownloadState.DOWNLOADED

@@ -204,6 +204,94 @@ describe('DownloadManager', () => {
 
       expect(dlDb.insert).toHaveBeenCalledOnce();
     });
+
+    it('fast-path: upgrades visibility and bumps ref_count for locally available Parent content', async () => {
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(false);
+      mockContentDbService.getByIdentifier.mockResolvedValue({
+        identifier: 'do_parent',
+        content_state: 2,
+        visibility: 'Parent',
+        ref_count: 1,
+      });
+
+      await manager.init();
+
+      const listener = vi.fn();
+      manager.subscribe(listener);
+
+      await manager.enqueue([
+        {
+          identifier: 'do_parent',
+          downloadUrl: 'https://ex.com/e.ecar',
+          filename: 'e.ecar',
+          mimeType: 'application/ecar',
+        },
+      ]);
+
+      // Should NOT insert into download queue
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      // Should upgrade visibility and bump ref_count
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_parent', {
+        visibility: 'Default',
+        ref_count: 2,
+      });
+      // Should emit state_change for UI refresh
+      expect(listener).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'state_change', identifier: 'do_parent' }),
+      );
+    });
+
+    it('fast-path: bumps ref_count without visibility change for Default content', async () => {
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(false);
+      mockContentDbService.getByIdentifier.mockResolvedValue({
+        identifier: 'do_default',
+        content_state: 2,
+        visibility: 'Default',
+        ref_count: 1,
+      });
+
+      await manager.init();
+      await manager.enqueue([
+        {
+          identifier: 'do_default',
+          downloadUrl: 'https://ex.com/f.ecar',
+          filename: 'f.ecar',
+          mimeType: 'application/ecar',
+        },
+      ]);
+
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_default', {
+        ref_count: 2,
+      });
+    });
+
+    it('fast-path: does not upgrade visibility when downloaded as collection child', async () => {
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(false);
+      mockContentDbService.getByIdentifier.mockResolvedValue({
+        identifier: 'do_child',
+        content_state: 2,
+        visibility: 'Parent',
+        ref_count: 1,
+      });
+
+      await manager.init();
+      await manager.enqueue([
+        {
+          identifier: 'do_child',
+          downloadUrl: 'https://ex.com/g.ecar',
+          filename: 'g.ecar',
+          mimeType: 'application/ecar',
+          parentIdentifier: 'do_collection',
+        },
+      ]);
+
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      // Should NOT upgrade visibility (parentIdentifier present = collection child)
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_child', {
+        ref_count: 2,
+      });
+    });
   });
 
   // ── cancel ──

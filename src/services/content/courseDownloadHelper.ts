@@ -42,14 +42,37 @@ export async function startBulkDownload(
   await databaseService.initialize();
 
   // Download spine ECAR first (priority=1, higher than leaf content)
-  // This populates ContentDb with hierarchy metadata for offline fallback
+  // This populates ContentDb with hierarchy metadata for offline fallback.
+  // We await completion before enqueuing leaf content so the hierarchy exists.
   let spineStatus: BulkDownloadResult['spineStatus'] = 'skipped';
   if (options?.spineDownloadUrl) {
     spineStatus = await downloadSpineEcar(collectionId, options.spineDownloadUrl, options.pkgVersion);
     console.debug(TAG, 'Spine download status:', spineStatus);
+
+    // If we just started a spine download, wait for it to reach status 2 (Imported)
+    // before enqueuing the rest. Limit wait to 30 seconds.
+    if (spineStatus === 'started') {
+      console.debug(TAG, 'Waiting for spine import...', collectionId);
+      let attempts = 0;
+      while (attempts < 60) {
+        const entry = await contentDbService.getByIdentifier(collectionId);
+        if (entry && entry.content_state === 2) {
+          console.debug(TAG, 'Spine import complete.');
+          break;
+        }
+        await new Promise(r => setTimeout(r, 500));
+        attempts++;
+      }
+    }
   }
 
   const leaves = flattenLeafNodes(nodes);
+  const leafIds = leaves.map(l => l.identifier);
+  const existingEntries = await contentDbService.getByIdentifiers(leafIds);
+  const localIdSet = new Set(
+    existingEntries.filter(e => e.content_state === 2).map(e => e.identifier)
+  );
+
   let skippedLocal = 0;
   let skippedNotDownloadable = 0;
   const toEnqueue: DownloadRequest[] = [];
@@ -60,15 +83,10 @@ export async function startBulkDownload(
       continue;
     }
 
-    // Check if already downloaded locally (DM doesn't know about ContentDb)
-    const localEntry = await contentDbService.getByIdentifier(leaf.identifier);
-    if (localEntry && localEntry.content_state === 2) {
+    if (localIdSet.has(leaf.identifier)) {
       skippedLocal++;
       continue;
     }
-
-    // No need to check download queue — DownloadManager.enqueue() handles
-    // deduplication automatically (skips items already in non-terminal states)
 
     toEnqueue.push({
       identifier: leaf.identifier,

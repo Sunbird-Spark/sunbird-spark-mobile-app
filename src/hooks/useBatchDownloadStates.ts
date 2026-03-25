@@ -32,11 +32,7 @@ export function useBatchDownloadStates(
         setStateMap(new Map());
         return;
       }
-      const map = new Map<string, DownloadProgress>();
-      for (const id of ids) {
-        const p = await downloadManager.getProgress(id);
-        if (p) map.set(id, p);
-      }
+      const map = await downloadManager.getBatchProgress(ids);
       if (!cancelled) setStateMap(map);
     };
 
@@ -47,7 +43,8 @@ export function useBatchDownloadStates(
         event.type === 'progress' ||
         event.type === 'state_change' ||
         event.type === 'all_done' ||
-        event.type === 'queue_changed'
+        event.type === 'queue_changed' ||
+        event.type === 'content_deleted'
       ) {
         doRefresh();
       }

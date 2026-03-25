@@ -261,11 +261,13 @@ export class ImportService {
     // 1. Never downgrade existing 'Default' → 'Parent' (content may have been individually downloaded)
     // 2. Children of a collection import get 'Parent' so they don't appear individually in Downloads
     // 3. Otherwise read from manifest (standalone imports get 'Default')
-    const visibility = existing
-      ? existing.visibility
-      : isChildOfCollection
-        ? 'Parent'
-        : this.readVisibility(item);
+    // 4. Upgrade 'Parent' → 'Default' if this is a standalone import (isChildOfCollection=false)
+    const manifestVisibility = this.readVisibility(item);
+    let visibility = existing ? existing.visibility : (isChildOfCollection ? 'Parent' : manifestVisibility);
+
+    if (visibility === 'Parent' && !isChildOfCollection && manifestVisibility === 'Default') {
+      visibility = 'Default';
+    }
     const refCount = existing ? existing.ref_count + 1 : 1;
 
     // content_state never downgrades (ARTIFACT_AVAILABLE → ONLY_SPINE)
@@ -318,6 +320,13 @@ export class ImportService {
       // Spine ECARs create entries with content_state=0 for leaf content; the
       // individual leaf ECAR must still be imported to extract the actual file.
       if (existing.content_state < 2) return true;
+
+      // Allow re-import if visibility is being upgraded from 'Parent' to 'Default'.
+      // This happens when a content item previously imported as part of a collection
+      // (Parent visibility) is now being imported standalone.
+      if (this.readVisibility(item) === 'Default' && existing.visibility === 'Parent') {
+        return true;
+      }
 
       // Skip same/newer version already fully imported
       try {

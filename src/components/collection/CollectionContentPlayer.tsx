@@ -53,7 +53,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const { isLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId);
+  const { isLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId, { includeParentVisibility: true });
 
   // Offline fallback: when the API fails but content is downloaded locally,
   // load metadata from the ContentDb local_data field (saved during import).
@@ -164,7 +164,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   //
   // isLocalCheckPending: still doing the initial DB query — don't show error yet.
   // isResolving: DB confirmed local but URL rewriting hasn't finished yet.
-  const isResolving = isLocal && resolvedMetadata == null && !!rawPlayerMetadata?.identifier;
+  const isResolving = isLocal && (resolvedMetadata == null || resolvedMetadata.id !== rawPlayerMetadata?.identifier) && !!rawPlayerMetadata?.identifier;
 
   if (playerIsLoading || isLocalCheckPending || isResolving) {
     return (

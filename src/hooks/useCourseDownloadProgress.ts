@@ -58,21 +58,42 @@ export function useCourseDownloadProgress(
 
   useEffect(() => {
     let cancelled = false;
+    let lastRefresh = 0;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
 
     const doRefresh = async () => {
       if (cancelled) return;
-      await refresh();
+
+      const now = Date.now();
+      const wait = 500 - (now - lastRefresh);
+
+      if (wait <= 0) {
+        lastRefresh = now;
+        await refresh();
+      } else if (!timeout) {
+        timeout = setTimeout(async () => {
+          timeout = null;
+          if (!cancelled) {
+            lastRefresh = Date.now();
+            await refresh();
+          }
+        }, wait);
+      }
     };
 
     doRefresh();
 
     const unsub = downloadManager.subscribe((event: DownloadEvent) => {
+      // Refresh on state changes immediately, but throttle progress updates
       if (
-        event.type === 'progress' ||
         event.type === 'state_change' ||
         event.type === 'all_done' ||
-        event.type === 'queue_changed'
+        event.type === 'queue_changed' ||
+        event.type === 'content_deleted'
       ) {
+        lastRefresh = 0; // Force immediate refresh
+        doRefresh();
+      } else if (event.type === 'progress') {
         doRefresh();
       }
     });
@@ -80,6 +101,7 @@ export function useCourseDownloadProgress(
     return () => {
       cancelled = true;
       unsub();
+      if (timeout) clearTimeout(timeout);
     };
   }, [refresh]);
 

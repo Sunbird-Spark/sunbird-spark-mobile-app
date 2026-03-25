@@ -42,10 +42,11 @@ describe('useIsContentLocal', () => {
     expect(result.current.isLocal).toBe(false);
   });
 
-  it('returns isLocal:true when content_state is 2', async () => {
+  it('returns isLocal:true when content_state is 2 AND visibility is Default', async () => {
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
       identifier: 'do_1',
       content_state: 2,
+      visibility: 'Default',
     } as any);
 
     const { result } = renderHook(() => useIsContentLocal('do_1'));
@@ -55,10 +56,24 @@ describe('useIsContentLocal', () => {
     expect(result.current.isCheckPending).toBe(false);
   });
 
+  it('returns isLocal:false when content_state is 2 but visibility is Parent', async () => {
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'do_1',
+      content_state: 2,
+      visibility: 'Parent',
+    } as any);
+
+    const { result } = renderHook(() => useIsContentLocal('do_1'));
+    await act(async () => { });
+
+    expect(result.current.isLocal).toBe(false); // Should be false because it's only a parent-visibility content
+  });
+
   it('returns isLocal:false when content_state is not 2', async () => {
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
       identifier: 'do_1',
       content_state: 1,
+      visibility: 'Default',
     } as any);
 
     const { result } = renderHook(() => useIsContentLocal('do_1'));
@@ -81,7 +96,7 @@ describe('useIsContentLocal', () => {
   it('re-checks on state_change event for matching identifier', async () => {
     vi.mocked(contentDbService.getByIdentifier)
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ identifier: 'do_1', content_state: 2 } as any);
+      .mockResolvedValueOnce({ identifier: 'do_1', content_state: 2, visibility: 'Default' } as any);
 
     const { result } = renderHook(() => useIsContentLocal('do_1'));
     await act(async () => { });
@@ -92,6 +107,22 @@ describe('useIsContentLocal', () => {
     });
 
     expect(result.current.isLocal).toBe(true);
+  });
+
+  it('re-checks on content_deleted event for matching identifier', async () => {
+    vi.mocked(contentDbService.getByIdentifier)
+      .mockResolvedValueOnce({ identifier: 'do_1', content_state: 2, visibility: 'Default' } as any)
+      .mockResolvedValueOnce(null);
+
+    const { result } = renderHook(() => useIsContentLocal('do_1'));
+    await act(async () => { });
+    expect(result.current.isLocal).toBe(true);
+
+    await act(async () => {
+      capturedListener?.({ type: 'content_deleted', identifier: 'do_1' });
+    });
+
+    expect(result.current.isLocal).toBe(false);
   });
 
   it('unsubscribes on unmount', () => {
