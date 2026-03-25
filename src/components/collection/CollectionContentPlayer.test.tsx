@@ -182,10 +182,12 @@ describe('CollectionContentPlayer', () => {
 
     expect(capturedOnPlayerEvent).toBeDefined();
     act(() => {
+      // Simulate the actual wrapped event shape from player services:
+      // { type: customEvent.detail.eid, data: customEvent.detail, ... }
       capturedOnPlayerEvent!({
-        type: 'unknown',
-        data: { type: 'EXIT' },
-        playerId: 'do_1',
+        type: 'EXIT',
+        data: { eid: 'EXIT', edata: {} },
+        playerId: 'pdf-player',
         timestamp: Date.now(),
       });
     });
@@ -205,9 +207,12 @@ describe('CollectionContentPlayer', () => {
     render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
 
     act(() => {
+      // Simulate a non-EXIT event with the actual wrapped shape
       capturedOnPlayerEvent!({
-        type: 'unknown',
-        data: { type: 'PLAY' },
+        type: 'INTERACT',
+        data: { eid: 'INTERACT', edata: { type: 'TOUCH' } },
+        playerId: 'pdf-player',
+        timestamp: Date.now(),
       });
     });
 
