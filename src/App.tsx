@@ -1,8 +1,9 @@
-import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
+import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { Redirect, Route, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
+import { useUser } from './hooks/useUser';
 import { AppInitializer } from './AppInitializer';
 import { useAppInitialized } from './hooks/useAppInitialized';
 import PageLoader from './components/common/PageLoader';
@@ -20,6 +21,7 @@ import HelpAndSupportPage from './pages/HelpAndSupportPage';
 import FaqDetailPage from './pages/FaqDetailPage';
 import SignInPage from './pages/SignInPage';
 import NotificationPage from './pages/NotificationPage';
+import OnboardingPage from './pages/OnboardingPage';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -63,6 +65,47 @@ const TnCGuard: React.FC = () => {
   return null;
 };
 
+/** Navigates to /home when the user is logged out (handles auto-logout from token refresh failure) */
+const LogoutGuard: React.FC = () => {
+  const { isAuthenticated } = useAuth();
+  const router = useIonRouter();
+  const prevAuthRef = useRef(isAuthenticated);
+
+  useEffect(() => {
+    const wasAuthenticated = prevAuthRef.current;
+    prevAuthRef.current = isAuthenticated;
+
+    // Only fire on true → false transition, not on initial load
+    if (wasAuthenticated && !isAuthenticated) {
+      router.push('/home', 'root', 'replace');
+    }
+  }, [isAuthenticated, router]);
+
+  return null;
+};
+
+/** Redirects to /onboarding when onboarding is not yet completed */
+const OnboardingGuard: React.FC = () => {
+  const { isAuthenticated, userId, needsTnC, onboardingDismissed } = useAuth();
+  const { data: profile } = useUser(userId);
+  const location = useLocation();
+  const router = useIonRouter();
+
+  useEffect(() => {
+    if (onboardingDismissed || !isAuthenticated || needsTnC || location.pathname === '/onboarding') {
+      return;
+    }
+    if (!profile) return;
+
+    const onboardingDetails = (profile as Record<string, any>).framework?.onboardingDetails;
+    if (!onboardingDetails) {
+      router.push('/onboarding', 'root', 'replace');
+    }
+  }, [isAuthenticated, needsTnC, onboardingDismissed, profile, location.pathname, router]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   const isInitialized = useAppInitialized();
 
@@ -84,6 +127,8 @@ const App: React.FC = () => {
     <IonApp>
       <IonReactRouter>
         <TnCGuard />
+        <LogoutGuard />
+        <OnboardingGuard />
         <BackButtonHandler />
         <IonRouterOutlet>
           <Route exact path="/search">
@@ -154,6 +199,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/terms-and-conditions">
             <TermsAndConditionsPage />
+          </Route>
+          <Route exact path="/onboarding">
+            <OnboardingPage />
           </Route>
         </IonRouterOutlet>
       </IonReactRouter>

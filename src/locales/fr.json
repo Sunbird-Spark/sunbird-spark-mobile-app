@@ -205,6 +205,18 @@
   "verifying": "Vérification en cours…",
   "submit": "Soumettre",
   "fieldUpdatedSuccessfully": "{{field}} mis à jour avec succès",
+  "onboarding": {
+    "subtitle": "Nous aimerions vous aider à personnaliser votre expérience !",
+    "saveAndProceed": "Enregistrer et continuer",
+    "submit": "Soumettre",
+    "skipOnboarding": "Passer l'intégration",
+    "enterPreference": "Entrez votre préférence",
+    "failedToLoad": "Échec du chargement de l'intégration.",
+    "skip": "Passer",
+    "somethingWentWrong": "Quelque chose s'est mal passé.",
+    "goToHome": "Aller à l'accueil",
+    "goBack": "Retour"
+  },
   "download": {
     "download": "Télécharger",
     "resume": "Reprendre le téléchargement",
@@ -238,6 +250,13 @@
     "deleteFailed": "Échec de la suppression du contenu",
     "downloadFailed": "Échec du téléchargement du contenu."
   },
+  "scanQRCode": "Scanner le code QR",
+  "cameraDeniedTitle": "Accès à la caméra refusé",
+  "cameraDeniedMessage": "Veuillez autoriser l'accès à la caméra pour scanner les codes QR.",
+  "invalidQRTitle": "Code QR invalide",
+  "invalidQRMessage": "Ce code QR n'est pas un code DIAL valide. Veuillez réessayer.",
+  "tryAgain": "Réessayer",
+  "dialCodeResults": "Résultats du code QR",
   "months": {
     "jan": "Janv",
     "feb": "Févr",

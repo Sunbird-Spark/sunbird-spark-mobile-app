@@ -15,6 +15,7 @@ import { LanguageSelector } from '../components/common/LanguageSelector';
 import { useFaqData } from '../hooks/useFaqData';
 import { useFormRead } from '../hooks/useFormRead';
 import './HelpAndSupportPage.css';
+import useImpression from '../hooks/useImpression';
 
 /* ── Inline SVG Icons ── */
 
@@ -41,6 +42,7 @@ const ChevronDownIcon: React.FC = () => (
 /* ── Component ── */
 
 const HelpAndSupportPage: React.FC = () => {
+    useImpression({ pageid: 'HelpAndSupportPage', env: 'help' });
     const router = useIonRouter();
     const { t } = useTranslation();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);

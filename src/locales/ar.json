@@ -173,6 +173,18 @@
   "tellUsMore": "أخبرنا أكثر",
   "feedbackToastMessage": "شكراً لملاحظاتك. قد لا نتمكن من الرد على كل اقتراح، لكن ملاحظاتك تساعد في تحسين هذا التطبيق للجميع.",
   "faqCount": "{{count}} أسئلة شائعة",
+  "onboarding": {
+    "subtitle": "نود مساعدتك في تخصيص تجربتك!",
+    "saveAndProceed": "حفظ والمتابعة",
+    "submit": "إرسال",
+    "skipOnboarding": "تخطي الإعداد",
+    "enterPreference": "أدخل تفضيلك",
+    "failedToLoad": "فشل تحميل الإعداد.",
+    "skip": "تخطي",
+    "somethingWentWrong": "حدث خطأ ما.",
+    "goToHome": "الذهاب إلى الرئيسية",
+    "goBack": "رجوع"
+  },
   "months": {
     "jan": "يناير",
     "feb": "فبراير",
@@ -245,5 +257,12 @@
     "delete": "حذف",
     "deleteFailed": "فشل في حذف المحتوى",
     "downloadFailed": "فشل تنزيل المحتوى."
-  }
+  },
+  "scanQRCode": "مسح رمز QR",
+  "cameraDeniedTitle": "تم رفض الوصول إلى الكاميرا",
+  "cameraDeniedMessage": "يرجى السماح بالوصول إلى الكاميرا لمسح رموز QR.",
+  "invalidQRTitle": "رمز QR غير صالح",
+  "invalidQRMessage": "رمز QR هذا ليس رمز DIAL صالحاً. يرجى المحاولة مرة أخرى.",
+  "tryAgain": "حاول مرة أخرى",
+  "dialCodeResults": "نتائج رمز QR"
 }

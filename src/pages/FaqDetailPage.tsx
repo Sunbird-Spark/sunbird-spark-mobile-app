@@ -7,7 +7,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../components/layout/AppHeader';
 import { useFaqData } from '../hooks/useFaqData';
+import useInteract from '../hooks/useInteract';
 import './FaqDetailPage.css';
+import useImpression from '../hooks/useImpression';
 
 /* ── Chevron icon ── */
 const ChevronDownIcon: React.FC = () => (
@@ -20,6 +22,7 @@ const ChevronDownIcon: React.FC = () => (
 /* ── Component ── */
 
 const FaqDetailPage: React.FC = () => {
+    useImpression({ pageid: 'FaqDetailPage', env: 'help' });
     const { category } = useParams<{ category: string }>();
     const { t } = useTranslation();
     const { faqData, isLoading, isError } = useFaqData();
@@ -29,12 +32,31 @@ const FaqDetailPage: React.FC = () => {
         ? { title: `${categoryData.title} FAQ's`, faqs: categoryData.faqs }
         : { title: "FAQ's", faqs: [] };
 
+    const { interact } = useInteract();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
     const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>({});
     const [feedbackText, setFeedbackText] = useState<Record<number, string>>({});
 
     const toggleFaq = (index: number) => {
+        const isOpening = expandedFaq !== index;
         setExpandedFaq(prev => (prev === index ? -1 : index));
+        const faq = data.faqs[index];
+        if (faq) {
+            interact({
+                id: 'faq',
+                subtype: 'toggle-clicked',
+                type: 'TOUCH',
+                pageid: 'FaqDetailPage',
+                extra: {
+                    values: {
+                        action: 'toggle-clicked',
+                        position: index + 1,
+                        value: { topic: faq.question, description: faq.answer },
+                        isOpened: isOpening,
+                    },
+                },
+            });
+        }
     };
 
     const handleFeedback = (index: number, value: 'yes' | 'no') => {
@@ -42,13 +64,32 @@ const FaqDetailPage: React.FC = () => {
     };
 
     const handleSubmitFeedback = (index: number) => {
+        const text = feedbackText[index] ?? '';
+        const faq = data.faqs[index];
+        interact({
+            id: 'faq',
+            subtype: 'submit-clicked',
+            type: 'TOUCH',
+            pageid: 'FaqDetailPage',
+            extra: {
+                values: {
+                    action: 'submit-clicked',
+                    position: index + 1,
+                    value: {
+                        topic: faq?.question || String(index),
+                        description: faq?.answer || '',
+                        knowMoreText: text,
+                    },
+                },
+            },
+        });
         setFeedbackText(prev => ({ ...prev, [index]: '' }));
         setFeedback(prev => ({ ...prev, [index]: 'submitted' }));
     };
 
     return (
         <IonPage className="faq-detail-page">
-            <AppHeader title={data.title} showBack />
+            <AppHeader title={data.title} showBack showScan={false} />
 
             {/* ── Content ── */}
             <IonContent className="fd-content">
@@ -97,9 +138,19 @@ const FaqDetailPage: React.FC = () => {
                                                     rows={3}
                                                 />
                                                 <button
+                                                    className="fd-feedback-cancel"
+                                                    onClick={() => setFeedback(prev => ({ ...prev, [idx]: null }))}
+                                                    data-edataid="faq-feedback-cancel"
+                                                    data-pageid="FaqDetailPage"
+                                                >
+                                                    {t('cancel')}
+                                                </button>
+                                                <button
                                                     className="fd-feedback-submit"
                                                     disabled={!feedbackText[idx]?.trim()}
                                                     onClick={() => handleSubmitFeedback(idx)}
+                                                    data-edataid="faq-feedback-submit"
+                                                    data-pageid="FaqDetailPage"
                                                 >
                                                     {t('submitFeedback')}
                                                 </button>
@@ -110,12 +161,18 @@ const FaqDetailPage: React.FC = () => {
                                                 <button
                                                     className="fd-feedback-btn fd-feedback-no"
                                                     onClick={() => handleFeedback(idx, 'no')}
+                                                    data-edataid="faq-feedback-no"
+                                                    data-pageid="FaqDetailPage"
+                                                    data-cdata={JSON.stringify([{ id: String(idx), type: 'FAQIndex' }])}
                                                 >
                                                     {t('no')}
                                                 </button>
                                                 <button
                                                     className="fd-feedback-btn fd-feedback-yes"
                                                     onClick={() => handleFeedback(idx, 'yes')}
+                                                    data-edataid="faq-feedback-yes"
+                                                    data-pageid="FaqDetailPage"
+                                                    data-cdata={JSON.stringify([{ id: String(idx), type: 'FAQIndex' }])}
                                                 >
                                                     {t('yes')}
                                                 </button>

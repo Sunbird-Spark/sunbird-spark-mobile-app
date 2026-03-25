@@ -19,6 +19,7 @@ import { downloadManager } from '../services/download_manager';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import type { ContentEntry } from '../services/download_manager/types';
 import './DownloadedContentsPage.css';
+import useImpression from '../hooks/useImpression';
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -170,6 +171,7 @@ const SwipeableCard: React.FC<{
 
 /* ── Main page ── */
 const DownloadedContentsPage: React.FC = () => {
+  useImpression({ pageid: 'DownloadedContentsPage', env: 'profile' });
   const { t } = useTranslation();
   const router = useIonRouter();
   const [items, setItems] = useState<ContentEntry[]>([]);

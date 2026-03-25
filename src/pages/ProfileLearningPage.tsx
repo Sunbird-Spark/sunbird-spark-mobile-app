@@ -19,6 +19,7 @@ import { certificateService } from '../services/CertificateService';
 import type { CertificateFormat } from '../utils/svg-converter';
 import type { TrackableCollection } from '../types/collectionTypes';
 import './ProfileLearningPage.css';
+import useImpression from '../hooks/useImpression';
 
 type FilterOption = 'all' | 'ongoing' | 'completed';
 
@@ -139,6 +140,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 const ProfileLearningPage: React.FC = () => {
+  useImpression({ pageid: 'ProfileLearningPage', env: 'profile' });
   const { t } = useTranslation();
   const { userId } = useAuth();
 

@@ -1,4 +1,4 @@
-import { init, getClient } from '../lib/http-client';
+import { init, getClient, getLogoutCallback } from '../lib/http-client';
 import { CapacitorAdapter } from '../lib/http-client/adapters/CapacitorAdapter';
 import { NativeConfigServiceInstance } from '../services/NativeConfigService';
 import { AppConsumerAuthService } from '../services/AppConsumerAuthService';
@@ -53,14 +53,25 @@ const doTokenRefresh = async (): Promise<boolean> => {
       ]);
       didRefresh = true;
     } catch {
-      // User token refresh failed — clear session
-      await userService.clearAccount();
-      try {
-        getClient().updateHeaders([
-          { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
-        ]);
-      } catch {
-        // Ignore
+      // User token refresh failed permanently — trigger full logout so React
+      // state resets and the user is navigated to the login screen.
+      const logoutFn = getLogoutCallback();
+      if (logoutFn) {
+        try {
+          await logoutFn();
+        } catch {
+          // Ignore logout errors to avoid unhandled rejections
+        }
+      } else {
+        // Fallback: AuthContext not mounted yet (e.g. during app init), clean up manually.
+        await userService.clearAccount();
+        try {
+          getClient().updateHeaders([
+            { key: AUTH_HEADER_KEY, value: '', action: 'remove' },
+          ]);
+        } catch {
+          // Ignore
+        }
       }
       return false;
     }

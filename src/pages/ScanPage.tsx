@@ -2,12 +2,14 @@ import React from 'react';
 import { IonContent, IonPage } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../components/layout/AppHeader';
+import useImpression from '../hooks/useImpression';
 
 const ScanPage: React.FC = () => {
+  useImpression({ pageid: 'ScanPage', env: 'explore' });
   const { t } = useTranslation();
   return (
     <IonPage>
-      <AppHeader title={t('scan')} />
+      <AppHeader title={t('scan')} showScan={false} />
       <IonContent fullscreen>
         <div className="ion-padding">
           <h1>Scan Page</h1>

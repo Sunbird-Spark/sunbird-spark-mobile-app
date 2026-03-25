@@ -30,6 +30,7 @@ import type { FormReadRequest } from '../types/formTypes';
 import type { ContentSearchItem } from '../types/contentTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
+import useImpression from '../hooks/useImpression';
 
 const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
@@ -133,6 +134,7 @@ const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ 
 };
 
 const HomePage: React.FC = () => {
+  useImpression({ pageid: 'HomePage', env: 'home' });
   const { isAuthenticated, userId } = useAuth();
   const { t } = useTranslation();
 
