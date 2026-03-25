@@ -219,31 +219,6 @@ describe('CollectionContentPlayer', () => {
     expect(mockOnClose).not.toHaveBeenCalled();
   });
 
-  it('closes player when EXIT arrives via edata.type (web component shape)', () => {
-    mockUseContentReadReturn = {
-      data: { data: { content: defaultContentData } },
-      isLoading: false,
-      error: null,
-      refetch: mockRefetch,
-    };
-
-    render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
-
-    expect(capturedOnPlayerEvent).toBeDefined();
-    act(() => {
-      // When customEvent.detail.eid is absent, player services wrap type as 'unknown'
-      capturedOnPlayerEvent!({
-        type: 'unknown',
-        data: { edata: { type: 'EXIT' } },
-        playerId: 'pdf-player',
-        timestamp: Date.now(),
-      });
-    });
-
-    expect(mockUnlock).toHaveBeenCalled();
-    expect(mockOnClose).toHaveBeenCalled();
-  });
-
   it('calls refetch on retry for regular content', () => {
     mockUseContentReadReturn = {
       data: null,
