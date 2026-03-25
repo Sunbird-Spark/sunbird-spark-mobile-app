@@ -17,12 +17,16 @@ export function useLocalContentSet(identifiers: string[]): Set<string> {
     return [...identifiers].sort().join(',');
   }, [identifiers]);
 
+  // Create a stable array reference that only changes when the contents change.
+  // This allows us to use it in useCallback dependency safely.
+  const stableIds = useMemo(() => identifiers, [idString]);
+
   const refresh = useCallback(async () => {
-    if (identifiers.length === 0) {
+    if (stableIds.length === 0) {
       setLocalSet((prev) => (prev.size === 0 ? prev : new Set()));
       return;
     }
-    const entries = await contentDbService.getByIdentifiers(identifiers);
+    const entries = await contentDbService.getByIdentifiers(stableIds);
     const localIdsArray = entries
       .filter((e) => e.content_state === 2)
       .map((e) => e.identifier);
@@ -36,7 +40,7 @@ export function useLocalContentSet(identifiers: string[]): Set<string> {
       }
       return newSet;
     });
-  }, [idString]);
+  }, [stableIds]);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,4 +66,3 @@ export function useLocalContentSet(identifiers: string[]): Set<string> {
 
   return localSet;
 }
-

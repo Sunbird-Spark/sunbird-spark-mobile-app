@@ -12,23 +12,26 @@ import type { DownloadEvent } from '../services/download_manager/types';
  */
 export function useIsContentLocal(identifier: string | undefined): { isLocal: boolean; isCheckPending: boolean } {
   const [isLocal, setIsLocal] = useState(false);
-  const [isCheckPending, setIsCheckPending] = useState(true);
+  const [isCheckPending, setIsCheckPending] = useState(!!identifier);
+  const [prevId, setPrevId] = useState<string | undefined>(identifier);
 
-  const safeId = useMemo(() => identifier ?? null, [identifier]);
+  // Sync state with identifier changes during render to avoid synchronous setState in useEffect
+  if (identifier !== prevId) {
+    setPrevId(identifier);
+    setIsLocal(false);
+    setIsCheckPending(!!identifier);
+  }
 
   useEffect(() => {
-    if (!safeId) {
-      setIsLocal(false);
-      setIsCheckPending(false);
+    if (!identifier) {
       return;
     }
 
     let cancelled = false;
-    setIsCheckPending(true);
 
     const check = () =>
       contentDbService
-        .getByIdentifier(safeId)
+        .getByIdentifier(identifier)
         .then((entry) => {
           if (!cancelled) {
             setIsLocal(entry !== null && entry.content_state === 2);
@@ -43,7 +46,7 @@ export function useIsContentLocal(identifier: string | undefined): { isLocal: bo
 
     const unsub = downloadManager.subscribe((event: DownloadEvent) => {
       if (
-        (event.identifier === safeId && event.type === 'state_change') ||
+        (event.identifier === identifier && event.type === 'state_change') ||
         event.type === 'all_done'
       ) {
         check();
@@ -54,10 +57,11 @@ export function useIsContentLocal(identifier: string | undefined): { isLocal: bo
       cancelled = true;
       unsub();
     };
-  }, [safeId]);
+  }, [identifier]);
 
-  if (!safeId) return { isLocal: false, isCheckPending: false };
+  if (!identifier) return { isLocal: false, isCheckPending: false };
 
   return { isLocal, isCheckPending };
 }
+
 
