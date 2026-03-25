@@ -41,7 +41,7 @@ export class VideoPlayerService {
         sideMenu: {
           showShare: true,
           showDownload: false,
-          showExit: false,
+          showExit: true,
           showPrint: false,
           showReplay: true,
         },
