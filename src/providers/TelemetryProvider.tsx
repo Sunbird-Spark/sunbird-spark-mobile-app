@@ -122,7 +122,7 @@ export const TelemetryProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           pdata: {
             id: config.producerId || 'sunbird.app',
             ver: config.appVersion || '1.0.0',
-            pid: config.producerId || 'sunbird.app',
+            pid: 'sunbird.app',
           },
           timeDiff,
           tags,
