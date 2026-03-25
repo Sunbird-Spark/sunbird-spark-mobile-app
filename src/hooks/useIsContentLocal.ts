@@ -6,22 +6,37 @@ import type { DownloadEvent } from '../services/download_manager/types';
 /**
  * Checks whether content is available locally (content_state === 2).
  * Re-evaluates when download events complete for this identifier.
+ *
+ * Returns { isLocal, isCheckPending } so callers can distinguish between
+ * "not local" and "haven't checked yet", preventing premature error rendering.
  */
-export function useIsContentLocal(identifier: string | undefined): boolean {
+export function useIsContentLocal(identifier: string | undefined): { isLocal: boolean; isCheckPending: boolean } {
   const [isLocal, setIsLocal] = useState(false);
+  const [isCheckPending, setIsCheckPending] = useState(true);
 
   const safeId = useMemo(() => identifier ?? null, [identifier]);
 
   useEffect(() => {
-    if (!safeId) return;
+    if (!safeId) {
+      setIsLocal(false);
+      setIsCheckPending(false);
+      return;
+    }
 
     let cancelled = false;
+    setIsCheckPending(true);
 
     const check = () =>
       contentDbService
         .getByIdentifier(safeId)
         .then((entry) => {
-          if (!cancelled) setIsLocal(entry !== null && entry.content_state === 2);
+          if (!cancelled) {
+            setIsLocal(entry !== null && entry.content_state === 2);
+            setIsCheckPending(false);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setIsCheckPending(false);
         });
 
     check();
@@ -41,8 +56,8 @@ export function useIsContentLocal(identifier: string | undefined): boolean {
     };
   }, [safeId]);
 
-  // When identifier becomes undefined, return false
-  if (!safeId) return false;
+  if (!safeId) return { isLocal: false, isCheckPending: false };
 
-  return isLocal;
+  return { isLocal, isCheckPending };
 }
+

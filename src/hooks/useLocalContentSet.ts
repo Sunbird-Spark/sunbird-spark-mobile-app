@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { contentDbService } from '../services/db/ContentDbService';
 import { downloadManager } from '../services/download_manager';
 import type { DownloadEvent } from '../services/download_manager/types';
@@ -11,17 +11,32 @@ import type { DownloadEvent } from '../services/download_manager/types';
 export function useLocalContentSet(identifiers: string[]): Set<string> {
   const [localSet, setLocalSet] = useState<Set<string>>(new Set());
 
+  // Join identifiers to create a stable dependency for the effect.
+  // This prevents infinite loops if the caller passes a new array literal on every render.
+  const idString = useMemo(() => {
+    return [...identifiers].sort().join(',');
+  }, [identifiers]);
+
   const refresh = useCallback(async () => {
     if (identifiers.length === 0) {
-      setLocalSet(new Set());
+      setLocalSet((prev) => (prev.size === 0 ? prev : new Set()));
       return;
     }
     const entries = await contentDbService.getByIdentifiers(identifiers);
-    const localIds = new Set(
-      entries.filter((e) => e.content_state === 2).map((e) => e.identifier),
-    );
-    setLocalSet(localIds);
-  }, [identifiers]);
+    const localIdsArray = entries
+      .filter((e) => e.content_state === 2)
+      .map((e) => e.identifier);
+
+    const newSet = new Set(localIdsArray);
+
+    // Deep compare to avoid redundant state updates which cause re-renders
+    setLocalSet((prev) => {
+      if (prev.size === newSet.size && [...newSet].every((id) => prev.has(id))) {
+        return prev;
+      }
+      return newSet;
+    });
+  }, [idString]);
 
   useEffect(() => {
     let cancelled = false;
@@ -34,10 +49,7 @@ export function useLocalContentSet(identifiers: string[]): Set<string> {
     doRefresh();
 
     const unsub = downloadManager.subscribe((event: DownloadEvent) => {
-      if (
-        event.type === 'state_change' ||
-        event.type === 'all_done'
-      ) {
+      if (event.type === 'state_change' || event.type === 'all_done') {
         doRefresh();
       }
     });
@@ -50,3 +62,4 @@ export function useLocalContentSet(identifiers: string[]): Set<string> {
 
   return localSet;
 }
+

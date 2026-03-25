@@ -74,7 +74,7 @@ const ContentPlayerPage: React.FC = () => {
 
   // Download state (with optimistic UI override for post-delete snapping)
   const rawDownloadState = useDownloadState(contentId);
-  const rawIsLocal = useIsContentLocal(contentId);
+  const { isLocal: rawIsLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId);
 
   // Track which contentId was optimistically marked as deleted.
   // Storing the ID (not a boolean) means it auto-resets when contentId changes.
@@ -244,6 +244,17 @@ const ContentPlayerPage: React.FC = () => {
 
   // ── Fullscreen player mode (landscape, no header) ──
   if (isPlaying && playerMetadata && mimeType) {
+    // While the DB check is still pending, show a loader — don't flash the offline guard
+    if (isLocalCheckPending) {
+      return (
+        <IonPage className="cp-fullscreen">
+          <IonContent scrollY={false}>
+            <PageLoader message="Loading content..." />
+          </IonContent>
+        </IonPage>
+      );
+    }
+
     // Offline guard: if offline and content not downloaded, show message
     if (isOffline && !isLocal) {
       return (

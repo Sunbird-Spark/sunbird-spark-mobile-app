@@ -78,13 +78,20 @@ vi.mock('../../hooks/useContentStateUpdate', () => ({
 // Mock useIsContentLocal
 let mockIsLocal = false;
 vi.mock('../../hooks/useIsContentLocal', () => ({
-  useIsContentLocal: () => mockIsLocal,
+  useIsContentLocal: () => ({ isLocal: mockIsLocal, isCheckPending: false }),
 }));
 
 // Mock resolveContentForPlayer
 const mockResolveContentForPlayer = vi.fn();
 vi.mock('../../services/content/contentPlaybackResolver', () => ({
   resolveContentForPlayer: (...args: any[]) => mockResolveContentForPlayer(...args),
+}));
+
+// Mock contentDbService (used for offline metadata fallback)
+vi.mock('../../services/db/ContentDbService', () => ({
+  contentDbService: {
+    getByIdentifier: vi.fn().mockResolvedValue(null),
+  },
 }));
 
 // Mock CSS import
@@ -389,7 +396,7 @@ describe('CollectionContentPlayer', () => {
     it('shows loading state while waiting for offline URL resolution', () => {
       mockIsLocal = true;
       // resolveContentForPlayer returns a pending promise (never resolves during this test)
-      mockResolveContentForPlayer.mockReturnValue(new Promise(() => {}));
+      mockResolveContentForPlayer.mockReturnValue(new Promise(() => { }));
 
       mockUseContentReadReturn = {
         data: { data: { content: { ...defaultContentData, identifier: 'do_1' } } },
@@ -426,7 +433,7 @@ describe('CollectionContentPlayer', () => {
 
       render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
 
-      await act(async () => {});
+      await act(async () => { });
 
       expect(mockResolveContentForPlayer).toHaveBeenCalledWith(
         'do_1',

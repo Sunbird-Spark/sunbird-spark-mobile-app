@@ -8,6 +8,7 @@ import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
 import { useIsContentLocal } from '../../hooks/useIsContentLocal';
 import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
 import { resolveContentForPlayer } from '../../services/content/contentPlaybackResolver';
+import { contentDbService } from '../../services/db/ContentDbService';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
@@ -52,13 +53,34 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const rawPlayerMetadata = isQumlContent ? qumlData : contentData;
+  const { isLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId);
+
+  // Offline fallback: when the API fails but content is downloaded locally,
+  // load metadata from the ContentDb local_data field (saved during import).
+  const [localFallbackMeta, setLocalFallbackMeta] = useState<Record<string, unknown> | null>(null);
+  useEffect(() => {
+    if (!isLocal || !error || contentData) return;
+    let cancelled = false;
+    contentDbService.getByIdentifier(contentId).then((entry) => {
+      if (cancelled || !entry?.local_data) return;
+      try {
+        const parsed = JSON.parse(entry.local_data);
+        parsed.identifier = entry.identifier;
+        if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
+        if (!cancelled) setLocalFallbackMeta(parsed);
+      } catch { /* ignore parse errors */ }
+    });
+    return () => { cancelled = true; };
+  }, [contentId, isLocal, error, contentData]);
+
+  const apiMetadata = isQumlContent ? qumlData : contentData;
+  const rawPlayerMetadata = apiMetadata ?? localFallbackMeta;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
-  const playerError = error || (isQumlContent ? qumlError : null);
+  // Don't show API error if we have local fallback data
+  const playerError = rawPlayerMetadata ? null : (error || (isQumlContent ? qumlError : null));
   const mimeType = rawPlayerMetadata?.mimeType;
 
   // Resolve URLs to local filesystem paths when content is downloaded.
-  const isLocal = useIsContentLocal(contentId);
   const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
   useEffect(() => {
     if (!rawPlayerMetadata?.identifier || !isLocal) {
@@ -139,9 +161,12 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   // Wait for offline URL resolution to complete before mounting the player.
   // Player web components read config once on mount and don't detect prop changes,
   // so we must have the resolved local URLs ready BEFORE the player renders.
+  //
+  // isLocalCheckPending: still doing the initial DB query — don't show error yet.
+  // isResolving: DB confirmed local but URL rewriting hasn't finished yet.
   const isResolving = isLocal && resolvedMetadata == null && !!rawPlayerMetadata?.identifier;
 
-  if (playerIsLoading || isResolving) {
+  if (playerIsLoading || isLocalCheckPending || isResolving) {
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
