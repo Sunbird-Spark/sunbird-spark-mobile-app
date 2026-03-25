@@ -25,6 +25,7 @@ import { DownloadProgressBadge } from '../components/common/DownloadProgressBadg
 import RelatedContent from '../components/collection/RelatedContent';
 import { startContentDownload } from '../services/content/contentDownloadHelper';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
+import { NON_DOWNLOADABLE_MIME_TYPES } from '../services/content/hierarchyUtils';
 import { resolveContentForPlayer } from '../services/content/contentPlaybackResolver';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { downloadManager } from '../services/download_manager';
@@ -52,6 +53,7 @@ const ContentPlayerPage: React.FC = () => {
   const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
+  const isNonDownloadable = !!(contentData?.mimeType && NON_DOWNLOADABLE_MIME_TYPES.includes(contentData.mimeType));
 
   const {
     data: qumlData,
@@ -92,7 +94,7 @@ const ContentPlayerPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [rawPlayerMetadata, isLocal]);
 
-  const playerMetadata = (isLocal && resolvedMetadata?.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+  const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
 
   // Related content
   const contentLoaded = !isLoading && !!contentData;
@@ -227,15 +229,17 @@ const ContentPlayerPage: React.FC = () => {
               <IonIcon icon={cloudOfflineOutline} className="cp-offline-icon" />
               <h2>{t('download.youreOffline')}</h2>
               <p>{t('download.downloadToPlayOffline')}</p>
-              <DownloadProgressBadge
-                downloadState={downloadState}
-                isLocal={isLocal}
-                onDownload={handleDownload}
-                onRetry={handleRetryDownload}
-                onDelete={requestDelete}
-                onPause={handlePauseDownload}
-                onResume={handleResumeDownload}
-              />
+              {!isNonDownloadable && (
+                <DownloadProgressBadge
+                  downloadState={downloadState}
+                  isLocal={isLocal}
+                  onDownload={handleDownload}
+                  onRetry={handleRetryDownload}
+                  onDelete={requestDelete}
+                  onPause={handlePauseDownload}
+                  onResume={handleResumeDownload}
+                />
+              )}
               <button className="cp-offline-back" onClick={handleClosePlayer}>
                 {t('back')}
               </button>
@@ -284,15 +288,17 @@ const ContentPlayerPage: React.FC = () => {
               <BackIcon />
             </button>
             <div className="cp-header-actions">
-              <DownloadProgressBadge
-                downloadState={downloadState}
-                isLocal={isLocal}
-                onDownload={handleDownload}
-                onRetry={handleRetryDownload}
-                onDelete={requestDelete}
-                onPause={handlePauseDownload}
-                onResume={handleResumeDownload}
-              />
+              {!isNonDownloadable && (
+                <DownloadProgressBadge
+                  downloadState={downloadState}
+                  isLocal={isLocal}
+                  onDownload={handleDownload}
+                  onRetry={handleRetryDownload}
+                  onDelete={requestDelete}
+                  onPause={handlePauseDownload}
+                  onResume={handleResumeDownload}
+                />
+              )}
               <button type="button"
                 className="cp-icon-btn"
                 aria-label="Share"

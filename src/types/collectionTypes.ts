@@ -14,6 +14,12 @@ export interface HierarchyContentNode {
   duration?: number;
   createdBy?: string;
   channel?: string;
+  /** Download URL for the content ECAR (leaf nodes only). */
+  downloadUrl?: string;
+  /** Content size in bytes (from API). */
+  size?: number;
+  /** Package version — used to build the ECAR filename. */
+  pkgVersion?: number;
 }
 
 /** Root-level response from /course/v1/hierarchy/:id */

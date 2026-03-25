@@ -700,6 +700,11 @@
 /* ══════════════════════════════════════════════════════════════
    View Downloaded Toggle — with gap highlight
    ══════════════════════════════════════════════════════════════ */
+/* ── Download Section ── */
+.cp-download-section {
+  margin: 0.75rem 0 0 0;
+}
+
 .cp-toggle-section {
   display: flex;
   justify-content: flex-end;
@@ -707,6 +712,71 @@
   padding: 0.75rem 1.25rem;
   background: white;
   margin: 0.75rem 0 0 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
+}
+
+.cp-download-all-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.65rem 1rem;
+  margin-top: 0.5rem;
+  background: var(--ion-color-primary, #8B5E3C);
+  color: var(--ion-color-primary-contrast, #fff);
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.cp-download-all-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.cp-download-progress {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1rem;
+  background: white;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
+}
+
+.cp-download-progress-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--ion-color-medium, #757575);
+  margin-bottom: 0.35rem;
+}
+
+.cp-download-progress-track {
+  height: 6px;
+  background: var(--ion-color-step-100, #e0e0e0);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cp-download-progress-fill {
+  height: 100%;
+  background: var(--ion-color-primary, #8B5E3C);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.cp-download-complete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: var(--ion-color-success, #2dd36f);
+  background: white;
   border-radius: 0.75rem;
   box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
 }
@@ -721,6 +791,124 @@
   --track-background: var(--ion-color-step-100, #e0e0e0);
   --track-background-checked: var(--ion-color-primary);
   padding: 0;
+}
+
+/* ── Download Bottom Sheet ── */
+.cp-download-sheet {
+  --border-radius: 1.875rem 1.875rem 0 0;
+}
+
+.cp-download-sheet::part(handle) {
+  background: transparent;
+  display: none;
+}
+
+.cp-download-sheet-inner {
+  background-color: var(--ion-color-light);
+}
+
+.cp-download-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 1.5rem 0.5rem 1.5rem;
+}
+
+.cp-download-sheet-header h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0;
+}
+
+.cp-download-sheet-close {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-download-sheet-content {
+  padding: 0 1.5rem 1rem 1.5rem;
+}
+
+.cp-download-sheet-desc {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0 0 0.75rem 0;
+  line-height: 1.5;
+}
+
+.cp-download-sheet-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 1rem;
+  background: var(--ion-color-primary, #8B5E3C);
+  color: var(--ion-color-primary-contrast, #fff);
+  border: none;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+}
+
+.cp-download-sheet-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.cp-download-sheet-btn-delete {
+  background: var(--ion-color-danger, #eb445a);
+  box-shadow: 0 4px 12px rgba(235, 68, 90, 0.3);
+  margin-top: 0.75rem;
+}
+
+.cp-download-sheet-progress {
+  padding: 0.25rem 0 0.75rem;
+}
+
+.cp-download-sheet-complete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  color: var(--ion-color-success, #2dd36f);
+  font-weight: 500;
+}
+
+.cp-download-sheet-action {
+  padding: 0.25rem 0;
+}
+
+.cp-download-sheet-empty {
+  padding: 0.75rem 0;
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  text-align: center;
+}
+
+.cp-download-sheet-warning {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0;
+  font-size: 0.8125rem;
+  color: var(--ion-color-warning, #ffc409);
+}
+
+.cp-download-sheet-offline {
+  padding: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: var(--ion-color-danger, #eb445a);
+  text-align: center;
 }
 
 /* ── Progress complete icon ── */

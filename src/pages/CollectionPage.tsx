@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useCallback } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -8,6 +8,7 @@ import {
   IonSpinner,
   IonToggle,
   IonToast,
+  IonAlert,
 } from '@ionic/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useIonRouter, useIonViewDidEnter, useIonViewWillLeave } from '@ionic/react';
@@ -20,7 +21,15 @@ import { useContentSearch } from '../hooks/useContentSearch';
 import { useConsent } from '../hooks/useConsent';
 import { useUser } from '../hooks/useUser';
 import { useForceSync } from '../hooks/useForceSync';
+import { useNetwork } from '../providers/NetworkProvider';
+import { useLocalContentSet } from '../hooks/useLocalContentSet';
+import { useCourseDownloadProgress } from '../hooks/useCourseDownloadProgress';
+import { useBatchDownloadStates } from '../hooks/useBatchDownloadStates';
+import { downloadManager } from '../services/download_manager';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
+import { flattenLeafNodes, calculateDownloadSize, formatBytes, filterHierarchyTree } from '../services/content/hierarchyUtils';
+import { startBulkDownload } from '../services/content/courseDownloadHelper';
+import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import { BackIcon, SearchIcon, RightArrowIcon } from '../components/icons/CollectionIcons';
 import CollectionOverview from '../components/collection/CollectionOverview';
 import CollectionAccordion from '../components/collection/CollectionAccordion';
@@ -123,8 +132,108 @@ const CollectionPage: React.FC = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [selectedBatchId, setSelectedBatchId] = useState('');
 
-  // Enrolled-only: toggle for downloaded content
+  // Toggle for downloaded content filter
   const [viewDownloadedOnly, setViewDownloadedOnly] = useState(false);
+
+  // ── Download infrastructure (all views — trackable enrolled + non-trackable default) ──
+  const { isOffline } = useNetwork();
+  const [isDownloadStarting, setIsDownloadStarting] = useState(false);
+  const [isDownloadSheetOpen, setIsDownloadSheetOpen] = useState(false);
+
+  // Collect all leaf identifiers for bulk local-availability check
+  const leafIdentifiers = useMemo(() => {
+    if (!collectionData?.children) return [];
+    return flattenLeafNodes(collectionData.children).map((n) => n.identifier);
+  }, [collectionData?.children]);
+
+  const localContentSet = useLocalContentSet(leafIdentifiers);
+  const courseProgress = useCourseDownloadProgress(collectionId, collectionData?.children, localContentSet);
+  const downloadStates = useBatchDownloadStates(leafIdentifiers);
+
+  // Download size info for the confirm dialog
+  const downloadSizeInfo = useMemo(() => {
+    if (!collectionData?.children) return { totalBytes: 0, downloadableCount: 0, alreadyLocalCount: 0, skippedTypes: [] };
+    return calculateDownloadSize(collectionData.children, localContentSet);
+  }, [collectionData?.children, localContentSet]);
+
+  // Filtered hierarchy for "View Downloaded Only" toggle
+  const filteredChildren = useMemo(() => {
+    if (!viewDownloadedOnly || !collectionData?.children) return collectionData?.children ?? [];
+    return filterHierarchyTree(collectionData.children, localContentSet);
+  }, [viewDownloadedOnly, collectionData?.children, localContentSet]);
+
+  // Download is available for: enrolled trackable courses OR non-trackable collections (all users)
+  const canDownload = viewState === 'enrolled' || viewState === 'default';
+
+  const handleDownloadAll = useCallback(async () => {
+    if (!collectionData?.children || isOffline) return;
+    setIsDownloadStarting(true);
+    try {
+      // Pass spine download URL from hierarchy root for offline hierarchy support
+      const spineUrl = collectionData.hierarchyRoot?.downloadUrl;
+      const pkgVersion = collectionData.hierarchyRoot?.pkgVersion;
+      const result = await startBulkDownload(collectionId, collectionData.children, {
+        spineDownloadUrl: spineUrl,
+        pkgVersion,
+      });
+      if (result.enqueued === 0 && result.skippedLocal > 0) {
+        setToastMessage('All content already downloaded');
+      } else if (result.enqueued > 0) {
+        setToastMessage(`Downloading ${result.enqueued} item${result.enqueued > 1 ? 's' : ''}…`);
+      }
+    } catch {
+      setToastMessage('Failed to start download');
+    } finally {
+      setIsDownloadStarting(false);
+    }
+  }, [collectionData, collectionId, isOffline]);
+
+  // Delete all downloaded content for this collection
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteAll = useCallback(async () => {
+    setShowDeleteAlert(false);
+    if (!collectionData?.children) return;
+    setIsDeleting(true);
+    try {
+      const leaves = flattenLeafNodes(collectionData.children);
+      const localLeaves = leaves.filter((l) => localContentSet.has(l.identifier));
+      for (const leaf of localLeaves) {
+        await deleteDownloadedContent(leaf.identifier);
+      }
+      setToastMessage(t('download.deleted'));
+    } catch {
+      setToastMessage(t('download.deleteFailed'));
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [collectionData, localContentSet, t]);
+
+  // Pause / Resume all downloads for this collection
+  const handlePauseAll = useCallback(async () => {
+    for (const [id, state] of downloadStates) {
+      if (state.state === 'DOWNLOADING') {
+        await downloadManager.pause(id);
+      }
+    }
+  }, [downloadStates]);
+
+  const handleResumeAll = useCallback(async () => {
+    for (const [id, state] of downloadStates) {
+      if (state.state === 'PAUSED') {
+        await downloadManager.resume(id);
+      }
+    }
+  }, [downloadStates]);
+
+  // Check if any items are paused (to show resume vs pause button in sheet)
+  const hasPausedItems = useMemo(() => {
+    for (const [, state] of downloadStates) {
+      if (state.state === 'PAUSED') return true;
+    }
+    return false;
+  }, [downloadStates]);
 
   // 3-dot menu state (Completed section)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -280,6 +389,41 @@ const CollectionPage: React.FC = () => {
               <BackIcon />
             </button>
             <div className="collection-page-header-actions">
+              {/* Download icon — visible for enrolled trackable courses + all non-trackable collections */}
+              {canDownload && collectionData && (
+                courseProgress.allDownloaded && localContentSet.size > 0 ? (
+                  /* Trash icon — all content downloaded, tap to delete */
+                  <button
+                    className="collection-page-icon-btn"
+                    onClick={() => setShowDeleteAlert(true)}
+                    aria-label="Delete downloaded content"
+                  >
+                    {isDeleting ? (
+                      <IonSpinner name="crescent" style={{ width: 20, height: 20, color: 'var(--ion-color-primary)' }} />
+                    ) : (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path d="M3 6H21M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6H19ZM10 10V17M14 10V17" stroke="var(--ion-color-primary, #024f9d)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </button>
+                ) : (
+                  /* Download icon — tap to open download sheet */
+                  <button
+                    className="collection-page-icon-btn"
+                    onClick={() => setIsDownloadSheetOpen(true)}
+                    aria-label="Download"
+                  >
+                    {courseProgress.isDownloading ? (
+                      <IonSpinner name="crescent" style={{ width: 20, height: 20, color: 'var(--ion-color-primary)' }} />
+                    ) : (
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="var(--ion-color-primary, #024f9d)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M4 20H20" stroke="var(--ion-color-primary, #024f9d)" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                    )}
+                  </button>
+                )
+              )}
               <button className="collection-page-icon-btn" onClick={() => router.push('/search', 'forward', 'push')}>
                 <SearchIcon />
               </button>
@@ -310,13 +454,28 @@ const CollectionPage: React.FC = () => {
               t={t}
             />
 
+            {/* View Downloaded Only toggle — inline below overview for non-trackable */}
+            {viewState === 'default' && (
+              <div className="cp-toggle-section">
+                <span className="cp-toggle-label">View downloaded only</span>
+                <IonToggle
+                  className="custom-toggle"
+                  checked={viewDownloadedOnly}
+                  onIonChange={(e) => setViewDownloadedOnly(e.detail.checked)}
+                />
+              </div>
+            )}
+
             <CollectionAccordion
-              children={collectionData.children}
+              children={viewState === 'default' ? filteredChildren : collectionData.children}
               collectionId={collectionId}
               isCourse={isCourse}
               viewState={viewState}
               t={t}
               onContentPlay={openPlayer}
+              localContentSet={viewState === 'default' ? localContentSet : undefined}
+              isOffline={viewState === 'default' ? isOffline : undefined}
+              downloadStates={viewState === 'default' ? downloadStates : undefined}
             />
 
             <RelatedContent items={relatedItems} t={t} />
@@ -403,19 +562,21 @@ const CollectionPage: React.FC = () => {
               )}
             </CollectionOverview>
 
-            {/* View Downloaded Only Toggle */}
-            <div className="cp-toggle-section">
-              <span className="cp-toggle-label">View downloaded only</span>
-              <IonToggle
-                className="custom-toggle"
-                checked={viewDownloadedOnly}
-                onIonChange={(e) => setViewDownloadedOnly(e.detail.checked)}
-              />
-            </div>
+            {/* View Downloaded Only toggle — inline below progress */}
+            {canDownload && (
+              <div className="cp-toggle-section">
+                <span className="cp-toggle-label">View downloaded only</span>
+                <IonToggle
+                  className="custom-toggle"
+                  checked={viewDownloadedOnly}
+                  onIonChange={(e) => setViewDownloadedOnly(e.detail.checked)}
+                />
+              </div>
+            )}
 
             {/* Enrolled Curriculum — reuses CollectionAccordion with enrollment data for status icons */}
             <CollectionAccordion
-              children={collectionData.children}
+              children={filteredChildren}
               collectionId={collectionId}
               isCourse={isCourse}
               viewState={viewState}
@@ -423,6 +584,9 @@ const CollectionPage: React.FC = () => {
               onContentPlay={openPlayer}
               enrollmentData={enrollmentData}
               hideTitle
+              localContentSet={localContentSet}
+              isOffline={isOffline}
+              downloadStates={downloadStates}
             />
 
             {/* Info Cards */}
@@ -738,6 +902,153 @@ const CollectionPage: React.FC = () => {
           </IonModal>
         </>
       )}
+
+      {/* ── Download Bottom Sheet ── */}
+      <IonModal
+        isOpen={isDownloadSheetOpen}
+        onDidDismiss={() => setIsDownloadSheetOpen(false)}
+        initialBreakpoint={0.45}
+        breakpoints={[0, 0.45, 0.6]}
+        className="cp-download-sheet"
+      >
+        <div className="cp-download-sheet-inner">
+          <div className="cp-download-sheet-header">
+            <h2>Download</h2>
+            <button className="cp-download-sheet-close" onClick={() => setIsDownloadSheetOpen(false)}>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="var(--ion-color-primary)" />
+              </svg>
+            </button>
+          </div>
+
+          <div className="cp-download-sheet-content">
+            {/* Aggregate progress bar with pause/resume (when downloading) */}
+            {courseProgress.isDownloading && (
+              <div className="cp-download-sheet-progress">
+                <div className="cp-download-progress-info">
+                  <span>{hasPausedItems ? 'Paused' : 'Downloading'} {courseProgress.completed}/{courseProgress.total}</span>
+                  <span>{courseProgress.overallPercent}%</span>
+                </div>
+                <div className="cp-download-progress-track">
+                  <div
+                    className="cp-download-progress-fill"
+                    style={{ width: `${courseProgress.overallPercent}%` }}
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  {hasPausedItems ? (
+                    <button className="cp-download-sheet-btn" onClick={handleResumeAll} style={{ flex: 1 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor" />
+                      </svg>
+                      <span>Resume All</span>
+                    </button>
+                  ) : (
+                    <button className="cp-download-sheet-btn" onClick={handlePauseAll} style={{ flex: 1 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                        <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                        <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
+                      </svg>
+                      <span>Pause All</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* All downloaded — show delete option */}
+            {courseProgress.allDownloaded && localContentSet.size > 0 && !courseProgress.isDownloading && (
+              <div className="cp-download-sheet-action">
+                <div className="cp-download-sheet-complete">
+                  <svg width="18" height="18" viewBox="0 0 16 16" fill="none">
+                    <circle cx="8" cy="8" r="8" fill="var(--ion-color-success, #2dd36f)" />
+                    <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>All content downloaded</span>
+                </div>
+                <button
+                  className="cp-download-sheet-btn cp-download-sheet-btn-delete"
+                  onClick={() => {
+                    setIsDownloadSheetOpen(false);
+                    setShowDeleteAlert(true);
+                  }}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 6H21M8 6V4C8 3.44772 8.44772 3 9 3H15C15.5523 3 16 3.44772 16 4V6M19 6V20C19 20.5523 18.5523 21 18 21H6C5.44772 21 5 20.5523 5 20V6H19ZM10 10V17M14 10V17" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  <span>Delete All Downloads</span>
+                </button>
+              </div>
+            )}
+
+            {/* Download All — when there are items to download */}
+            {!courseProgress.allDownloaded && downloadSizeInfo.downloadableCount > 0 && !courseProgress.isDownloading && (
+              <div className="cp-download-sheet-action">
+                <p className="cp-download-sheet-desc">
+                  Download all ({downloadSizeInfo.downloadableCount} items) for {isCourse ? 'Course' : 'Collection'} <strong>{collectionData?.title}</strong>?
+                </p>
+
+                <button
+                  className="cp-download-sheet-btn"
+                  onClick={() => {
+                    setIsDownloadSheetOpen(false);
+                    handleDownloadAll();
+                  }}
+                  disabled={isOffline || isDownloadStarting}
+                >
+                  {isDownloadStarting ? (
+                    <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                        <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                      </svg>
+                      <span>Download{downloadSizeInfo.totalBytes > 0 ? ` (${formatBytes(downloadSizeInfo.totalBytes)})` : ''}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* No downloadable items */}
+            {downloadSizeInfo.downloadableCount === 0 && !courseProgress.allDownloaded && !courseProgress.isDownloading && (
+              <div className="cp-download-sheet-empty">
+                <span>No downloadable items</span>
+              </div>
+            )}
+
+            {/* Non-downloadable content warning */}
+            {downloadSizeInfo.skippedTypes.length > 0 && (
+              <div className="cp-download-sheet-warning">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 9V13M12 17H12.01M5.07 19H18.93C20.47 19 21.45 17.33 20.68 16L13.75 4C12.98 2.67 11.02 2.67 10.25 4L3.32 16C2.55 17.33 3.53 19 5.07 19Z" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                <span>{downloadSizeInfo.skippedTypes.join(' and ')} content cannot be downloaded</span>
+              </div>
+            )}
+
+            {/* Offline warning */}
+            {isOffline && (
+              <div className="cp-download-sheet-offline">
+                <span>No internet connection</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </IonModal>
+
+      {/* Delete confirmation alert */}
+      <IonAlert
+        isOpen={showDeleteAlert}
+        onDidDismiss={() => setShowDeleteAlert(false)}
+        header={t('download.deleteTitle')}
+        message={`Delete all downloaded content for ${collectionData?.title || 'this collection'}?`}
+        buttons={[
+          { text: t('cancel'), role: 'cancel' },
+          { text: t('download.delete'), role: 'destructive', handler: handleDeleteAll },
+        ]}
+      />
 
       {/* Page-level toast (creator error, etc.) — visible across all view states */}
       <IonToast

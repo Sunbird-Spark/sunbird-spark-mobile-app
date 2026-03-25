@@ -75,6 +75,18 @@ vi.mock('../../hooks/useContentStateUpdate', () => ({
   useContentStateUpdate: () => vi.fn(),
 }));
 
+// Mock useIsContentLocal
+let mockIsLocal = false;
+vi.mock('../../hooks/useIsContentLocal', () => ({
+  useIsContentLocal: () => mockIsLocal,
+}));
+
+// Mock resolveContentForPlayer
+const mockResolveContentForPlayer = vi.fn();
+vi.mock('../../services/content/contentPlaybackResolver', () => ({
+  resolveContentForPlayer: (...args: any[]) => mockResolveContentForPlayer(...args),
+}));
+
 // Mock CSS import
 vi.mock('../../pages/ContentPlayerPage.css', () => ({}));
 
@@ -95,6 +107,7 @@ describe('CollectionContentPlayer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     capturedOnPlayerEvent = undefined;
+    mockIsLocal = false;
 
     mockUseContentReadReturn = {
       data: null,
@@ -370,5 +383,72 @@ describe('CollectionContentPlayer', () => {
 
     expect(mockUnlock).toHaveBeenCalled();
     expect(mockOnClose).toHaveBeenCalled();
+  });
+
+  describe('offline playback', () => {
+    it('shows loading state while waiting for offline URL resolution', () => {
+      mockIsLocal = true;
+      // resolveContentForPlayer returns a pending promise (never resolves during this test)
+      mockResolveContentForPlayer.mockReturnValue(new Promise(() => {}));
+
+      mockUseContentReadReturn = {
+        data: { data: { content: { ...defaultContentData, identifier: 'do_1' } } },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      };
+
+      render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
+
+      // Should show the loader, NOT the player
+      const loader = screen.getByTestId('page-loader');
+      expect(loader).toHaveAttribute('data-message', 'Loading content...');
+      expect(screen.queryByTestId('content-player')).not.toBeInTheDocument();
+    });
+
+    it('resolves content for player when content is local', async () => {
+      const resolvedData = {
+        name: 'Test Video',
+        mimeType: 'video/mp4',
+        identifier: 'do_1',
+        artifactUrl: 'file:///local/path/video.mp4',
+        isAvailableLocally: true,
+      };
+      mockResolveContentForPlayer.mockResolvedValue(resolvedData);
+      mockIsLocal = true;
+
+      mockUseContentReadReturn = {
+        data: { data: { content: { ...defaultContentData, identifier: 'do_1' } } },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      };
+
+      render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
+
+      await act(async () => {});
+
+      expect(mockResolveContentForPlayer).toHaveBeenCalledWith(
+        'do_1',
+        expect.objectContaining({ identifier: 'do_1', mimeType: 'video/mp4' }),
+      );
+      const player = screen.getByTestId('content-player');
+      expect(player).toHaveAttribute('data-name', 'Test Video');
+    });
+
+    it('does not resolve content when not local', () => {
+      mockIsLocal = false;
+
+      mockUseContentReadReturn = {
+        data: { data: { content: { ...defaultContentData, identifier: 'do_1' } } },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      };
+
+      render(<CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />);
+
+      expect(mockResolveContentForPlayer).not.toHaveBeenCalled();
+    });
   });
 });

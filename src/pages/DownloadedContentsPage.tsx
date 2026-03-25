@@ -239,7 +239,12 @@ const DownloadedContentsPage: React.FC = () => {
                 key={entry.identifier}
                 entry={entry}
                 onDelete={handleDeleteRequest}
-                onNavigate={(e) => router.push(`/content/${e.identifier}`, 'forward', 'push')}
+                onNavigate={(e) => {
+                  const path = e.mime_type?.includes('collection')
+                    ? `/collection/${e.identifier}`
+                    : `/content/${e.identifier}`;
+                  router.push(path, 'forward', 'push');
+                }}
               />
             ))}
           </div>

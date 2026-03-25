@@ -1,11 +1,13 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { IonPage, IonContent } from '@ionic/react';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../players/ContentPlayer';
 import { useContentRead } from '../../hooks/useContent';
 import { useQumlContent } from '../../hooks/useQumlContent';
 import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
+import { useIsContentLocal } from '../../hooks/useIsContentLocal';
 import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
+import { resolveContentForPlayer } from '../../services/content/contentPlaybackResolver';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
@@ -50,10 +52,28 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const playerMetadata = isQumlContent ? qumlData : contentData;
+  const rawPlayerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
   const playerError = error || (isQumlContent ? qumlError : null);
-  const mimeType = playerMetadata?.mimeType;
+  const mimeType = rawPlayerMetadata?.mimeType;
+
+  // Resolve URLs to local filesystem paths when content is downloaded.
+  const isLocal = useIsContentLocal(contentId);
+  const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+  useEffect(() => {
+    if (!rawPlayerMetadata?.identifier || !isLocal) {
+      return;
+    }
+    let cancelled = false;
+    resolveContentForPlayer(rawPlayerMetadata.identifier, rawPlayerMetadata).then((resolved) => {
+      if (!cancelled) setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
+    });
+    return () => { cancelled = true; };
+  }, [rawPlayerMetadata, isLocal]);
+
+  const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier)
+    ? resolvedMetadata.data
+    : rawPlayerMetadata;
 
   // Lock to landscape on mount
   useEffect(() => {
@@ -116,7 +136,12 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     handleTelemetryStateUpdate(event);
   }, [handleTelemetryStateUpdate]);
 
-  if (playerIsLoading) {
+  // Wait for offline URL resolution to complete before mounting the player.
+  // Player web components read config once on mount and don't detect prop changes,
+  // so we must have the resolved local URLs ready BEFORE the player renders.
+  const isResolving = isLocal && resolvedMetadata == null && !!rawPlayerMetadata?.identifier;
+
+  if (playerIsLoading || isResolving) {
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
