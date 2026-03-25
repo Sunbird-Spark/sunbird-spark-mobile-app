@@ -57,7 +57,11 @@ const doTokenRefresh = async (): Promise<boolean> => {
       // state resets and the user is navigated to the login screen.
       const logoutFn = getLogoutCallback();
       if (logoutFn) {
-        void logoutFn();
+        try {
+          await logoutFn();
+        } catch {
+          // Ignore logout errors to avoid unhandled rejections
+        }
       } else {
         // Fallback: AuthContext not mounted yet (e.g. during app init), clean up manually.
         await userService.clearAccount();
