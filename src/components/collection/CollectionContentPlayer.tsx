@@ -105,7 +105,16 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   const handlePlayerEvent = useCallback((event: any) => {
     console.log('[CollectionContentPlayer] Player event:', event);
-    if (event?.data?.type === 'EXIT') {
+    // Player services wrap events as: { type: customEvent.detail.eid, data: customEvent.detail, ... }
+    // So EXIT events arrive with event.type === 'EXIT' and event.data.eid === 'EXIT'
+    const eid = ((
+      event?.data?.edata?.type
+      ?? event?.eid
+      ?? event?.data?.eid
+      ?? event?.data?.type
+      ?? event?.type
+    ) ?? '').toUpperCase();
+    if (eid === 'EXIT') {
       handleClose();
     }
   }, [handleClose]);
