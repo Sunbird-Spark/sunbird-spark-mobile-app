@@ -208,6 +208,13 @@
     "goToHome": "होम पर जाएं",
     "goBack": "वापस जाएं"
   },
+  "scanQRCode": "QR कोड स्कैन करें",
+  "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",
+  "cameraDeniedMessage": "QR कोड स्कैन करने के लिए कृपया कैमरा एक्सेस की अनुमति दें।",
+  "invalidQRTitle": "अमान्य QR कोड",
+  "invalidQRMessage": "यह QR कोड एक वैध DIAL कोड नहीं है। कृपया पुनः प्रयास करें।",
+  "tryAgain": "पुनः प्रयास करें",
+  "dialCodeResults": "QR कोड परिणाम",
   "months": {
     "jan": "जन",
     "feb": "फ़र",

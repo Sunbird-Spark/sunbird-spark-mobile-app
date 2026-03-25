@@ -19,6 +19,13 @@ vi.mock('react-i18next', () => ({
         retry: 'Retry',
         noContentFound: 'No content found',
         searchContentPlaceholder: 'Search content...',
+        dialCodeResults: 'QR Code Results',
+        scanQRCode: 'Scan QR Code',
+        cameraDeniedTitle: 'Camera Access Denied',
+        cameraDeniedMessage: 'Please allow camera access to scan QR codes.',
+        invalidQRTitle: 'Invalid QR Code',
+        invalidQRMessage: 'This QR code is not a valid DIAL code. Please try again.',
+        tryAgain: 'Try Again',
       };
       return translations[key] ?? key;
     },
@@ -29,6 +36,11 @@ vi.mock('react-i18next', () => ({
 // ── Mock LanguageSelector ──
 vi.mock('../components/common/LanguageSelector', () => ({
   LanguageSelector: () => null,
+}));
+
+// ── Mock QRScanButton ──
+vi.mock('../components/common/QRScanButton', () => ({
+  QRScanButton: () => null,
 }));
 
 // ── Mock react-router-dom ──
@@ -444,6 +456,34 @@ describe('ExplorePage', () => {
       render(<ExplorePage />);
 
       expect(screen.queryByPlaceholderText('Search content...')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('DIAL code param', () => {
+    it('shows QR Code Results banner with dial code when ?dialCode= is present', () => {
+      mockLocationSearch = '?dialCode=ABCDEF';
+
+      render(<ExplorePage />);
+
+      expect(screen.getByText('QR Code Results: ABCDEF')).toBeInTheDocument();
+    });
+
+    it('does not show QR Code Results banner when no dialCode param', () => {
+      mockLocationSearch = '';
+
+      render(<ExplorePage />);
+
+      expect(screen.queryByText(/QR Code Results/)).not.toBeInTheDocument();
+    });
+
+    it('passes dialcodes filter to useContentSearch when ?dialCode= is present', () => {
+      mockLocationSearch = '?dialCode=XYZABC';
+
+      render(<ExplorePage />);
+
+      const calls = (useContentSearch as any).mock.calls;
+      const lastCall = calls[calls.length - 1][0];
+      expect(lastCall.request.filters.dialcodes).toEqual(['XYZABC']);
     });
   });
 });
