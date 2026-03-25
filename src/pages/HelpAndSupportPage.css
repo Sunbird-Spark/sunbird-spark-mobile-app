@@ -24,7 +24,6 @@
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222, #222222));
     text-align: left;
-    padding-inline-start: 1rem;
 }
 
 .hs-header-icon-btn {

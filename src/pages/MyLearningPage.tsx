@@ -261,7 +261,7 @@ const MyLearningPage: React.FC = () => {
   // Unauthenticated guard
   if (!isAuthenticated) {
     return (
-      <IonPage>
+      <IonPage className="my-learning-page">
         <IonHeader className="ion-no-border">
           <div className="my-learning__header">
             <span className="my-learning__header-title">{t('myLearning')}</span>
@@ -288,7 +288,7 @@ const MyLearningPage: React.FC = () => {
   }
 
   return (
-    <IonPage>
+    <IonPage className="my-learning-page">
       <IonHeader className="ion-no-border">
         <div className="my-learning__header">
           <span className="my-learning__header-title">{t('myLearning')}</span>

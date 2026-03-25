@@ -25,7 +25,7 @@ describe('useDIALScanner', () => {
     vi.clearAllMocks();
   });
 
-  it('navigates to ExplorePage with dialCode on valid DIAL URL', async () => {
+  it('navigates to ExplorePage with dialCode on valid DIAL URL (get/dial format)', async () => {
     mockScanBarcode.mockResolvedValue({ ScanResult: 'https://www.sunbirded.org/get/dial/ABCDEF' });
 
     const { result } = renderHook(() => useDIALScanner());
@@ -35,6 +35,45 @@ describe('useDIALScanner', () => {
     });
 
     expect(mockPush).toHaveBeenCalledWith('/explore?dialCode=ABCDEF', 'forward', 'push');
+    expect(result.current.alertType).toBeNull();
+  });
+
+  it('navigates with dialCode on /dial/ URL (no "get", test.sunbirded.org format)', async () => {
+    mockScanBarcode.mockResolvedValue({ ScanResult: 'https://test.sunbirded.org/dial/P8T3F9' });
+
+    const { result } = renderHook(() => useDIALScanner());
+
+    await act(async () => {
+      await result.current.startScan();
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/explore?dialCode=P8T3F9', 'forward', 'push');
+    expect(result.current.alertType).toBeNull();
+  });
+
+  it('navigates with dialCode when scanned result has leading/trailing whitespace', async () => {
+    mockScanBarcode.mockResolvedValue({ ScanResult: '  https://test.sunbirded.org/dial/P8T3F9  \n' });
+
+    const { result } = renderHook(() => useDIALScanner());
+
+    await act(async () => {
+      await result.current.startScan();
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/explore?dialCode=P8T3F9', 'forward', 'push');
+    expect(result.current.alertType).toBeNull();
+  });
+
+  it('navigates with dialCode when scanned result is a bare 6-char code', async () => {
+    mockScanBarcode.mockResolvedValue({ ScanResult: 'P8T3F9' });
+
+    const { result } = renderHook(() => useDIALScanner());
+
+    await act(async () => {
+      await result.current.startScan();
+    });
+
+    expect(mockPush).toHaveBeenCalledWith('/explore?dialCode=P8T3F9', 'forward', 'push');
     expect(result.current.alertType).toBeNull();
   });
 
@@ -53,6 +92,19 @@ describe('useDIALScanner', () => {
 
   it('exits silently when ScanResult is empty (user cancelled)', async () => {
     mockScanBarcode.mockResolvedValue({ ScanResult: '' });
+
+    const { result } = renderHook(() => useDIALScanner());
+
+    await act(async () => {
+      await result.current.startScan();
+    });
+
+    expect(result.current.alertType).toBeNull();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('exits silently when ScanResult is only whitespace', async () => {
+    mockScanBarcode.mockResolvedValue({ ScanResult: '   \n  ' });
 
     const { result } = renderHook(() => useDIALScanner());
 

@@ -163,6 +163,7 @@ const PersonalDetailsBody: React.FC = () => {
                             text=""
                             icon={chevronBackOutline}
                             className="pd-back-btn"
+                            color="primary"
                         />
                     </IonButtons>
                     <IonTitle className="pd-title">{t('personalDetails')}</IonTitle>

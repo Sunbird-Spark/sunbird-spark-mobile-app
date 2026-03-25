@@ -4,6 +4,7 @@ import {
     IonContent,
     IonHeader,
     IonPage,
+    IonTitle,
     IonToolbar,
     IonButtons,
     IonModal,
@@ -90,8 +91,8 @@ const HelpAndSupportPage: React.FC = () => {
         <IonPage className="help-support-page">
             {/* ── Header ── */}
             <IonHeader className="hs-header ion-no-border">
-                <IonToolbar className="hs-toolbar">
-                    <div className="hs-title" slot="start">{t('helpAndSupport')}</div>
+                <IonToolbar className="hs-toolbar" color="light">
+                    <IonTitle className="hs-title">{t('helpAndSupport')}</IonTitle>
                     <IonButtons slot="end">
                         <button className="hs-header-icon-btn" onClick={() => setShowModal(true)}>
                             <WriteIcon />
