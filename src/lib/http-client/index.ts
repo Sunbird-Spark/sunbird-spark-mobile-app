@@ -13,6 +13,14 @@ export const getClient = (): IHttpClient => {
   return globalClient;
 };
 
+let logoutCallback: (() => Promise<void>) | null = null;
+
+export const setLogoutCallback = (fn: () => Promise<void>): void => {
+  logoutCallback = fn;
+};
+
+export const getLogoutCallback = (): (() => Promise<void>) | null => logoutCallback;
+
 export * from './types';
 export * from './BaseClient';
 export * from './adapters/CapacitorAdapter';

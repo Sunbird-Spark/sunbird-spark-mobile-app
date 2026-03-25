@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useCall
 import { v4 as uuidv4 } from 'uuid';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
-import { getClient } from '../lib/http-client';
+import { getClient, setLogoutCallback } from '../lib/http-client';
+import { networkService } from '../services/network/networkService';
 import { useUser } from '../hooks/useUser';
 import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
@@ -168,8 +169,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, []);
 
   const logout = useCallback(async () => {
-    // Disconnect Google session if logged in via Google
-    if (userService.getLoginProvider() === 'google') {
+    const isOnline = networkService.isConnected();
+
+    // Disconnect Google session if logged in via Google — skip if offline (network call would fail)
+    if (userService.getLoginProvider() === 'google' && isOnline) {
       try {
         await socialLoginService.logoutGoogle();
       } catch {
@@ -200,6 +203,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const did = await deviceService.getHashedDeviceId().catch(() => '');
     telemetryService.updateContext({ uid: did || 'anonymous', sid: uuidv4() });
   }, []);
+
+  // Register logout with the HTTP client so the interceptor can trigger
+  // auto-logout when token refresh fails permanently.
+  useEffect(() => {
+    setLogoutCallback(logout);
+  }, [logout]);
 
   return (
     <AuthContext.Provider
