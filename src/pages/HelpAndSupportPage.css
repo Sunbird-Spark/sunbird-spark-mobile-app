@@ -223,12 +223,11 @@
 }
 
 .hs-modal-toolbar {
-    --background: var(--ion-color-light);
-    --border-width: 0;
-    --padding-start: 1rem;
-    --padding-end: 1rem;
-    --padding-top: 0.5rem;
-    --padding-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1rem 0.75rem;
+    background: var(--ion-color-light);
 }
 
 .hs-modal-title {
