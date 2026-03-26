@@ -41,8 +41,9 @@ export class PdfPlayerService {
         baseURL: '',
         apislug: '/action',
         sideMenu: {
-          showShare: true,
-          showDownload: true,
+          showShare: false,
+          showDownload: false,
+          showPrint: false,
           showExit: true,
         },
       },

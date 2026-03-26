@@ -36,10 +36,10 @@ export class EcmlPlayerService {
         { id: 'org.sunbird.iframeEvent', ver: 1.0, type: 'plugin' },
       ],
       sideMenu: {
-        showShare: true,
-        showDownload: true,
+        showShare: false,
+        showDownload: false,
         showExit: true,
-        showPrint: true,
+        showPrint: false,
         showReplay: true,
       },
       enableTelemetryValidation: false

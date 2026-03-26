@@ -11,7 +11,7 @@ import {
 } from '@ionic/react';
 import { useParams } from 'react-router-dom';
 import { useIonRouter } from '@ionic/react';
-import { shareSocialOutline, cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
+import { cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { useTranslation } from 'react-i18next';
 import { ContentPlayer } from '../components/players/ContentPlayer';
@@ -205,19 +205,7 @@ const ContentPlayerPage: React.FC = () => {
     ScreenOrientation.unlock().catch(() => { });
   }, []);
 
-  const handleShare = useCallback(() => {
-    void telemetryService.share({
-      edata: {
-        dir: 'Out',
-        type: 'Link',
-        items: [{
-          id: contentId,
-          type: contentData?.contentType || 'Content',
-          ver: String(contentData?.pkgVersion || '1'),
-        }],
-      },
-    });
-  }, [contentId, contentData]);
+
 
   // Unlock orientation on unmount
   useEffect(() => {
@@ -345,13 +333,6 @@ const ContentPlayerPage: React.FC = () => {
                   onResume={handleResumeDownload}
                 />
               )}
-              <button type="button"
-                className="cp-icon-btn"
-                aria-label="Share"
-                onClick={handleShare}
-              >
-                <IonIcon icon={shareSocialOutline} color="primary" />
-              </button>
             </div>
           </div>
         </IonToolbar>
