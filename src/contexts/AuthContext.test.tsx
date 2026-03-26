@@ -83,6 +83,13 @@ vi.mock('../services/network/networkService', () => ({
   },
 }));
 
+// Mock pushNotificationService — used in login flows to register device
+vi.mock('../services/push/PushNotificationService', () => ({
+  pushNotificationService: {
+    registerDevice: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 // Mock OrganizationService — used in applyLoginTelemetry to resolve hashTagId from slug
 vi.mock('../services/OrganizationService', () => {
   function OrganizationService() {}
@@ -99,6 +106,7 @@ import { OrganizationService } from '../services/OrganizationService';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { networkService } from '../services/network/networkService';
 import { setLogoutCallback } from '../lib/http-client';
+import { pushNotificationService } from '../services/push/PushNotificationService';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -642,6 +650,42 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(setLogoutCallback).toHaveBeenCalledWith(expect.any(Function));
     });
+  });
+
+  it('loginWithCredentials calls pushNotificationService.registerDevice after login', async () => {
+    vi.mocked(userService.getUserId).mockReturnValue('user-123');
+
+    render(
+      <AuthProvider>
+        <ExtendedTestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('cred-login-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+    });
+
+    expect(pushNotificationService.registerDevice).toHaveBeenCalled();
+  });
+
+  it('loginWithGoogle calls pushNotificationService.registerDevice after login', async () => {
+    vi.mocked(userService.getUserId).mockReturnValue('google-user');
+
+    render(
+      <AuthProvider>
+        <ExtendedTestComponent />
+      </AuthProvider>,
+      { wrapper },
+    );
+
+    fireEvent.click(screen.getByTestId('google-login-btn'));
+    await waitFor(() => {
+      expect(screen.getByTestId('auth-status')).toHaveTextContent('Authenticated');
+    });
+
+    expect(pushNotificationService.registerDevice).toHaveBeenCalled();
   });
 
   it('registered logout callback triggers full logout when called', async () => {

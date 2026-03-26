@@ -9,6 +9,7 @@ import { socialLoginService } from './services/auth/socialLogin/socialLogin.serv
 import { SystemSettingService } from './services/SystemSettingService';
 import { networkService } from './services/network/networkService';
 import { localDataService } from './services/LocalDataService';
+import { pushNotificationService } from './services/push/PushNotificationService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -77,8 +78,15 @@ export class AppInitializer {
         if (clientId && typeof clientId === 'string') {
           await socialLoginService.initGoogle(clientId);
         }
-      } catch {
-        // Google Sign-In init failed — Google login will be unavailable
+      } catch (err) {
+        console.warn('[AppInitializer] Google Sign-In init failed — Google login will be unavailable', err);
+      }
+
+      // Initialize push notifications (non-blocking — don't fail app init if it errors)
+      try {
+        await pushNotificationService.init();
+      } catch (err) {
+        console.warn('[AppInitializer] Push notification setup failed', err);
       }
 
       this.initialized = true;

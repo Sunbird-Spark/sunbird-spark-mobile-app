@@ -1,7 +1,10 @@
 import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { useEffect, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, useLocation } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
+import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
 import { AppInitializer } from './AppInitializer';
@@ -106,6 +109,52 @@ const OnboardingGuard: React.FC = () => {
   return null;
 };
 
+/**
+ * Listens for push notification events dispatched by PushNotificationService.
+ * - push:foreground → invalidates notification feed cache (updates unread badge)
+ * - push:tapped     → routes to the correct screen based on actionType
+ */
+const PushNotificationGuard: React.FC = () => {
+  const router = useIonRouter();
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const handleForeground = () => {
+      queryClient.invalidateQueries({ queryKey: ['notificationFeed'] });
+    };
+
+    const handleTap = (e: Event) => {
+      const data = (e as CustomEvent<Record<string, any>>).detail;
+      routeNotification(
+        data,
+        (path) => router.push(path),
+        (url) => window.open(url, '_system'),
+      );
+    };
+
+    const handleUpdateApp = async () => {
+      try {
+        const { id } = await CapacitorApp.getInfo();
+        window.open(`market://details?id=${id}`, '_system');
+      } catch {
+        // Not on native platform (web/test) — no-op
+      }
+    };
+
+    window.addEventListener('push:foreground', handleForeground);
+    window.addEventListener('push:tapped', handleTap);
+    window.addEventListener('push:update-app', handleUpdateApp);
+
+    return () => {
+      window.removeEventListener('push:foreground', handleForeground);
+      window.removeEventListener('push:tapped', handleTap);
+      window.removeEventListener('push:update-app', handleUpdateApp);
+    };
+  }, [router, queryClient]);
+
+  return null;
+};
+
 const App: React.FC = () => {
   const isInitialized = useAppInitialized();
 
@@ -129,6 +178,7 @@ const App: React.FC = () => {
         <TnCGuard />
         <LogoutGuard />
         <OnboardingGuard />
+        <PushNotificationGuard />
         <BackButtonHandler />
         <IonRouterOutlet>
           <Route exact path="/search">
