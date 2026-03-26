@@ -17,7 +17,7 @@
 }
 
 .in-progress__card {
-  background-color: #ffffff;
+  background-color: var(--color-white);
   border-radius: 16px;
   box-shadow: 2px 2px 20px 0px #00000017;
   padding: 16px;
@@ -39,7 +39,7 @@
 .in-progress__badge {
   display: inline-block;
   align-self: flex-start;
-  background-color: rgb(255, 241, 199);
+  background-color: var(--color-warm-yellow);
   border: 1px solid var(--ion-color-primary-tint);
   border-radius: 36px;
   padding: 4px 10px;
@@ -74,7 +74,7 @@
 .in-progress__progress-bar-bg {
   width: 100%;
   height: 6px;
-  background-color: rgb(244, 244, 244);
+  background-color: var(--color-f4f4f4, #f4f4f4);
   border-radius: 10px;
   overflow: hidden;
 }

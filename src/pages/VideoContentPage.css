@@ -236,7 +236,7 @@
 .horizontal-scroll-container .standard-card {
     min-width: 10.875rem;
     width: 10.875rem;
-    background: #FFFFFF;
+    background: var(--color-white);;
     border-radius: 0.875rem;
     padding: 0.75rem;
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
@@ -260,7 +260,7 @@
     padding: 0.25rem 0.5rem;
     border-radius: 1.25rem;
     border: 1px solid var(--ion-color-primary-tint);
-    background-color: rgb(255, 241, 199);
+    background-color: var(--color-warm-yellow);
     color: var(--ion-color-dark, var(--color-000000, #000000));
     margin-bottom: 0.5rem;
 }
@@ -268,7 +268,7 @@
 .horizontal-scroll-container .textbook-badge {
     /* Need specific border/bg if it's different in design tokens, fallback to same for now */
     border-color: var(--ion-color-primary-tint);
-    background-color: rgb(255, 241, 199);
+    background-color: var(--color-warm-yellow);
 }
 
 .horizontal-scroll-container h3 {

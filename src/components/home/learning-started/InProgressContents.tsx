@@ -30,7 +30,7 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
         {displayCourses.map((course) => {
           const collectionId = course.collectionId || course.courseId;
           const badge = _.get(course, 'content.primaryCategory', t('course'));
-          const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
+          const title = course.courseName || _.get(course, 'content.name') || t('untitled');
           const thumbnail = _.get(course, 'content.posterImage')
             || _.get(course, 'content.appIcon', '');
           const progress = course.completionPercentage ?? 0;

@@ -39,15 +39,15 @@
     background: transparent;
     font-family: var(--ion-font-family);
     font-size: 0.9375rem;
-    color: #222222 !important;
-    --color: #222222 !important;
+    color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
+    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --placeholder-color: #757575;
     --placeholder-opacity: 1;
     outline: none;
 }
 
 .search-text-input input {
-    color: #222222 !important;
+    color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
 }
 
 .search-text-input:focus {

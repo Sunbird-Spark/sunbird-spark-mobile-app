@@ -1,6 +1,7 @@
 import React from 'react';
 import { IonImg } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { ContentSearchItem } from '../../types/contentTypes';
 import { getPlaceholderImage } from '../../utils/placeholderImages';
 import './ContentCards.css';
@@ -19,10 +20,11 @@ const UserIcon = () => (
 const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     const history = useHistory();
     const location = useLocation<{ parentRoute?: string }>();
+    const { t } = useTranslation();
     const imageUrl = item.posterImage || item.appIcon || item.thumbnail || getPlaceholderImage(item.identifier);
-    const creator = item.creator ?? item.createdBy ?? 'Unknown';
+    const creator = item.creator ?? item.createdBy ?? t('unknown');
     const lessons = item.leafNodesCount ?? 0;
-    const badge = item.primaryCategory || 'Collection';
+    const badge = item.primaryCategory || t('collectionLabel');
 
     return (
         <div
@@ -45,12 +47,12 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
             {/* Content */}
             <div className="collection-card-content">
                 <div className="collection-card-badge">{badge}</div>
-                <h3 className="collection-card-title">{item.name || 'Untitled'}</h3>
+                <h3 className="collection-card-title">{item.name || t('untitled')}</h3>
                 <div className="collection-card-stats">
                     <UserIcon />
                     <span>{creator}</span>
                     <span>•</span>
-                    <span>{lessons} Lessons</span>
+                    <span>{lessons} {t('lessons')}</span>
                 </div>
             </div>
         </div>

@@ -58,7 +58,7 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
     || _.get(lastAccessedCourse, 'content.appIcon', '');
 
   const title = lastAccessedCourse.courseName
-    || _.get(lastAccessedCourse, 'content.name', 'Untitled Course');
+    || _.get(lastAccessedCourse, 'content.name') || t('untitled');
 
   const progress = lastAccessedCourse.completionPercentage ?? 0;
 

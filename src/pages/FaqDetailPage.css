@@ -9,11 +9,11 @@
 /* ── Header ── */
 .faq-detail-page .fd-header {
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
-    background: #FFFFFF;
+    background: var(--color-white);
 }
 
 .faq-detail-page .fd-toolbar {
-    --background: #FFFFFF !important;
+    --background: var(--color-white) !important;
     --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
@@ -58,7 +58,7 @@
 }
 
 .fd-faq-item {
-    background: #FFFFFF;
+    background: var(--color-white);
     border: none;
     border-radius: 0.75rem;
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
@@ -116,7 +116,7 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--color-757575, #757575);
     margin: 0 0 1rem;
     line-height: 1.6;
 }

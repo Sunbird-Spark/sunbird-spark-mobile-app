@@ -9,7 +9,7 @@
 
 /* ── Header (matches CollectionPage) ── */
 .cp-toolbar {
-  --background: #FFFFFF;
+  --background: var(--color-white);
   --min-height: auto;
   --border-width: 0;
   --color: var(--ion-color-dark, #222222);
@@ -92,7 +92,7 @@
   border-radius: 1.25rem;
   overflow: hidden;
   position: relative;
-  background-color: #0b7f8c;
+  background-color: var(--color-0b7f8c, #0b7f8c);
   box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
   cursor: pointer;
 }

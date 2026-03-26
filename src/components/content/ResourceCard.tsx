@@ -1,6 +1,7 @@
 import React from 'react';
 import { IonImg } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import type { ContentSearchItem } from '../../types/contentTypes';
 import { getPlaceholderImage } from '../../utils/placeholderImages';
 import './ContentCards.css';
@@ -16,32 +17,33 @@ const ArrowRightIcon = () => (
     </svg>
 );
 
-const getMimeTypeLabel = (mimeType?: string): string => {
+const getMimeTypeKey = (mimeType?: string): string => {
     switch (mimeType) {
         case 'video/x-youtube':
         case 'video/webm':
         case 'video/mp4':
-            return 'Video';
+            return 'mimeType.video';
         case 'application/pdf':
-            return 'PDF';
+            return 'mimeType.pdf';
         case 'application/epub':
-            return 'EPUB';
+            return 'mimeType.epub';
         case 'application/vnd.ekstep.html-archive':
-            return 'HTML';
+            return 'mimeType.html';
         case 'application/vnd.ekstep.ecml-archive':
-            return 'ECML';
+            return 'mimeType.ecml';
         case 'application/vnd.ekstep.h5p-archive':
-            return 'H5P';
+            return 'mimeType.h5p';
         default:
-            return 'View';
+            return 'mimeType.view';
     }
 };
 
 const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
     const history = useHistory();
     const location = useLocation<{ parentRoute?: string }>();
+    const { t } = useTranslation();
     const imageUrl = item.posterImage || item.appIcon || item.thumbnail || getPlaceholderImage(item.identifier);
-    const viewLabel = getMimeTypeLabel(item.mimeType);
+    const viewLabel = t(getMimeTypeKey(item.mimeType));
 
     return (
         <div
@@ -63,7 +65,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
 
             {/* Content section */}
             <div className="resource-card-content">
-                <h3 className="resource-card-title">{item.name || 'Untitled'}</h3>
+                <h3 className="resource-card-title">{item.name || t('untitled')}</h3>
                 <div className="resource-card-action">
                     {viewLabel} <ArrowRightIcon />
                 </div>

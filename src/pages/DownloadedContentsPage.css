@@ -9,11 +9,11 @@
 /* ── Header ── */
 .downloaded-contents-page .dc-header {
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
-    background: #FFFFFF;
+    background: var(--color-white);
 }
 
 .downloaded-contents-page .dc-toolbar {
-    --background: #FFFFFF !important;
+    --background: var(--color-white) !important;
     --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
@@ -84,7 +84,7 @@
 /* ── Card ── */
 .dc-card {
     position: relative;
-    background: #FFFFFF;
+    background: var(--color-white);
     border-radius: 1rem;
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     overflow: hidden;

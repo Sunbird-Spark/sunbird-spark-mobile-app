@@ -279,6 +279,31 @@
     "deleteCollectionMessage": "Delete all downloaded content for {{title}}?",
     "leave": "Leave"
   },
+  "untitled": "Untitled",
+  "unknown": "Unknown",
+  "collectionLabel": "Collection",
+  "mimeType": {
+    "video": "Video",
+    "pdf": "PDF",
+    "epub": "EPUB",
+    "html": "HTML",
+    "ecml": "ECML",
+    "h5p": "H5P",
+    "view": "View"
+  },
+  "signInPage": {
+    "invalidCredentials": "Invalid email/mobile number or password",
+    "accountBlocked": "Your account has been blocked. Please contact admin",
+    "loginFailed": "Login failed. Please try again",
+    "unableToConnect": "Unable to connect. Please try again",
+    "somethingWentWrong": "Something went wrong. Please try again",
+    "backOnline": "You are back online",
+    "checkInternet": "Please check your internet connection",
+    "googleSecurityError": "Google sign-in failed due to your Google security settings",
+    "googleSignInFailed": "Google sign-in failed",
+    "unableToOpen": "Unable to open. Please try again",
+    "unableToOpenRegistration": "Unable to open registration. Please try again"
+  },
   "settingsPage": {
     "preferences": "Preferences",
     "preferencesDesc": "Manage your data consumption and app behavior.",

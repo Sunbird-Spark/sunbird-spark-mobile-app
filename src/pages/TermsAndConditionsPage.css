@@ -3,7 +3,7 @@
    ============================================= */
 
 .tnc-page {
-  --background: #ffffff;
+  --background: var(--color-white);
 }
 
 /* ── Header ── */
@@ -12,7 +12,7 @@
 }
 
 .tnc-page .tnc-toolbar {
-  --background: #FFFFFF;
+  --background: var(--color-white);
   --border-width: 0;
   --min-height: 3rem;
   --padding-start: 1rem;
@@ -49,7 +49,7 @@
 
 /* ── Content ── */
 .tnc-content {
-  --background: #ffffff;
+  --background: var(--color-white);
 }
 
 
@@ -66,13 +66,13 @@
 
 /* ── Footer ── */
 .tnc-footer {
-  --background: #ffffff;
+  --background: var(--color-white);
 }
 
 .tnc-footer-inner {
   padding: 1rem 1.5rem;
   padding-bottom: calc(1rem + var(--safe-area-bottom));
-  background: #ffffff;
+  background: var(--color-white);
   border-top: 1px solid var(--ion-color-step-100, #e0e0e0);
 }
 
@@ -107,7 +107,7 @@
   border-radius: 999px;
   border: none;
   background: var(--ion-color-primary);
-  color: #ffffff;
+  color: var(--color-white);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -127,7 +127,7 @@
 }
 
 .tnc-accept-btn ion-spinner {
-  color: #ffffff;
+  color: var(--color-white);
   width: 1.25rem;
   height: 1.25rem;
 }

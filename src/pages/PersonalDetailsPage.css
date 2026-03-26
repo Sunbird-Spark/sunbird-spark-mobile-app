@@ -19,12 +19,12 @@
 /* ── Page header ── */
 .personal-details-page .pd-header {
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
-    background: #FFFFFF;
+    background: var(--color-white);
 }
 
 /* Override the global gradient toolbar from index.css */
 .personal-details-page .pd-toolbar {
-    --background: #FFFFFF !important;
+    --background: var(--color-white) !important;
     --color: var(--ion-color-dark, var(--color-222222)) !important;
     --border-width: 0 !important;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);

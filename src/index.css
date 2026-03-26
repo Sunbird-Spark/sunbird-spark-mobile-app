@@ -303,7 +303,7 @@ ion-tab-button:hover {
     border: none;
     overflow: hidden;
     transition: all 0.2s ease;
-    background: #FFFFFF;
+    background: var(--color-white);
 }
 
 .compact-course-card:hover {
@@ -337,7 +337,7 @@ ion-tab-button:hover {
 .course-title {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--color-333, #333);
+    color: var(--color-333333, #333333);
     margin-bottom: 0.25rem;
     line-height: 1.3;
     display: -webkit-box;
@@ -355,7 +355,7 @@ ion-tab-button:hover {
 
 .rating-stars {
     font-size: 0.8rem;
-    color: var(--color-666, #666);
+    color: var(--color-666666, #666666);
 }
 
 /* Horizontal Course Cards (Browse Courses) */
@@ -365,7 +365,7 @@ ion-tab-button:hover {
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     border: none;
     transition: all 0.2s ease;
-    background: #FFFFFF;
+    background: var(--color-white);
 }
 
 .horizontal-course-card:hover {
@@ -392,7 +392,7 @@ ion-tab-button:hover {
 
 .course-instructor {
     font-size: 0.8rem;
-    color: var(--color-666, #666);
+    color: var(--color-666666, #666666);
     margin-top: 0.125rem;
 }
 
@@ -408,7 +408,7 @@ ion-tab-button:hover {
 
 .progress-text {
     font-size: 0.75rem;
-    color: var(--color-666, #666);
+    color: var(--color-666666, #666666);
     margin: 0;
     text-align: right;
 }
@@ -417,7 +417,7 @@ ion-tab-button:hover {
 .ion-padding h2 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: var(--color-333, #333);
+    color: var(--color-333333, #333333);
     margin: 1rem 0 0.75rem 0;
 }
 
@@ -623,7 +623,7 @@ ion-tab-button:hover {
     padding: 0;
     display: flex;
     align-items: center;
-    color: #CC4B30;
+    color: var(--color-cc4b30, #cc4b30);
     font-size: 1.25rem;
     transition: transform 0.2s ease;
 }
@@ -1074,7 +1074,7 @@ ion-tab-button:hover {
 
 /* Profile header — white background, no gradient */
 .profile-header .profile-toolbar {
-    --background: #FFFFFF;
+    --background: var(--color-white);
     --color: var(--ion-color-dark, #222222);
     --border-width: 0;
     --padding-start: 16px;
@@ -1091,7 +1091,7 @@ ion-tab-button:hover {
 
 /* Content background */
 .profile-content {
-    --background: rgb(244, 244, 244);
+    --background: var(--color-f4f4f4, #f4f4f4);
 }
 
 /* --- Language Selector Popover --- */
@@ -1136,7 +1136,7 @@ ion-tab-button:hover {
 .profile-update-photo {
     font-size: 0.75rem;
     font-weight: 500;
-    color: rgb(161, 79, 52);
+    color: var(--color-a14f34, #a14f34);
     text-align: center;
     cursor: pointer;
     margin-bottom: 1rem;
@@ -1204,7 +1204,7 @@ ion-tab-button:hover {
 }
 
 .profile-stat-contents {
-    background: rgb(102, 166, 130);
+    background: var(--color-66a682, #66a682);
 }
 
 .profile-stat-certs {
@@ -1241,19 +1241,19 @@ ion-tab-button:hover {
 }
 
 .profile-stat-icon-time {
-    background: rgb(61, 143, 167);
+    background: var(--color-3d8fa7, #3d8fa7);
 }
 
 .profile-stat-icon-badges {
-    background: rgb(176, 102, 36);
+    background: var(--color-b06624, #b06624);
 }
 
 .profile-stat-icon-contents {
-    background: rgb(49, 134, 86);
+    background: var(--color-318656, #318656);
 }
 
 .profile-stat-icon-certs {
-    background: rgb(116, 76, 101);
+    background: var(--color-744c65, #744c65);
 }
 
 .profile-stat-svg-icon {

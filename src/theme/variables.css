@@ -86,6 +86,42 @@
   /** input / card border **/
   --color-input-border: #D4D4D4;
 
+  /** grey scale palette **/
+  --color-757575: #757575;
+  --color-000000: #000000;
+  --color-222222: #222222;
+  --color-2d2d2d: #2d2d2d;
+  --color-333333: #333333;
+  --color-555555: #555555;
+  --color-646464: #646464;
+  --color-666666: #666666;
+  --color-828282: #828282;
+  --color-999999: #999999;
+  --color-e0e0e0: #e0e0e0;
+  --color-e6e6e6: #e6e6e6;
+  --color-f4f4f4: #f4f4f4;
+  --color-f5f5f5: #f5f5f5;
+  --color-f9f9f9: #f9f9f9;
+  --color-fef2f2: #fef2f2;
+
+  /** brand-adjacent palette **/
+  --color-cc4b30: #cc4b30;
+  --color-ab4a2c: #ab4a2c;
+  --color-d4874e: #d4874e;
+  --color-fdf8f0: #fdf8f0;
+  --color-0b7f8c: #0b7f8c;
+  --color-a14f34: #a14f34;
+
+  /** profile stat tile backgrounds **/
+  --color-66a682: #66a682;
+  --color-3d8fa7: #3d8fa7;
+  --color-b06624: #b06624;
+  --color-318656: #318656;
+  --color-744c65: #744c65;
+
+  /** overlay **/
+  --color-overlay: rgba(0, 0, 0, 0.5);
+
   /** light - IVORY **/
   --ion-color-light: #fffef4;
   --ion-color-light-rgb: 255, 254, 244;
