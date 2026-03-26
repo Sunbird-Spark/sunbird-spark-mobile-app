@@ -27,6 +27,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-.claude/*
 
 google-services.json
