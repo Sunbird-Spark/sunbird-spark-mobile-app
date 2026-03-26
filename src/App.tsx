@@ -52,6 +52,7 @@ import CourseDetailsPage from './pages/CourseDetailsPage';
 import CollectionPage from './pages/CollectionPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import TermsOfUsePage from './pages/TermsOfUsePage';
 import ProfileLearningPage from './pages/ProfileLearningPage';
 import SettingsPage from './pages/SettingsPage';
 import BackButtonHandler from './components/common/BackButtonHandler';
@@ -256,6 +257,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/terms-and-conditions">
             <TermsAndConditionsPage />
+          </Route>
+          <Route exact path="/terms-of-use">
+            <TermsOfUsePage />
           </Route>
           <Route exact path="/onboarding">
             <OnboardingPage />
