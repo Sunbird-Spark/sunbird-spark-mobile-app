@@ -22,6 +22,25 @@ vi.mock('react-router-dom', () => ({
 // Mock CSS import
 vi.mock('./ContentCards.css', () => ({}));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        untitled: 'Untitled',
+        'mimeType.video': 'Video',
+        'mimeType.pdf': 'PDF',
+        'mimeType.epub': 'EPUB',
+        'mimeType.html': 'HTML',
+        'mimeType.ecml': 'ECML',
+        'mimeType.h5p': 'H5P',
+        'mimeType.view': 'View',
+      };
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 describe('ResourceCard', () => {
   const mockItem: ContentSearchItem = {
     identifier: 'do_12345',
@@ -72,7 +91,7 @@ describe('ResourceCard', () => {
       const item = { ...mockItem, posterImage: undefined, appIcon: undefined, thumbnail: undefined };
       render(<ResourceCard item={item} />);
       const img = screen.getByTestId('ion-img');
-      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.jpg/);
+      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.webp/);
     });
   });
 

@@ -165,7 +165,7 @@ describe('CourseCard', () => {
       render(<CourseCard course={courseWithoutThumbnail} variant="compact" />);
       
       const image = screen.getByAltText('Test Course');
-      expect(image).toHaveAttribute('src', '/api/placeholder/200/120');
+      expect(image.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.webp/);
     });
   });
 

@@ -22,6 +22,21 @@ vi.mock('react-router-dom', () => ({
 // Mock CSS import
 vi.mock('./ContentCards.css', () => ({}));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        lessons: 'Lessons',
+        untitled: 'Untitled',
+        unknown: 'Unknown',
+        collectionLabel: 'Collection',
+      };
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 describe('CollectionCard', () => {
   const mockItem: ContentSearchItem = {
     identifier: 'do_12345',
@@ -104,7 +119,7 @@ describe('CollectionCard', () => {
       const item = { ...mockItem, posterImage: undefined, appIcon: undefined, thumbnail: undefined };
       render(<CollectionCard item={item} />);
       const img = screen.getByTestId('ion-img');
-      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.jpg/);
+      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.webp/);
     });
   });
 
