@@ -7,7 +7,10 @@ import { userService } from './services/UserService';
 import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
 import { SystemSettingService } from './services/SystemSettingService';
 import { networkService } from './services/network/networkService';
-import { localDataService } from './services/LocalDataService';
+import { syncService } from './services/sync/SyncService';
+import { syncScheduler } from './services/sync/SyncScheduler';
+import { ChannelManager } from './services/ChannelManager';
+import { OrganizationService } from './services/OrganizationService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -33,8 +36,10 @@ export class AppInitializer {
       // Initialize network service — required for offline/online detection
       await networkService.init();
 
-      // Start outbox service — drains pending content state updates and enrolments on reconnect
-      localDataService.init();
+      // Initialize sync service — crash recovery, network state tracking, stale data purge
+      await syncService.onInit();
+      // Start scheduler — periodic 5-min timer + immediate sync on reconnect
+      syncScheduler.start();
 
       // Initialize download manager (depends on DB)
       await downloadManager.init();
@@ -61,6 +66,33 @@ export class AppInitializer {
         httpClient.updateHeaders([
           { key: 'X-Authenticated-User-Token', value: userService.getAccessToken()!, action: 'add' },
         ]);
+      }
+
+      // Resolve channel hashTagId from org API on every startup so KV never stays stale.
+      // KV is updated as a side-effect of ChannelManager.setChannelId().
+      try {
+        let slug = '';
+        if (userService.isLoggedIn()) {
+          const uid = userService.getUserId();
+          if (uid) {
+            const profileResponse = await userService.userRead(uid);
+            slug = profileResponse?.data?.response?.channel ?? '';
+          }
+        }
+        if (!slug) {
+          const systemSettings = new SystemSettingService();
+          const setting = await systemSettings.read<any>('default_channel').catch(() => null);
+          slug = setting?.data?.response?.value || 'sunbird';
+        }
+        const orgResponse = await new OrganizationService().search({
+          request: { filters: { isTenant: true, slug } },
+        }).catch(() => null);
+        const channelId = orgResponse?.data?.response?.content?.[0]?.hashTagId ?? null;
+        if (channelId) {
+          ChannelManager.setChannelId(channelId);
+        }
+      } catch {
+        // Non-fatal — sync will retry; channel set during onboarding as fallback
       }
 
       // Initialize Google Sign-In plugin (non-blocking — don't fail app init)

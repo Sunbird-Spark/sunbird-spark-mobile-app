@@ -92,6 +92,30 @@ export class NetworkQueueDbService {
     );
   }
 
+  /**
+   * Delete telemetry rows whose data is not valid gzip base64.
+   * Valid gzip base64 always starts with 'H4sI' (the base64 of the gzip magic
+   * bytes 0x1F 0x8B 0x08 0x00). Rows with comma-separated byte values (the
+   * pako v2 regression) or any other corrupt format start with different chars
+   * and will never succeed — delete them rather than retrying forever.
+   */
+  async purgeStaleTelemetry(): Promise<void> {
+    const db = databaseService.getDb();
+    await db.run(
+      `DELETE FROM network_queue WHERE type = ? AND data NOT LIKE 'H4sI%'`,
+      [NetworkQueueType.TELEMETRY]
+    );
+  }
+
+  /** Reset all DEAD_LETTER rows back to PENDING so they will be retried. */
+  async resetDeadLetter(): Promise<void> {
+    await databaseService.update(
+      'network_queue',
+      { status: QueueEntryStatus.PENDING, retry_count: 0, next_retry_at: 0, last_error: null },
+      { eq: { status: QueueEntryStatus.DEAD_LETTER } }
+    );
+  }
+
   /** Purge DEAD_LETTER rows older than the given age in days. */
   async purgeDeadLetter(olderThanDays: number): Promise<void> {
     const cutoff = Date.now() - olderThanDays * 24 * 60 * 60 * 1000;

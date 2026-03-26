@@ -31,8 +31,17 @@ class SyncService {
     // Track current network state without accessing private properties
     networkService.subscribe((state) => { this._lastNetworkState = state; });
 
+    // Restore channel ID so sync requests include the correct X-Channel-Id header
+    const savedChannelId = await keyValueDbService.get(KVKey.ACTIVE_CHANNEL_ID).catch(() => null);
+    if (savedChannelId) syncConfig.setChannelId(savedChannelId);
+
     // Crash recovery: any row left in PROCESSING was mid-flight when the app died
     await networkQueueDbService.resetProcessing();
+
+    // Reset DEAD_LETTER rows so they get another chance on next sync
+    // Also purge stale telemetry rows that were stored as gzip base64 (legacy format)
+    await networkQueueDbService.purgeStaleTelemetry().catch(() => {});
+    await networkQueueDbService.resetDeadLetter().catch(() => {});
 
     // Phase 7 cleanup — purge stale data on every cold start
     await telemetryDbService.deleteOlderThan(7).catch(() => {});

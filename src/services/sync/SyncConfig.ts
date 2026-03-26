@@ -40,11 +40,15 @@ class SyncConfig {
           method:    'PATCH',
           isGzipped: false,
         };
+      default: {
+        const _exhaustive: never = type;
+        throw new Error(`[SyncConfig] No request config for NetworkQueueType: ${_exhaustive}`);
+      }
     }
   }
 
   getSyncThreshold(): number { return 200; }
-  getSyncBatchSize(): number  { return 200; }
+  getSyncBatchSize(): number  { return 100; }
   getProducerId(): string     { return this.producerId; }
   getChannelId(): string      { return this.channelId; }
   getBaseUrl(): string        { return this.baseUrl; }

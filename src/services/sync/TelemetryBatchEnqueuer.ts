@@ -2,15 +2,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { telemetryDbService } from '../db/TelemetryDbService';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import { deviceService } from '../device/deviceService';
-import { gzipCompress, uint8ArrayToBase64 } from './compression';
+import { gzipCompress, gzipStringToBase64 } from './compression';
 import { syncConfig } from './SyncConfig';
 import { NetworkQueueType } from './types';
 
 export class TelemetryBatchEnqueuer {
   /**
-   * Read up to batchSize pending telemetry events, compress them, and insert
-   * one network_queue row. Marks the source rows synced=1 immediately so the
-   * telemetry table is purely a staging buffer.
+   * Read up to batchSize pending telemetry events, gzip-compress them, and
+   * insert one network_queue row. Marks the source rows synced=1 immediately
+   * so the telemetry table is purely a staging buffer.
    *
    * @returns number of events enqueued (0 = nothing to process)
    */
@@ -28,20 +28,17 @@ export class TelemetryBatchEnqueuer {
     const did = await deviceService.getHashedDeviceId().catch(() => '');
 
     const envelope = {
-      id:      'ekstep.telemetry',
-      ver:     '1.0',
-      ts:      new Date().toISOString(),
+      id:     'api.sunbird.telemetry',
+      ver:    '3.0',
+      ets:    Date.now(),
       events,
       params: {
         did,
-        msgid:       uuidv4(),
-        key:         '',
-        requesterId: '',
+        msgid: uuidv4(),
       },
     };
 
-    const compressed = await gzipCompress(JSON.stringify(envelope));
-    const data = uint8ArrayToBase64(compressed);
+    const data = gzipStringToBase64(gzipCompress(JSON.stringify(envelope)));
 
     await networkQueueDbService.insert({
       type:       NetworkQueueType.TELEMETRY,

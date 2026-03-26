@@ -12,7 +12,7 @@ import { userService } from '../UserService';
  * For web components running inside the app (not in iframes), this is the
  * full path the SDK will POST to.
  */
-export const TELEMETRY_ENDPOINT = '/data/v3/telemetry';
+export const TELEMETRY_ENDPOINT = '/data/v1/telemetry';
 
 export interface PlayerContext {
   mode: string;
@@ -134,15 +134,13 @@ export async function buildPlayerContext(
     console.warn('PlayerContextService: Failed to fetch organization data:', error);
   }
 
-  // Producer data & host base URL
+  // Producer data
   let producerId = 'sunbird.app';
   let appVersion = '1.0.0';
-  let baseUrl = '';
   try {
     const config = await NativeConfigServiceInstance.load();
     producerId = config.producerId || producerId;
     appVersion = config.appVersion || appVersion;
-    baseUrl = config.baseUrl || '';
   } catch (error) {
     console.warn('PlayerContextService: Failed to fetch native config:', error);
   }
@@ -183,8 +181,12 @@ export async function buildPlayerContext(
     cdata,
     timeDiff,
     objectRollup: overrides?.objectRollup || {},
-    host: baseUrl,
-    endpoint: TELEMETRY_ENDPOINT,
+    // Both host and endpoint are intentionally empty to prevent the player
+    // SDK from making its own direct telemetry HTTP calls. Telemetry events
+    // are captured via telemetryEvent DOM events and routed through
+    // TelemetryService → SyncScheduler instead.
+    host: '',
+    endpoint: '',
     dims,
     app: channel ? [channel] : [],
     partner: [],

@@ -4,6 +4,8 @@ import { getClient } from '../../lib/http-client';
 import { networkService } from '../network/networkService';
 import { keyValueDbService } from '../db/KeyValueDbService';
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
+import { courseProgressEnqueuer } from '../sync/CourseProgressEnqueuer';
+import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import type {
   ContentStateReadRequest,
   ContentStateUpdateRequest,
@@ -18,12 +20,7 @@ vi.mock('../network/networkService', () => ({
 }));
 
 vi.mock('../db/KeyValueDbService', () => ({
-  KVKey: {
-    PENDING_CONTENT_STATE_Q: 'pending_content_state_q',
-  },
   keyValueDbService: {
-    getJSON: vi.fn().mockResolvedValue(null),
-    setJSON: vi.fn().mockResolvedValue(undefined),
     getRaw: vi.fn().mockResolvedValue(null),
     setRaw: vi.fn().mockResolvedValue(undefined),
   },
@@ -34,6 +31,18 @@ vi.mock('../db/EnrolledCoursesDbService', () => ({
     upsertBatch: vi.fn().mockResolvedValue(undefined),
     getByUser: vi.fn().mockResolvedValue([]),
     updateProgress: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('../sync/CourseProgressEnqueuer', () => ({
+  courseProgressEnqueuer: {
+    enqueue: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+vi.mock('../db/NetworkQueueDbService', () => ({
+  networkQueueDbService: {
+    insert: vi.fn().mockResolvedValue('mock-msg-id'),
   },
 }));
 
@@ -330,7 +339,7 @@ describe('BatchService', () => {
   });
 
   describe('contentStateUpdate — offline path', () => {
-    it('should queue and return offline response when offline', async () => {
+    it('should enqueue via courseProgressEnqueuer and return offline response when offline', async () => {
       (networkService.isConnected as any).mockReturnValue(false);
 
       const request: ContentStateUpdateRequest = {
@@ -344,10 +353,13 @@ describe('BatchService', () => {
 
       expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
       expect(mockHttpClient.patch).not.toHaveBeenCalled();
-      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+      expect(courseProgressEnqueuer.enqueue).toHaveBeenCalledWith({
+        userId: 'user-1',
+        contents: [{ contentId: 'c1', status: 2, courseId: 'course-1', batchId: 'batch-1' }],
+      });
     });
 
-    it('should queue when API fails and update local caches', async () => {
+    it('should enqueue via courseProgressEnqueuer when API fails', async () => {
       mockHttpClient.patch.mockRejectedValue(new Error('Server error'));
 
       const request: ContentStateUpdateRequest = {
@@ -360,7 +372,50 @@ describe('BatchService', () => {
       const result = await service.contentStateUpdate(request);
 
       expect(result).toMatchObject({ data: { message: 'Queued for sync' }, status: 200 });
-      expect(keyValueDbService.getJSON).toHaveBeenCalled();
+      expect(courseProgressEnqueuer.enqueue).toHaveBeenCalled();
+    });
+
+    it('should also enqueue assessments into network_queue when present', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+        assessments: [
+          {
+            assessmentTs: 123456,
+            batchId: 'batch-1',
+            courseId: 'course-1',
+            userId: 'user-1',
+            attemptId: 'attempt-1',
+            contentId: 'c1',
+            events: [],
+          },
+        ],
+      };
+
+      await service.contentStateUpdate(request);
+
+      expect(networkQueueDbService.insert).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'course_assesment' })
+      );
+    });
+
+    it('should not insert into networkQueueDbService when no assessments', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 1 }],
+      };
+
+      await service.contentStateUpdate(request);
+
+      expect(networkQueueDbService.insert).not.toHaveBeenCalled();
     });
 
     it('should update local course progress when content reaches status 2', async () => {

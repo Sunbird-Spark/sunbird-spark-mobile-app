@@ -3,7 +3,6 @@ import { networkService } from '../network/networkService';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import { authHeadersBuilder } from './AuthHeadersBuilder';
 import { syncConfig } from './SyncConfig';
-import { base64ToUint8Array } from './compression';
 import { NetworkQueueEntry, NetworkQueueType, SyncResult } from './types';
 
 const BATCH_SIZE = 5; // rows processed per execute() call
@@ -52,6 +51,12 @@ export class NetworkQueueProcessor {
         const httpStatus: number = err?.status ?? 0;
         const retryCount = entry.retry_count;
 
+        // Log the full server response so 4xx errors are debuggable
+        console.error(
+          `[NetworkQueueProcessor] ${entry.type} msg=${entry.msg_id} status=${httpStatus}`,
+          'response:', JSON.stringify(err?.responseData ?? null),
+        );
+
         await this.handleError(entry.msg_id, httpStatus, message, retryCount, entry.max_retries);
 
         result.errors.push({
@@ -70,33 +75,30 @@ export class NetworkQueueProcessor {
     const reqConfig = syncConfig.getRequestConfig(entry.type);
     const headers   = await authHeadersBuilder.build(entry.type);
 
-    let responseData: any;
-
     if (reqConfig.isGzipped) {
-      // Telemetry: send raw gzip bytes decoded from base64
-      const bytes = base64ToUint8Array(entry.data);
+      // CapacitorHttp Android: setRequestBody() prioritises Content-Type "application/json"
+      // and writes body.toString() as UTF-8 text, so binary bytes above 127 are corrupted.
+      // Using Content-Type "application/octet-stream" routes through the dataType:'file'
+      // branch instead, which runs Base64.decode(data) and writes raw bytes to the stream.
+      // entry.data is already a base64-encoded gzip string stored by TelemetryBatchEnqueuer.
       const response = await CapacitorHttp.request({
-        url:     reqConfig.url,
-        method:  reqConfig.method,
+        url:      reqConfig.url,
+        method:   reqConfig.method,
         headers,
-        data:    bytes,
+        data:     entry.data,
+        dataType: 'file',
       });
-      responseData = response;
       this.assertHttpSuccess(response.status, response.data);
     } else {
       // Course progress / assessment: send JSON body
-      const parsed = JSON.parse(entry.data);
       const response = await CapacitorHttp.request({
-        url:     reqConfig.url,
-        method:  reqConfig.method,
+        url:    reqConfig.url,
+        method: reqConfig.method,
         headers,
-        data:    parsed,
+        data:   JSON.parse(entry.data),
       });
-      responseData = response;
       this.assertHttpSuccess(response.status, response.data);
     }
-
-    return responseData;
   }
 
   /**
@@ -118,9 +120,9 @@ export class NetworkQueueProcessor {
   ): Promise<void> {
     const db = networkQueueDbService;
 
-    // Hard dead-letter: 400 = malformed, never retry
-    if (httpStatus === 400) {
-      await db.markFailed(msg_id, error, maxRetries, maxRetries); // triggers DEAD_LETTER
+    // 413 = payload permanently too large, retrying won't help
+    if (httpStatus === 413) {
+      await db.markFailed(msg_id, error, maxRetries, maxRetries);
       return;
     }
 

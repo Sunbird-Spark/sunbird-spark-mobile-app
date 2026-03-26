@@ -23,6 +23,11 @@ export class AuthHeadersBuilder {
     }
 
     if (type === NetworkQueueType.TELEMETRY) {
+      // Must be octet-stream, not application/json: CapacitorHttp Android's
+      // setRequestBody() only reaches the Base64→binary decode path when
+      // Content-Type does not contain "application/json". The server still
+      // decompresses via Content-Encoding: gzip and parses the body as JSON.
+      headers['Content-Type']     = 'application/octet-stream';
       headers['Content-Encoding'] = 'gzip';
     }
 

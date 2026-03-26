@@ -6,7 +6,7 @@ import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import { userDbService } from './db/UserDbService';
 import type { UserType } from './db/UserDbService';
 import { enrolledCoursesDbService } from './db/EnrolledCoursesDbService';
-import { keyValueDbService, KVKey } from './db/KeyValueDbService';
+import { keyValueDbService } from './db/KeyValueDbService';
 import { networkService } from './network/networkService';
 
 const STORAGE_KEY = 'USER_ACCOUNT';
@@ -117,7 +117,6 @@ class UserService {
       await Promise.allSettled([
         enrolledCoursesDbService.deleteAllForUser(userId),
         userDbService.delete(userId),
-        keyValueDbService.delete(KVKey.PENDING_CONTENT_STATE_Q),
         keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
       ]);
     }

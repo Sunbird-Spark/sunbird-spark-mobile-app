@@ -9,6 +9,7 @@ export interface AssessmentRow {
   uid:              string;
   course_id:        string;
   batch_id:         string;
+  attempt_id:       string;
 }
 
 export interface AssessmentGroup {
@@ -17,12 +18,13 @@ export interface AssessmentGroup {
   course_id:  string;
   batch_id:   string;
   first_ts:   number;
+  attempt_id: string;
   events:     any[];
   ids:        number[];
 }
 
 export class CourseAssessmentDbService {
-  async insert(event: any, context: CourseContext): Promise<void> {
+  async insert(event: any, context: CourseContext, attemptId: string): Promise<void> {
     await databaseService.insert('course_assessment', {
       assessment_event: JSON.stringify(event),
       content_id:       event?.object?.id ?? '',
@@ -30,15 +32,15 @@ export class CourseAssessmentDbService {
       uid:              context.userId,
       course_id:        context.courseId,
       batch_id:         context.batchId,
+      attempt_id:       attemptId,
     });
   }
 
   /** Return all rows grouped by (uid, content_id, course_id, batch_id) for aggregation. */
   async getGroupedForSync(): Promise<AssessmentGroup[]> {
     const db = databaseService.getDb();
-    // Fetch all rows ordered by context then time
     const result = await db.query(
-      `SELECT _id, assessment_event, content_id, created_at, uid, course_id, batch_id
+      `SELECT _id, assessment_event, content_id, created_at, uid, course_id, batch_id, attempt_id
        FROM course_assessment
        ORDER BY uid, course_id, batch_id, content_id, created_at ASC`,
       []
@@ -56,6 +58,9 @@ export class CourseAssessmentDbService {
           course_id:  row.course_id,
           batch_id:   row.batch_id,
           first_ts:   row.created_at,
+          // Use the attempt_id from the first (earliest) row in the group — stable
+          // across crash-recovery re-runs as long as staging rows survive.
+          attempt_id: row.attempt_id,
           events:     [],
           ids:        [],
         };

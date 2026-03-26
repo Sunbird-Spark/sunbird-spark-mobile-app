@@ -8,9 +8,12 @@ import type {
   ContentStateReadResponse,
   ContentStateUpdateRequest,
 } from '../../types/collectionTypes';
-import { keyValueDbService, KVKey } from '../db/KeyValueDbService';
+import { keyValueDbService } from '../db/KeyValueDbService';
+import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import { networkService } from '../network/networkService';
+import { courseProgressEnqueuer } from '../sync/CourseProgressEnqueuer';
+import { NetworkQueueType } from '../sync/types';
 
 export class BatchService {
   public batchList(courseId: string): Promise<ApiResponse<BatchListResponse>> {
@@ -111,27 +114,55 @@ export class BatchService {
 
   // ── Offline helpers ──────────────────────────────────────────────────────────
 
-  /** Queue the request and immediately apply it to both local caches. */
+  /**
+   * Route the request to the network_queue and immediately apply it to local caches.
+   *
+   * Progress updates go via CourseProgressEnqueuer (COURSE_PROGRESS queue).
+   * Assessment bundles (from SelfAssess sessions) go directly into the
+   * COURSE_ASSESMENT queue — they are already fully aggregated at call time.
+   *
+   * updateLocalContentStateCache and updateLocalCourseProgress must still run
+   * so the UI reflects progress immediately without waiting for sync.
+   */
   private async queueAndApplyLocally(request: ContentStateUpdateRequest): Promise<void> {
-    // addToPendingQueue and updateLocalContentStateCache can run concurrently — they touch
-    // different keys. updateLocalCourseProgress must run AFTER updateLocalContentStateCache
-    // because it reads the cache key that updateLocalContentStateCache writes.
-    await Promise.all([
-      this.addToPendingQueue(request),
-      this.updateLocalContentStateCache(request),
-    ]);
-    await this.updateLocalCourseProgress(request);
-  }
+    const mappedContents = request.contents.map((c) => ({
+      contentId:   c.contentId,
+      status:      c.status,
+      courseId:    request.courseId,
+      batchId:     request.batchId,
+      ...(c.lastAccessTime != null && { lastAccessTime: c.lastAccessTime }),
+    }));
 
-  /** Append the request to the persistent pending queue. */
-  private async addToPendingQueue(request: ContentStateUpdateRequest): Promise<void> {
-    try {
-      const queue = await keyValueDbService.getJSON<Array<ContentStateUpdateRequest & { queuedAt: number; retryCount: number }>>(KVKey.PENDING_CONTENT_STATE_Q) ?? [];
-      queue.push({ ...request, queuedAt: Date.now(), retryCount: 0 });
-      await keyValueDbService.setJSON(KVKey.PENDING_CONTENT_STATE_Q, queue);
-    } catch (err) {
-      console.warn('[BatchService] Failed to enqueue content state update:', err);
+    const ops: Promise<unknown>[] = [
+      courseProgressEnqueuer.enqueue({
+        userId:   request.userId,
+        contents: mappedContents,
+      }),
+      this.updateLocalContentStateCache(request),
+    ];
+
+    // Assessments are already fully assembled here (accumulated by useContentStateUpdate).
+    // Enqueue them directly as a COURSE_ASSESMENT entry so NetworkQueueProcessor drains them.
+    if (request.assessments?.length) {
+      ops.push(
+        networkQueueDbService.insert({
+          type:       NetworkQueueType.COURSE_ASSESMENT,
+          priority:   1,
+          timestamp:  Date.now(),
+          data:       JSON.stringify({
+            request: {
+              userId:      request.userId,
+              contents:    mappedContents,
+              assessments: request.assessments,
+            },
+          }),
+          item_count: request.assessments.length,
+        })
+      );
     }
+
+    await Promise.all(ops);
+    await this.updateLocalCourseProgress(request);
   }
 
   /**

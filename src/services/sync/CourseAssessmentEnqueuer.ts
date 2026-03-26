@@ -1,16 +1,19 @@
 import { v4 as uuidv4 } from 'uuid';
 import { courseAssessmentDbService } from '../db/CourseAssessmentDbService';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
-import { AssessmentSyncRequest, CourseContext, NetworkQueueType } from './types';
+import { AssessmentSyncRequest, ContentState, CourseContext, NetworkQueueType } from './types';
 
 export class CourseAssessmentEnqueuer {
   /**
    * Phase 1 — Capture: persist a raw ASSESS event to the staging table.
    * Called immediately when a player emits an ASSESS event.
-   * Crash-safe: the row survives app kill.
+   * Crash-safe: the row (including its attempt_id) survives app kill.
+   *
+   * attempt_id is generated here — once per event row, with the earliest row in a
+   * group defining the group's stable attempt_id at aggregation time.
    */
   async persistAssessEvent(event: any, context: CourseContext): Promise<void> {
-    await courseAssessmentDbService.insert(event, context);
+    await courseAssessmentDbService.insert(event, context, uuidv4());
   }
 
   /**
@@ -30,13 +33,29 @@ export class CourseAssessmentEnqueuer {
       contentId:    g.content_id,
       courseId:     g.course_id,
       batchId:      g.batch_id,
-      attemptId:    uuidv4(),
+      // Use the attempt_id from the first (earliest) row in the group.
+      // This is stable across crash-recovery re-runs — no new UUID generated here.
+      attemptId:    g.attempt_id,
       events:       g.events,
     }));
 
+    // Build contents: one entry per content group, all status=2 (completed).
+    // Deduplicated by contentId — assessment sync only fires on content completion.
+    const contentMap = new Map<string, ContentState>();
+    for (const g of groups) {
+      if (!contentMap.has(g.content_id)) {
+        contentMap.set(g.content_id, {
+          contentId: g.content_id,
+          courseId:  g.course_id,
+          batchId:   g.batch_id,
+          status:    2,
+        });
+      }
+    }
+
     const request: AssessmentSyncRequest = {
       userId,
-      contents:    [],
+      contents:    Array.from(contentMap.values()),
       assessments,
     };
 
