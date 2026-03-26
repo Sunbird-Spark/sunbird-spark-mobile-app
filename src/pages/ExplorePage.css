@@ -27,11 +27,12 @@
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
     display: flex;
     flex-direction: column;
-    background: var(--ion-color-light);
+    background: var(--color-white);
 }
 
 .standard-card {
-    background: var(--ion-color-light);
+    background: var(--color-white);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 .card-image-wrap {
@@ -50,7 +51,7 @@
 .card-image-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+    background: linear-gradient(135deg, var(--color-e0e0e0, #e0e0e0) 0%, var(--color-f5f5f5, #f5f5f5) 100%);
 }
 
 .card-content {
@@ -71,13 +72,13 @@
 }
 
 .bg-yellow-badge {
-    background-color: rgb(255, 241, 199);
+    background-color: var(--color-warm-yellow);
     border: 1px solid var(--ion-color-primary-tint);
     color: var(--ion-color-dark, var(--color-222222, #222222));
 }
 
 .bg-white-badge {
-    background-color: var(--ion-color-light);
+    background-color: var(--color-white);
     margin: 0.75rem;
     align-self: flex-start;
     color: var(--ion-color-dark, var(--color-222222, #222222));
@@ -169,7 +170,7 @@
     inset: 0;
     display: flex;
     flex-direction: column;
-    background: var(--ion-color-light);
+    background: var(--color-white);
     overflow: hidden;
 }
 
@@ -231,7 +232,7 @@
 }
 
 .filter-tab.active {
-    background-color: var(--ion-color-light);
+    background-color: var(--color-white);
     border-left: 0.25rem solid var(--ion-color-primary);
     color: var(--ion-color-primary);
 }
@@ -241,7 +242,7 @@
     flex: 1;
     padding: 1rem 1.5rem;
     overflow-y: auto;
-    background-color: var(--ion-color-light);
+    background-color: var(--color-white);
 }
 
 .checkbox-list {
@@ -272,7 +273,7 @@
     height: 1rem;
     border: 0.0938rem solid var(--ion-color-primary-tint);
     border-radius: 0.1875rem;
-    background-color: white;
+    background-color: var(--color-white);
     margin: 0;
     flex-shrink: 0;
     position: relative;
@@ -304,7 +305,7 @@
     justify-content: space-between;
     padding: 0 1.25rem var(--safe-area-bottom);
     min-height: 6.25rem;
-    background-color: var(--ion-color-light);
+    background-color: var(--color-white);
     box-shadow: 0 -0.125rem 1.5rem rgba(0, 0, 0, 0.1);
 }
 

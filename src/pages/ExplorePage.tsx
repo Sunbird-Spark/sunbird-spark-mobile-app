@@ -264,7 +264,7 @@ const ExplorePage: React.FC = () => {
     return (
         <IonPage>
             <IonHeader className="ion-no-border">
-                <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'var(--safe-area-top)', padding: '16px 16px', boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)' }}>
+                <IonToolbar style={{ '--background': 'var(--color-white)', '--padding-top': 'var(--safe-area-top)', padding: '16px 16px', boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                         {showSearch ? (
                             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-f0f0f0, #f0f0f0)', borderRadius: '8px', padding: '6px 10px' }}>

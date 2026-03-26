@@ -8,6 +8,7 @@ import {
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
+import { FaArrowRightLong } from 'react-icons/fa6';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PublicWelcomeHeader } from '../components/home/PublicWelcomeHeader';
 import { HeroSection } from '../components/home/HeroSection';
@@ -111,16 +112,16 @@ const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ 
   return (
     <section className="content-carousel-section">
       <div className="content-carousel-header">
-        <h2 className="content-carousel-title">{t('recommendedContent')}</h2>
-        <button
-          className="content-carousel-arrow"
-          onClick={() => router.push('/explore', 'root', 'replace')}
-          aria-label={t('viewAll')}
-        >
-          <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
-            <path d="M8.5 0L7.09 1.41L9.67 4H0V6H9.67L7.09 8.59L8.5 10L13 5L8.5 0Z" transform="translate(0, -0.5)" />
-          </svg>
-        </button>
+        <h2 className="content-carousel-title">
+          {t('recommendedContent')}
+          <button
+            className="content-carousel-arrow-inline"
+            onClick={() => router.push('/explore', 'root', 'replace')}
+            aria-label={t('viewAll')}
+          >
+            <FaArrowRightLong />
+          </button>
+        </h2>
       </div>
       <div className="content-carousel-scroll">
         {recommended.map((item) =>
@@ -172,7 +173,7 @@ const HomePage: React.FC = () => {
   const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
 
   return (
-    <IonPage>
+    <IonPage className="home-page">
       <IonHeader>
         <PublicWelcomeHeader />
       </IonHeader>

@@ -3,6 +3,7 @@ import { IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, 
 import { useIonRouter } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { Course } from '../../data/mockData';
+import { getPlaceholderImage } from '../../utils/placeholderImages';
 
 interface CourseCardProps {
   course: Course;
@@ -22,11 +23,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, variant = 'default' }) 
       <div className="featured-course-card">
         <IonCard button onClick={handleClick} className="compact-course-card">
           <div className="course-image-container">
-            <IonImg 
-              src={course.thumbnail || '/api/placeholder/200/120'} 
-              alt={course.title} 
+            <IonImg
+              src={course.thumbnail || getPlaceholderImage(String(course.id))}
+              alt={course.title}
               className="course-image"
-             />
+            />
           </div>
           <IonCardHeader className="compact-card-header">
             <IonCardTitle className="course-title">{course.title}</IonCardTitle>
@@ -44,11 +45,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, variant = 'default' }) 
       <IonCard button onClick={handleClick} className="horizontal-course-card">
         <div className="horizontal-card-content">
           <div className="course-image-container horizontal">
-            <IonImg 
-              src={course.thumbnail || '/api/placeholder/100/100'} 
-              alt={course.title} 
+            <IonImg
+              src={course.thumbnail || getPlaceholderImage(String(course.id))}
+              alt={course.title}
               className="course-image horizontal"
-             />
+            />
           </div>
           <div className="card-text-content">
             <IonCardHeader className="horizontal-card-header">
@@ -70,11 +71,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, variant = 'default' }) 
   return (
     <IonCard button onClick={handleClick} className="default-course-card">
       <div className="course-image-container">
-        <IonImg 
-          src={course.thumbnail || '/api/placeholder/300/180'} 
-          alt={course.title} 
+        <IonImg
+          src={course.thumbnail || getPlaceholderImage(String(course.id))}
+          alt={course.title}
           className="course-image"
-         />
+        />
       </div>
       {course.enrolled && (
         <IonBadge color="primary" className="enrolled-badge">

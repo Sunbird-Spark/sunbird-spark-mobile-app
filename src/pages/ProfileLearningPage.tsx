@@ -10,6 +10,7 @@ import {
   IonTitle,
   IonToast,
   IonToolbar,
+  useIonRouter,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +19,7 @@ import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { certificateService } from '../services/CertificateService';
 import type { CertificateFormat } from '../utils/svg-converter';
 import type { TrackableCollection } from '../types/collectionTypes';
+import { getPlaceholderImage } from '../utils/placeholderImages';
 import './ProfileLearningPage.css';
 import useImpression from '../hooks/useImpression';
 
@@ -75,11 +77,13 @@ interface CourseCardProps {
 
 const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownloadCertificate }) => {
   const { t } = useTranslation();
+  const router = useIonRouter();
 
   const isCompleted = course.status === 2;
   const progress = course.completionPercentage ?? 0;
   const hasCertificate = (course.issuedCertificates?.length ?? 0) > 0;
   const courseId = course.courseId ?? course.contentId ?? '';
+  const collectionId = course.courseId ?? course.collectionId ?? course.contentId;
   const isDownloading = downloadingId === courseId;
   const imageUrl = course.appIcon ?? course.posterImage ?? '';
 
@@ -87,8 +91,21 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
     ? new Date(course.batch.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
     : null;
 
+  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
+
   return (
-    <div className="pl-card">
+    <div
+      className="pl-card"
+      role="button"
+      tabIndex={0}
+      onClick={handleNavigate}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleNavigate();
+        }
+      }}
+    >
       <div className="pl-card-body">
         <div className="pl-card-info">
           <span className={`pl-badge ${isCompleted ? 'pl-badge-completed' : 'pl-badge-ongoing'}`}>
@@ -104,15 +121,15 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
           </div>
         </div>
         <div className="pl-thumbnail">
-          {imageUrl
-            ? <img src={imageUrl} alt={course.courseName ?? ''} />
-            : <div className="pl-thumb-placeholder" />
-          }
+          <img
+            src={imageUrl || getPlaceholderImage(courseId || 'default')}
+            alt={course.courseName ?? ''}
+          />
         </div>
       </div>
 
       {isCompleted && (
-        <div className="pl-card-footer">
+        <div className="pl-card-footer" onClick={(e) => e.stopPropagation()}>
           {hasCertificate ? (
             <button
               className="pl-cert-btn"

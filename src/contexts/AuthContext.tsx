@@ -11,6 +11,7 @@ import { socialLoginService } from '../services/auth/socialLogin/socialLogin.ser
 import { telemetryService } from '../services/TelemetryService';
 import { deviceService } from '../services/device/deviceService';
 import { OrganizationService } from '../services/OrganizationService';
+import { pushNotificationService } from '../services/push/PushNotificationService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -122,6 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(currentUserId);
     setIsAuthenticated(true);
     applyLoginTelemetry(currentUserId);
+    void pushNotificationService.registerDevice();
   }, [applyLoginTelemetry]);
 
   // Google login via native plugin + backend
@@ -149,6 +151,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUserId(currentUserId);
       setIsAuthenticated(true);
       applyLoginTelemetry(currentUserId);
+      void pushNotificationService.registerDevice();
     } catch (err) {
       // Backend call failed — clean up the Google session to prevent stale state
       try {

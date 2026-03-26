@@ -28,7 +28,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
 }) => {
   return (
     <IonHeader className={transparent ? 'profile-header ion-no-border' : ''}>
-      <IonToolbar className={transparent ? 'profile-toolbar' : ''} color={transparent ? undefined : 'light'}>
+      <IonToolbar className={transparent ? 'profile-toolbar' : ''}>
         {showBack && (
           <IonButtons slot="start">
             <IonBackButton defaultHref="/" icon={chevronBackOutline} text="" color="primary" />

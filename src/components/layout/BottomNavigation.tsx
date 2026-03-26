@@ -23,7 +23,7 @@ const ExploreIcon: React.FC<{ isActive: boolean }> = ({ isActive }) =>
     </svg>
   ) : (
     <svg width="20" height="20" viewBox="0 0 15 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="11.1424" cy="3.42852" r="2.92853" stroke="currentColor" strokeWidth="1.2" />
+      <circle cx="11.1424" cy="3.42852" r="2.92853" fill="currentColor" />
       <path d="M0.857 2.57H6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
       <path d="M0.857 6.86H8.3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
       <path d="M0.857 11.14H12.857" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
@@ -202,7 +202,7 @@ export const BottomNavigation: React.FC = () => {
         left: 0,
         right: 0,
         zIndex: 1000,
-        backgroundColor: 'var(--ion-color-light)',
+        backgroundColor: 'var(--color-white)',
         borderTop: '1px solid var(--ion-color-step-100, var(--color-e0e0e0))',
         display: 'flex',
         justifyContent: 'space-around',

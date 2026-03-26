@@ -18,6 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
 import './SignInPage.css';
 import useImpression from '../hooks/useImpression';
+import { useTranslation } from 'react-i18next';
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -28,25 +29,25 @@ const GoogleIcon: React.FC = () => (
   </svg>
 );
 
-/** Map API/Google errors to user-facing messages */
-const getLoginErrorMessage = (err: unknown): string => {
+/** Map API/Google errors to i18n keys */
+const getLoginErrorKey = (err: unknown): string => {
   if (err instanceof Error) {
     const code = (err as any).code as string | undefined;
     const msg = err.message.toLowerCase();
 
     // Backend error codes from /mobile/keycloak/login
     if (code === 'INVALID_CREDENTIALS' || msg.includes('invalid_grant'))
-      return 'Invalid email/mobile number or password';
+      return 'signInPage.invalidCredentials';
     if (code === 'USER_ACCOUNT_BLOCKED' || (msg.includes('account') && msg.includes('blocked')))
-      return 'Your account has been blocked. Please contact admin';
+      return 'signInPage.accountBlocked';
     if (code === 'LOGIN_FAILED')
-      return 'Login failed. Please try again';
+      return 'signInPage.loginFailed';
 
     // Network errors
     if (msg.includes('network') || msg.includes('timeout') || msg.includes('fetch') || msg.includes('unable to connect'))
-      return 'Unable to connect. Please try again';
+      return 'signInPage.unableToConnect';
   }
-  return 'Something went wrong. Please try again';
+  return 'signInPage.somethingWentWrong';
 };
 
 const isGoogleCancelError = (err: unknown): boolean => {
@@ -62,6 +63,7 @@ const isGoogleCancelError = (err: unknown): boolean => {
 
 const SignInPage: React.FC = () => {
   useImpression({ pageid: 'SignInPage', env: 'user' });
+  const { t } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -79,7 +81,7 @@ const SignInPage: React.FC = () => {
       wasOffline.current = true;
     } else if (wasOffline.current) {
       wasOffline.current = false;
-      setToastMessage('You are back online');
+      setToastMessage(t('signInPage.backOnline'));
     }
   }, [isOffline]);
 
@@ -89,7 +91,7 @@ const SignInPage: React.FC = () => {
     if (!isFormValid || loading) return;
 
     if (isOffline) {
-      setToastMessage('Please check your internet connection');
+      setToastMessage(t('signInPage.checkInternet'));
       return;
     }
 
@@ -101,7 +103,7 @@ const SignInPage: React.FC = () => {
       await loginWithCredentials(trimmedEmail, password);
       router.push('/home', 'root', 'replace');
     } catch (err) {
-      setError(getLoginErrorMessage(err));
+      setError(t(getLoginErrorKey(err)));
     } finally {
       setLoading(false);
     }
@@ -111,7 +113,7 @@ const SignInPage: React.FC = () => {
     if (loading) return;
 
     if (isOffline) {
-      setToastMessage('Please check your internet connection');
+      setToastMessage(t('signInPage.checkInternet'));
       return;
     }
 
@@ -127,12 +129,12 @@ const SignInPage: React.FC = () => {
         if (msg.includes('cancel')) {
           // User closed browser — no error
         } else if (msg.includes('form') || msg.includes('config')) {
-          setError('Unable to open. Please try again');
+          setError(t('signInPage.unableToOpen'));
         } else {
-          setError('Something went wrong. Please try again');
+          setError(t('signInPage.somethingWentWrong'));
         }
       } else {
-        setError('Something went wrong. Please try again');
+        setError(t('signInPage.somethingWentWrong'));
       }
     } finally {
       setLoading(false);
@@ -143,7 +145,7 @@ const SignInPage: React.FC = () => {
     if (loading) return;
 
     if (isOffline) {
-      setToastMessage('Please check your internet connection');
+      setToastMessage(t('signInPage.checkInternet'));
       return;
     }
 
@@ -160,12 +162,12 @@ const SignInPage: React.FC = () => {
         if (msg.includes('cancel')) {
           // User closed browser — no error
         } else if (msg.includes('form') || msg.includes('config')) {
-          setError('Unable to open registration. Please try again');
+          setError(t('signInPage.unableToOpenRegistration'));
         } else {
-          setError('Something went wrong. Please try again');
+          setError(t('signInPage.somethingWentWrong'));
         }
       } else {
-        setError('Something went wrong. Please try again');
+        setError(t('signInPage.somethingWentWrong'));
       }
     } finally {
       setLoading(false);
@@ -176,7 +178,7 @@ const SignInPage: React.FC = () => {
     if (loading) return;
 
     if (isOffline) {
-      setToastMessage('Please check your internet connection');
+      setToastMessage(t('signInPage.checkInternet'));
       return;
     }
 
@@ -190,11 +192,11 @@ const SignInPage: React.FC = () => {
       if (!isGoogleCancelError(err)) {
         const code = err instanceof Error ? (err as any).code : undefined;
         if (code === 'USER_NAME_NOT_PRESENT') {
-          setError('Google sign-in failed due to your Google security settings');
+          setError(t('signInPage.googleSecurityError'));
         } else if (code === 'USER_ACCOUNT_BLOCKED') {
-          setError('Your account has been blocked. Please contact admin');
+          setError(t('signInPage.accountBlocked'));
         } else {
-          setError('Google sign-in failed');
+          setError(t('signInPage.googleSignInFailed'));
         }
       }
     } finally {
