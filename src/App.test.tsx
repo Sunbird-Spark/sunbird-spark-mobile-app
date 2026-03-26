@@ -228,6 +228,20 @@ vi.mock('./hooks/useNotifications', () => ({
   useNotificationGrouping: () => ({ groupedNotifications: [], unreadCount: 0 }),
 }));
 
+// Mock React Query — PushNotificationGuard uses useQueryClient
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
+
+// Mock push notification service
+vi.mock('./services/push/notificationRouter', () => ({
+  routeNotification: vi.fn(),
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
   useAuth: () => ({
