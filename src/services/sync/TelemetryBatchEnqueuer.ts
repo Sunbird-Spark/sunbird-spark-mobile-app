@@ -9,8 +9,12 @@ import { NetworkQueueType } from './types';
 export class TelemetryBatchEnqueuer {
   /**
    * Read up to batchSize pending telemetry events, gzip-compress them, and
-   * insert one network_queue row. Marks the source rows synced=1 immediately
-   * so the telemetry table is purely a staging buffer.
+   * insert one network_queue row. Deletes the source rows immediately after
+   * a successful enqueue — network_queue is the durability layer with its
+   * own retry/dead-letter logic, so the originals are no longer needed.
+   *
+   * If the network_queue insert fails the delete is never reached, keeping
+   * the rows safe for the next processBatch() call.
    *
    * @returns number of events enqueued (0 = nothing to process)
    */
@@ -48,8 +52,8 @@ export class TelemetryBatchEnqueuer {
       item_count: events.length,
     });
 
-    // Mark source rows synced=1 immediately — network_queue is the durability layer
-    await telemetryDbService.markSynced(rows.map(r => r.event_id));
+    // Delete source rows immediately — network_queue is the durability layer
+    await telemetryDbService.deleteByIds(rows.map(r => r.event_id));
 
     return events.length;
   }

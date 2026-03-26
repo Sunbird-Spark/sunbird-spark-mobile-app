@@ -57,6 +57,11 @@ export class TelemetryDbService {
     );
   }
 
+  async deleteByIds(eventIds: string[]): Promise<void> {
+    if (eventIds.length === 0) return;
+    await this.db.delete('telemetry', { in: { event_id: eventIds } });
+  }
+
   async deleteOlderThan(days: number): Promise<void> {
     const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
     await this.db.delete('telemetry', {
