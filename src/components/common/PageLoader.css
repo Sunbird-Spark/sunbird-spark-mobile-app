@@ -5,7 +5,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to bottom, var(--ion-background-color, #fff), #fdf8f0);
+  background: linear-gradient(to bottom, var(--ion-background-color, var(--color-white)), var(--color-fdf8f0, #fdf8f0));
 }
 
 .page-loader-content {
@@ -58,7 +58,7 @@
 .page-loader-logo-circle {
   position: absolute;
   inset: 1rem;
-  background: linear-gradient(135deg, var(--ion-color-primary, #b4461e), #d4874e);
+  background: linear-gradient(135deg, var(--ion-color-primary, #b4461e), var(--color-d4874e, #d4874e));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -109,7 +109,7 @@
   margin-top: 0.5rem;
   padding: 0.625rem 1.5rem;
   background: var(--ion-color-primary, #b4461e);
-  color: white;
+  color: var(--color-white);
   font-family: var(--ion-font-family);
   font-weight: 500;
   font-size: 0.875rem;
@@ -134,7 +134,7 @@
 }
 
 .page-loader-dot:nth-child(2) {
-  background: #d4874e;
+  background: var(--color-d4874e, #d4874e);
 }
 
 /* Animations */

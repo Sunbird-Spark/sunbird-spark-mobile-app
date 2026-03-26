@@ -3,15 +3,16 @@
 }
 
 .course-details-header {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
+    --color: var(--ion-color-dark, #222222);
     --padding-top: var(--safe-area-top);
     padding: 1rem 1rem;
-    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 .course-details-title-section {
     padding: 1.5rem 1rem;
-    background: white;
+    background: var(--color-white);
     margin-bottom: 0.5rem;
 }
 
@@ -44,7 +45,7 @@
 
 .section-container {
     padding: 1.5rem 1rem;
-    background: white;
+    background: var(--color-white);
     margin-bottom: 0.5rem;
 }
 
@@ -141,7 +142,7 @@
     align-items: center;
     padding: 1rem;
     margin: 0.75rem 1rem 0 1rem;
-    background: white;
+    background: var(--color-white);
     border-radius: 0.625rem;
     box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
     font-family: var(--ion-font-family);
@@ -229,17 +230,17 @@
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
-    color: white;
+    color: var(--color-white);
 }
 
 /* ── Card Styles ── */
 .related-card.standard-card {
     min-width: 10.875rem;
     width: 10.875rem;
-    background: var(--ion-color-light);
+    background: var(--color-white);
     border-radius: 0.875rem;
     padding: 0.75rem;
-    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
 }
@@ -260,7 +261,7 @@
     padding: 0.25rem 0.5rem;
     border-radius: 1.25rem;
     border: 1px solid var(--ion-color-primary-tint);
-    background-color: rgb(255, 241, 199);
+    background-color: var(--color-warm-yellow);
     color: var(--ion-color-dark, var(--color-000000, #000000));
     margin-bottom: 0.5rem;
 }

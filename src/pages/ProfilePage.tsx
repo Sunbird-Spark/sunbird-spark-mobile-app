@@ -13,6 +13,7 @@ import {
 import {
   timeOutline,
   chevronForwardOutline,
+  logOutOutline,
 } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
@@ -239,6 +240,7 @@ const ProfilePage: React.FC = () => {
           </IonItem>
 
           <IonItem className="profile-action-item" button detail={false} onClick={handleLogout}>
+            <IonIcon icon={logOutOutline} slot="start" className="profile-action-chevron" />
             <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
           </IonItem>
         </IonList>

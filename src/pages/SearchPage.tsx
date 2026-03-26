@@ -82,7 +82,7 @@ const SearchPage: React.FC = () => {
     return (
         <IonPage>
             <IonHeader className="ion-no-border">
-                <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'var(--safe-area-top)', padding: '12px 16px', boxShadow: 'none' }}>
+                <IonToolbar style={{ '--background': 'var(--color-white)', '--padding-top': 'var(--safe-area-top)', padding: '12px 16px', boxShadow: 'none' }}>
                     <div className="search-header">
                         <div className="search-input-box">
                             <SearchInputIcon />

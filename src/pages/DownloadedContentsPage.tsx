@@ -18,6 +18,7 @@ import { contentDbService } from '../services/db/ContentDbService';
 import { downloadManager } from '../services/download_manager';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import type { ContentEntry } from '../services/download_manager/types';
+import { getPlaceholderImage } from '../utils/placeholderImages';
 import './DownloadedContentsPage.css';
 import useImpression from '../hooks/useImpression';
 
@@ -157,11 +158,11 @@ const SwipeableCard: React.FC<{
             )}
           </div>
           <div className="dc-thumbnail">
-            {meta.appIcon ? (
-              <IonImg src={meta.appIcon} alt={meta.name} className="dc-thumb-img" />
-            ) : (
-              <div className="dc-thumb-placeholder" />
-            )}
+            <IonImg
+              src={meta.appIcon || getPlaceholderImage(entry.identifier)}
+              alt={meta.name}
+              className="dc-thumb-img"
+            />
           </div>
         </div>
       </div>
