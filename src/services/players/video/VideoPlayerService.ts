@@ -7,6 +7,7 @@ export class VideoPlayerService {
   private static scriptLoading?: Promise<void>;
   private static cachedCss: string | null = null;
   private static cssLoading?: Promise<string>;
+  private static stylesInjected = false;
 
   private loadScript(): Promise<void> {
     if (VideoPlayerService.scriptLoaded || customElements.get('sunbird-video-player')) {
@@ -96,26 +97,22 @@ export class VideoPlayerService {
   }
 
   /**
-   * Create video player element with styles scoped via CSS @scope.
-   * Fetches the CSS content, rewrites html/body selectors for scoping,
-   * wraps it in @scope to prevent global bleed, and injects as a <style> tag.
+   * Inject scoped styles into document.head once.
+   * Uses @scope([data-video-player-wrapper]) so styles apply only inside
+   * player wrappers without global bleed — no per-instance <style> needed.
    */
-  async createElement(config: VideoPlayerConfig): Promise<HTMLElement> {
+  private async injectStyles(): Promise<void> {
+    if (VideoPlayerService.stylesInjected) return;
+    VideoPlayerService.stylesInjected = true;
+
     const cssContent = await this.fetchStyles();
 
-    const wrapper = document.createElement('div');
-    wrapper.setAttribute('data-video-player-wrapper', 'true');
-    wrapper.setAttribute('data-player-id', config.metadata.identifier);
-    wrapper.style.width = '100%';
-    wrapper.style.height = '100%';
-
-    // Inject scoped styles — rewrite global selectors and wrap in @scope
     if (cssContent) {
       const scopedCss = this.rewriteCssForScope(cssContent);
       const styleEl = document.createElement('style');
       styleEl.setAttribute('data-video-player-styles', 'true');
       styleEl.textContent = `@scope ([data-video-player-wrapper]) {\n${scopedCss}\n}`;
-      wrapper.appendChild(styleEl);
+      document.head.appendChild(styleEl);
     }
 
     // Containment overrides: the custom element defaults to display:inline and
@@ -124,13 +121,28 @@ export class VideoPlayerService {
     // Override to fill the wrapper height instead.
     // Also hide the Video.js big play button to match portal behavior.
     const containEl = document.createElement('style');
+    containEl.setAttribute('data-video-player-contain', 'true');
     containEl.textContent = [
       '[data-video-player-wrapper] sunbird-video-player { display:block; width:100%; height:100%; }',
       '[data-video-player-wrapper] .video-js { width:100% !important; height:100% !important; }',
       '[data-video-player-wrapper] .video-js.vjs-fluid { padding-top:0 !important; }',
       '[data-video-player-wrapper] .vjs-big-play-button { display:none !important; }',
     ].join('\n');
-    wrapper.appendChild(containEl);
+    document.head.appendChild(containEl);
+  }
+
+  /**
+   * Create video player element with styles scoped via CSS @scope.
+   * Styles are injected once into document.head on first use.
+   */
+  async createElement(config: VideoPlayerConfig): Promise<HTMLElement> {
+    await this.injectStyles();
+
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('data-video-player-wrapper', 'true');
+    wrapper.setAttribute('data-player-id', config.metadata.identifier);
+    wrapper.style.width = '100%';
+    wrapper.style.height = '100%';
 
     const element = document.createElement('sunbird-video-player');
     element.setAttribute('player-config', JSON.stringify(config));
