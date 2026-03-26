@@ -80,7 +80,7 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
         playerElement.remove();
       }
     };
-  }, [metadata.identifier]);
+  }, [metadata.identifier, metadata.isAvailableLocally]);
 
   return (
     <div

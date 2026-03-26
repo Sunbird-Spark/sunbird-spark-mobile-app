@@ -14,6 +14,7 @@ vi.mock('@ionic/react', () => ({
   IonSpinner: () => <div data-testid="ion-spinner" />,
   IonToggle: ({ checked, onIonChange }: any) => <input data-testid="ion-toggle" type="checkbox" checked={checked} onChange={onIonChange} />,
   IonToast: ({ isOpen, message }: any) => (isOpen ? <div data-testid="ion-toast">{message}</div> : null),
+  IonAlert: ({ isOpen }: any) => (isOpen ? <div data-testid="ion-alert" /> : null),
   useIonRouter: () => ({ push: mockRouterPush, goBack: mockRouterGoBack }),
   useIonViewDidEnter: vi.fn(),
   useIonViewWillLeave: vi.fn(),
@@ -144,6 +145,23 @@ vi.mock('../hooks/useForceSync', () => ({
   })),
 }));
 
+vi.mock('../hooks/useLocalContentSet', () => ({
+  useLocalContentSet: vi.fn(() => new Set()),
+}));
+
+vi.mock('../hooks/useCourseDownloadProgress', () => ({
+  useCourseDownloadProgress: vi.fn(() => ({
+    allDownloaded: false,
+    isDownloading: false,
+    downloadCount: 0,
+    totalCount: 0,
+  })),
+}));
+
+vi.mock('../hooks/useBatchDownloadStates', () => ({
+  useBatchDownloadStates: vi.fn(() => new Map()),
+}));
+
 vi.mock('../services/UserService', () => ({
   userService: {
     getUserId: vi.fn(() => 'mock-user-id'),
@@ -163,6 +181,18 @@ vi.mock('../contexts/LanguageContext', () => ({
   useLanguage: vi.fn(() => ({
     t: (key: string) => key,
   })),
+}));
+
+vi.mock('../providers/NetworkProvider', () => ({
+  useNetwork: vi.fn(() => ({ isOffline: false })),
+}));
+
+vi.mock('../hooks/useImpression', () => ({
+  default: vi.fn(),
+}));
+
+vi.mock('../components/telemetry/TelemetryTracker', () => ({
+  TelemetryTracker: () => null,
 }));
 
 import { useCollection } from '../hooks/useCollection';

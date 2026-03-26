@@ -10,6 +10,7 @@ import { SystemSettingService } from './services/SystemSettingService';
 import { networkService } from './services/network/networkService';
 import { localDataService } from './services/LocalDataService';
 import { pushNotificationService } from './services/push/PushNotificationService';
+import { settingsService } from './services/SettingsService';
 
 /**
  * AppInitializer handles all application initialization logic
@@ -45,6 +46,10 @@ export class AppInitializer {
       // Initialize download manager (depends on DB)
       await downloadManager.init();
 
+      // Apply download settings (wifi-only vs always)
+      const downloadSetting = await settingsService.getDownloadContent();
+      downloadManager.setWifiOnly(downloadSetting === 'wifi');
+
       // Initialize API client
       await initializeApiClient();
 
@@ -54,7 +59,7 @@ export class AppInitializer {
 
       // Get Kong token and set it in HTTP client
       const kongToken = await authService.getAuthenticatedToken();
-      
+
       // Set Authorization header with device JWT from Kong
       const httpClient = getClient();
       httpClient.updateHeaders([
@@ -93,10 +98,10 @@ export class AppInitializer {
       this.notifyListeners();
     } catch (error) {
       console.error('AppInitializer: Initialization failed:', error);
-      
+
       // Ensure the application does not remain in a partially initialized state
       this.initialized = false;
-      
+
       try {
         // Roll back any authorization headers that may have been set
         const httpClient = getClient();
@@ -107,7 +112,7 @@ export class AppInitializer {
         // If cleanup fails, log it but preserve the original initialization error
         console.error('AppInitializer: Failed to clean up after initialization error:', cleanupError);
       }
-      
+
       throw error;
     }
   }

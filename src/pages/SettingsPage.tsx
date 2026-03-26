@@ -17,6 +17,7 @@ import {
   type SyncDataValue,
   type DownloadContentValue,
 } from '../services/SettingsService';
+import { downloadManager } from '../services/download_manager';
 import { useSystemSetting } from '../hooks/useSystemSetting';
 import './SettingsPage.css';
 import useImpression from '../hooks/useImpression';
@@ -59,6 +60,7 @@ const SettingsPage: React.FC = () => {
   const handleDownloadContentChange = async (value: DownloadContentValue) => {
     await settingsService.setDownloadContent(value);
     setDownloadContentsState(value);
+    downloadManager.setWifiOnly(value === 'wifi');
   };
 
   return (
@@ -66,7 +68,7 @@ const SettingsPage: React.FC = () => {
       <IonHeader className="settings-header ion-no-border">
         <IonToolbar className="settings-toolbar">
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label="Back" className="settings-back-btn" />
+            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label="Back" className="settings-back-btn" color="primary" />
           </IonButtons>
           <IonTitle className="settings-title">Settings</IonTitle>
         </IonToolbar>

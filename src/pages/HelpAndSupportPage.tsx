@@ -4,6 +4,7 @@ import {
     IonContent,
     IonHeader,
     IonPage,
+    IonTitle,
     IonToolbar,
     IonButtons,
     IonModal,
@@ -90,8 +91,8 @@ const HelpAndSupportPage: React.FC = () => {
         <IonPage className="help-support-page">
             {/* ── Header ── */}
             <IonHeader className="hs-header ion-no-border">
-                <IonToolbar className="hs-toolbar">
-                    <div className="hs-title" slot="start">{t('helpAndSupport')}</div>
+                <IonToolbar className="hs-toolbar" color="light">
+                    <IonTitle className="hs-title">{t('helpAndSupport')}</IonTitle>
                     <IonButtons slot="end">
                         <button className="hs-header-icon-btn" onClick={() => setShowModal(true)}>
                             <WriteIcon />
@@ -143,19 +144,15 @@ const HelpAndSupportPage: React.FC = () => {
                 className="hs-report-modal"
             >
                 <IonPage>
-                    <IonHeader className="ion-no-border">
-                        <IonToolbar className="hs-modal-toolbar">
-                            <div className="hs-modal-title" slot="start">{t('reportIssue')}</div>
-                            <IonButtons slot="end">
-                                <button className="hs-modal-close" onClick={() => setShowModal(false)}>
-                                    <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                        <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
-                                    </svg>
-                                </button>
-                            </IonButtons>
-                        </IonToolbar>
-                    </IonHeader>
+                    <div className="hs-modal-header">
+                        <span className="hs-modal-title">{t('reportIssue')}</span>
+                        <button className="hs-modal-close" onClick={() => setShowModal(false)}>
+                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                                <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                    </div>
 
                     <IonContent className="hs-modal-content ion-padding">
                         <div className="hs-modal-form">

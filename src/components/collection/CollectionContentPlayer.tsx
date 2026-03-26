@@ -1,11 +1,14 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { IonPage, IonContent } from '@ionic/react';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../players/ContentPlayer';
 import { useContentRead } from '../../hooks/useContent';
 import { useQumlContent } from '../../hooks/useQumlContent';
 import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
+import { useIsContentLocal } from '../../hooks/useIsContentLocal';
 import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
+import { resolveContentForPlayer } from '../../services/content/contentPlaybackResolver';
+import { contentDbService } from '../../services/db/ContentDbService';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
@@ -50,10 +53,49 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const playerMetadata = isQumlContent ? qumlData : contentData;
+  const { isLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId, { includeParentVisibility: true });
+
+  // Offline fallback: when the API fails but content is downloaded locally,
+  // load metadata from the ContentDb local_data field (saved during import).
+  const [localFallbackMeta, setLocalFallbackMeta] = useState<Record<string, unknown> | null>(null);
+  useEffect(() => {
+    if (!isLocal || !error || contentData) return;
+    let cancelled = false;
+    contentDbService.getByIdentifier(contentId).then((entry) => {
+      if (cancelled || !entry?.local_data) return;
+      try {
+        const parsed = JSON.parse(entry.local_data);
+        parsed.identifier = entry.identifier;
+        if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
+        if (!cancelled) setLocalFallbackMeta(parsed);
+      } catch { /* ignore parse errors */ }
+    });
+    return () => { cancelled = true; };
+  }, [contentId, isLocal, error, contentData]);
+
+  const apiMetadata = isQumlContent ? qumlData : contentData;
+  const rawPlayerMetadata = apiMetadata ?? localFallbackMeta;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
-  const playerError = error || (isQumlContent ? qumlError : null);
-  const mimeType = playerMetadata?.mimeType;
+  // Don't show API error if we have local fallback data
+  const playerError = rawPlayerMetadata ? null : (error || (isQumlContent ? qumlError : null));
+  const mimeType = rawPlayerMetadata?.mimeType;
+
+  // Resolve URLs to local filesystem paths when content is downloaded.
+  const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+  useEffect(() => {
+    if (!rawPlayerMetadata?.identifier || !isLocal) {
+      return;
+    }
+    let cancelled = false;
+    resolveContentForPlayer(rawPlayerMetadata.identifier, rawPlayerMetadata).then((resolved) => {
+      if (!cancelled) setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
+    });
+    return () => { cancelled = true; };
+  }, [rawPlayerMetadata, isLocal]);
+
+  const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier)
+    ? resolvedMetadata.data
+    : rawPlayerMetadata;
 
   // Lock to landscape on mount
   useEffect(() => {
@@ -105,7 +147,16 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   const handlePlayerEvent = useCallback((event: any) => {
     console.log('[CollectionContentPlayer] Player event:', event);
-    if (event?.data?.type === 'EXIT') {
+    // Player services wrap events as: { type: customEvent.detail.eid, data: customEvent.detail, ... }
+    // So EXIT events arrive with event.type === 'EXIT' and event.data.eid === 'EXIT'
+    const eid = ((
+      event?.data?.edata?.type
+      ?? event?.eid
+      ?? event?.data?.eid
+      ?? event?.data?.type
+      ?? event?.type
+    ) ?? '').toUpperCase();
+    if (eid === 'EXIT') {
       handleClose();
     }
   }, [handleClose]);
@@ -116,7 +167,15 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     handleTelemetryStateUpdate(event);
   }, [handleTelemetryStateUpdate]);
 
-  if (playerIsLoading) {
+  // Wait for offline URL resolution to complete before mounting the player.
+  // Player web components read config once on mount and don't detect prop changes,
+  // so we must have the resolved local URLs ready BEFORE the player renders.
+  //
+  // isLocalCheckPending: still doing the initial DB query — don't show error yet.
+  // isResolving: DB confirmed local but URL rewriting hasn't finished yet.
+  const isResolving = isLocal && (resolvedMetadata == null || resolvedMetadata.id !== rawPlayerMetadata?.identifier) && !!rawPlayerMetadata?.identifier;
+
+  if (playerIsLoading || isLocalCheckPending || isResolving) {
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
@@ -129,16 +188,19 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   if (playerError || !playerMetadata || !mimeType) {
     return (
       <IonPage className="cp-fullscreen">
+        <div
+          role="button"
+          aria-label="Close player"
+          className="cp-close-button-wrapper"
+          onClick={handleClose}
+          style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 100, padding: '10px' }}
+        >
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </div>
         <IonContent scrollY={false}>
-          <button
-            className="cp-close-btn"
-            onClick={handleClose}
-            aria-label="Close player"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
           <PageLoader
             error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}
             onRetry={handleRetry}
@@ -151,15 +213,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   return (
     <IonPage className="cp-fullscreen">
       <IonContent scrollY={false}>
-        <button
-          className="cp-close-btn"
-          onClick={handleClose}
-          aria-label="Close player"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-          </svg>
-        </button>
         <div className="cp-player-fullscreen-container">
           <ContentPlayer
             mimeType={mimeType}

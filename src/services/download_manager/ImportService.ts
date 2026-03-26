@@ -93,6 +93,11 @@ export class ImportService {
         return { status: 'ALREADY_EXIST', identifiers: [] };
       }
 
+      // Detect collection (spine) import: if the root item is a collection,
+      // all other items are children and should get visibility='Parent'.
+      const rootItem = allItems.find((i) => i.identifier === identifier);
+      const isCollectionImport = !!rootItem?.mimeType?.includes('collection');
+
       // ══ STAGE 2: Extract payloads + write to content DB ══
       await this.checkCancelled(isCancelled);
       onProgress?.('IMPORTING_CONTENT', 40);
@@ -125,12 +130,14 @@ export class ImportService {
         await this.restructureForRenderer(item, destUri);
 
         // Build content DB row + upsert
+        const isChildOfCollection = isCollectionImport && item.identifier !== identifier;
         const row = this.constructContentRow(
           item,
           destUri,
           String(manifest.ver),
           contentState,
-          existing
+          existing,
+          isChildOfCollection
         );
         await this.contentDb.upsert(row);
         importedIds.push(item.identifier);
@@ -202,14 +209,17 @@ export class ImportService {
     const isCollection = mimeType.includes('collection');
     const isQuestionSet = mimeType.includes('questionset');
 
-    // Collections / question sets → metadata only
+    // Collections / question sets → metadata only (hierarchy, no playable artifact)
     if (isCollection || isQuestionSet) return 2;
 
-    // No artifact URL or remote-only
-    if (!artifactUrl || artifactUrl.startsWith('https:')) return 2;
-
-    // Online-only content
+    // Online-only content (YouTube, external URLs) → never needs a local artifact
     if (disposition === 'online') return 2;
+
+    // No artifact URL, or artifact URL is a remote server path (https://...).
+    // This happens in spine ECARs where leaf items list the CDN URL but the
+    // actual file is delivered in the individual leaf ECAR. Return 0 (ONLY_SPINE)
+    // so that filterItems allows the leaf ECAR to import later and extract the file.
+    if (!artifactUrl || artifactUrl.startsWith('https:')) return 0;
 
     const itemSourcePath = `${tmpUri}/${artifactUrl}`;
 
@@ -243,10 +253,21 @@ export class ImportService {
     destPath: string,
     manifestVersion: string,
     contentState: number,
-    existing?: ContentEntry
+    existing?: ContentEntry,
+    isChildOfCollection?: boolean,
   ): ContentEntry {
     const isCollection = item.mimeType?.includes('collection');
-    const visibility = this.readVisibility(item);
+    // Visibility rules:
+    // 1. Never downgrade existing 'Default' → 'Parent' (content may have been individually downloaded)
+    // 2. Children of a collection import get 'Parent' so they don't appear individually in Downloads
+    // 3. Otherwise read from manifest (standalone imports get 'Default')
+    // 4. Upgrade 'Parent' → 'Default' if this is a standalone import (isChildOfCollection=false)
+    const manifestVisibility = this.readVisibility(item);
+    let visibility = existing ? existing.visibility : (isChildOfCollection ? 'Parent' : manifestVisibility);
+
+    if (visibility === 'Parent' && !isChildOfCollection && manifestVisibility === 'Default') {
+      visibility = 'Default';
+    }
     const refCount = existing ? existing.ref_count + 1 : 1;
 
     // content_state never downgrades (ARTIFACT_AVAILABLE → ONLY_SPINE)
@@ -257,7 +278,7 @@ export class ImportService {
 
     return {
       identifier: item.identifier,
-      server_data: '',
+      server_data: existing?.server_data || '',
       local_data: JSON.stringify(item),
       mime_type: item.mimeType || '',
       path:
@@ -295,7 +316,19 @@ export class ImportService {
       const existing = existingMap.get(item.identifier);
       if (!existing) return true; // new content
 
-      // Skip same/newer version already imported
+      // Allow re-import if existing entry is spine-only (no artifact extracted yet).
+      // Spine ECARs create entries with content_state=0 for leaf content; the
+      // individual leaf ECAR must still be imported to extract the actual file.
+      if (existing.content_state < 2) return true;
+
+      // Allow re-import if visibility is being upgraded from 'Parent' to 'Default'.
+      // This happens when a content item previously imported as part of a collection
+      // (Parent visibility) is now being imported standalone.
+      if (this.readVisibility(item) === 'Default' && existing.visibility === 'Parent') {
+        return true;
+      }
+
+      // Skip same/newer version already fully imported
       try {
         const existingData = JSON.parse(existing.local_data) as { pkgVersion?: number };
         return (item.pkgVersion ?? 0) > (existingData.pkgVersion || 0);
@@ -377,20 +410,21 @@ export class ImportService {
   }
 
   private async readManifest(tmpUri: string): Promise<ManifestData> {
-    // Check which manifest file to read to avoid noisy Capacitor console errors on missing files
+    // Always prefer manifest.json — it has the standard { archive: { items: [...] } }
+    // structure that parseManifestItems expects. hierarchy.json has a different nested
+    // format ({ collection: { children: [...] } }) that isn't compatible.
+    // Spine ECARs ship BOTH files; leaf ECARs only have manifest.json.
     try {
-      await Filesystem.stat({ path: `${tmpUri}/hierarchy.json` });
-      // hierarchy.json exists!
       const r = await Filesystem.readFile({
-        path: `${tmpUri}/hierarchy.json`,
+        path: `${tmpUri}/manifest.json`,
         encoding: Encoding.UTF8,
       });
       return JSON.parse(r.data as string) as ManifestData;
     } catch {
       try {
-        // Fallback to manifest.json
+        // Fallback to hierarchy.json (shouldn't normally be needed)
         const r = await Filesystem.readFile({
-          path: `${tmpUri}/manifest.json`,
+          path: `${tmpUri}/hierarchy.json`,
           encoding: Encoding.UTF8,
         });
         return JSON.parse(r.data as string) as ManifestData;

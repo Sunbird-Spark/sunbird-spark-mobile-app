@@ -25,6 +25,7 @@ import { DownloadProgressBadge } from '../components/common/DownloadProgressBadg
 import RelatedContent from '../components/collection/RelatedContent';
 import { startContentDownload } from '../services/content/contentDownloadHelper';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
+import { NON_DOWNLOADABLE_MIME_TYPES } from '../services/content/hierarchyUtils';
 import { resolveContentForPlayer } from '../services/content/contentPlaybackResolver';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { downloadManager } from '../services/download_manager';
@@ -57,6 +58,7 @@ const ContentPlayerPage: React.FC = () => {
   const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
+  const isNonDownloadable = !!(contentData?.mimeType && NON_DOWNLOADABLE_MIME_TYPES.includes(contentData.mimeType));
 
   const {
     data: qumlData,
@@ -72,7 +74,7 @@ const ContentPlayerPage: React.FC = () => {
 
   // Download state (with optimistic UI override for post-delete snapping)
   const rawDownloadState = useDownloadState(contentId);
-  const rawIsLocal = useIsContentLocal(contentId);
+  const { isLocal: rawIsLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId);
 
   // Track which contentId was optimistically marked as deleted.
   // Storing the ID (not a boolean) means it auto-resets when contentId changes.
@@ -97,7 +99,7 @@ const ContentPlayerPage: React.FC = () => {
     return () => { cancelled = true; };
   }, [rawPlayerMetadata, isLocal]);
 
-  const playerMetadata = (isLocal && resolvedMetadata?.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+  const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
 
   // Related content
   const contentLoaded = !isLoading && !!contentData;
@@ -229,6 +231,20 @@ const ContentPlayerPage: React.FC = () => {
 
   const handlePlayerEvent = (event: any) => {
     console.debug('[ContentPlayerPage] Player event:', event);
+    // Check all possible event shapes across player types:
+    // - event.data.edata.type: raw web component event structure (pdf, epub, quml, video, ecml)
+    // - event.type / event.data.type: wrapped event from player services
+    // - event.eid / event.data.eid: telemetry event structure
+    const eid = ((
+      event?.data?.edata?.type
+      ?? event?.eid
+      ?? event?.data?.eid
+      ?? event?.data?.type
+      ?? event?.type
+    ) ?? '').toUpperCase();
+    if (eid === 'EXIT') {
+      handleClosePlayer();
+    }
   };
 
   const handleTelemetryEvent = (event: any) => {
@@ -242,6 +258,17 @@ const ContentPlayerPage: React.FC = () => {
 
   // ── Fullscreen player mode (landscape, no header) ──
   if (isPlaying && playerMetadata && mimeType) {
+    // While the DB check is still pending, show a loader — don't flash the offline guard
+    if (isLocalCheckPending) {
+      return (
+        <IonPage className="cp-fullscreen">
+          <IonContent scrollY={false}>
+            <PageLoader message="Loading content..." />
+          </IonContent>
+        </IonPage>
+      );
+    }
+
     // Offline guard: if offline and content not downloaded, show message
     if (isOffline && !isLocal) {
       return (
@@ -251,15 +278,17 @@ const ContentPlayerPage: React.FC = () => {
               <IonIcon icon={cloudOfflineOutline} className="cp-offline-icon" />
               <h2>{t('download.youreOffline')}</h2>
               <p>{t('download.downloadToPlayOffline')}</p>
-              <DownloadProgressBadge
-                downloadState={downloadState}
-                isLocal={isLocal}
-                onDownload={handleDownload}
-                onRetry={handleRetryDownload}
-                onDelete={requestDelete}
-                onPause={handlePauseDownload}
-                onResume={handleResumeDownload}
-              />
+              {!isNonDownloadable && (
+                <DownloadProgressBadge
+                  downloadState={downloadState}
+                  isLocal={isLocal}
+                  onDownload={handleDownload}
+                  onRetry={handleRetryDownload}
+                  onDelete={requestDelete}
+                  onPause={handlePauseDownload}
+                  onResume={handleResumeDownload}
+                />
+              )}
               <button className="cp-offline-back" onClick={handleClosePlayer}>
                 {t('back')}
               </button>
@@ -272,15 +301,6 @@ const ContentPlayerPage: React.FC = () => {
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
-          <button
-            className="cp-close-btn"
-            onClick={handleClosePlayer}
-            aria-label="Close player"
-          >
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 1L1 13M1 1L13 13" stroke="white" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </button>
           <div className="cp-player-fullscreen-container">
             <ContentPlayer
               mimeType={mimeType}
@@ -316,15 +336,17 @@ const ContentPlayerPage: React.FC = () => {
               <BackIcon />
             </button>
             <div className="cp-header-actions">
-              <DownloadProgressBadge
-                downloadState={downloadState}
-                isLocal={isLocal}
-                onDownload={handleDownload}
-                onRetry={handleRetryDownload}
-                onDelete={requestDelete}
-                onPause={handlePauseDownload}
-                onResume={handleResumeDownload}
-              />
+              {!isNonDownloadable && (
+                <DownloadProgressBadge
+                  downloadState={downloadState}
+                  isLocal={isLocal}
+                  onDownload={handleDownload}
+                  onRetry={handleRetryDownload}
+                  onDelete={requestDelete}
+                  onPause={handlePauseDownload}
+                  onResume={handleResumeDownload}
+                />
+              )}
               <button type="button"
                 className="cp-icon-btn"
                 aria-label="Share"

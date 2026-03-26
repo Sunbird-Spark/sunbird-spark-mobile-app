@@ -223,6 +223,7 @@ const DownloadedContentsPage: React.FC = () => {
               text=""
               icon={chevronBackOutline}
               className="dc-back-btn"
+              color="primary"
             />
           </IonButtons>
           <IonTitle className="dc-title">{t('downloadedContents')}</IonTitle>
@@ -241,7 +242,12 @@ const DownloadedContentsPage: React.FC = () => {
                 key={entry.identifier}
                 entry={entry}
                 onDelete={handleDeleteRequest}
-                onNavigate={(e) => router.push(`/content/${e.identifier}`, 'forward', 'push')}
+                onNavigate={(e) => {
+                  const path = e.mime_type?.includes('collection')
+                    ? `/collection/${e.identifier}`
+                    : `/content/${e.identifier}`;
+                  router.push(path, 'forward', 'push');
+                }}
               />
             ))}
           </div>

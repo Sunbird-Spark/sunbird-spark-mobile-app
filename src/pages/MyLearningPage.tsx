@@ -261,7 +261,7 @@ const MyLearningPage: React.FC = () => {
   // Unauthenticated guard
   if (!isAuthenticated) {
     return (
-      <IonPage>
+      <IonPage className="my-learning-page">
         <IonHeader className="ion-no-border">
           <div className="my-learning__header">
             <span className="my-learning__header-title">{t('myLearning')}</span>
@@ -271,7 +271,7 @@ const MyLearningPage: React.FC = () => {
             </div>
           </div>
         </IonHeader>
-        <IonContent fullscreen>
+        <IonContent className="my-learning__content" style={{ '--background': 'var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4))' } as React.CSSProperties}>
           <div className="my-learning__sign-in">
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
             <button
@@ -288,7 +288,7 @@ const MyLearningPage: React.FC = () => {
   }
 
   return (
-    <IonPage>
+    <IonPage className="my-learning-page">
       <IonHeader className="ion-no-border">
         <div className="my-learning__header">
           <span className="my-learning__header-title">{t('myLearning')}</span>
@@ -325,7 +325,7 @@ const MyLearningPage: React.FC = () => {
         </div>
       </IonHeader>
 
-      <IonContent fullscreen>
+      <IonContent className="my-learning__content" style={{ '--background': 'var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4))' } as React.CSSProperties}>
         {isLoading ? (
           <PageLoader message={t('loading')} />
         ) : error ? (

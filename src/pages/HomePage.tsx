@@ -114,7 +114,7 @@ const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ 
         <h2 className="content-carousel-title">{t('recommendedContent')}</h2>
         <button
           className="content-carousel-arrow"
-          onClick={() => router.push('/explore', 'forward', 'push')}
+          onClick={() => router.push('/explore', 'root', 'replace')}
           aria-label={t('viewAll')}
         >
           <svg width="13" height="9" viewBox="0 0 13 9" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
