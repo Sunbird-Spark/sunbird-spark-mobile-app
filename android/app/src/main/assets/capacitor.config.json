@@ -1,6 +1,6 @@
 {
 	"appId": "org.sunbird.app",
-	"appName": "Sunbird Spark App",
+	"appName": "sunbird-mobile-app",
 	"webDir": "dist",
 	"plugins": {
 		"CapacitorHttp": {
