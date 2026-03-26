@@ -51,10 +51,14 @@ import { Capacitor } from '@capacitor/core';
 import { pushNotificationService } from './PushNotificationService';
 
 describe('PushNotificationService', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    // Ensure remove() always returns a Promise so async cleanup() works correctly
+    vi.mocked(PushNotifications.addListener).mockResolvedValue({
+      remove: vi.fn().mockResolvedValue(undefined),
+    } as any);
     // Reset singleton state between tests via the public cleanup method
-    pushNotificationService.cleanup();
+    await pushNotificationService.cleanup();
   });
 
   // ── init() ──────────────────────────────────────────────────────────────
@@ -73,7 +77,7 @@ describe('PushNotificationService', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(PushNotifications.requestPermissions).mockResolvedValue({ receive: 'granted' });
       vi.mocked(PushNotifications.register).mockResolvedValue(undefined);
-      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn() } as any);
+      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) } as any);
 
       await pushNotificationService.init();
 
@@ -94,7 +98,7 @@ describe('PushNotificationService', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(PushNotifications.requestPermissions).mockResolvedValue({ receive: 'granted' });
       vi.mocked(PushNotifications.register).mockResolvedValue(undefined);
-      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn() } as any);
+      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) } as any);
 
       await pushNotificationService.init();
       await pushNotificationService.init(); // second call should be a no-op
@@ -106,7 +110,7 @@ describe('PushNotificationService', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(PushNotifications.requestPermissions).mockResolvedValue({ receive: 'granted' });
       vi.mocked(PushNotifications.register).mockResolvedValue(undefined);
-      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn() } as any);
+      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) } as any);
 
       await pushNotificationService.init();
 
@@ -125,7 +129,7 @@ describe('PushNotificationService', () => {
       let registrationCallback: ((token: { value: string }) => void) | null = null;
       vi.mocked(PushNotifications.addListener).mockImplementation((event: string, cb: any) => {
         if (event === 'registration') registrationCallback = cb;
-        return Promise.resolve({ remove: vi.fn() } as any);
+        return Promise.resolve({ remove: vi.fn().mockResolvedValue(undefined) } as any);
       });
 
       await pushNotificationService.init();
@@ -142,7 +146,7 @@ describe('PushNotificationService', () => {
       let foregroundCallback: (() => void) | null = null;
       vi.mocked(PushNotifications.addListener).mockImplementation((event: string, cb: any) => {
         if (event === 'pushNotificationReceived') foregroundCallback = cb;
-        return Promise.resolve({ remove: vi.fn() } as any);
+        return Promise.resolve({ remove: vi.fn().mockResolvedValue(undefined) } as any);
       });
 
       const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
@@ -162,7 +166,7 @@ describe('PushNotificationService', () => {
       let tapCallback: ((action: any) => void) | null = null;
       vi.mocked(PushNotifications.addListener).mockImplementation((event: string, cb: any) => {
         if (event === 'pushNotificationActionPerformed') tapCallback = cb;
-        return Promise.resolve({ remove: vi.fn() } as any);
+        return Promise.resolve({ remove: vi.fn().mockResolvedValue(undefined) } as any);
       });
 
       const dispatchSpy = vi.spyOn(window, 'dispatchEvent');
@@ -185,11 +189,11 @@ describe('PushNotificationService', () => {
       vi.mocked(PushNotifications.requestPermissions).mockResolvedValue({ receive: 'granted' });
       vi.mocked(PushNotifications.register).mockResolvedValue(undefined);
 
-      const removeFn = vi.fn();
+      const removeFn = vi.fn().mockResolvedValue(undefined);
       vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: removeFn } as any);
 
       await pushNotificationService.init();
-      pushNotificationService.cleanup();
+      await pushNotificationService.cleanup();
 
       expect(removeFn).toHaveBeenCalledTimes(4); // one per listener
     });
@@ -198,10 +202,10 @@ describe('PushNotificationService', () => {
       vi.mocked(Capacitor.isNativePlatform).mockReturnValue(true);
       vi.mocked(PushNotifications.requestPermissions).mockResolvedValue({ receive: 'granted' });
       vi.mocked(PushNotifications.register).mockResolvedValue(undefined);
-      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn() } as any);
+      vi.mocked(PushNotifications.addListener).mockResolvedValue({ remove: vi.fn().mockResolvedValue(undefined) } as any);
 
       await pushNotificationService.init();
-      pushNotificationService.cleanup();
+      await pushNotificationService.cleanup();
       await pushNotificationService.init(); // should re-register, not be a no-op
 
       expect(PushNotifications.register).toHaveBeenCalledTimes(2);

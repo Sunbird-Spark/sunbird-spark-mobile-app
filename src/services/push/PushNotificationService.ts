@@ -75,10 +75,20 @@ class PushNotificationService {
    * Removes all active push notification listeners.
    * Call this if the service needs to be torn down (e.g. in tests or future hot-reload support).
    */
-  cleanup(): void {
-    this.listeners.forEach((l) => l.remove());
+  async cleanup(): Promise<void> {
+    const listeners = this.listeners;
     this.listeners = [];
-    this.initialized = false;
+    try {
+      await Promise.all(
+        listeners.map((l) =>
+          l.remove().catch((err) => {
+            console.warn('[PushNotificationService] Failed to remove listener', err);
+          }),
+        ),
+      );
+    } finally {
+      this.initialized = false;
+    }
   }
 
   /**
