@@ -384,9 +384,9 @@ const ContentPlayerPage: React.FC = () => {
                 aria-label={`Play ${playerMetadata.name}`}
               >
                 <IonImg
-                  src={playerMetadata.appIcon || playerMetadata.posterImage || 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=800'}
-                  alt={playerMetadata.name}
-                  className="cp-thumbnail"
+                    src={playerMetadata.posterImage || playerMetadata.appIcon}
+                    alt={playerMetadata.name}
+                    className="cp-thumbnail"
                 />
                 <div className="cp-play-button">
                   <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
