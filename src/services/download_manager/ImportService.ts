@@ -276,7 +276,13 @@ export class ImportService {
     if (visibility === 'Parent' && !isChildOfCollection && manifestVisibility === 'Default') {
       visibility = 'Default';
     }
-    const refCount = existing ? existing.ref_count + 1 : 1;
+    // If content exists but had no artifact (state 0/1, e.g. spine entry), this import
+    // is fulfilling the first reference - don't increment. If it already had an
+    // artifact (state 2), this is an additional reference (standalone after collection,
+    // or second collection) - increment ref_count.
+    const refCount = existing
+      ? (existing.content_state === 2 ? existing.ref_count + 1 : existing.ref_count)
+      : 1;
 
     // content_state never downgrades (ARTIFACT_AVAILABLE → ONLY_SPINE)
     const resolvedState =

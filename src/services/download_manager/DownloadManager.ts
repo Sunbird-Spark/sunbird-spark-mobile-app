@@ -154,9 +154,19 @@ export class DownloadManager {
 
       const existing = await this.downloadDb.getByIdentifier(req.identifier);
       if (existing) {
-        // Already in queue — skip if it's currently active or importing.
-        // We allow re-enqueuing FAILED, CANCELLED, and COMPLETED states
-        // to support retries and "upgrade" from Parent to Default visibility.
+        // Already in queue - if this new request is standalone and the existing one
+        // is parent-bound, "upgrade" the intent immediately (Default visibility + ref_count bump).
+        if (!req.parentIdentifier && existing.parent_identifier) {
+          const contentEntry = await contentDbService.getByIdentifier(req.identifier);
+          if (contentEntry) {
+            await contentDbService.update(req.identifier, {
+              visibility: 'Default',
+              ref_count: contentEntry.ref_count + 1,
+            });
+          }
+        }
+
+        // Skip if currently active or importing. We allow re-enqueuing FAILED/CANCELLED.
         if (
           existing.state !== DownloadState.FAILED &&
           existing.state !== DownloadState.CANCELLED &&
