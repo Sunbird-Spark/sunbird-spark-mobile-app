@@ -167,6 +167,16 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     handleTelemetryStateUpdate(event);
   }, [handleTelemetryStateUpdate]);
 
+  // Build contentMeta for rating dialog telemetry
+  const contentMeta = useMemo(() => {
+    if (!playerMetadata?.identifier) return undefined;
+    return {
+      id: playerMetadata.identifier,
+      type: playerMetadata.contentType || 'Content',
+      ver: String(playerMetadata.pkgVersion || '1'),
+    };
+  }, [playerMetadata]);
+
   // Wait for offline URL resolution to complete before mounting the player.
   // Player web components read config once on mount and don't detect prop changes,
   // so we must have the resolved local URLs ready BEFORE the player renders.
@@ -221,6 +231,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
             objectRollup={objectRollup}
             onPlayerEvent={handlePlayerEvent}
             onTelemetryEvent={handleTelemetryEvent}
+            contentMeta={contentMeta}
           />
         </div>
       </IonContent>

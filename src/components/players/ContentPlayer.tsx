@@ -47,7 +47,12 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   contentMeta,
 }) => {
   const [ratingOpen, setRatingOpen] = useState(false);
-  const openRating = useCallback(() => setRatingOpen(true), []);
+  const openRating = useCallback(() => {
+    // Only open rating dialog if contentMeta is provided for telemetry
+    if (contentMeta) {
+      setRatingOpen(true);
+    }
+  }, [contentMeta]);
   const { onContentEnd, onContentStart } = useRatingTimer(openRating);
 
   // On mobile, some players (e.g. PDF) emit END/START only via onPlayerEvent,
