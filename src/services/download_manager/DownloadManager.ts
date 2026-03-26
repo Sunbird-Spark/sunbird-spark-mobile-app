@@ -1,6 +1,7 @@
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { CapacitorDownloader } from '@capgo/capacitor-downloader';
 import { DownloadDbService, downloadDbService } from '../db/DownloadDbService';
+import { contentDbService } from '../db/ContentDbService';
 import { networkService } from '../network/networkService';
 import type { NetworkState } from '../network/networkService';
 import { ImportService, importService } from './ImportService';
@@ -25,6 +26,8 @@ export class DownloadManager {
   private maxConcurrent = 2;
   private wifiOnly = false;
   private processing = false;
+  private needsProcessing = false;
+  private lastProgressWrite = new Map<string, { tick: number; percent: number }>();
   private networkState: NetworkState = { connected: true, connectionType: 'unknown' };
   private unsubscribeNetwork: (() => void) | null = null;
   private initialized = false;
@@ -76,32 +79,50 @@ export class DownloadManager {
 
   private setupPluginListeners(): void {
     CapacitorDownloader.addListener('downloadProgress', async ({ id, progress }) => {
-      const entry = await this.downloadDb.getByIdentifier(id);
-      if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
-
-      const bytesDownloaded = Math.floor((entry.total_bytes * progress) / 100);
-
-      await this.downloadDb.update(id, {
-        progress,
-        bytes_downloaded: bytesDownloaded
-      });
-
+      // 1. Emit granular progress event immediately for smooth UI results (no DB hit)
       this.emit({ type: 'progress', identifier: id });
-    }).catch(() => { });
+
+      // 2. Throttle DB updates to reduce SQLite pressure
+      const now = Date.now();
+      const last = this.lastProgressWrite.get(id);
+      const percent = Math.floor(progress);
+
+      // Only write to DB if:
+      // - Progress % has increased by an integer value (or it's the first tick)
+      // - AND at least 500ms has passed since last write (unless it's 100%)
+      if (!last || (percent > last.percent) || (now - last.tick > 500)) {
+        this.lastProgressWrite.set(id, { tick: now, percent });
+
+        const entry = await this.downloadDb.getByIdentifier(id);
+        if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
+
+        const bytesDownloaded = Math.floor((entry.total_bytes * progress) / 100);
+        await this.downloadDb.update(id, {
+          progress,
+          bytes_downloaded: bytesDownloaded
+        });
+      }
+    });
 
     CapacitorDownloader.addListener('downloadCompleted', async ({ id }) => {
+      this.lastProgressWrite.delete(id);
       const entry = await this.downloadDb.getByIdentifier(id);
       if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
 
       this.activeDownloads.delete(id);
       await this.transition(id, DownloadState.DOWNLOADED, { progress: 100 });
       await this.processQueue();
-    }).catch(() => { });
+    });
 
     CapacitorDownloader.addListener('downloadFailed', async ({ id, error }) => {
       this.activeDownloads.delete(id);
       await this.handleDownloadFailure(id, new Error(error));
-    }).catch(() => { });
+    });
+  }
+
+  /** Notify listeners that content has been deleted from the local DB. */
+  notifyContentDeleted(identifier: string): void {
+    this.emit({ type: 'content_deleted', identifier });
   }
 
   // ══════════════════════════════════════════════
@@ -116,12 +137,30 @@ export class DownloadManager {
       const wasCancelled = await this.downloadDb.wasCancelledByUser(req.identifier);
       if (wasCancelled) continue;
 
+      // Fast-path: content already exists locally (e.g. downloaded as part of collection
+      // with visibility='Parent'). Skip actual download — just upgrade visibility + ref_count.
+      const contentEntry = await contentDbService.getByIdentifier(req.identifier);
+      if (contentEntry && contentEntry.content_state === 2) {
+        const updates: Partial<typeof contentEntry> = {};
+        if (contentEntry.visibility === 'Parent' && !req.parentIdentifier) {
+          // Standalone download of content that was previously part of a collection
+          updates.visibility = 'Default';
+        }
+        updates.ref_count = contentEntry.ref_count + 1;
+        await contentDbService.update(req.identifier, updates);
+        this.emit({ type: 'state_change', identifier: req.identifier });
+        continue;
+      }
+
       const existing = await this.downloadDb.getByIdentifier(req.identifier);
       if (existing) {
-        // Already in queue — skip unless it's in a terminal state
+        // Already in queue — skip if it's currently active or importing.
+        // We allow re-enqueuing FAILED, CANCELLED, and COMPLETED states
+        // to support retries and "upgrade" from Parent to Default visibility.
         if (
           existing.state !== DownloadState.FAILED &&
-          existing.state !== DownloadState.CANCELLED
+          existing.state !== DownloadState.CANCELLED &&
+          existing.state !== DownloadState.COMPLETED
         ) {
           continue;
         }
@@ -290,7 +329,9 @@ export class DownloadManager {
   //  PROGRESS & STATE QUERIES
   // ══════════════════════════════════════════════
 
-  async getProgress(identifier: string): Promise<DownloadProgress | null> {
+  async getProgress(
+    identifier: string
+  ): Promise<DownloadProgress | null> {
     const entry = await this.downloadDb.getByIdentifier(identifier);
     if (!entry) return null;
 
@@ -302,6 +343,26 @@ export class DownloadManager {
       bytesDownloaded: entry.bytes_downloaded,
       totalBytes: entry.total_bytes,
     };
+  }
+
+  async getBatchProgress(
+    identifiers: string[]
+  ): Promise<Map<string, DownloadProgress>> {
+    const map = new Map<string, DownloadProgress>();
+    if (identifiers.length === 0) return map;
+
+    const entries = await this.downloadDb.getByIdentifiers(identifiers);
+    for (const entry of entries) {
+      map.set(entry.identifier, {
+        identifier: entry.identifier,
+        parentIdentifier: entry.parent_identifier ?? undefined,
+        state: entry.state,
+        progress: entry.progress,
+        bytesDownloaded: entry.bytes_downloaded,
+        totalBytes: entry.total_bytes,
+      });
+    }
+    return map;
   }
 
   async getAggregateProgress(
@@ -381,33 +442,40 @@ export class DownloadManager {
   // ══════════════════════════════════════════════
 
   private async processQueue(): Promise<void> {
-    if (this.processing) return;
+    if (this.processing) {
+      this.needsProcessing = true;
+      return;
+    }
     this.processing = true;
 
     try {
-      // Check network
-      if (!this.networkState.connected) return;
-      if (this.wifiOnly && this.networkState.connectionType !== 'wifi') return;
+      do {
+        this.needsProcessing = false;
 
-      // Fill download slots
-      const activeCount = this.activeDownloads.size;
-      const slotsAvailable = this.maxConcurrent - activeCount;
+        // Check network state
+        if (!this.networkState.connected) break;
+        if (this.wifiOnly && this.networkState.connectionType !== 'wifi') break;
 
-      if (slotsAvailable > 0) {
-        const queued = await this.downloadDb.getNextQueued(slotsAvailable);
-        for (const entry of queued) {
-          await this.startDownload(entry);
+        // Fill download slots
+        const activeCount = this.activeDownloads.size;
+        const slotsAvailable = this.maxConcurrent - activeCount;
+
+        if (slotsAvailable > 0) {
+          const queued = await this.downloadDb.getNextQueued(slotsAvailable);
+          for (const entry of queued) {
+            await this.startDownload(entry);
+          }
         }
-      }
 
-      // Process downloaded entries → import
-      await this.processDownloadedEntries();
+        // Process downloaded entries → import
+        await this.processDownloadedEntries();
 
-      // Check if all work is done
-      const remaining = await this.downloadDb.countActive();
-      if (remaining === 0) {
-        this.emit({ type: 'all_done' });
-      }
+        // Check if all work is done
+        const remaining = await this.downloadDb.countActive();
+        if (remaining === 0) {
+          this.emit({ type: 'all_done' });
+        }
+      } while (this.needsProcessing);
     } finally {
       this.processing = false;
     }
@@ -515,55 +583,129 @@ export class DownloadManager {
   }
 
   private async processDownloadedEntries(): Promise<void> {
-    const downloaded = await this.downloadDb.getByState(
-      DownloadState.DOWNLOADED
+    // Loop until no more DOWNLOADED entries remain.
+    // New entries may reach DOWNLOADED state while we're importing previous ones
+    // (race condition: downloadCompleted fires but processQueue returns because processing=true).
+    while (true) {
+      const downloaded = await this.downloadDb.getByState(
+        DownloadState.DOWNLOADED
+      );
+      if (downloaded.length === 0) break;
+
+      for (const entry of downloaded) {
+        // Skip if cancelled in the meantime
+        const current = await this.downloadDb.getByIdentifier(entry.identifier);
+        if (!current || current.state !== DownloadState.DOWNLOADED) continue;
+
+        await this.transition(entry.identifier, DownloadState.IMPORTING);
+
+        const result = await this.importSvc.import(
+          entry.identifier,
+          entry.file_path!,
+          entry.content_meta ? JSON.parse(entry.content_meta) : undefined,
+          // Cooperative cancellation checker
+          async () => {
+            const e = await this.downloadDb.getByIdentifier(entry.identifier);
+            return e?.state === DownloadState.CANCELLED;
+          },
+          // Progress callback
+          (phase, percent) => {
+            this.emit({
+              type: 'import_progress',
+              identifier: entry.identifier,
+              data: {
+                identifier: entry.identifier,
+                phase,
+                percent,
+              },
+            });
+          }
+        );
+
+        switch (result.status) {
+          case 'SUCCESS':
+          case 'ALREADY_EXIST':
+            await this.transition(entry.identifier, DownloadState.COMPLETED);
+            await this.downloadDb.update(entry.identifier, { progress: 100 });
+
+            // If this leaf belongs to a collection, mark it as 'Parent' visibility
+            // so it doesn't appear individually in Downloaded Contents page.
+            // Then check if all siblings are done → upgrade parent content_state to 2.
+            if (entry.parent_identifier) {
+              await this.handleCollectionChildComplete(entry);
+            }
+            break;
+
+          case 'CANCELLED':
+            // Already in CANCELLED state via cooperative check
+            break;
+
+          case 'FAILED':
+            await this.handleImportFailure(entry, result.errors?.[0] ?? 'Unknown import error');
+            break;
+        }
+      }
+    }
+  }
+
+  /**
+   * After a leaf content that belongs to a collection is successfully imported:
+   * 1. Set its visibility to 'Parent' so it's hidden from Downloaded Contents
+   * 2. Check if ALL siblings (same parent_identifier) are COMPLETED
+   *    → if so, upgrade the parent collection's content_state to 2 (ARTIFACT_AVAILABLE)
+   *    so the collection itself appears in Downloaded Contents.
+   */
+  private async handleCollectionChildComplete(entry: DownloadQueueEntry): Promise<void> {
+    const parentId = entry.parent_identifier!;
+
+    // 1. Mark the imported leaf content as visibility='Parent'
+    const contentEntry = await contentDbService.getByIdentifier(entry.identifier);
+    if (contentEntry && contentEntry.visibility !== 'Parent') {
+      await contentDbService.update(entry.identifier, { visibility: 'Parent' });
+      console.debug('[DownloadManager] Set visibility=Parent for child:', entry.identifier);
+    }
+
+    // 2. Check if all downloads with this parent are COMPLETED
+    const siblings = await this.downloadDb.getByParent(parentId);
+    const allDone = siblings.length > 0 && siblings.every(
+      (s) => s.state === DownloadState.COMPLETED
     );
 
-    for (const entry of downloaded) {
-      // Skip if cancelled in the meantime
-      const current = await this.downloadDb.getByIdentifier(entry.identifier);
-      if (!current || current.state !== DownloadState.DOWNLOADED) continue;
-
-      await this.transition(entry.identifier, DownloadState.IMPORTING);
-
-      const result = await this.importSvc.import(
-        entry.identifier,
-        entry.file_path!,
-        entry.content_meta ? JSON.parse(entry.content_meta) : undefined,
-        // Cooperative cancellation checker
-        async () => {
-          const e = await this.downloadDb.getByIdentifier(entry.identifier);
-          return e?.state === DownloadState.CANCELLED;
-        },
-        // Progress callback
-        (phase, percent) => {
-          this.emit({
-            type: 'import_progress',
-            identifier: entry.identifier,
-            data: {
-              identifier: entry.identifier,
-              phase,
-              percent,
-            },
-          });
+    if (allDone) {
+      // Upgrade the parent collection's content_state to 2 so it shows in Downloads
+      const parentEntry = await contentDbService.getByIdentifier(parentId);
+      if (parentEntry) {
+        if (parentEntry.content_state < 2) {
+          await contentDbService.update(parentId, { content_state: 2 });
+          console.debug('[DownloadManager] Upgraded parent content_state to 2:', parentId);
         }
-      );
-
-      switch (result.status) {
-        case 'SUCCESS':
-        case 'ALREADY_EXIST':
-          await this.transition(entry.identifier, DownloadState.COMPLETED);
-          await this.downloadDb.update(entry.identifier, { progress: 100 });
-          break;
-
-        case 'CANCELLED':
-          // Already in CANCELLED state via cooperative check
-          break;
-
-        case 'FAILED':
-          await this.handleImportFailure(entry, result.errors?.[0] ?? 'Unknown import error');
-          break;
+      } else {
+        // Parent entry doesn't exist yet in ContentDb — create a minimal one.
+        // useCollection's cacheHierarchyLocally may not have run, or import may
+        // have been skipped because spine downloadUrl was null.
+        await contentDbService.upsert({
+          identifier: parentId,
+          server_data: '',
+          local_data: '',
+          mime_type: 'application/vnd.ekstep.content-collection',
+          path: null,
+          visibility: 'Default',
+          server_last_updated_on: null,
+          local_last_updated_on: new Date().toISOString(),
+          ref_count: 1,
+          content_state: 2,
+          content_type: 'Course',
+          audience: 'Learner',
+          size_on_device: 0,
+          pragma: '',
+          manifest_version: '',
+          dialcodes: '',
+          child_nodes: '',
+          primary_category: 'Course',
+        });
+        console.debug('[DownloadManager] Created parent entry with content_state=2:', parentId);
       }
+      this.emit({ type: 'state_change', identifier: parentId });
     }
   }
 

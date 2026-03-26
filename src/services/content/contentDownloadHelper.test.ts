@@ -44,16 +44,49 @@ describe('startContentDownload', () => {
     expect(downloadManager.enqueue).not.toHaveBeenCalled();
   });
 
-  it('returns already_downloaded when content_state is 2', async () => {
+  it('returns already_downloaded when content_state is 2 and visibility is Default', async () => {
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
       identifier: 'do_1',
       content_state: 2,
+      visibility: 'Default',
     } as any);
 
     const result = await startContentDownload({
       identifier: 'do_1',
       downloadUrl: 'https://cdn.example.com/test.ecar',
     });
+    expect(result).toBe('already_downloaded');
+    expect(downloadManager.enqueue).not.toHaveBeenCalled();
+  });
+
+  it('proceeds to enqueue when content exists locally with visibility=Parent (standalone download)', async () => {
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'do_1',
+      content_state: 2,
+      visibility: 'Parent',
+    } as any);
+    vi.mocked(downloadManager.getEntry).mockResolvedValue(null);
+    vi.mocked(downloadManager.enqueue).mockResolvedValue(undefined);
+
+    const result = await startContentDownload({
+      identifier: 'do_1',
+      downloadUrl: 'https://cdn.example.com/test.ecar',
+    });
+    expect(result).toBe('started');
+    expect(downloadManager.enqueue).toHaveBeenCalled();
+  });
+
+  it('returns already_downloaded when content exists with visibility=Parent but downloaded as child', async () => {
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'do_1',
+      content_state: 2,
+      visibility: 'Parent',
+    } as any);
+
+    const result = await startContentDownload(
+      { identifier: 'do_1', downloadUrl: 'https://cdn.example.com/test.ecar' },
+      { parentIdentifier: 'do_collection' },
+    );
     expect(result).toBe('already_downloaded');
     expect(downloadManager.enqueue).not.toHaveBeenCalled();
   });

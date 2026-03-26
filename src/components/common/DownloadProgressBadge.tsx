@@ -108,6 +108,13 @@ export const DownloadProgressBadge: React.FC<DownloadProgressBadgeProps> = ({
       );
 
     case 'COMPLETED':
+      if (!isLocal) {
+        return (
+          <button className="dpb-btn dpb-available" onClick={onDownload} aria-label={t('download.download', 'Download')} title={t('download.download', 'Download')}>
+            <IonIcon icon={downloadOutline} />
+          </button>
+        );
+      }
       return (
         <button className="dpb-btn dpb-delete" onClick={onDelete} aria-label={t('download.delete', 'Delete')} title={t('download.delete', 'Delete')}>
           <IonIcon icon={trashOutline} />
