@@ -6,6 +6,7 @@ import { keyValueDbService } from '../db/KeyValueDbService';
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import { courseProgressEnqueuer } from '../sync/CourseProgressEnqueuer';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
+import { contentStateSyncService } from './ContentStateSyncService';
 import type {
   ContentStateReadRequest,
   ContentStateUpdateRequest,
@@ -23,6 +24,13 @@ vi.mock('../db/KeyValueDbService', () => ({
   keyValueDbService: {
     getRaw: vi.fn().mockResolvedValue(null),
     setRaw: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
+// contentStateRead now fully delegates to ContentStateSyncService
+vi.mock('./ContentStateSyncService', () => ({
+  contentStateSyncService: {
+    readContentState: vi.fn(),
   },
 }));
 
@@ -129,65 +137,39 @@ describe('BatchService', () => {
   });
 
   describe('contentStateRead', () => {
-    it('should call POST with all request fields', async () => {
-      const mockResponse = { data: { contentList: [] }, status: 200 };
-      mockHttpClient.post.mockResolvedValue(mockResponse);
+    it('should delegate to contentStateSyncService.readContentState', async () => {
+      const mockResponse = { data: { contentList: [{ contentId: 'c1', status: 2 }] }, status: 200, headers: {} };
+      (contentStateSyncService.readContentState as any).mockResolvedValue(mockResponse);
 
       const request: ContentStateReadRequest = {
-        userId: 'user-1',
-        courseId: 'course-1',
-        batchId: 'batch-1',
-        contentIds: ['content-1', 'content-2'],
+        userId:     'user-1',
+        courseId:   'course-1',
+        batchId:    'batch-1',
+        contentIds: ['c1'],
       };
 
       const result = await service.contentStateRead(request);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith('/course/v1/content/state/read', {
-        request: {
-          userId: 'user-1',
-          courseId: 'course-1',
-          batchId: 'batch-1',
-          contentIds: ['content-1', 'content-2'],
-        },
-      });
+      expect(contentStateSyncService.readContentState).toHaveBeenCalledWith(request);
       expect(result).toEqual(mockResponse);
+      // BatchService itself must NOT make any HTTP calls for reads
+      expect(mockHttpClient.post).not.toHaveBeenCalled();
     });
 
-    it('should include fields when provided', async () => {
-      mockHttpClient.post.mockResolvedValue({ data: {}, status: 200 });
+    it('should propagate the result from contentStateSyncService', async () => {
+      const offlineResponse = { data: { contentList: [] }, status: 200, headers: {} };
+      (contentStateSyncService.readContentState as any).mockResolvedValue(offlineResponse);
 
       const request: ContentStateReadRequest = {
-        userId: 'user-1',
-        courseId: 'course-1',
-        batchId: 'batch-1',
-        contentIds: ['content-1'],
-        fields: ['status', 'score'],
+        userId:     'user-1',
+        courseId:   'course-1',
+        batchId:    'batch-1',
+        contentIds: [],
       };
 
-      await service.contentStateRead(request);
+      const result = await service.contentStateRead(request);
 
-      expect(mockHttpClient.post).toHaveBeenCalledWith('/course/v1/content/state/read', {
-        request: expect.objectContaining({
-          fields: ['status', 'score'],
-        }),
-      });
-    });
-
-    it('should omit fields when empty array', async () => {
-      mockHttpClient.post.mockResolvedValue({ data: {}, status: 200 });
-
-      const request: ContentStateReadRequest = {
-        userId: 'user-1',
-        courseId: 'course-1',
-        batchId: 'batch-1',
-        contentIds: ['content-1'],
-        fields: [],
-      };
-
-      await service.contentStateRead(request);
-
-      const callArgs = mockHttpClient.post.mock.calls[0][1];
-      expect(callArgs.request.fields).toBeUndefined();
+      expect(result).toEqual(offlineResponse);
     });
   });
 
@@ -280,61 +262,6 @@ describe('BatchService', () => {
           batchId: 'batch-1',
         },
       });
-    });
-  });
-
-  describe('contentStateRead — offline path', () => {
-    it('should return cached data when offline', async () => {
-      (networkService.isConnected as any).mockReturnValue(false);
-      (keyValueDbService.getRaw as any).mockResolvedValue(
-        JSON.stringify({ contentList: [{ contentId: 'c1', status: 2 }] })
-      );
-
-      const request: ContentStateReadRequest = {
-        userId: 'user-1',
-        courseId: 'course-1',
-        batchId: 'batch-1',
-        contentIds: ['c1'],
-      };
-
-      const result = await service.contentStateRead(request);
-
-      expect(mockHttpClient.post).not.toHaveBeenCalled();
-      expect((result.data as any).contentList).toHaveLength(1);
-    });
-
-    it('should return empty contentList when offline and no cache', async () => {
-      (networkService.isConnected as any).mockReturnValue(false);
-      (keyValueDbService.getRaw as any).mockResolvedValue(null);
-
-      const request: ContentStateReadRequest = {
-        userId: 'user-1',
-        courseId: 'course-1',
-        batchId: 'batch-1',
-        contentIds: [],
-      };
-
-      const result = await service.contentStateRead(request);
-
-      expect((result.data as any).contentList).toEqual([]);
-    });
-
-    it('should fall back to cache when API fails', async () => {
-      mockHttpClient.post.mockRejectedValue(new Error('Network error'));
-      (keyValueDbService.getRaw as any).mockResolvedValue(
-        JSON.stringify({ contentList: [{ contentId: 'c1', status: 1 }] })
-      );
-
-      const request: ContentStateReadRequest = {
-        userId: 'user-1',
-        courseId: 'course-1',
-        batchId: 'batch-1',
-        contentIds: ['c1'],
-      };
-
-      const result = await service.contentStateRead(request);
-
-      expect((result.data as any).contentList).toHaveLength(1);
     });
   });
 

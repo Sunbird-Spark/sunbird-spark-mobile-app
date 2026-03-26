@@ -14,6 +14,7 @@ import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import { networkService } from '../network/networkService';
 import { courseProgressEnqueuer } from '../sync/CourseProgressEnqueuer';
 import { NetworkQueueType } from '../sync/types';
+import { contentStateSyncService } from './ContentStateSyncService';
 
 export class BatchService {
   public batchList(courseId: string): Promise<ApiResponse<BatchListResponse>> {
@@ -38,46 +39,14 @@ export class BatchService {
     });
   }
 
-  public async contentStateRead(
+  public contentStateRead(
     request: ContentStateReadRequest
   ): Promise<ApiResponse<ContentStateReadResponse>> {
-    const key = `cache:content_state_${request.userId}_${request.courseId}`;
-
-    if (!networkService.isConnected()) {
-      return this.readContentStateFromDb(key);
-    }
-
-    try {
-      const body: Record<string, unknown> = {
-        userId: request.userId,
-        courseId: request.courseId,
-        batchId: request.batchId,
-        contentIds: request.contentIds,
-      };
-      if (request.fields?.length) {
-        body.fields = request.fields;
-      }
-      const response = await getClient().post<ContentStateReadResponse>(
-        '/course/v1/content/state/read',
-        { request: body }
-      );
-
-      try {
-        await keyValueDbService.setRaw(key, JSON.stringify(response.data));
-      } catch (err) {
-        console.warn('[BatchService] Failed to cache content state to SQLite:', err);
-      }
-
-      return response;
-    } catch {
-      return this.readContentStateFromDb(key);
-    }
-  }
-
-  private async readContentStateFromDb(key: string): Promise<ApiResponse<ContentStateReadResponse>> {
-    const raw = await keyValueDbService.getRaw(key);
-    const data: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
-    return buildOfflineResponse<ContentStateReadResponse>(data);
+    // Delegates to ContentStateSyncService which handles:
+    //  • offline → local DB read
+    //  • online, no local → fetch + cache
+    //  • online, local exists → fetch + merge + bidirectional update
+    return contentStateSyncService.readContentState(request);
   }
 
   public async contentStateUpdate(
@@ -180,11 +149,16 @@ export class BatchService {
       const contentList: ContentStateItem[] = cached.contentList ?? [];
 
       for (const update of request.contents) {
+        const patch: ContentStateItem = {
+          contentId: update.contentId,
+          status:    update.status,
+          ...(update.lastAccessTime != null && { lastAccessTime: update.lastAccessTime as unknown as number }),
+        };
         const idx = contentList.findIndex(c => c.contentId === update.contentId);
         if (idx >= 0) {
-          contentList[idx] = { ...contentList[idx], status: update.status };
+          contentList[idx] = { ...contentList[idx], ...patch };
         } else {
-          contentList.push({ contentId: update.contentId, status: update.status });
+          contentList.push(patch);
         }
       }
 

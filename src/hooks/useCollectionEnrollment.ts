@@ -10,7 +10,7 @@ import {
 } from './useBatch';
 import {
   getEnrollmentForCollection,
-  getLeafContentIds,
+  getLeafNodes,
   getContentStatusMap,
   getContentAttemptInfoMap,
   getCourseProgressProps,
@@ -95,11 +95,24 @@ export function useCollectionEnrollment(
     return getEnrollableBatches(batches);
   }, [batchListQuery.data]);
 
-  // 4. Extract leaf content IDs from hierarchy
-  const leafContentIds = useMemo(() => {
+  // 4. Extract leaf nodes and IDs from hierarchy.
+  //    Leaf nodes carry maxAttempts used for assessment attempt enforcement.
+  const leafNodes = useMemo(() => {
     if (!collectionData?.children?.length) return [];
-    return collectionData.children.flatMap(getLeafContentIds);
+    return collectionData.children.flatMap(getLeafNodes);
   }, [collectionData]);
+
+  const leafContentIds = useMemo(() => leafNodes.map((n) => n.identifier), [leafNodes]);
+
+  const maxAttemptsMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const node of leafNodes) {
+      if (typeof node.maxAttempts === 'number' && node.maxAttempts > 0) {
+        map[node.identifier] = node.maxAttempts;
+      }
+    }
+    return map;
+  }, [leafNodes]);
 
   // 5. Fetch content state (progress) for enrolled users
   const contentStateQuery = useContentState(
@@ -118,7 +131,10 @@ export function useCollectionEnrollment(
   // 6. Derive progress
   const contentList: ContentStateItem[] = contentStateQuery.data?.data?.contentList ?? [];
   const contentStatusMap = useMemo(() => getContentStatusMap(contentList), [contentList]);
-  const contentAttemptInfoMap = useMemo(() => getContentAttemptInfoMap(contentList), [contentList]);
+  const contentAttemptInfoMap = useMemo(
+    () => getContentAttemptInfoMap(contentList, maxAttemptsMap),
+    [contentList, maxAttemptsMap],
+  );
 
   const progressProps = useMemo(
     () => getCourseProgressProps(leafContentIds, contentStatusMap),
