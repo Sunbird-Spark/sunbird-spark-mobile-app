@@ -122,11 +122,13 @@ export class VideoPlayerService {
     // .video-js.vjs-fluid sets height:0 + padding-top for aspect ratio,
     // which pushes .vjs-control-bar (position:absolute;bottom:0) off-screen.
     // Override to fill the wrapper height instead.
+    // Also hide the Video.js big play button to match portal behavior.
     const containEl = document.createElement('style');
     containEl.textContent = [
       '[data-video-player-wrapper] sunbird-video-player { display:block; width:100%; height:100%; }',
       '[data-video-player-wrapper] .video-js { width:100% !important; height:100% !important; }',
       '[data-video-player-wrapper] .video-js.vjs-fluid { padding-top:0 !important; }',
+      '[data-video-player-wrapper] .vjs-big-play-button { display:none !important; }',
     ].join('\n');
     wrapper.appendChild(containEl);
 

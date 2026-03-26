@@ -177,10 +177,8 @@
 
 /* ── Video Player Overrides (matching portal) ── */
 
-/* Hide Video.js Big Play Button within the Sunbird video player wrapper */
-[data-video-player-wrapper] .vjs-big-play-button {
-  display: none !important;
-}
+/* Video.js overrides are now injected by VideoPlayerService to ensure
+   they apply consistently across all player instances (standalone and collection) */
 
 /* Make background transparent */
 [data-video-player-wrapper] .video-js {
