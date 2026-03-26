@@ -10,5 +10,6 @@ export const useFramework = (id: string): UseQueryResult<ApiResponse<any>, Error
     queryKey: ['framework', id],
     queryFn: () => frameworkService.read(id),
     enabled: !!id && AppInitializer.isInitialized(),
+    staleTime: 60 * 60 * 1000,
   });
 };
