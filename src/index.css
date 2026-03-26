@@ -176,7 +176,7 @@
 
     body {
         font-family: var(--ion-font-family);
-        background-color: var(--ion-color-light);
+        background-color: var(--color-white);
         color: var(--ion-color-tertiary);
     }
 }
@@ -541,7 +541,7 @@ ion-tab-button:hover {
     background: var(--color-white);
     border-radius: 1.25rem;
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
-    margin: -3rem 1rem 1.5rem;
+    margin: -3rem 1rem 1.25rem;
     padding: 1.25rem 0.75rem;
     position: relative;
     z-index: 3;
@@ -585,7 +585,7 @@ ion-tab-button:hover {
 
 /* --- Content Card Carousel --- */
 .content-carousel-section {
-    padding: 0.5rem 0 1.5rem;
+    padding: 0.5rem 0 1.25rem;
 }
 
 .content-carousel-header {
@@ -686,7 +686,7 @@ ion-tab-button:hover {
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
-    background: var(--ion-color-warning-tint, var(--color-fff1c7, #FFF1C7));
+    background: var(--color-warm-yellow);
     border: 1px solid var(--ion-color-primary-tint);
     border-radius: 2.25rem;
     padding: 0.125rem 0.75rem;
@@ -733,7 +733,7 @@ ion-tab-button:hover {
 
 /* --- Categories Grid --- */
 .categories-section {
-    padding: 0.5rem 0 1.5rem;
+    padding: 0.5rem 0 1.25rem;
 }
 
 .categories-header {
@@ -871,7 +871,7 @@ ion-tab-button:hover {
 
 /* --- Resource Center --- */
 .resource-center-section {
-    background: var(--ion-color-warning-tint, var(--color-fff1c7, #FFF1C7));
+    background: var(--color-warm-yellow);
     padding: 1.75rem 0 2rem;
     margin: 1.5rem 0;
 }
@@ -968,7 +968,7 @@ ion-tab-button:hover {
     font-size: 0.75rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
-    background: var(--ion-color-light);
+    background: var(--color-white);
     border-radius: 0.375rem;
     padding: 0.25rem 0.75rem;
     align-self: flex-start;
@@ -997,7 +997,7 @@ ion-tab-button:hover {
 
 /* --- FAQ Section --- */
 .faq-section {
-    padding: 1.5rem 1rem 2rem;
+    padding: 0.5rem 1rem 2rem;
 }
 
 .faq-heading {
@@ -1263,7 +1263,7 @@ ion-tab-button:hover {
 
 /* --- Action Items --- */
 .profile-actions-list {
-    padding: 0 0.9375rem;
+    padding: 0;
     background: transparent;
 }
 
@@ -1277,7 +1277,7 @@ ion-tab-button:hover {
     --padding-start: 1rem;
     --padding-end: 1rem;
     --min-height: 3.625rem;
-    margin-bottom: 0.75rem;
+    margin: 0 0.9375rem 0.75rem;
     border-radius: 0.625rem;
     box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
     overflow: hidden;

@@ -1,10 +1,10 @@
-const PLACEHOLDER_IMAGES = [
-    '/assets/placeholders/placeholder-1.jpg',
-    '/assets/placeholders/placeholder-2.jpg',
-    '/assets/placeholders/placeholder-3.jpg',
-    '/assets/placeholders/placeholder-4.jpg',
-    '/assets/placeholders/placeholder-5.jpg',
-];
+import placeholder1 from '../assets/placeholders/placeholder-1.jpg';
+import placeholder2 from '../assets/placeholders/placeholder-2.jpg';
+import placeholder3 from '../assets/placeholders/placeholder-3.jpg';
+import placeholder4 from '../assets/placeholders/placeholder-4.jpg';
+import placeholder5 from '../assets/placeholders/placeholder-5.jpg';
+
+const PLACEHOLDER_IMAGES = [placeholder1, placeholder2, placeholder3, placeholder4, placeholder5];
 
 /**
  * Returns a deterministic placeholder image path based on a seed string

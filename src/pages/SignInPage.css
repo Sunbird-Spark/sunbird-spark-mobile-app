@@ -12,7 +12,7 @@
 }
 
 .sign-in-page .sign-in-toolbar {
-    --background: #FFFFFF !important;
+    --background: var(--color-white) !important;
     --border-width: 0 !important;
     --color: var(--ion-color-dark, #222222);
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
@@ -88,7 +88,7 @@
     padding: 0.875rem 1rem;
     border-radius: 999px;
     border: 1px solid var(--ion-color-step-100, #e0e0e0);
-    background: var(--ion-color-light, #fff);
+    background: var(--color-white);
 
     font-size: 0.9375rem;
     font-weight: 600;
@@ -166,7 +166,7 @@
     font-size: 0.875rem;
     font-weight: 400;
     color: var(--ion-color-dark, #333);
-    background-color: var(--ion-color-light, #fff);
+    background-color: var(--color-white);
     outline: none;
     box-sizing: border-box;
     transition: border-color 0.2s ease;

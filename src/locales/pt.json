@@ -251,6 +251,19 @@
     "deleteFailed": "Falha ao excluir o conteúdo",
     "downloadFailed": "Falha ao baixar conteúdo."
   },
+  "settingsPage": {
+    "preferences": "Preferências",
+    "preferencesDesc": "Gerencie seu consumo de dados e comportamento do aplicativo.",
+    "syncUsageData": "Sincronizar dados de uso",
+    "syncDesc": "Mantenha seu progresso atualizado em todos os dispositivos",
+    "downloadContents": "Baixar conteúdo",
+    "downloadDesc": "Acesso offline ao seu material de aprendizagem",
+    "system": "Sistema",
+    "buildVersion": "Versão de build",
+    "off": "DESLIGADO",
+    "wifi": "WIFI",
+    "always": "SEMPRE"
+  },
   "scanQRCode": "Digitalizar código QR",
   "cameraDeniedTitle": "Acesso à câmera negado",
   "cameraDeniedMessage": "Por favor, permita o acesso à câmera para digitalizar códigos QR.",

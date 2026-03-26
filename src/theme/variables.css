@@ -80,6 +80,9 @@
   /** white **/
   --color-white: #ffffff;
 
+  /** warm yellow — resource center background, badge fills **/
+  --color-warm-yellow: #FFF1C7;
+
   /** input / card border **/
   --color-input-border: #D4D4D4;
 

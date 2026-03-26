@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
+import { getPlaceholderImage } from '../../../utils/placeholderImages';
 import './ContinueLearningCard.css';
 
 interface ContinueLearningCardProps {
@@ -73,10 +74,11 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
 
       <div className="continue-learning__card">
         <div className="continue-learning__thumbnail-wrapper">
-          {thumbnail
-            ? <img src={thumbnail} alt={title} className="continue-learning__thumbnail" />
-            : <div className="continue-learning__thumbnail-placeholder" />
-          }
+          <img
+            src={thumbnail || getPlaceholderImage(collectionId || 'default')}
+            alt={title}
+            className="continue-learning__thumbnail"
+          />
         </div>
 
         <div className="continue-learning__content">

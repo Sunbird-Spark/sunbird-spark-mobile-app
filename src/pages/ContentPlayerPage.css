@@ -46,7 +46,7 @@
 
 /* ── Hero Section ── */
 .cp-hero {
-  background: var(--ion-color-light, #fff);
+  background: var(--color-white);
   padding: 1rem 1.25rem 1.875rem;
   box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
   border-bottom-left-radius: 1.25rem;

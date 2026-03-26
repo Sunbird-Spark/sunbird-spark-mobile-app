@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
+import { getPlaceholderImage } from '../../../utils/placeholderImages';
 import './InProgressContents.css';
 
 interface InProgressContentsProps {
@@ -57,9 +58,11 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
               </div>
 
               <div className="in-progress__thumbnail-wrapper">
-                {thumbnail && (
-                  <img src={thumbnail} alt={title} className="in-progress__thumbnail" />
-                )}
+                <img
+                  src={thumbnail || getPlaceholderImage(collectionId || 'default')}
+                  alt={title}
+                  className="in-progress__thumbnail"
+                />
               </div>
             </div>
           );

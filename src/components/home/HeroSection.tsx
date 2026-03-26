@@ -33,7 +33,7 @@ export const HeroSection: React.FC = () => {
             {/* Wave background shape */}
             <div className="hero-bg-wave">
                 <svg width="390" height="169" viewBox="0 0 390 169" fill="none" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-                    <path d="M-71 39.2675L48.0177 70.9925C48.0177 70.9925 109.77 63.8084 160.214 58.0571C210.657 52.3059 269 16.8675 340.805 1.98982C393.896 -9.01038 446 29.1847 446 29.1847V168.867H-71V39.2675Z" fill="#FFF1C7"/>
+                    <path d="M-71 39.2675L48.0177 70.9925C48.0177 70.9925 109.77 63.8084 160.214 58.0571C210.657 52.3059 269 16.8675 340.805 1.98982C393.896 -9.01038 446 29.1847 446 29.1847V168.867H-71V39.2675Z" fill="var(--color-warm-yellow)"/>
                 </svg>
             </div>
         </section>

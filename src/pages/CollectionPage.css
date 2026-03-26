@@ -463,7 +463,7 @@
 }
 
 .cp-batch-modal-inner {
-  background-color: var(--ion-color-light);
+  background-color: var(--color-white);
 }
 
 .cp-batch-modal-header {
@@ -816,7 +816,7 @@
 }
 
 .cp-download-sheet-inner {
-  background-color: var(--ion-color-light);
+  background-color: var(--color-white);
   padding-bottom: env(safe-area-inset-bottom, 0);
 }
 

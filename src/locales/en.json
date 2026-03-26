@@ -279,6 +279,19 @@
     "deleteCollectionMessage": "Delete all downloaded content for {{title}}?",
     "leave": "Leave"
   },
+  "settingsPage": {
+    "preferences": "Preferences",
+    "preferencesDesc": "Manage your data consumption and app behavior.",
+    "syncUsageData": "Sync Usage Data",
+    "syncDesc": "Keep your progress updated across all devices",
+    "downloadContents": "Download Contents",
+    "downloadDesc": "Offline access for your learning material",
+    "system": "System",
+    "buildVersion": "Build version",
+    "off": "OFF",
+    "wifi": "WIFI",
+    "always": "ALWAYS"
+  },
   "scanQRCode": "Scan QR Code",
   "cameraDeniedTitle": "Camera Access Denied",
   "cameraDeniedMessage": "Please allow camera access to scan QR codes.",

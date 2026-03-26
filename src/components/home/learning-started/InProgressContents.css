@@ -1,5 +1,5 @@
 .in-progress {
-  padding: 0 16px 16px;
+  padding: 28px 16px 16px;
 }
 
 .in-progress__heading {
@@ -20,7 +20,8 @@
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 2px 2px 20px 0px #00000017;
-  padding: 14px;
+  padding: 16px;
+  min-height: 128px;
   display: flex;
   flex-direction: row;
   gap: 12px;
@@ -32,7 +33,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .in-progress__badge {

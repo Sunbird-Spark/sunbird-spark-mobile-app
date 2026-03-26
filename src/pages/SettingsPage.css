@@ -9,11 +9,11 @@
 /* ── Header ── */
 .settings-page .settings-header {
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
-    background: #FFFFFF;
+    background: var(--color-white);
 }
 
 .settings-page .settings-toolbar {
-    --background: #FFFFFF !important;
+    --background: var(--color-white) !important;
     --color: var(--ion-color-dark) !important;
     --border-width: 0 !important;
 }

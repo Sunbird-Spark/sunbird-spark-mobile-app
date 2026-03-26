@@ -259,6 +259,19 @@
     "deleteFailed": "فشل في حذف المحتوى",
     "downloadFailed": "فشل تنزيل المحتوى."
   },
+  "settingsPage": {
+    "preferences": "التفضيلات",
+    "preferencesDesc": "إدارة استهلاك البيانات وسلوك التطبيق.",
+    "syncUsageData": "مزامنة بيانات الاستخدام",
+    "syncDesc": "حافظ على تحديث تقدمك عبر جميع الأجهزة",
+    "downloadContents": "تنزيل المحتوى",
+    "downloadDesc": "الوصول دون اتصال بمواد التعلم الخاصة بك",
+    "system": "النظام",
+    "buildVersion": "إصدار البناء",
+    "off": "إيقاف",
+    "wifi": "واي فاي",
+    "always": "دائماً"
+  },
   "scanQRCode": "مسح رمز QR",
   "cameraDeniedTitle": "تم رفض الوصول إلى الكاميرا",
   "cameraDeniedMessage": "يرجى السماح بالوصول إلى الكاميرا لمسح رموز QR.",

@@ -19,6 +19,7 @@ import type { TrackableCollection } from '../types/collectionTypes';
 import type { ContentSearchItem } from '../types/contentTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
+import { getPlaceholderImage } from '../utils/placeholderImages';
 import './MyLearningPage.css';
 import useImpression from '../hooks/useImpression';
 
@@ -120,10 +121,7 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
         }
       }}>
       <div className="my-learning__card-thumbnail">
-        {thumbnail
-          ? <img src={thumbnail} alt={title} />
-          : <div className="my-learning__card-thumbnail-placeholder" />
-        }
+        <img src={thumbnail || getPlaceholderImage(collectionId || 'default')} alt={title} />
       </div>
 
       <div className="my-learning__card-content">

@@ -251,6 +251,19 @@
     "deleteFailed": "Échec de la suppression du contenu",
     "downloadFailed": "Échec du téléchargement du contenu."
   },
+  "settingsPage": {
+    "preferences": "Préférences",
+    "preferencesDesc": "Gérez votre consommation de données et le comportement de l'application.",
+    "syncUsageData": "Synchroniser les données d'utilisation",
+    "syncDesc": "Gardez votre progression à jour sur tous vos appareils",
+    "downloadContents": "Télécharger du contenu",
+    "downloadDesc": "Accès hors ligne à votre matériel d'apprentissage",
+    "system": "Système",
+    "buildVersion": "Version de build",
+    "off": "DÉSACTIVÉ",
+    "wifi": "WIFI",
+    "always": "TOUJOURS"
+  },
   "scanQRCode": "Scanner le code QR",
   "cameraDeniedTitle": "Accès à la caméra refusé",
   "cameraDeniedMessage": "Veuillez autoriser l'accès à la caméra pour scanner les codes QR.",

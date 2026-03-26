@@ -51,7 +51,7 @@ export const LanguageSelector: React.FC = () => {
                 alignment="end"
                 className="language-selector-popover"
             >
-                <div style={{ padding: '0.5rem 0', background: 'var(--ion-color-light)' }}>
+                <div style={{ padding: '0.5rem 0', background: 'var(--color-white)' }}>
                     {LANGUAGE_CONFIG.map((lang) => {
                         const isActive = currentLang.code === lang.code;
                         return (
