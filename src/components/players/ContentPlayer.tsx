@@ -32,6 +32,7 @@ interface ContentPlayerProps {
   objectRollup?: Record<string, any>;
   onPlayerEvent?: (event: any) => void;
   onTelemetryEvent?: (event: any) => void;
+  contentMeta?: { id: string; type: string; ver: string };
 }
 
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
@@ -43,6 +44,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   objectRollup,
   onPlayerEvent,
   onTelemetryEvent,
+  contentMeta,
 }) => {
   const [ratingOpen, setRatingOpen] = useState(false);
   const openRating = useCallback(() => setRatingOpen(true), []);
@@ -80,6 +82,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
       <RatingDialog
         open={ratingOpen}
         onClose={() => setRatingOpen(false)}
+        contentMeta={contentMeta}
       />
     </div>
   );
