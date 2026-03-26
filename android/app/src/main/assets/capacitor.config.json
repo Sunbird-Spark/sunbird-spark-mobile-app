@@ -1,10 +1,10 @@
 {
 	"appId": "org.sunbird.app",
-	"appName": "sunbird-mobile-app",
+	"appName": "Sunbird Spark App",
 	"webDir": "dist",
 	"plugins": {
 		"CapacitorHttp": {
-			"enabled": true
+			"enabled": false
 		},
 		"StatusBar": {
 			"style": "LIGHT",
