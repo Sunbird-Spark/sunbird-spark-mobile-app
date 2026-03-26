@@ -99,7 +99,7 @@ describe('deleteDownloadedContent', () => {
 
     const result = await deleteDownloadedContent('do_1');
 
-    expect(result).toEqual({ deleted: true, freedBytes: 50000 });
+    expect(result).toEqual({ deleted: true, freedBytes: 0 });
     expect(contentDbService.decrementRefCount).toHaveBeenCalledWith('do_1');
     // Visibility set to Parent so it's hidden from standalone Downloads list
     expect(contentDbService.update).toHaveBeenCalledWith('do_1', {

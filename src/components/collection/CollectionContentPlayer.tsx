@@ -72,6 +72,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   // Reset stale fallback/resolved state when navigating to a different content item.
   // Without this, rawPlayerMetadata could briefly reuse the previous content's local data.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     setLocalFallbackMeta(null);
     setResolvedMetadata(null);
