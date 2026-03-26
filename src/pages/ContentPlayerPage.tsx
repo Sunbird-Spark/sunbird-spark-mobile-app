@@ -11,7 +11,7 @@ import {
 } from '@ionic/react';
 import { useParams } from 'react-router-dom';
 import { useIonRouter } from '@ionic/react';
-import { shareSocialOutline, cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
+import { cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { useTranslation } from 'react-i18next';
 import { ContentPlayer } from '../components/players/ContentPlayer';
@@ -32,7 +32,6 @@ import { mapSearchContentToRelatedContentItems } from '../services/relatedConten
 import { downloadManager } from '../services/download_manager';
 import { BackIcon } from '../components/icons/CollectionIcons';
 import PageLoader from '../components/common/PageLoader';
-import RatingDialog from '../components/common/RatingDialog';
 import { telemetryService } from '../services/TelemetryService';
 import './ContentPlayerPage.css';
 import useImpression from '../hooks/useImpression';
@@ -50,7 +49,6 @@ const ContentPlayerPage: React.FC = () => {
   const { t } = useTranslation();
   const { isOffline } = useNetwork();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showRating, setShowRating] = useState(false);
 
   type ToastConfig = { message: string; color: 'success' | 'danger' | 'warning' | 'primary' | 'dark'; icon?: string };
   const [toastConfig, setToastConfig] = useState<ToastConfig | null>(null);
@@ -243,23 +241,10 @@ const ContentPlayerPage: React.FC = () => {
 
   const handleClosePlayer = useCallback(() => {
     setIsPlaying(false);
-    setShowRating(true);
     ScreenOrientation.unlock().catch(() => { });
   }, []);
 
-  const handleShare = useCallback(() => {
-    void telemetryService.share({
-      edata: {
-        dir: 'Out',
-        type: 'Link',
-        items: [{
-          id: contentId,
-          type: contentData?.contentType || 'Content',
-          ver: String(contentData?.pkgVersion || '1'),
-        }],
-      },
-    });
-  }, [contentId, contentData]);
+
 
   // Unlock orientation on unmount
   useEffect(() => {
@@ -346,6 +331,7 @@ const ContentPlayerPage: React.FC = () => {
               metadata={playerMetadata}
               onPlayerEvent={handlePlayerEvent}
               onTelemetryEvent={handleTelemetryEvent}
+              contentMeta={telemetryObject}
             />
           </div>
         </IonContent>
@@ -386,13 +372,6 @@ const ContentPlayerPage: React.FC = () => {
                   onResume={handleResumeDownload}
                 />
               )}
-              <button type="button"
-                className="cp-icon-btn"
-                aria-label="Share"
-                onClick={handleShare}
-              >
-                <IonIcon icon={shareSocialOutline} color="primary" />
-              </button>
             </div>
           </div>
         </IonToolbar>
@@ -424,11 +403,13 @@ const ContentPlayerPage: React.FC = () => {
                 onClick={handlePlay}
                 aria-label={`Play ${playerMetadata.name}`}
               >
-                <IonImg
-                  src={playerMetadata.appIcon || playerMetadata.posterImage || 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=800'}
-                  alt={playerMetadata.name}
-                  className="cp-thumbnail"
-                />
+                {(playerMetadata.posterImage || playerMetadata.appIcon) && (
+                  <IonImg
+                    src={playerMetadata.posterImage || playerMetadata.appIcon}
+                    alt={playerMetadata.name}
+                    className="cp-thumbnail"
+                  />
+                )}
                 <div className="cp-play-button">
                   <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="var(--ion-color-primary)" />
@@ -442,11 +423,6 @@ const ContentPlayerPage: React.FC = () => {
         )}
       </IonContent>
 
-      <RatingDialog
-        open={showRating}
-        onClose={() => setShowRating(false)}
-        contentMeta={telemetryObject ? { id: telemetryObject.id, type: telemetryObject.type, ver: telemetryObject.ver } : undefined}
-      />
       <IonToast
         isOpen={!!toastConfig}
         message={toastConfig?.message || ''}
