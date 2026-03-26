@@ -4,7 +4,7 @@ import type { DownloadQueueEntry, DownloadState } from '../download_manager/type
 const TABLE = 'download_queue';
 
 export class DownloadDbService {
-  constructor(private db: DatabaseService) {}
+  constructor(private db: DatabaseService) { }
 
   async insert(entry: DownloadQueueEntry): Promise<void> {
     await this.db.insert(TABLE, entry as unknown as Record<string, unknown>, 'REPLACE');
@@ -21,6 +21,12 @@ export class DownloadDbService {
   async getByState(state: DownloadState): Promise<DownloadQueueEntry[]> {
     return this.db.select<DownloadQueueEntry>(TABLE, {
       where: { eq: { state } },
+    });
+  }
+
+  async getByIdentifiers(identifiers: string[]): Promise<DownloadQueueEntry[]> {
+    return this.db.select<DownloadQueueEntry>(TABLE, {
+      where: { in: { identifier: identifiers } },
     });
   }
 

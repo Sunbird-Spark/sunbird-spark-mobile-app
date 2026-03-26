@@ -2,14 +2,9 @@ import { downloadManager } from '../download_manager';
 import { contentDbService } from '../db/ContentDbService';
 import { databaseService } from '../db/DatabaseService';
 import type { DownloadRequest } from '../download_manager/types';
+import { NON_DOWNLOADABLE_MIME_TYPES } from './hierarchyUtils';
 
 const TAG = '[contentDownloadHelper]';
-
-// Content types that are streaming-only and cannot play offline
-const STREAMING_ONLY_MIME_TYPES = [
-  'video/x-youtube',
-  'text/x-url',
-];
 
 export type ContentMeta = {
   identifier: string;
@@ -45,7 +40,7 @@ export async function startContentDownload(
   }
 
   // Streaming-only content (YouTube, external URLs) cannot play offline
-  if (contentMeta.mimeType && STREAMING_ONLY_MIME_TYPES.includes(contentMeta.mimeType)) {
+  if (contentMeta.mimeType && NON_DOWNLOADABLE_MIME_TYPES.includes(contentMeta.mimeType)) {
     console.warn(TAG, contentMeta.identifier, 'is streaming-only (mimeType:', contentMeta.mimeType, ')');
     return 'not_available';
   }
@@ -54,8 +49,14 @@ export async function startContentDownload(
     await databaseService.initialize();
     const localEntry = await contentDbService.getByIdentifier(contentMeta.identifier);
     if (localEntry && localEntry.content_state === 2) {
-      console.debug(TAG, contentMeta.identifier, 'already downloaded locally (content_state=2)');
-      return 'already_downloaded';
+      // If visibility is 'Parent' and this is a standalone download (no parentIdentifier),
+      // proceed to enqueue so the fast-path can upgrade visibility to 'Default' + bump ref_count.
+      if (localEntry.visibility === 'Parent' && !options?.parentIdentifier) {
+        console.debug(TAG, contentMeta.identifier, 'exists locally as Parent — will upgrade to Default');
+      } else {
+        console.debug(TAG, contentMeta.identifier, 'already downloaded locally (content_state=2)');
+        return 'already_downloaded';
+      }
     }
 
     const queueEntry = await downloadManager.getEntry(contentMeta.identifier);

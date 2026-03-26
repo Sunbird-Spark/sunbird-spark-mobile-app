@@ -29,6 +29,7 @@ vi.mock('../download_manager', () => ({
   downloadManager: {
     getEntry: vi.fn().mockResolvedValue(null),
     cancel: vi.fn().mockResolvedValue(undefined),
+    notifyContentDeleted: vi.fn(),
   },
 }));
 
