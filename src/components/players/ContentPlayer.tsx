@@ -4,7 +4,7 @@ import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
 import { EcmlPlayer } from './EcmlPlayer';
 import QumlPlayer from './QumlPlayer';
-import RatingDialog from '../common/RatingDialog';
+import RatingDialog, { RatingDialogContentMeta } from '../common/RatingDialog';
 import { useRatingTimer } from '../../hooks/useRatingTimer';
 
 // MIME type to player component mapping
@@ -32,7 +32,7 @@ interface ContentPlayerProps {
   objectRollup?: Record<string, any>;
   onPlayerEvent?: (event: any) => void;
   onTelemetryEvent?: (event: any) => void;
-  contentMeta?: { id: string; type: string; ver: string };
+  contentMeta?: RatingDialogContentMeta;
 }
 
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
