@@ -31,8 +31,7 @@ export async function deleteDownloadedContent(identifier: string): Promise<Delet
       return { deleted: false, freedBytes: 0 };
     }
 
-    const freedBytes = entry.size_on_device || 0;
-    console.debug(TAG, identifier, 'found locally, ref_count:', entry.ref_count, 'size:', freedBytes, 'path:', entry.path);
+    console.debug(TAG, identifier, 'found locally, ref_count:', entry.ref_count, 'size:', entry.size_on_device, 'path:', entry.path);
 
     // 1. Cancel any active download
     const queueEntry = await downloadManager.getEntry(identifier);
@@ -87,6 +86,8 @@ export async function deleteDownloadedContent(identifier: string): Promise<Delet
     // 6. Notify listeners (UI refresh)
     downloadManager.notifyContentDeleted(identifier);
 
+    // Only count freed bytes for hard deletes — soft deletes keep artifacts on disk.
+    const freedBytes = entry.ref_count <= 1 ? (entry.size_on_device || 0) : 0;
     console.debug(TAG, identifier, 'deletion complete, freed', freedBytes, 'bytes');
     return { deleted: true, freedBytes };
   } catch (error) {

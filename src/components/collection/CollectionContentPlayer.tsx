@@ -66,6 +66,17 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   // Offline fallback: when the API is unavailable but content is downloaded locally,
   // load metadata from the ContentDb local_data field (saved during import).
   const [localFallbackMeta, setLocalFallbackMeta] = useState<Record<string, unknown> | null>(null);
+
+  // Resolve URLs to local filesystem paths when content is downloaded.
+  const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+
+  // Reset stale fallback/resolved state when navigating to a different content item.
+  // Without this, rawPlayerMetadata could briefly reuse the previous content's local data.
+  useEffect(() => {
+    setLocalFallbackMeta(null);
+    setResolvedMetadata(null);
+  }, [contentId]);
+
   useEffect(() => {
     if (!isLocal || !isApiUnavailable || contentData) return;
 
@@ -86,10 +97,10 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
         if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
         if (!cancelled) setLocalFallbackMeta(parsed);
       } catch (e) {
-        console.error('PARSE_ERROR', contentId, e);
+        console.error('[CollectionContentPlayer] Failed to parse local_data for', contentId, e);
       }
     }).catch((e) => {
-      console.error('DB_ERROR', contentId, e);
+      console.error('[CollectionContentPlayer] DB lookup failed for', contentId, e);
     });
 
     return () => { cancelled = true; };
@@ -103,7 +114,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   const mimeType = rawPlayerMetadata?.mimeType;
 
   // Resolve URLs to local filesystem paths when content is downloaded.
-  const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
   useEffect(() => {
     if (!rawPlayerMetadata?.identifier || !isLocal) {
       return;
@@ -114,7 +124,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
       if (cancelled) return;
       setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
     }).catch((e) => {
-      console.error('RESOLVE_ERROR', contentId, e);
+      console.error('[CollectionContentPlayer] Failed to resolve local URLs for', contentId, e);
     });
 
     return () => { cancelled = true; };
@@ -173,7 +183,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   });
 
   const handlePlayerEvent = useCallback((event: any) => {
-    console.log('[CollectionContentPlayer] Player event:', event);
     // Player services wrap events as: { type: customEvent.detail.eid, data: customEvent.detail, ... }
     // So EXIT events arrive with event.type === 'EXIT' and event.data.eid === 'EXIT'
     const eid = ((
@@ -189,7 +198,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   }, [handleClose]);
 
   const handleTelemetryEvent = useCallback((event: any) => {
-    console.log('[CollectionContentPlayer] Telemetry event:', event);
     void telemetryService.save(event);
     handleTelemetryStateUpdate(event);
   }, [handleTelemetryStateUpdate]);

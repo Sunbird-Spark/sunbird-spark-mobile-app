@@ -114,6 +114,13 @@ const ContentPlayerPage: React.FC = () => {
   // The resolver rewrites artifactUrl/streamingUrl/basePath to local Capacitor
   // webview URLs so players can load files from disk (both online and offline).
   const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+
+  // Reset stale fallback/resolved state when navigating to a different content item.
+  // Without this, rawPlayerMetadata could briefly reuse the previous content's local data.
+  useEffect(() => {
+    setLocalFallbackMeta(null);
+    setResolvedMetadata(null);
+  }, [contentId]);
   useEffect(() => {
     if (!rawPlayerMetadata?.identifier || !isLocal) {
       return;

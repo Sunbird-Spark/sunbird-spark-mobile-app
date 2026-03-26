@@ -62,9 +62,17 @@ export class ContentDbService {
    */
   async getCollectionsContainingChild(childIdentifier: string): Promise<ContentEntry[]> {
     const db = this.db.getDb();
+    // Escape SQL LIKE wildcards in the identifier so that e.g. `do_123` doesn't
+    // accidentally match `do_1234` or `do%xyz` (both `_` and `%` are LIKE wildcards).
+    // Wrapping child_nodes with leading/trailing commas ensures we match whole tokens
+    // only (`,do_123,` won't match `,do_1234,`).
+    const escaped = childIdentifier
+      .replace(/\\/g, '\\\\')
+      .replace(/%/g, '\\%')
+      .replace(/_/g, '\\_');
     const result = await db.query(
-      `SELECT * FROM ${TABLE} WHERE mime_type LIKE '%collection%' AND child_nodes LIKE ?`,
-      [`%${childIdentifier}%`],
+      `SELECT * FROM ${TABLE} WHERE mime_type LIKE '%collection%' AND (',' || child_nodes || ',') LIKE ? ESCAPE '\\'`,
+      [`%,${escaped},%`],
     );
     return (result.values ?? []) as ContentEntry[];
   }
