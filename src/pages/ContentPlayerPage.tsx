@@ -27,6 +27,7 @@ import { startContentDownload } from '../services/content/contentDownloadHelper'
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../services/content/hierarchyUtils';
 import { resolveContentForPlayer } from '../services/content/contentPlaybackResolver';
+import { contentDbService } from '../services/db/ContentDbService';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { downloadManager } from '../services/download_manager';
 import { BackIcon } from '../components/icons/CollectionIcons';
@@ -55,7 +56,7 @@ const ContentPlayerPage: React.FC = () => {
   const [toastConfig, setToastConfig] = useState<ToastConfig | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-  const { data, isLoading, error, refetch } = useContentRead(contentId);
+  const { data, isLoading, error, refetch, fetchStatus } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
   const isNonDownloadable = !!(contentData?.mimeType && NON_DOWNLOADABLE_MIME_TYPES.includes(contentData.mimeType));
@@ -67,10 +68,7 @@ const ContentPlayerPage: React.FC = () => {
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const rawPlayerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
-  const playerError = error || (isQumlContent ? qumlError : null);
-  const mimeType = rawPlayerMetadata?.mimeType;
 
   // Download state (with optimistic UI override for post-delete snapping)
   const rawDownloadState = useDownloadState(contentId);
@@ -83,6 +81,34 @@ const ContentPlayerPage: React.FC = () => {
 
   const isLocal = deletedLocal ? false : rawIsLocal;
   const downloadState = deletedLocal ? null : rawDownloadState;
+
+  // API is unavailable when it errored, paused (offline), or completed with no data
+  const isApiUnavailable = !!error || fetchStatus === 'paused'
+    || (!isLoading && !contentData && fetchStatus === 'idle');
+
+  // Offline fallback: when API is unavailable but content is downloaded locally,
+  // load metadata from the ContentDb local_data field (saved during import).
+  const [localFallbackMeta, setLocalFallbackMeta] = useState<Record<string, unknown> | null>(null);
+  useEffect(() => {
+    if (!isLocal || !isApiUnavailable || contentData) return;
+    let cancelled = false;
+    contentDbService.getByIdentifier(contentId).then((entry) => {
+      if (cancelled || !entry?.local_data) return;
+      try {
+        const parsed = JSON.parse(entry.local_data);
+        parsed.identifier = entry.identifier;
+        if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
+        if (!cancelled) setLocalFallbackMeta(parsed);
+      } catch { /* ignore parse errors */ }
+    });
+    return () => { cancelled = true; };
+  }, [contentId, isLocal, isApiUnavailable, contentData]);
+
+  const apiMetadata = isQumlContent ? qumlData : contentData;
+  const rawPlayerMetadata = apiMetadata ?? localFallbackMeta;
+  // Don't show API error if we have local fallback data
+  const playerError = rawPlayerMetadata ? null : (error || (isQumlContent ? qumlError : null));
+  const mimeType = rawPlayerMetadata?.mimeType;
 
   // Resolve URLs to local filesystem paths when content is downloaded.
   // The resolver rewrites artifactUrl/streamingUrl/basePath to local Capacitor
@@ -100,6 +126,10 @@ const ContentPlayerPage: React.FC = () => {
   }, [rawPlayerMetadata, isLocal]);
 
   const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+
+  // Loading guards for offline fallback pipeline
+  const isLocalFallbackPending = isLocal && isApiUnavailable && !contentData && !localFallbackMeta;
+  const isResolving = isLocal && (resolvedMetadata == null || resolvedMetadata.id !== rawPlayerMetadata?.identifier) && !!rawPlayerMetadata?.identifier;
 
   // Related content
   const contentLoaded = !isLoading && !!contentData;
@@ -360,7 +390,7 @@ const ContentPlayerPage: React.FC = () => {
       </IonHeader>
 
       <IonContent>
-        {playerIsLoading ? (
+        {playerIsLoading || isLocalFallbackPending || isResolving ? (
           <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
           <PageLoader

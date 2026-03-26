@@ -56,7 +56,8 @@ export class ImportService {
     sourcePath: string,
     contentMeta?: Record<string, unknown>,
     isCancelled?: CancelChecker,
-    onProgress?: ProgressCallback
+    onProgress?: ProgressCallback,
+    parentIdentifier?: string,
   ): Promise<ImportResult> {
     let tmpDir: string | undefined;
 
@@ -95,8 +96,11 @@ export class ImportService {
 
       // Detect collection (spine) import: if the root item is a collection,
       // all other items are children and should get visibility='Parent'.
+      // Also, if parentIdentifier is set, this leaf ECAR was enqueued as part
+      // of a collection batch — treat all items as collection children.
       const rootItem = allItems.find((i) => i.identifier === identifier);
       const isCollectionImport = !!rootItem?.mimeType?.includes('collection');
+      const isEnqueuedAsChild = !!parentIdentifier;
 
       // ══ STAGE 2: Extract payloads + write to content DB ══
       await this.checkCancelled(isCancelled);
@@ -130,7 +134,11 @@ export class ImportService {
         await this.restructureForRenderer(item, destUri);
 
         // Build content DB row + upsert
-        const isChildOfCollection = isCollectionImport && item.identifier !== identifier;
+        // For spine ECARs: all non-root items are children.
+        // For leaf ECARs with parentIdentifier: all items are children.
+        const isChildOfCollection = isCollectionImport
+          ? item.identifier !== identifier
+          : isEnqueuedAsChild;
         const row = this.constructContentRow(
           item,
           destUri,

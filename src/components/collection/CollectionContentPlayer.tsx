@@ -42,7 +42,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   currentContentStatus,
   skipContentStateUpdate = false,
 }) => {
-  const { data, isLoading, error, refetch } = useContentRead(contentId);
+  const { data, isLoading, error, refetch, fetchStatus } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
 
@@ -55,23 +55,45 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
   const { isLocal, isCheckPending: isLocalCheckPending } = useIsContentLocal(contentId, { includeParentVisibility: true });
 
-  // Offline fallback: when the API fails but content is downloaded locally,
+  // API is unavailable when:
+  // 1. Query errored (network failure after retries)
+  // 2. Query paused by React Query (networkMode:'online' detects offline)
+  // 3. Query completed (idle) but returned no content data (e.g. empty response,
+  //    Capacitor HTTP silent failure, or response without expected structure)
+  const isApiUnavailable = !!error || fetchStatus === 'paused'
+    || (!isLoading && !contentData && fetchStatus === 'idle');
+
+  // Offline fallback: when the API is unavailable but content is downloaded locally,
   // load metadata from the ContentDb local_data field (saved during import).
   const [localFallbackMeta, setLocalFallbackMeta] = useState<Record<string, unknown> | null>(null);
   useEffect(() => {
-    if (!isLocal || !error || contentData) return;
+    if (!isLocal || !isApiUnavailable || contentData) return;
+
     let cancelled = false;
+
     contentDbService.getByIdentifier(contentId).then((entry) => {
-      if (cancelled || !entry?.local_data) return;
+      if (cancelled) {
+        return;
+      }
+
+      if (!entry?.local_data) {
+        return;
+      }
+
       try {
         const parsed = JSON.parse(entry.local_data);
         parsed.identifier = entry.identifier;
         if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
         if (!cancelled) setLocalFallbackMeta(parsed);
-      } catch { /* ignore parse errors */ }
+      } catch (e) {
+        console.error('PARSE_ERROR', contentId, e);
+      }
+    }).catch((e) => {
+      console.error('DB_ERROR', contentId, e);
     });
+
     return () => { cancelled = true; };
-  }, [contentId, isLocal, error, contentData]);
+  }, [contentId, isLocal, isApiUnavailable, contentData]);
 
   const apiMetadata = isQumlContent ? qumlData : contentData;
   const rawPlayerMetadata = apiMetadata ?? localFallbackMeta;
@@ -87,9 +109,14 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
       return;
     }
     let cancelled = false;
+
     resolveContentForPlayer(rawPlayerMetadata.identifier, rawPlayerMetadata).then((resolved) => {
-      if (!cancelled) setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
+      if (cancelled) return;
+      setResolvedMetadata({ id: rawPlayerMetadata.identifier, data: resolved });
+    }).catch((e) => {
+      console.error('RESOLVE_ERROR', contentId, e);
     });
+
     return () => { cancelled = true; };
   }, [rawPlayerMetadata, isLocal]);
 
@@ -172,10 +199,13 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   // so we must have the resolved local URLs ready BEFORE the player renders.
   //
   // isLocalCheckPending: still doing the initial DB query — don't show error yet.
+  // isLocalFallbackPending: API unavailable, content is local, but fallback metadata
+  //   hasn't loaded from DB yet — keep showing the loader instead of flashing an error.
   // isResolving: DB confirmed local but URL rewriting hasn't finished yet.
+  const isLocalFallbackPending = isLocal && isApiUnavailable && !contentData && !localFallbackMeta;
   const isResolving = isLocal && (resolvedMetadata == null || resolvedMetadata.id !== rawPlayerMetadata?.identifier) && !!rawPlayerMetadata?.identifier;
 
-  if (playerIsLoading || isLocalCheckPending || isResolving) {
+  if (playerIsLoading || isLocalCheckPending || isLocalFallbackPending || isResolving) {
     return (
       <IonPage className="cp-fullscreen">
         <IonContent scrollY={false}>
@@ -208,7 +238,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
         </IonContent>
       </IonPage>
     );
-  }
+  };
 
   return (
     <IonPage className="cp-fullscreen">

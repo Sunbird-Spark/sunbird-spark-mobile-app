@@ -555,7 +555,7 @@ describe('DownloadManager', () => {
       });
     }
 
-    it('sets visibility=Parent and upgrades parent when all children complete', async () => {
+    it('preserves Default visibility on child and upgrades parent when all children complete', async () => {
       const childEntry = makeEntry({
         identifier: 'do_child1',
         parent_identifier: 'do_collection',
@@ -582,10 +582,11 @@ describe('DownloadManager', () => {
         identifiers: ['do_child1'],
       });
 
-      // Child content exists in ContentDb with Default visibility
+      // Child content exists in ContentDb with Default visibility (previously downloaded standalone)
+      // ref_count=2 means it was downloaded standalone (ref=1) then collection import incremented (ref=2)
       mockContentDbService.getByIdentifier
-        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2 })  // child lookup
-        .mockResolvedValueOnce({ identifier: 'do_collection', content_state: 0 });                     // parent lookup
+        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2, ref_count: 2 })  // child lookup
+        .mockResolvedValueOnce({ identifier: 'do_collection', content_state: 0 });                                    // parent lookup
 
       // All siblings are COMPLETED
       vi.mocked(dlDb.getByParent).mockResolvedValue([
@@ -594,8 +595,8 @@ describe('DownloadManager', () => {
 
       await manager.init();
 
-      // Verify child visibility was set to Parent
-      expect(mockContentDbService.update).toHaveBeenCalledWith(
+      // Verify child visibility was NOT downgraded from Default → Parent
+      expect(mockContentDbService.update).not.toHaveBeenCalledWith(
         'do_child1',
         { visibility: 'Parent' },
       );
@@ -604,6 +605,48 @@ describe('DownloadManager', () => {
       expect(mockContentDbService.update).toHaveBeenCalledWith(
         'do_collection',
         { content_state: 2 },
+      );
+    });
+
+    it('sets visibility=Parent on child with no existing visibility', async () => {
+      const childEntry = makeEntry({
+        identifier: 'do_child2',
+        parent_identifier: 'do_collection',
+        state: DownloadState.DOWNLOADED,
+        file_path: '/path/to/child.ecar',
+      });
+
+      setupStatefulEntryMock(childEntry);
+
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        if (state === DownloadState.DOWNLOADED) {
+          const result = childEntry.state === DownloadState.DOWNLOADED ? [childEntry] : [];
+          childEntry.state = DownloadState.IMPORTING;
+          return result;
+        }
+        return [];
+      });
+
+      vi.mocked(importSvc.import).mockResolvedValue({
+        status: 'SUCCESS',
+        identifiers: ['do_child2'],
+      });
+
+      // Child content has no visibility set (new import, not previously downloaded standalone)
+      mockContentDbService.getByIdentifier
+        .mockResolvedValueOnce({ identifier: 'do_child2', visibility: null, content_state: 2, ref_count: 1 })
+        .mockResolvedValueOnce({ identifier: 'do_collection', content_state: 0 });
+
+      vi.mocked(dlDb.getByParent).mockResolvedValue([
+        makeEntry({ identifier: 'do_child2', parent_identifier: 'do_collection', state: DownloadState.COMPLETED }),
+      ]);
+
+      await manager.init();
+
+      // Verify child visibility was set to Parent (since it wasn't Default)
+      expect(mockContentDbService.update).toHaveBeenCalledWith(
+        'do_child2',
+        { visibility: 'Parent' },
       );
     });
 
@@ -631,9 +674,9 @@ describe('DownloadManager', () => {
         identifiers: ['do_child1'],
       });
 
-      // Child exists, parent does NOT exist
+      // Child exists (standalone + collection, ref_count=2), parent does NOT exist
       mockContentDbService.getByIdentifier
-        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2 })
+        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2, ref_count: 2 })
         .mockResolvedValueOnce(null);  // parent not found
 
       vi.mocked(dlDb.getByParent).mockResolvedValue([
@@ -676,8 +719,9 @@ describe('DownloadManager', () => {
         identifiers: ['do_child1'],
       });
 
+      // Child has no prior standalone download (visibility is null, not Default)
       mockContentDbService.getByIdentifier
-        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2 });
+        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: null, content_state: 2, ref_count: 1 });
 
       // One sibling still DOWNLOADING
       vi.mocked(dlDb.getByParent).mockResolvedValue([
@@ -687,13 +731,13 @@ describe('DownloadManager', () => {
 
       await manager.init();
 
-      // Child visibility should still be set
+      // Child visibility should be set to Parent
       expect(mockContentDbService.update).toHaveBeenCalledWith(
         'do_child1',
         { visibility: 'Parent' },
       );
 
-      // But parent should NOT be upgraded
+      // But parent should NOT be upgraded (not all siblings done)
       const parentUpgradeCalls = mockContentDbService.update.mock.calls.filter(
         ([id]: [string]) => id === 'do_collection'
       );

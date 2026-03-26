@@ -619,7 +619,9 @@ export class DownloadManager {
                 percent,
               },
             });
-          }
+          },
+          // Parent identifier — tells ImportService this leaf is part of a collection
+          entry.parent_identifier ?? undefined,
         );
 
         switch (result.status) {
@@ -658,9 +660,13 @@ export class DownloadManager {
   private async handleCollectionChildComplete(entry: DownloadQueueEntry): Promise<void> {
     const parentId = entry.parent_identifier!;
 
-    // 1. Mark the imported leaf content as visibility='Parent'
+    // 1. Mark the imported leaf content as visibility='Parent' — but only if
+    //    the content wasn't also downloaded standalone. A ref_count of 1 means
+    //    this collection import is the only reference. ref_count > 1 means the
+    //    content was also downloaded independently (via fast-path or race), so
+    //    keep the existing visibility (likely 'Default').
     const contentEntry = await contentDbService.getByIdentifier(entry.identifier);
-    if (contentEntry && contentEntry.visibility !== 'Parent') {
+    if (contentEntry && contentEntry.visibility !== 'Parent' && contentEntry.ref_count <= 1) {
       await contentDbService.update(entry.identifier, { visibility: 'Parent' });
       console.debug('[DownloadManager] Set visibility=Parent for child:', entry.identifier);
     }
