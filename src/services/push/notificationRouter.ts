@@ -26,8 +26,19 @@
  *
  * @param push         - internal navigation callback (router.push)
  * @param openExternal - external URL callback (window.open or Browser.open).
- *                       Used for extURL and updateApp. Falls back to window.open if not provided.
+ *                       Used for extURL. Falls back to window.open if not provided.
+ *                       Only called with validated http/https URLs.
  */
+
+/** Returns true only for safe http/https URLs from push payloads. */
+function isSafeUrl(url: string): boolean {
+  try {
+    const { protocol } = new URL(url);
+    return protocol === 'https:' || protocol === 'http:';
+  } catch {
+    return false;
+  }
+}
 export function routeNotification(
   data: Record<string, any>,
   push: (path: string) => void,
@@ -54,7 +65,7 @@ export function routeNotification(
 
     case 'extURL': {
       const url: string = actionData.deepLink ?? '';
-      if (url) openUrl(url);
+      if (url && isSafeUrl(url)) openUrl(url);
       break;
     }
 
