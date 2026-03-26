@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, useLocation } from 'react-router-dom';
 import { App as CapacitorApp } from '@capacitor/app';
+import { AppUpdate } from '@capawesome/capacitor-app-update';
 import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
@@ -134,10 +135,16 @@ const PushNotificationGuard: React.FC = () => {
 
     const handleUpdateApp = async () => {
       try {
-        const { id } = await CapacitorApp.getInfo();
-        window.open(`market://details?id=${id}`, '_system');
+        // Preferred: native plugin handles market:// intent correctly on all GMS devices
+        await AppUpdate.openAppStore();
       } catch {
-        // Not on native platform (web/test) — no-op
+        // Fallback: openAppStore() unavailable (non-GMS / web) — open HTTPS Play Store URL
+        try {
+          const { id } = await CapacitorApp.getInfo();
+          window.open(`https://play.google.com/store/apps/details?id=${id}`, '_system');
+        } catch {
+          // Not on native platform (web/test) — no-op
+        }
       }
     };
 
