@@ -75,23 +75,17 @@ export class ContentService {
     const entry = await contentDbService.getByIdentifier(contentId);
     if (!entry) return buildOfflineResponse<T>({ content: null } as T);
 
-    // local_data is set by the import pipeline (manifest item JSON).
-    // server_data is refreshed when online. Prefer local_data as it reflects
-    // what is actually on disk; fall back to server_data for content that was
-    // only viewed online (no download).
-    const raw = entry.local_data || entry.server_data;
+    // Prefer local_data ONLY if Visibility is 'Default'.
+    // If Visibility is 'Parent', it belongs to a collection and shouldn't
+    // be resolved locally in a standalone context (force network metadata).
+    const raw = (entry.visibility === 'Default')
+      ? (entry.local_data || entry.server_data)
+      : entry.server_data;
+
     const content = raw ? JSON.parse(raw) : null;
 
-    // Resolve artifact URL to the local filesystem for downloaded content.
-    // entry.path is the content directory (file:///…/content/<id>/).
-    // The artifactUrl from the manifest may be a relative filename or a CDN URL;
-    // in both cases the actual file is at {path}/{basename}.
-    if (content && entry.path && entry.content_state === 2 && content.artifactUrl) {
-      const basename = content.artifactUrl.split('/').pop();
-      if (basename) {
-        content.artifactUrl = `${entry.path}/${basename}`;
-      }
-    }
+    // URL resolution for offline playback is handled by contentPlaybackResolver
+    // in ContentPlayerPage. Keep raw metadata here to avoid double resolution.
 
     return buildOfflineResponse<T>({ content } as T);
   }

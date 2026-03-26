@@ -30,6 +30,14 @@ vi.mock('../db/DownloadDbService', () => ({
   DownloadDbService: vi.fn(),
   downloadDbService: {},
 }));
+const mockContentDbService = vi.hoisted(() => ({
+  getByIdentifier: vi.fn().mockResolvedValue(null),
+  update: vi.fn().mockResolvedValue(undefined),
+  upsert: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('../db/ContentDbService', () => ({
+  contentDbService: mockContentDbService,
+}));
 vi.mock('../network/networkService', () => ({
   networkService: {
     subscribe: vi.fn().mockReturnValue(() => {}),
@@ -104,6 +112,9 @@ describe('DownloadManager', () => {
     importSvc = makeMockImportService();
     networkSvc = makeMockNetworkService();
     manager = new DownloadManager(dlDb, networkSvc as any, importSvc);
+    mockContentDbService.getByIdentifier.mockResolvedValue(null);
+    mockContentDbService.update.mockResolvedValue(undefined);
+    mockContentDbService.upsert.mockResolvedValue(undefined);
   });
 
   // ── init ──
@@ -192,6 +203,94 @@ describe('DownloadManager', () => {
       ]);
 
       expect(dlDb.insert).toHaveBeenCalledOnce();
+    });
+
+    it('fast-path: upgrades visibility and bumps ref_count for locally available Parent content', async () => {
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(false);
+      mockContentDbService.getByIdentifier.mockResolvedValue({
+        identifier: 'do_parent',
+        content_state: 2,
+        visibility: 'Parent',
+        ref_count: 1,
+      });
+
+      await manager.init();
+
+      const listener = vi.fn();
+      manager.subscribe(listener);
+
+      await manager.enqueue([
+        {
+          identifier: 'do_parent',
+          downloadUrl: 'https://ex.com/e.ecar',
+          filename: 'e.ecar',
+          mimeType: 'application/ecar',
+        },
+      ]);
+
+      // Should NOT insert into download queue
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      // Should upgrade visibility and bump ref_count
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_parent', {
+        visibility: 'Default',
+        ref_count: 2,
+      });
+      // Should emit state_change for UI refresh
+      expect(listener).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'state_change', identifier: 'do_parent' }),
+      );
+    });
+
+    it('fast-path: bumps ref_count without visibility change for Default content', async () => {
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(false);
+      mockContentDbService.getByIdentifier.mockResolvedValue({
+        identifier: 'do_default',
+        content_state: 2,
+        visibility: 'Default',
+        ref_count: 1,
+      });
+
+      await manager.init();
+      await manager.enqueue([
+        {
+          identifier: 'do_default',
+          downloadUrl: 'https://ex.com/f.ecar',
+          filename: 'f.ecar',
+          mimeType: 'application/ecar',
+        },
+      ]);
+
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_default', {
+        ref_count: 2,
+      });
+    });
+
+    it('fast-path: does not upgrade visibility when downloaded as collection child', async () => {
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(false);
+      mockContentDbService.getByIdentifier.mockResolvedValue({
+        identifier: 'do_child',
+        content_state: 2,
+        visibility: 'Parent',
+        ref_count: 1,
+      });
+
+      await manager.init();
+      await manager.enqueue([
+        {
+          identifier: 'do_child',
+          downloadUrl: 'https://ex.com/g.ecar',
+          filename: 'g.ecar',
+          mimeType: 'application/ecar',
+          parentIdentifier: 'do_collection',
+        },
+      ]);
+
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      // Should NOT upgrade visibility (parentIdentifier present = collection child)
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_child', {
+        ref_count: 2,
+      });
     });
   });
 
@@ -415,12 +514,18 @@ describe('DownloadManager', () => {
         makeEntry({ identifier: 'do_f1', state: DownloadState.FAILED }),
         makeEntry({ identifier: 'do_f2', state: DownloadState.FAILED }),
       ];
-      vi.mocked(dlDb.getByState).mockResolvedValue(failed);
+
+      await manager.init();
+
+      // getByState must return FAILED entries for retryAllFailed,
+      // but return [] for DOWNLOADED (used by processDownloadedEntries while loop)
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        return state === DownloadState.FAILED ? failed : [];
+      });
       vi.mocked(dlDb.getByIdentifier)
         .mockResolvedValueOnce(failed[0])
         .mockResolvedValueOnce(failed[1]);
 
-      await manager.init();
       await manager.retryAllFailed();
 
       // Should have updated both entries to QUEUED
@@ -428,6 +533,171 @@ describe('DownloadManager', () => {
         ([, data]) => (data as any).state === DownloadState.QUEUED
       );
       expect(queuedCalls.length).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  // ── collection child completion ──
+
+  describe('processDownloadedEntries — collection child handling', () => {
+    /**
+     * Helper: creates a mock getByIdentifier that tracks state transitions.
+     * The transition method calls getByIdentifier to validate state, so the
+     * mock must reflect the new state after each update call.
+     */
+    function setupStatefulEntryMock(entry: DownloadQueueEntry) {
+      const stateTracker = { state: entry.state };
+      vi.mocked(dlDb.getByIdentifier).mockImplementation(async () => ({
+        ...entry,
+        state: stateTracker.state,
+      }));
+      vi.mocked(dlDb.update).mockImplementation(async (_id, fields) => {
+        if ((fields as any).state) stateTracker.state = (fields as any).state;
+      });
+    }
+
+    it('sets visibility=Parent and upgrades parent when all children complete', async () => {
+      const childEntry = makeEntry({
+        identifier: 'do_child1',
+        parent_identifier: 'do_collection',
+        state: DownloadState.DOWNLOADED,
+        file_path: '/path/to/child.ecar',
+      });
+
+      setupStatefulEntryMock(childEntry);
+
+      // First call returns one DOWNLOADED entry, second call returns empty (loop termination)
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        if (state === DownloadState.DOWNLOADED) {
+          // Return entry once, then empty
+          const result = childEntry.state === DownloadState.DOWNLOADED ? [childEntry] : [];
+          childEntry.state = DownloadState.IMPORTING; // consume
+          return result;
+        }
+        return [];
+      });
+
+      // Import succeeds
+      vi.mocked(importSvc.import).mockResolvedValue({
+        status: 'SUCCESS',
+        identifiers: ['do_child1'],
+      });
+
+      // Child content exists in ContentDb with Default visibility
+      mockContentDbService.getByIdentifier
+        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2 })  // child lookup
+        .mockResolvedValueOnce({ identifier: 'do_collection', content_state: 0 });                     // parent lookup
+
+      // All siblings are COMPLETED
+      vi.mocked(dlDb.getByParent).mockResolvedValue([
+        makeEntry({ identifier: 'do_child1', parent_identifier: 'do_collection', state: DownloadState.COMPLETED }),
+      ]);
+
+      await manager.init();
+
+      // Verify child visibility was set to Parent
+      expect(mockContentDbService.update).toHaveBeenCalledWith(
+        'do_child1',
+        { visibility: 'Parent' },
+      );
+
+      // Verify parent content_state was upgraded to 2
+      expect(mockContentDbService.update).toHaveBeenCalledWith(
+        'do_collection',
+        { content_state: 2 },
+      );
+    });
+
+    it('creates parent entry if it does not exist in ContentDb', async () => {
+      const childEntry = makeEntry({
+        identifier: 'do_child1',
+        parent_identifier: 'do_collection',
+        state: DownloadState.DOWNLOADED,
+        file_path: '/path/to/child.ecar',
+      });
+
+      setupStatefulEntryMock(childEntry);
+
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        if (state === DownloadState.DOWNLOADED) {
+          const result = childEntry.state === DownloadState.DOWNLOADED ? [childEntry] : [];
+          childEntry.state = DownloadState.IMPORTING;
+          return result;
+        }
+        return [];
+      });
+
+      vi.mocked(importSvc.import).mockResolvedValue({
+        status: 'SUCCESS',
+        identifiers: ['do_child1'],
+      });
+
+      // Child exists, parent does NOT exist
+      mockContentDbService.getByIdentifier
+        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2 })
+        .mockResolvedValueOnce(null);  // parent not found
+
+      vi.mocked(dlDb.getByParent).mockResolvedValue([
+        makeEntry({ identifier: 'do_child1', parent_identifier: 'do_collection', state: DownloadState.COMPLETED }),
+      ]);
+
+      await manager.init();
+
+      // Verify parent entry was created via upsert
+      expect(mockContentDbService.upsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          identifier: 'do_collection',
+          content_state: 2,
+          visibility: 'Default',
+        }),
+      );
+    });
+
+    it('does not upgrade parent if not all siblings are complete', async () => {
+      const childEntry = makeEntry({
+        identifier: 'do_child1',
+        parent_identifier: 'do_collection',
+        state: DownloadState.DOWNLOADED,
+        file_path: '/path/to/child.ecar',
+      });
+
+      setupStatefulEntryMock(childEntry);
+
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        if (state === DownloadState.DOWNLOADED) {
+          const result = childEntry.state === DownloadState.DOWNLOADED ? [childEntry] : [];
+          childEntry.state = DownloadState.IMPORTING;
+          return result;
+        }
+        return [];
+      });
+
+      vi.mocked(importSvc.import).mockResolvedValue({
+        status: 'SUCCESS',
+        identifiers: ['do_child1'],
+      });
+
+      mockContentDbService.getByIdentifier
+        .mockResolvedValueOnce({ identifier: 'do_child1', visibility: 'Default', content_state: 2 });
+
+      // One sibling still DOWNLOADING
+      vi.mocked(dlDb.getByParent).mockResolvedValue([
+        makeEntry({ identifier: 'do_child1', parent_identifier: 'do_collection', state: DownloadState.COMPLETED }),
+        makeEntry({ identifier: 'do_child2', parent_identifier: 'do_collection', state: DownloadState.DOWNLOADING }),
+      ]);
+
+      await manager.init();
+
+      // Child visibility should still be set
+      expect(mockContentDbService.update).toHaveBeenCalledWith(
+        'do_child1',
+        { visibility: 'Parent' },
+      );
+
+      // But parent should NOT be upgraded
+      const parentUpgradeCalls = mockContentDbService.update.mock.calls.filter(
+        ([id]: [string]) => id === 'do_collection'
+      );
+      expect(parentUpgradeCalls).toHaveLength(0);
     });
   });
 });

@@ -89,7 +89,7 @@ const FaqDetailPage: React.FC = () => {
 
     return (
         <IonPage className="faq-detail-page">
-            <AppHeader title={data.title} showBack />
+            <AppHeader title="" showBack showScan={false} />
 
             {/* ── Content ── */}
             <IonContent className="fd-content">

@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useMemo, useEffect, useCall
 import { v4 as uuidv4 } from 'uuid';
 import { loginWithCredentials, loginWithGoogleToken } from '../auth/keycloakApi';
 import { userService } from '../services/UserService';
-import { getClient } from '../lib/http-client';
+import { getClient, setLogoutCallback } from '../lib/http-client';
+import { networkService } from '../services/network/networkService';
 import { useUser } from '../hooks/useUser';
 import { useAppInitialized } from '../hooks/useAppInitialized';
 import { getTnCData, needsTnCAcceptance, TnCData } from '../services/TnCService';
@@ -10,6 +11,7 @@ import { socialLoginService } from '../services/auth/socialLogin/socialLogin.ser
 import { telemetryService } from '../services/TelemetryService';
 import { deviceService } from '../services/device/deviceService';
 import { OrganizationService } from '../services/OrganizationService';
+import { pushNotificationService } from '../services/push/PushNotificationService';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -24,6 +26,8 @@ interface AuthContextType {
   needsTnC: boolean;
   tncData: TnCData | null;
   completeTnC: () => void;
+  onboardingDismissed: boolean;
+  completeOnboarding: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +40,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [isAuthenticated, setIsAuthenticated] = useState(() => userService.isLoggedIn());
   const [userId, setUserId] = useState(() => userService.getUserId());
   const [tncDismissed, setTncDismissed] = useState(false);
+  const [onboardingDismissed, setOnboardingDismissed] = useState(false);
 
   const isAppInitialized = useAppInitialized();
 
@@ -118,6 +123,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(currentUserId);
     setIsAuthenticated(true);
     applyLoginTelemetry(currentUserId);
+    void pushNotificationService.registerDevice();
   }, [applyLoginTelemetry]);
 
   // Google login via native plugin + backend
@@ -129,7 +135,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     try {
-      const tokens = await loginWithGoogleToken(googleResult.idToken, googleResult.email);
+      const tokens = await loginWithGoogleToken(googleResult.idToken, googleResult.email, googleResult.displayName);
       await userService.saveAccount(tokens, 'google');
 
       try {
@@ -145,6 +151,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUserId(currentUserId);
       setIsAuthenticated(true);
       applyLoginTelemetry(currentUserId);
+      void pushNotificationService.registerDevice();
     } catch (err) {
       // Backend call failed — clean up the Google session to prevent stale state
       try {
@@ -160,9 +167,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setTncDismissed(true);
   }, []);
 
+  const completeOnboarding = useCallback(() => {
+    setOnboardingDismissed(true);
+  }, []);
+
   const logout = useCallback(async () => {
-    // Disconnect Google session if logged in via Google
-    if (userService.getLoginProvider() === 'google') {
+    const isOnline = networkService.isConnected();
+
+    // Disconnect Google session if logged in via Google — skip if offline (network call would fail)
+    if (userService.getLoginProvider() === 'google' && isOnline) {
       try {
         await socialLoginService.logoutGoogle();
       } catch {
@@ -189,9 +202,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUserId(null);
     setIsAuthenticated(false);
     setTncDismissed(false);
+    setOnboardingDismissed(false);
     const did = await deviceService.getHashedDeviceId().catch(() => '');
     telemetryService.updateContext({ uid: did || 'anonymous', sid: uuidv4() });
   }, []);
+
+  // Register logout with the HTTP client so the interceptor can trigger
+  // auto-logout when token refresh fails permanently.
+  useEffect(() => {
+    setLogoutCallback(logout);
+  }, [logout]);
 
   return (
     <AuthContext.Provider
@@ -205,6 +225,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         needsTnC,
         tncData,
         completeTnC,
+        onboardingDismissed,
+        completeOnboarding,
       }}
     >
       {children}

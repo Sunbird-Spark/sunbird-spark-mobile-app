@@ -9,7 +9,7 @@ const ScanPage: React.FC = () => {
   const { t } = useTranslation();
   return (
     <IonPage>
-      <AppHeader title={t('scan')} />
+      <AppHeader title={t('scan')} showScan={false} />
       <IonContent fullscreen>
         <div className="ion-padding">
           <h1>Scan Page</h1>

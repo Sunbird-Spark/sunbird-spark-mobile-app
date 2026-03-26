@@ -5,7 +5,9 @@ export class VideoPlayerService {
   private eventHandlers = new WeakMap<HTMLElement, { player: (event: Event) => void; telemetry: (event: Event) => void }>();
   private static scriptLoaded = false;
   private static scriptLoading?: Promise<void>;
-  private static stylesLoaded = false;
+  private static cachedCss: string | null = null;
+  private static cssLoading?: Promise<string>;
+  private static stylesInjected = false;
 
   private loadScript(): Promise<void> {
     if (VideoPlayerService.scriptLoaded || customElements.get('sunbird-video-player')) {
@@ -34,43 +36,113 @@ export class VideoPlayerService {
 
     const context = await buildPlayerContext(contextProps, { contentId: metadata.identifier });
 
-    return { context, config: { apislug: '/action' }, metadata };
+    return {
+      context,
+      config: {
+        apislug: '/action',
+        sideMenu: {
+          showShare: true,
+          showDownload: false,
+          showExit: true,
+          showPrint: false,
+          showReplay: true,
+        },
+      },
+      metadata,
+    };
   }
 
+  /**
+   * Fetch and cache the video player CSS content.
+   * The CSS is fetched once and reused across all player instances.
+   */
+  private async fetchStyles(): Promise<string> {
+    if (VideoPlayerService.cachedCss !== null) {
+      return VideoPlayerService.cachedCss;
+    }
+    if (VideoPlayerService.cssLoading) {
+      return VideoPlayerService.cssLoading;
+    }
+    VideoPlayerService.cssLoading = fetch('/assets/video-player/styles.css')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Failed to fetch video player styles: ${response.status}`);
+        }
+        return response.text();
+      })
+      .then(css => {
+        VideoPlayerService.cachedCss = css;
+        VideoPlayerService.cssLoading = undefined;
+        return css;
+      })
+      .catch(error => {
+        console.error('Failed to load video player styles:', error);
+        VideoPlayerService.cachedCss = '';
+        VideoPlayerService.cssLoading = undefined;
+        return '';
+      });
+    return VideoPlayerService.cssLoading;
+  }
+
+  /**
+   * Rewrite CSS selectors so they work inside @scope.
+   * - :root → :scope (CSS variables applied to the wrapper)
+   * - html / body → :scope (base styles target the wrapper)
+   */
+  private rewriteCssForScope(css: string): string {
+    let rewritten = css.replace(/:root/g, ':scope');
+    rewritten = rewritten.replace(/(?<![a-zA-Z-])html(?=\s*[{,[:]|$)/g, ':scope');
+    rewritten = rewritten.replace(/(?<![a-zA-Z-])body(?=\s*[{,[:]|$)/g, ':scope');
+    return rewritten;
+  }
+
+  /**
+   * Inject scoped styles into document.head once.
+   * Uses @scope([data-video-player-wrapper]) so styles apply only inside
+   * player wrappers without global bleed — no per-instance <style> needed.
+   */
+  private async injectStyles(): Promise<void> {
+    if (VideoPlayerService.stylesInjected) return;
+    VideoPlayerService.stylesInjected = true;
+
+    const cssContent = await this.fetchStyles();
+
+    if (cssContent) {
+      const scopedCss = this.rewriteCssForScope(cssContent);
+      const styleEl = document.createElement('style');
+      styleEl.setAttribute('data-video-player-styles', 'true');
+      styleEl.textContent = `@scope ([data-video-player-wrapper]) {\n${scopedCss}\n}`;
+      document.head.appendChild(styleEl);
+    }
+
+    // Containment overrides: the custom element defaults to display:inline and
+    // .video-js.vjs-fluid sets height:0 + padding-top for aspect ratio,
+    // which pushes .vjs-control-bar (position:absolute;bottom:0) off-screen.
+    // Override to fill the wrapper height instead.
+    // Also hide the Video.js big play button to match portal behavior.
+    const containEl = document.createElement('style');
+    containEl.setAttribute('data-video-player-contain', 'true');
+    containEl.textContent = [
+      '[data-video-player-wrapper] sunbird-video-player { display:block; width:100%; height:100%; }',
+      '[data-video-player-wrapper] .video-js { width:100% !important; height:100% !important; }',
+      '[data-video-player-wrapper] .video-js.vjs-fluid { padding-top:0 !important; }',
+      '[data-video-player-wrapper] .vjs-big-play-button { display:none !important; }',
+    ].join('\n');
+    document.head.appendChild(containEl);
+  }
+
+  /**
+   * Create video player element with styles scoped via CSS @scope.
+   * Styles are injected once into document.head on first use.
+   */
   async createElement(config: VideoPlayerConfig): Promise<HTMLElement> {
+    await this.injectStyles();
+
     const wrapper = document.createElement('div');
     wrapper.setAttribute('data-video-player-wrapper', 'true');
     wrapper.setAttribute('data-player-id', config.metadata.identifier);
     wrapper.style.width = '100%';
     wrapper.style.height = '100%';
-    wrapper.style.position = 'relative';
-    wrapper.style.overflow = 'hidden';
-
-    // Load video player styles globally (once) so video.js renders correctly
-    if (!VideoPlayerService.stylesLoaded) {
-      const link = document.createElement('link');
-      link.rel = 'stylesheet';
-      link.href = '/assets/video-player/styles.css';
-      link.setAttribute('data-video-player-styles', 'true');
-      document.head.appendChild(link);
-      VideoPlayerService.stylesLoaded = true;
-    }
-
-    // Containment styles: the custom element defaults to display:inline and
-    // .video-js has no explicit height, so the player overflows its container
-    // and the absolutely-positioned .vjs-control-bar ends up off-screen.
-    // Containment overrides:
-    // - sunbird-video-player is a custom element (defaults to display:inline)
-    // - .video-js.vjs-fluid sets height:0 + padding-top for aspect ratio,
-    //   which pushes .vjs-control-bar (position:absolute;bottom:0) off-screen.
-    //   Override to fill the wrapper height instead.
-    const styleEl = document.createElement('style');
-    styleEl.textContent = [
-      '[data-video-player-wrapper] sunbird-video-player { display:block; width:100%; height:100%; }',
-      '[data-video-player-wrapper] .video-js { width:100% !important; height:100% !important; }',
-      '[data-video-player-wrapper] .video-js.vjs-fluid { padding-top:0 !important; }',
-    ].join('\n');
-    wrapper.appendChild(styleEl);
 
     const element = document.createElement('sunbird-video-player');
     element.setAttribute('player-config', JSON.stringify(config));

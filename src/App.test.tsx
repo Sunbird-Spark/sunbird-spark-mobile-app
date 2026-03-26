@@ -31,6 +31,7 @@ vi.mock('@ionic/react', () => ({
   IonSpinner: ({ name }: any) => <span data-testid="ion-spinner" data-name={name} />,
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   IonBadge: ({ children }: any) => <span data-testid="ion-badge">{children}</span>,
+  IonToast: () => null,
   setupIonicReact: vi.fn(),
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
@@ -227,6 +228,20 @@ vi.mock('./hooks/useNotifications', () => ({
   useNotificationGrouping: () => ({ groupedNotifications: [], unreadCount: 0 }),
 }));
 
+// Mock React Query — PushNotificationGuard uses useQueryClient
+vi.mock('@tanstack/react-query', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@tanstack/react-query')>();
+  return {
+    ...actual,
+    useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+  };
+});
+
+// Mock push notification service
+vi.mock('./services/push/notificationRouter', () => ({
+  routeNotification: vi.fn(),
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -238,12 +253,24 @@ vi.mock('./contexts/AuthContext', () => ({
     needsTnC: false,
     tncData: null,
     completeTnC: vi.fn(),
+    onboardingDismissed: false,
+    completeOnboarding: vi.fn(),
   }),
 }));
 
 // Mock TermsAndConditionsPage
 vi.mock('./pages/TermsAndConditionsPage', () => ({
   default: () => <div data-testid="tnc-page">TnC Page</div>,
+}));
+
+// Mock OnboardingPage
+vi.mock('./pages/OnboardingPage', () => ({
+  default: () => <div data-testid="onboarding-page">Onboarding Page</div>,
+}));
+
+// Mock useUser hook for OnboardingGuard
+vi.mock('./hooks/useUser', () => ({
+  useUser: () => ({ data: null, isLoading: false, error: null }),
 }));
 
 describe('App', () => {
@@ -269,6 +296,7 @@ describe('App', () => {
     expect(screen.getByTestId('route-/search')).toBeInTheDocument();
     expect(screen.getByTestId('route-/content/:contentId')).toBeInTheDocument();
     expect(screen.getByTestId('route-/notifications')).toBeInTheDocument();
+    expect(screen.getByTestId('route-/onboarding')).toBeInTheDocument();
   });
 
   it('renders redirect component', () => {

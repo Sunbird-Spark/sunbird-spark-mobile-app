@@ -1,5 +1,6 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Zip } from 'capa-zip';
+import { CapacitorHttp } from '@capacitor/core';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import type { ImportResult, ImportPhase, ContentEntry } from './types';
@@ -92,6 +93,11 @@ export class ImportService {
         return { status: 'ALREADY_EXIST', identifiers: [] };
       }
 
+      // Detect collection (spine) import: if the root item is a collection,
+      // all other items are children and should get visibility='Parent'.
+      const rootItem = allItems.find((i) => i.identifier === identifier);
+      const isCollectionImport = !!rootItem?.mimeType?.includes('collection');
+
       // ══ STAGE 2: Extract payloads + write to content DB ══
       await this.checkCancelled(isCancelled);
       onProgress?.('IMPORTING_CONTENT', 40);
@@ -112,13 +118,26 @@ export class ImportService {
         // Extract/copy payload based on contentDisposition + contentEncoding
         const contentState = await this.extractPayload(item, tmpUri, destUri);
 
+        // Flatten: move contents of "widgets/" to root if they exist.
+        // Legacy renderers/plugins often expect a flat structure relative to content root.
+        await this.flattenDirectory(destUri);
+
+        // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
+        // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
+        // (using config.s3ContentHost = "/assets/public/content/" and s3_folders).
+        // Move extracted content into that directory structure so the renderer
+        // finds index.html at the expected path.
+        await this.restructureForRenderer(item, destUri);
+
         // Build content DB row + upsert
+        const isChildOfCollection = isCollectionImport && item.identifier !== identifier;
         const row = this.constructContentRow(
           item,
           destUri,
           String(manifest.ver),
           contentState,
-          existing
+          existing,
+          isChildOfCollection
         );
         await this.contentDb.upsert(row);
         importedIds.push(item.identifier);
@@ -137,6 +156,17 @@ export class ImportService {
       }).catch(() => { });
       tmpDir = undefined;
       await Filesystem.deleteFile({ path: sourcePath }).catch(() => { });
+
+      // Download appIcon for offline use (best-effort, non-blocking)
+      if (contentMeta) {
+        const iconUrl = (contentMeta as Record<string, unknown>).appIcon as string
+          || (contentMeta as Record<string, unknown>).posterImage as string;
+        if (iconUrl && iconUrl.startsWith('http')) {
+          await this.downloadIcon(identifier, iconUrl).catch((err) => {
+            console.warn('[ImportService] Icon download failed (non-fatal):', err);
+          });
+        }
+      }
 
       // Deferred size update (5s later)
       setTimeout(() => this.updateSizesOnDevice(importedIds), 5000);
@@ -179,14 +209,17 @@ export class ImportService {
     const isCollection = mimeType.includes('collection');
     const isQuestionSet = mimeType.includes('questionset');
 
-    // Collections / question sets → metadata only
+    // Collections / question sets → metadata only (hierarchy, no playable artifact)
     if (isCollection || isQuestionSet) return 2;
 
-    // No artifact URL or remote-only
-    if (!artifactUrl || artifactUrl.startsWith('https:')) return 2;
-
-    // Online-only content
+    // Online-only content (YouTube, external URLs) → never needs a local artifact
     if (disposition === 'online') return 2;
+
+    // No artifact URL, or artifact URL is a remote server path (https://...).
+    // This happens in spine ECARs where leaf items list the CDN URL but the
+    // actual file is delivered in the individual leaf ECAR. Return 0 (ONLY_SPINE)
+    // so that filterItems allows the leaf ECAR to import later and extract the file.
+    if (!artifactUrl || artifactUrl.startsWith('https:')) return 0;
 
     const itemSourcePath = `${tmpUri}/${artifactUrl}`;
 
@@ -220,10 +253,21 @@ export class ImportService {
     destPath: string,
     manifestVersion: string,
     contentState: number,
-    existing?: ContentEntry
+    existing?: ContentEntry,
+    isChildOfCollection?: boolean,
   ): ContentEntry {
     const isCollection = item.mimeType?.includes('collection');
-    const visibility = this.readVisibility(item);
+    // Visibility rules:
+    // 1. Never downgrade existing 'Default' → 'Parent' (content may have been individually downloaded)
+    // 2. Children of a collection import get 'Parent' so they don't appear individually in Downloads
+    // 3. Otherwise read from manifest (standalone imports get 'Default')
+    // 4. Upgrade 'Parent' → 'Default' if this is a standalone import (isChildOfCollection=false)
+    const manifestVisibility = this.readVisibility(item);
+    let visibility = existing ? existing.visibility : (isChildOfCollection ? 'Parent' : manifestVisibility);
+
+    if (visibility === 'Parent' && !isChildOfCollection && manifestVisibility === 'Default') {
+      visibility = 'Default';
+    }
     const refCount = existing ? existing.ref_count + 1 : 1;
 
     // content_state never downgrades (ARTIFACT_AVAILABLE → ONLY_SPINE)
@@ -234,7 +278,7 @@ export class ImportService {
 
     return {
       identifier: item.identifier,
-      server_data: '',
+      server_data: existing?.server_data || '',
       local_data: JSON.stringify(item),
       mime_type: item.mimeType || '',
       path:
@@ -272,7 +316,19 @@ export class ImportService {
       const existing = existingMap.get(item.identifier);
       if (!existing) return true; // new content
 
-      // Skip same/newer version already imported
+      // Allow re-import if existing entry is spine-only (no artifact extracted yet).
+      // Spine ECARs create entries with content_state=0 for leaf content; the
+      // individual leaf ECAR must still be imported to extract the actual file.
+      if (existing.content_state < 2) return true;
+
+      // Allow re-import if visibility is being upgraded from 'Parent' to 'Default'.
+      // This happens when a content item previously imported as part of a collection
+      // (Parent visibility) is now being imported standalone.
+      if (this.readVisibility(item) === 'Default' && existing.visibility === 'Parent') {
+        return true;
+      }
+
+      // Skip same/newer version already fully imported
       try {
         const existingData = JSON.parse(existing.local_data) as { pkgVersion?: number };
         return (item.pkgVersion ?? 0) > (existingData.pkgVersion || 0);
@@ -296,6 +352,45 @@ export class ImportService {
     return Array.isArray(arr) ? arr.join(',') : String(arr);
   }
 
+  /**
+   * Download appIcon/posterImage to the content directory for offline display.
+   * Saves as `content/{identifier}/appIcon.{ext}` and updates local_data JSON.
+   */
+  private async downloadIcon(identifier: string, iconUrl: string): Promise<void> {
+    const ext = iconUrl.split('?')[0].split('.').pop()?.toLowerCase() || 'png';
+    const safeExt = ['png', 'jpg', 'jpeg', 'webp', 'svg'].includes(ext) ? ext : 'png';
+    const iconFilename = `appIcon.${safeExt}`;
+    const contentPath = `${CONTENT_DIR}/${identifier}`;
+    const iconPath = `${contentPath}/${iconFilename}`;
+
+    // Download icon bytes using Capacitor HTTP (avoids CORS)
+    const response = await CapacitorHttp.get({
+      url: iconUrl,
+      responseType: 'blob',
+    });
+
+    if (response.status !== 200) return;
+
+    // Write the base64 data to file
+    await Filesystem.writeFile({
+      path: iconPath,
+      directory: Directory.Data,
+      data: response.data,
+    });
+
+    // Update local_data with relative icon filename so it can be resolved later
+    const entry = await this.contentDb.getByIdentifier(identifier);
+    if (entry?.local_data) {
+      try {
+        const localData = JSON.parse(entry.local_data);
+        localData.appIconLocal = iconFilename;
+        await this.contentDb.update(identifier, { local_data: JSON.stringify(localData) });
+      } catch { /* ignore parse errors */ }
+    }
+
+    console.debug('[ImportService] Icon saved:', iconPath);
+  }
+
   private async updateSizesOnDevice(ids: string[]): Promise<void> {
     for (const id of ids) {
       try {
@@ -315,20 +410,21 @@ export class ImportService {
   }
 
   private async readManifest(tmpUri: string): Promise<ManifestData> {
-    // Check which manifest file to read to avoid noisy Capacitor console errors on missing files
+    // Always prefer manifest.json — it has the standard { archive: { items: [...] } }
+    // structure that parseManifestItems expects. hierarchy.json has a different nested
+    // format ({ collection: { children: [...] } }) that isn't compatible.
+    // Spine ECARs ship BOTH files; leaf ECARs only have manifest.json.
     try {
-      await Filesystem.stat({ path: `${tmpUri}/hierarchy.json` });
-      // hierarchy.json exists!
       const r = await Filesystem.readFile({
-        path: `${tmpUri}/hierarchy.json`,
+        path: `${tmpUri}/manifest.json`,
         encoding: Encoding.UTF8,
       });
       return JSON.parse(r.data as string) as ManifestData;
     } catch {
       try {
-        // Fallback to manifest.json
+        // Fallback to hierarchy.json (shouldn't normally be needed)
         const r = await Filesystem.readFile({
-          path: `${tmpUri}/manifest.json`,
+          path: `${tmpUri}/hierarchy.json`,
           encoding: Encoding.UTF8,
         });
         return JSON.parse(r.data as string) as ManifestData;
@@ -373,6 +469,98 @@ export class ImportService {
       } catch {
         /* file may not exist */
       }
+    }
+  }
+
+  /**
+   * Mime-type → subfolder used by the genie-canvas htmlrenderer plugin.
+   * Matches the `s3_folders` map in coreplugins.js.
+   */
+  private static readonly RENDERER_S3_FOLDERS: Record<string, string> = {
+    'application/vnd.ekstep.h5p-archive': 'h5p',
+    'application/vnd.ekstep.html-archive': 'html',
+  };
+
+  /**
+   * Move extracted H5P/HTML content into the directory structure expected by
+   * the genie-canvas htmlrenderer plugin.
+   *
+   * The renderer constructs the iframe URL as:
+   *   {host}/assets/public/content/{type}/{id}-{suffix}/index.html
+   *
+   * where {type} is "h5p" or "html", {suffix} is "latest" for Live content.
+   * After this method the content directory looks like:
+   *   content/{id}/assets/public/content/h5p/{id}-latest/index.html
+   *                                                      /content/...
+   *                                                      /js/...
+   */
+  private async restructureForRenderer(
+    item: ManifestItem,
+    destUri: string
+  ): Promise<void> {
+    const folder = ImportService.RENDERER_S3_FOLDERS[item.mimeType || ''];
+    if (!folder) return; // Not H5P or HTML — nothing to do
+
+    const suffix = item.status === 'Live' ? 'latest' : 'snapshot';
+    const subDir = `assets/public/content/${folder}/${item.identifier}-${suffix}`;
+    const targetUri = `${destUri}/${subDir}`;
+
+    try {
+      // Create the nested target directory
+      await Filesystem.mkdir({ path: targetUri, recursive: true }).catch(() => { });
+
+      // Read all entries currently at the content root
+      const { files } = await Filesystem.readdir({ path: destUri });
+
+      for (const entry of files) {
+        // Skip the "assets" directory we just created
+        if (entry.name === 'assets') continue;
+
+        await Filesystem.rename({
+          from: `${destUri}/${entry.name}`,
+          to: `${targetUri}/${entry.name}`,
+        }).catch((err) => {
+          console.warn(`[ImportService] restructure: could not move ${entry.name}:`, err);
+        });
+      }
+
+      console.debug('[ImportService] Restructured for renderer:', subDir);
+    } catch (err) {
+      console.warn('[ImportService] restructureForRenderer failed:', err);
+    }
+  }
+
+  /**
+   * Move everything inside [destUri]/widgets/ to [destUri] root.
+   * This prepares the directory structure for legacy renderer compatibility.
+   */
+  private async flattenDirectory(destUri: string): Promise<void> {
+    try {
+      const widgetsUri = `${destUri}/widgets`;
+
+      // Check if widgets directory exists
+      const stat = await Filesystem.stat({ path: widgetsUri }).catch(() => null);
+      if (!stat || stat.type !== 'directory') return;
+
+      const result = await Filesystem.readdir({ path: widgetsUri });
+      for (const entry of result.files) {
+        const oldPath = `${widgetsUri}/${entry.name}`;
+        const newPath = `${destUri}/${entry.name}`;
+
+        // Move to root. Failure may occur if naming collisions exist (e.g. nested assets folder).
+        await Filesystem.rename({
+          from: oldPath,
+          to: newPath
+        }).catch((err) => {
+          console.warn(`[ImportService] Could not move ${entry.name} from widgets (exists at root?):`, err);
+        });
+      }
+
+      // Cleanup the now-empty widgets folder
+      await Filesystem.rmdir({ path: widgetsUri }).catch(() => { });
+      console.debug('[ImportService] Flattened widgets structure for:', destUri);
+    } catch (err) {
+      console.warn('[ImportService] Flattening failed:', err);
     }
   }
 }

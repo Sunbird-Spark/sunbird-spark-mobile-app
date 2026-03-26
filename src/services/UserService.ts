@@ -153,6 +153,7 @@ class UserService {
         'recoveryEmail',
         'roles',
         'organisations',
+        'framework',
       ].join(',');
       const response = await getClient().get(`/user/v5/read/${userId}?fields=${fields}`);
 

@@ -4,8 +4,16 @@ import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 // vi.hoisted ensures these are available when the hoisted vi.mock factories run.
-const { mockGet } = vi.hoisted(() => ({
+const { mockGet, mockNetworkService, mockContentDbService } = vi.hoisted(() => ({
   mockGet: vi.fn(),
+  mockNetworkService: {
+    isConnected: vi.fn().mockReturnValue(true),
+  },
+  mockContentDbService: {
+    getByIdentifier: vi.fn().mockResolvedValue(null),
+    update: vi.fn().mockResolvedValue(undefined),
+    upsert: vi.fn().mockResolvedValue(undefined),
+  },
 }));
 
 vi.mock('../lib/http-client', () => ({
@@ -15,6 +23,20 @@ vi.mock('../lib/http-client', () => ({
 vi.mock('../AppInitializer', () => ({
   AppInitializer: {
     isInitialized: vi.fn(),
+  },
+}));
+
+vi.mock('../services/network/networkService', () => ({
+  networkService: mockNetworkService,
+}));
+
+vi.mock('../services/db/ContentDbService', () => ({
+  contentDbService: mockContentDbService,
+}));
+
+vi.mock('../services/db/DatabaseService', () => ({
+  databaseService: {
+    initialize: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -33,6 +55,8 @@ describe('useCollection', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(AppInitializer.isInitialized).mockReturnValue(true);
+    mockNetworkService.isConnected.mockReturnValue(true);
+    mockContentDbService.getByIdentifier.mockResolvedValue(null);
   });
 
   it('should fetch and map collection data successfully', async () => {
@@ -125,22 +149,22 @@ describe('useCollection', () => {
     expect(mockGet).not.toHaveBeenCalled();
   });
 
-  it('should handle fetch errors', async () => {
-    // The hook has retry: 1, so it will call twice before erroring
+  it('should handle fetch errors by falling back to offline cache', async () => {
+    // When API fails, the hook catches the error and falls through to
+    // the offline cache (readCachedHierarchy). With no cached data it returns null.
     mockGet.mockRejectedValue(new Error('Network error'));
+    mockContentDbService.getByIdentifier.mockResolvedValue(null);
 
     const { result } = renderHook(() => useCollection('do_123'), {
       wrapper: createWrapper(),
     });
 
-    await waitFor(
-      () => {
-        expect(result.current.isError).toBe(true);
-      },
-      { timeout: 5000 }
-    );
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
 
-    expect(result.current.error?.message).toBe('Network error');
+    // Falls back to null when both API and cache fail
+    expect(result.current.data).toBeNull();
   });
 
   it('should map defaults when optional fields are missing', async () => {

@@ -132,6 +132,7 @@ export type DownloadEventType =
   | 'import_progress'
   | 'queue_changed'
   | 'error'
+  | 'content_deleted'
   | 'all_done';
 
 export interface DownloadEvent {

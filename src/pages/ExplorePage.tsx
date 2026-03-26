@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
+import { QRScanButton } from '../components/common/QRScanButton';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useFormRead } from '../hooks/useFormRead';
 import useDebounce from '../hooks/useDebounce';
@@ -90,6 +91,10 @@ const ExplorePage: React.FC = () => {
     // ── Read query param from URL ──
     const location = useLocation();
     const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);
+    const urlDialCode = useMemo(() => {
+        const rawDialCode = new URLSearchParams(location.search).get('dialCode') || '';
+        return /^[A-Za-z0-9]+$/.test(rawDialCode) ? rawDialCode : '';
+    }, [location.search]);
 
     // ── Search ──
     const [showSearch, setShowSearch] = useState(!!urlQuery);
@@ -145,7 +150,8 @@ const ExplorePage: React.FC = () => {
         ...Object.fromEntries(
             Object.entries(filters).filter(([, values]) => values.length > 0)
         ),
-    }), [filters]);
+        ...(urlDialCode ? { dialcodes: [urlDialCode] } : {}),
+    }), [filters, urlDialCode]);
 
     // ── Reset pagination when search params change ──
     const searchParamsKey = useMemo(
@@ -258,7 +264,7 @@ const ExplorePage: React.FC = () => {
     return (
         <IonPage>
             <IonHeader className="ion-no-border">
-                <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'env(safe-area-inset-top)', padding: '16px 16px', boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)' }}>
+                <IonToolbar style={{ '--background': 'var(--ion-color-light)', '--padding-top': 'var(--safe-area-top)', padding: '16px 16px', boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
                         {showSearch ? (
                             <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-f0f0f0, #f0f0f0)', borderRadius: '8px', padding: '6px 10px' }}>
@@ -284,6 +290,7 @@ const ExplorePage: React.FC = () => {
                                     <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
                                         <SearchIcon />
                                     </button>
+                                    <QRScanButton />
                                     <button
                                         onClick={handleOpenFilter}
                                         aria-label={t('filters')}
@@ -305,6 +312,18 @@ const ExplorePage: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen style={{ '--background': 'rgb(244, 244, 244)' }}>
+                {urlDialCode && (
+                    <div style={{
+                        background: 'var(--ion-color-primary)',
+                        color: '#ffffff',
+                        padding: '8px 16px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                    }}>
+                        {t('dialCodeResults')}: {urlDialCode}
+                    </div>
+                )}
+
                 <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
                     <IonRefresherContent />
                 </IonRefresher>

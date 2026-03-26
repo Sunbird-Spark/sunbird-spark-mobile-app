@@ -1,3 +1,4 @@
+import { StatusBar, Style } from '@capacitor/status-bar';
 import { initializeApiClient } from './api/config';
 import { AppConsumerAuthService } from './services/AppConsumerAuthService';
 import { databaseService } from './services/db/DatabaseService';
@@ -7,6 +8,8 @@ import { userService } from './services/UserService';
 import { socialLoginService } from './services/auth/socialLogin/socialLogin.service';
 import { SystemSettingService } from './services/SystemSettingService';
 import { networkService } from './services/network/networkService';
+import { pushNotificationService } from './services/push/PushNotificationService';
+import { settingsService } from './services/SettingsService';
 import { syncService } from './services/sync/SyncService';
 import { syncScheduler } from './services/sync/SyncScheduler';
 import { ChannelManager } from './services/ChannelManager';
@@ -30,6 +33,10 @@ export class AppInitializer {
     }
 
     try {
+      // Ensure dark status bar icons (visible on the app's light headers).
+      // overlaysWebView stays true so Ionic's IonHeader safe-area handling is unaffected.
+      try { await StatusBar.setStyle({ style: Style.Light }); } catch { /* browser */ }
+
       // Initialize SQLite database first — all other services depend on it
       await databaseService.initialize();
 
@@ -44,6 +51,10 @@ export class AppInitializer {
       // Initialize download manager (depends on DB)
       await downloadManager.init();
 
+      // Apply download settings (wifi-only vs always)
+      const downloadSetting = await settingsService.getDownloadContent();
+      downloadManager.setWifiOnly(downloadSetting === 'wifi');
+
       // Initialize API client
       await initializeApiClient();
 
@@ -53,7 +64,7 @@ export class AppInitializer {
 
       // Get Kong token and set it in HTTP client
       const kongToken = await authService.getAuthenticatedToken();
-      
+
       // Set Authorization header with device JWT from Kong
       const httpClient = getClient();
       httpClient.updateHeaders([
@@ -104,18 +115,25 @@ export class AppInitializer {
         if (clientId && typeof clientId === 'string') {
           await socialLoginService.initGoogle(clientId);
         }
-      } catch {
-        // Google Sign-In init failed — Google login will be unavailable
+      } catch (err) {
+        console.warn('[AppInitializer] Google Sign-In init failed — Google login will be unavailable', err);
+      }
+
+      // Initialize push notifications (non-blocking — don't fail app init if it errors)
+      try {
+        await pushNotificationService.init();
+      } catch (err) {
+        console.warn('[AppInitializer] Push notification setup failed', err);
       }
 
       this.initialized = true;
       this.notifyListeners();
     } catch (error) {
       console.error('AppInitializer: Initialization failed:', error);
-      
+
       // Ensure the application does not remain in a partially initialized state
       this.initialized = false;
-      
+
       try {
         // Roll back any authorization headers that may have been set
         const httpClient = getClient();
@@ -126,7 +144,7 @@ export class AppInitializer {
         // If cleanup fails, log it but preserve the original initialization error
         console.error('AppInitializer: Failed to clean up after initialization error:', cleanupError);
       }
-      
+
       throw error;
     }
   }

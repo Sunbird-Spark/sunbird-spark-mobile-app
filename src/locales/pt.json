@@ -98,6 +98,7 @@
   "contactUs": "Fale conosco",
   "reportIssue": "Reportar problema",
   "helpAndSupport": "Ajuda e suporte",
+  "navSupport": "Suporte",
   "frequentlyAsked": "Perguntas frequentes",
   "courseProgress": "Progresso do curso",
   "lessons": "Aulas",
@@ -205,6 +206,18 @@
   "verifying": "Verificando…",
   "submit": "Enviar",
   "fieldUpdatedSuccessfully": "{{field}} atualizado com sucesso",
+  "onboarding": {
+    "subtitle": "Gostaríamos de ajudá-lo a personalizar sua experiência!",
+    "saveAndProceed": "Salvar e continuar",
+    "submit": "Enviar",
+    "skipOnboarding": "Pular integração",
+    "enterPreference": "Digite sua preferência",
+    "failedToLoad": "Falha ao carregar a integração.",
+    "skip": "Pular",
+    "somethingWentWrong": "Algo deu errado.",
+    "goToHome": "Ir para o início",
+    "goBack": "Voltar"
+  },
   "download": {
     "download": "Baixar",
     "resume": "Retomar download",
@@ -238,6 +251,13 @@
     "deleteFailed": "Falha ao excluir o conteúdo",
     "downloadFailed": "Falha ao baixar conteúdo."
   },
+  "scanQRCode": "Digitalizar código QR",
+  "cameraDeniedTitle": "Acesso à câmera negado",
+  "cameraDeniedMessage": "Por favor, permita o acesso à câmera para digitalizar códigos QR.",
+  "invalidQRTitle": "Código QR inválido",
+  "invalidQRMessage": "Este código QR não é um código DIAL válido. Por favor, tente novamente.",
+  "tryAgain": "Tentar novamente",
+  "dialCodeResults": "Resultados do código QR",
   "months": {
     "jan": "Jan",
     "feb": "Fev",

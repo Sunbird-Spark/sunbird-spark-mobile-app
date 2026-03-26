@@ -1,12 +1,19 @@
 import { resolveContentForPlayer } from './contentPlaybackResolver';
+import { Filesystem } from '@capacitor/filesystem';
 
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: { getByIdentifier: vi.fn() },
 }));
 
+vi.mock('@capacitor/filesystem', () => ({
+  Filesystem: { readFile: vi.fn() },
+  Encoding: { UTF8: 'utf8' },
+}));
+
 import { contentDbService } from '../db/ContentDbService';
 
 const mockGetByIdentifier = vi.mocked(contentDbService.getByIdentifier);
+const mockReadFile = vi.mocked(Filesystem.readFile);
 
 describe('resolveContentForPlayer', () => {
   beforeEach(() => vi.clearAllMocks());
@@ -45,8 +52,8 @@ describe('resolveContentForPlayer', () => {
     const result = await resolveContentForPlayer('do_123', metadata);
     // artifactUrl becomes just the basename (players concat basePath + artifactUrl)
     expect(result.artifactUrl).toBe('video.mp4');
-    // streamingUrl is resolved to an absolute local path
-    expect(result.streamingUrl).toContain('video.mp4');
+    // streamingUrl is resolved to the base directory for video content
+    expect(result.streamingUrl).toBe('file:///data/content/do_123');
     expect(result.isAvailableLocally).toBe(true);
     expect(result.basePath).toBeDefined();
   });
@@ -63,8 +70,8 @@ describe('resolveContentForPlayer', () => {
     };
     const result = await resolveContentForPlayer('do_vid', videoMeta);
     expect(result.artifactUrl).toBe('clip.mp4');
-    // streamingUrl auto-set for video content
-    expect(result.streamingUrl).toContain('clip.mp4');
+    // streamingUrl auto-set to directory for video content
+    expect(result.streamingUrl).toBe('file:///data/content/do_vid');
   });
 
   it('does not set streamingUrl for non-video content without streamingUrl', async () => {
@@ -94,13 +101,63 @@ describe('resolveContentForPlayer', () => {
       streamingUrl: 'https://cdn.example.com/content/do_123/master.m3u8',
     };
     const result = await resolveContentForPlayer('do_123', hlsMeta);
-    // HLS can't play offline — streamingUrl falls back to local video file
-    expect(result.streamingUrl).toContain('video.mp4');
+    // HLS can't play offline — streamingUrl falls back to local base directory for videos
+    expect(result.streamingUrl).toBe('file:///data/content/do_123');
   });
 
   it('returns original metadata on error', async () => {
     mockGetByIdentifier.mockRejectedValue(new Error('DB error'));
     const result = await resolveContentForPlayer('do_123', metadata);
     expect(result).toBe(metadata);
+  });
+
+  describe('loadLocalBody for ECML', () => {
+    const ecmlMeta = {
+      identifier: 'do_ecml',
+      mimeType: 'application/vnd.ekstep.ecml-archive',
+    };
+
+    it('loads body from index.json when available', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_ecml',
+      } as any);
+      mockReadFile.mockResolvedValueOnce({ data: '{"theme": "json"}' } as any);
+
+      const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
+
+      expect(mockReadFile).toHaveBeenCalledWith(expect.objectContaining({
+        path: expect.stringContaining('index.json'),
+      }));
+      expect((result as any).body).toEqual({ theme: 'json' });
+    });
+
+    it('falls back to index.ecml when index.json is missing', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_ecml',
+      } as any);
+      // index.json fails, index.ecml succeeds
+      mockReadFile
+        .mockRejectedValueOnce(new Error('no json'))
+        .mockResolvedValueOnce({ data: '{"theme": "ecml"}' } as any);
+
+      const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
+
+      expect(mockReadFile).toHaveBeenCalledTimes(2);
+      expect((result as any).body).toEqual({ theme: 'ecml' });
+    });
+
+    it('sets body to null when both files are missing', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_ecml',
+      } as any);
+      mockReadFile.mockRejectedValue(new Error('missing files'));
+
+      const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
+
+      expect((result as any).body).toBeNull();
+    });
   });
 });

@@ -55,6 +55,11 @@
 
 .cp-meta {
   margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 4px;
 }
 
 .cp-meta h1 {
@@ -70,10 +75,11 @@
   font-family: var(--ion-font-family);
   font-size: 0.875rem;
   color: var(--ion-color-medium, #757575);
-  margin: 0.5rem 0 0;
+  margin: 0;
   line-height: 1.5;
   display: -webkit-box;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -149,12 +155,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+  box-sizing: border-box;
 }
 
 .cp-close-btn {
   position: absolute;
-  top: 0.75rem;
-  left: 0.75rem;
+  top: calc(0.75rem + var(--safe-area-top));
+  left: calc(0.75rem + var(--safe-area-left));
   z-index: 100;
   width: 2.25rem;
   height: 2.25rem;
@@ -165,6 +173,30 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
+}
+
+/* ── Video Player Overrides (matching portal) ── */
+
+/* Video.js overrides are now injected by VideoPlayerService to ensure
+   they apply consistently across all player instances (standalone and collection) */
+
+/* Make background transparent */
+[data-video-player-wrapper] .video-js {
+  background-color: transparent !important;
+}
+
+/* Ensure control bar is always interactive */
+[data-video-player-wrapper] .vjs-control-bar {
+  z-index: 3 !important;
+  pointer-events: auto !important;
+}
+
+/* Keep control bar visible and clickable when video is paused */
+[data-video-player-wrapper] .vjs-paused .vjs-control-bar,
+[data-video-player-wrapper] .vjs-paused.vjs-user-inactive .vjs-control-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 /* Player embed classes used by player components */

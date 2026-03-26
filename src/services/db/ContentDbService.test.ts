@@ -173,7 +173,7 @@ describe('ContentDbService', () => {
     it('queries for content_state = 2 (ARTIFACT_AVAILABLE)', async () => {
       await svc.getDownloadedContent();
       expect(db.select).toHaveBeenCalledWith('content', {
-        where: { eq: { content_state: 2 } },
+        where: { eq: { content_state: 2, visibility: 'Default' } },
         orderBy: [{ column: 'local_last_updated_on', direction: 'DESC' }],
       });
     });

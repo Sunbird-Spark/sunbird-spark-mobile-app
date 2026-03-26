@@ -3,6 +3,7 @@ import { IonToolbar } from '@ionic/react';
 import sunbirdLogo from '../../assets/sunbird-logo-new.png';
 import { LanguageSelector } from '../common/LanguageSelector';
 import Notification from '../common/Notification';
+import { QRScanButton } from '../common/QRScanButton';
 import { useIonRouter } from '@ionic/react';
 
 export const PublicWelcomeHeader: React.FC = () => {
@@ -15,7 +16,7 @@ export const PublicWelcomeHeader: React.FC = () => {
         '--color': 'var(--ion-color-dark, var(--color-222222, #222222))',
         '--border-width': '0',
         padding: '8px 16px',
-        paddingTop: 'env(safe-area-inset-top, 8px)',
+        paddingTop: 'calc(var(--safe-area-top) + 8px)',
         boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)',
       }}
     >
@@ -58,6 +59,9 @@ export const PublicWelcomeHeader: React.FC = () => {
               <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
             </svg>
           </button>
+
+          {/* QR Scan button */}
+          <QRScanButton />
 
           {/* Notification bell */}
           <Notification />

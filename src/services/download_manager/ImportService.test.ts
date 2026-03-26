@@ -260,6 +260,62 @@ describe('ImportService', () => {
     });
   });
 
+  // ── server_data preservation ──
+
+  describe('import — preserves existing server_data', () => {
+    it('keeps existing server_data when re-importing content', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({
+          ver: '1.1',
+          archive: {
+            items: [
+              {
+                identifier: 'do_existing',
+                mimeType: 'application/pdf',
+                contentDisposition: 'inline',
+                contentEncoding: 'identity',
+                artifactUrl: 'do_existing/artifact.pdf',
+                contentType: 'resource',
+                pkgVersion: 10,
+                visibility: 'Default',
+              },
+            ],
+          },
+        }),
+      } as any);
+
+      const existing: ContentEntry = {
+        identifier: 'do_existing',
+        server_data: JSON.stringify({ hierarchy: { children: [] }, name: 'Course' }),
+        local_data: JSON.stringify({ pkgVersion: 5 }),
+        mime_type: 'application/pdf',
+        path: '/content/do_existing',
+        visibility: 'Default',
+        server_last_updated_on: null,
+        local_last_updated_on: '',
+        ref_count: 1,
+        content_state: 0, // ONLY_SPINE — allows re-import
+        content_type: 'resource',
+        audience: 'Learner',
+        size_on_device: 1024,
+        pragma: '',
+        manifest_version: '1.1',
+        dialcodes: '',
+        child_nodes: '',
+        primary_category: '',
+      };
+
+      vi.mocked(contentDb.getByIdentifiers).mockResolvedValue([existing]);
+
+      const result = await svc.import('do_123', '/path/to/file.ecar');
+      expect(result.status).toBe('SUCCESS');
+
+      const upsertedRow = vi.mocked(contentDb.upsert).mock.calls[0][0] as ContentEntry;
+      expect(upsertedRow.server_data).toBe(existing.server_data);
+    });
+  });
+
   // ── constructContentRow (tested via import) ──
 
   describe('import — content_state never downgrades', () => {
@@ -316,6 +372,60 @@ describe('ImportService', () => {
       expect(upsertedRow.content_state).toBe(2);
       // ref_count incremented
       expect(upsertedRow.ref_count).toBe(2);
+    });
+  });
+
+  // ── Visibility upgrade (standalone import) ──
+
+  describe('import — visibility upgrade', () => {
+    it('upgrades visibility from Parent to Default for standalone imports', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({
+          ver: '1.1',
+          archive: {
+            items: [
+              {
+                identifier: 'do_item1',
+                mimeType: 'application/pdf',
+                contentDisposition: 'inline',
+                contentEncoding: 'identity',
+                artifactUrl: 'do_item1/artifact.pdf',
+                visibility: 'Default',
+              },
+            ],
+          },
+        }),
+      } as any);
+
+      const existing: ContentEntry = {
+        identifier: 'do_item1',
+        server_data: '',
+        local_data: JSON.stringify({ pkgVersion: 5 }),
+        mime_type: 'application/pdf',
+        path: '/content/do_item1',
+        visibility: 'Parent',
+        server_last_updated_on: null,
+        local_last_updated_on: '',
+        ref_count: 1,
+        content_state: 2,
+        content_type: 'resource',
+        audience: 'Learner',
+        size_on_device: 1024,
+        pragma: '',
+        manifest_version: '1.1',
+        dialcodes: '',
+        child_nodes: '',
+        primary_category: '',
+      };
+
+      vi.mocked(contentDb.getByIdentifiers).mockResolvedValue([existing]);
+
+      const result = await svc.import('do_item1', '/path/to/file.ecar');
+      expect(result.status).toBe('SUCCESS');
+
+      const upsertedRow = vi.mocked(contentDb.upsert).mock.calls[0][0] as ContentEntry;
+      expect(upsertedRow.visibility).toBe('Default');
     });
   });
 });

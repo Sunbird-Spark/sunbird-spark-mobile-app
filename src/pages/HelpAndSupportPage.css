@@ -3,7 +3,7 @@
    ============================================= */
 
 .help-support-page {
-    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
+    --background: var(--ion-color-step-50, var(--color-f4f4f4));
 }
 
 /* ── Header ── */
@@ -14,7 +14,7 @@
 
 .help-support-page .hs-toolbar {
     --background: var(--ion-color-light) !important;
-    --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
+    --color: var(--ion-color-dark, var(--color-222222)) !important;
     --border-width: 0 !important;
 }
 
@@ -22,9 +22,8 @@
     font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
     text-align: left;
-    padding-inline-start: 1rem;
 }
 
 .hs-header-icon-btn {
@@ -38,7 +37,7 @@
 
 /* ── Content ── */
 .hs-content {
-    --background: var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4));
+    --background: var(--ion-color-step-50, var(--color-f4f4f4));
 }
 
 .hs-container {
@@ -53,7 +52,7 @@
     font-family: var(--ion-font-family);
     font-size: 1.5rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-222222, #222222));
+    color: var(--ion-color-dark, var(--color-222222));
     margin: 0;
     line-height: 1.35;
 }
@@ -67,7 +66,7 @@
 
 .hs-category-card {
     background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
+    border: 1px solid var(--ion-color-step-150, var(--color-d7d7d7));
     border-radius: 0.75rem;
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.09);
     padding: 0 1.25rem 1.25rem;
@@ -89,7 +88,7 @@
     font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
     margin: 0;
 }
 
@@ -97,7 +96,7 @@
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 400;
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
     margin: 0;
     line-height: 1.5;
 }
@@ -113,7 +112,7 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--ion-color-medium, var(--color-757575));
 }
 
 .hs-arrow-icon {
@@ -138,13 +137,13 @@
     font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
     margin: 0 0 0.25rem;
 }
 
 .hs-faq-item {
     background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
+    border: 1px solid var(--ion-color-step-150, var(--color-d7d7d7));
     border-radius: 0.75rem;
     overflow: hidden;
     transition: box-shadow 0.2s ease;
@@ -171,7 +170,7 @@
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
     flex: 1;
     margin: 0;
     line-height: 1.45;
@@ -199,7 +198,7 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--ion-color-medium, var(--color-757575));
     margin: 0;
     line-height: 1.6;
 }
@@ -223,32 +222,33 @@
     align-items: flex-end;
 }
 
-.hs-modal-toolbar {
-    --background: var(--ion-color-light);
-    --border-width: 0;
-    --padding-start: 1rem;
-    --padding-end: 1rem;
-    --padding-top: 0.5rem;
-    --padding-bottom: 0.5rem;
+/* Report modal header — title left, close icon pinned to top-right */
+.hs-modal-header {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 0.75rem 1rem;
+    background: var(--ion-background-color, var(--ion-color-light));
 }
 
 .hs-modal-title {
     font-family: var(--ion-font-family);
     font-size: 1.125rem;
     font-weight: 500;
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
     margin: 0;
 }
 
 .hs-modal-close {
     background: none;
     border: none;
-    padding: 0.5rem;
-    margin: -0.5rem;
+    padding: 0;
     cursor: pointer;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .hs-modal-form {
@@ -267,12 +267,12 @@
     -webkit-appearance: none;
     width: 100%;
     background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
+    border: 1px solid var(--ion-color-step-150, var(--color-d7d7d7));
     border-radius: 0.5rem;
     padding: 0.875rem 1rem;
     font-family: var(--ion-font-family);
     font-size: 1rem;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--ion-color-medium, var(--color-757575));
     outline: none;
 }
 
@@ -281,7 +281,7 @@
 }
 
 .hs-modal-select:not(:invalid) {
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
 }
 
 .hs-select-chevron {
@@ -295,22 +295,26 @@
 .hs-modal-textarea {
     width: 100%;
     background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
+    border: 1px solid var(--ion-color-step-150, var(--color-d7d7d7));
     border-radius: 0.5rem;
     padding: 0.875rem 1rem;
     font-family: var(--ion-font-family);
     font-size: 1rem;
-    color: var(--ion-color-dark, var(--color-000000, #000000));
+    color: var(--ion-color-dark, var(--color-000000));
     outline: none;
     resize: none;
 }
 
 .hs-modal-textarea::placeholder {
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--ion-color-medium, var(--color-757575));
 }
 
 .hs-modal-textarea:focus {
     border-color: var(--ion-color-primary);
+}
+
+.hs-modal-content {
+    --background: var(--ion-background-color, var(--ion-color-light));
 }
 
 .hs-modal-submit {
@@ -320,6 +324,7 @@
     border: none;
     border-radius: 0;
     padding: 1.125rem;
+    padding-bottom: calc(1.125rem + var(--safe-area-bottom));
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
