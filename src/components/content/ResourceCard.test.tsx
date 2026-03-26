@@ -68,11 +68,11 @@ describe('ResourceCard', () => {
       expect(img).toHaveAttribute('src', 'https://example.com/thumb.jpg');
     });
 
-    it('renders placeholder when no image is available', () => {
+    it('renders a placeholder image when no image is available', () => {
       const item = { ...mockItem, posterImage: undefined, appIcon: undefined, thumbnail: undefined };
       render(<ResourceCard item={item} />);
-      expect(screen.queryByTestId('ion-img')).not.toBeInTheDocument();
-      expect(document.querySelector('.resource-card-image-placeholder')).toBeInTheDocument();
+      const img = screen.getByTestId('ion-img');
+      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.jpg/);
     });
   });
 

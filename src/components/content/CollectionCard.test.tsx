@@ -100,10 +100,11 @@ describe('CollectionCard', () => {
       expect(img).toHaveAttribute('src', 'https://example.com/thumb.jpg');
     });
 
-    it('renders placeholder when no image is available', () => {
+    it('renders a placeholder image when no image is available', () => {
       const item = { ...mockItem, posterImage: undefined, appIcon: undefined, thumbnail: undefined };
       render(<CollectionCard item={item} />);
-      expect(screen.queryByTestId('ion-img')).not.toBeInTheDocument();
+      const img = screen.getByTestId('ion-img');
+      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.jpg/);
     });
   });
 
