@@ -8,14 +8,15 @@
 
 /* ── Header ── */
 .tnc-header {
-  box-shadow: none;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 .tnc-page .tnc-toolbar {
-  --background: #ffffff;
+  --background: #FFFFFF;
   --border-width: 0;
   --min-height: 3rem;
   --padding-start: 1rem;
+  --color: var(--ion-color-dark, #222222);
 }
 
 .tnc-title {

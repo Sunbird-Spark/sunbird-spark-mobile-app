@@ -147,9 +147,9 @@
 
 /* ── Course card ── */
 .my-learning__card {
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   border-radius: 20px;
-  box-shadow: 2px 2px 20px 0px #00000017;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
   padding: 14px;
   display: flex;
   gap: 12px;

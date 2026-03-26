@@ -236,11 +236,10 @@
 .horizontal-scroll-container .standard-card {
     min-width: 10.875rem;
     width: 10.875rem;
-    background: var(--ion-color-light);
+    background: #FFFFFF;
     border-radius: 0.875rem;
     padding: 0.75rem;
-    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
-    /* shadow-20-4 */
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
 }

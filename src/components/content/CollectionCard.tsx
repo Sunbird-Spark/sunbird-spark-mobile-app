@@ -2,6 +2,7 @@ import React from 'react';
 import { IonImg } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
 import type { ContentSearchItem } from '../../types/contentTypes';
+import { getPlaceholderImage } from '../../utils/placeholderImages';
 import './ContentCards.css';
 
 interface CollectionCardProps {
@@ -18,7 +19,7 @@ const UserIcon = () => (
 const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     const history = useHistory();
     const location = useLocation<{ parentRoute?: string }>();
-    const imageUrl = item.posterImage || item.appIcon || item.thumbnail || '';
+    const imageUrl = item.posterImage || item.appIcon || item.thumbnail || getPlaceholderImage(item.identifier);
     const creator = item.creator ?? item.createdBy ?? 'Unknown';
     const lessons = item.leafNodesCount ?? 0;
     const badge = item.primaryCategory || 'Collection';
@@ -37,10 +38,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
             {/* Image */}
             <div className="collection-card-image-wrapper">
                 <div className="collection-card-image-inner">
-                    {imageUrl
-                        ? <IonImg src={imageUrl} alt={item.name} className="collection-card-image" />
-                        : <div style={{ width: '100%', height: '100%', background: 'linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%)' }} />
-                    }
+                    <IonImg src={imageUrl} alt={item.name} className="collection-card-image" />
                 </div>
             </div>
 

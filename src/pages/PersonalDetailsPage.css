@@ -3,7 +3,7 @@
    ============================================= */
 
 .personal-details-page {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
 }
 
 /* Modal root — replaces IonPage inside IonModal to avoid blank-page layout bug */
@@ -11,20 +11,23 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background: var(--ion-background-color, var(--ion-color-light));
+    background: var(--ion-background-color, var(--color-white));
+    border-radius: 1.25rem 1.25rem 0 0;
+    overflow: hidden;
 }
 
 /* ── Page header ── */
 .personal-details-page .pd-header {
-    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
-    background: var(--ion-color-light);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
+    background: #FFFFFF;
 }
 
 /* Override the global gradient toolbar from index.css */
 .personal-details-page .pd-toolbar {
-    --background: var(--ion-color-light) !important;
+    --background: #FFFFFF !important;
     --color: var(--ion-color-dark, var(--color-222222)) !important;
     --border-width: 0 !important;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 /* Override the global "ion-header ion-toolbar *" white rule */
@@ -57,7 +60,7 @@
 
 /* ── Page content ── */
 .pd-content {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
 }
 
 .pd-form-container {
@@ -86,14 +89,14 @@
     -webkit-appearance: none;
     width: 100%;
     height: 2.5rem;
-    border: 1px solid var(--ion-color-step-150, var(--color-d7d7d7));
+    border: 1px solid var(--color-input-border);
     border-radius: 0.5rem;
     padding: 0 0.75rem;
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222));
-    background: var(--ion-color-light);
+    background: var(--color-white);
     outline: none;
     box-sizing: border-box;
 }
@@ -111,10 +114,10 @@
  * and give it 85% height using Ionic CSS vars + alignment.
  */
 .pd-edit-modal {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
     --border-radius: 1.25rem 1.25rem 0 0;
-    --height: 85%;
-    --max-height: 85%;
+    --height: 30.25rem;
+    --max-height: 30.25rem;
     align-items: flex-end;
 }
 
@@ -127,7 +130,7 @@
 .pd-modal-header {
     flex-shrink: 0;
     min-height: 2.75rem;
-    background: var(--ion-background-color, var(--ion-color-light));
+    background: var(--ion-background-color, var(--color-white));
     display: flex;
     justify-content: flex-end;
     align-items: flex-start;
@@ -148,7 +151,7 @@
 
 /* Modal content area */
 .pd-modal-content {
-    --background: var(--ion-background-color, var(--ion-color-light));
+    --background: var(--ion-background-color, var(--color-white));
 }
 
 .pd-modal-form {
@@ -172,7 +175,7 @@
     width: 100%;
     height: 3.4375rem;
     background: var(--ion-color-primary);
-    color: var(--ion-color-light);
+    color: var(--color-white);
     font-family: var(--ion-font-family);
     font-size: 1rem;
     font-weight: 500;
@@ -196,7 +199,7 @@
 
 /* Same bottom-sheet sizing as the edit modal */
 .pd-otp-modal {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
     --border-radius: 1.25rem 1.25rem 0 0;
     --height: 55%;
     --max-height: 55%;
@@ -266,7 +269,7 @@
     font-size: 1.125rem;
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-222222));
-    background: var(--ion-color-light);
+    background: var(--color-white);
     outline: none;
     box-sizing: border-box;
     caret-color: var(--ion-color-primary);

@@ -3,10 +3,11 @@
 }
 
 .course-details-header {
-    --background: var(--ion-color-light);
+    --background: #FFFFFF;
+    --color: var(--ion-color-dark, #222222);
     --padding-top: var(--safe-area-top);
     padding: 1rem 1rem;
-    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 .course-details-title-section {
@@ -236,10 +237,10 @@
 .related-card.standard-card {
     min-width: 10.875rem;
     width: 10.875rem;
-    background: var(--ion-color-light);
+    background: #FFFFFF;
     border-radius: 0.875rem;
     padding: 0.75rem;
-    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
 }

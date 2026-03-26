@@ -3,7 +3,7 @@
    ============================================= */
 
 .sign-in-page {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
 }
 
 /* ── Header with back button ── */
@@ -12,9 +12,10 @@
 }
 
 .sign-in-page .sign-in-toolbar {
-    --background: var(--ion-color-light) !important;
+    --background: #FFFFFF !important;
     --border-width: 0 !important;
-    --min-height: 2.75rem;
+    --color: var(--ion-color-dark, #222222);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 .sign-in-page .sign-in-toolbar .sign-in-back-btn {
@@ -23,7 +24,7 @@
 }
 
 .sign-in-content {
-    --background: var(--ion-color-light);
+    --background: var(--color-white);
 }
 
 /* ── Main container ── */

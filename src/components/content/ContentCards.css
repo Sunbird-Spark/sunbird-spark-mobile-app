@@ -1,11 +1,11 @@
 /* ── CollectionCard ── */
 .collection-card {
-    background: var(--ion-color-light, #ffffff);
+    background: #FFFFFF;
     border-radius: 1.25rem;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    box-shadow: 0.125rem 0.125rem 1.25rem 0 rgba(0, 0, 0, 0.09);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     cursor: pointer;
     transition: box-shadow 0.2s ease;
     flex: 0 0 auto;
@@ -14,7 +14,7 @@
 }
 
 .collection-card:active {
-    box-shadow: 0.125rem 0.125rem 0.5rem 0 rgba(0, 0, 0, 0.06);
+    box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.1);
 }
 
 .collection-card-image-wrapper {

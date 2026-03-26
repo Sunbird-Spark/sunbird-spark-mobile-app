@@ -8,12 +8,12 @@
 
 /* ── Header ── */
 .profile-learning-page .pl-header {
-    box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
-    background: var(--ion-color-light);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
+    background: #FFFFFF;
 }
 
 .profile-learning-page .pl-toolbar {
-    --background: var(--ion-color-light) !important;
+    --background: #FFFFFF !important;
     --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
@@ -99,9 +99,9 @@
 
 /* ── Card ── */
 .pl-card {
-    background: var(--ion-color-light);
+    background: #FFFFFF;
     border-radius: 1rem;
-    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.09);
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     overflow: hidden;
 }
 

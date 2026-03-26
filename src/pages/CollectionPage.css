@@ -9,9 +9,10 @@
 
 /* ── Header ── */
 .collection-page-header {
-  --background: var(--ion-color-light);
+  --background: #FFFFFF;
+  --color: var(--ion-color-dark, #222222);
   padding: 0.5rem 1rem;
-  box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
 .collection-page-header-inner {

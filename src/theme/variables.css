@@ -77,6 +77,12 @@
   --ion-color-medium-shade: #876379;
   --ion-color-medium-tint: #a37e96;
 
+  /** white **/
+  --color-white: #ffffff;
+
+  /** input / card border **/
+  --color-input-border: #D4D4D4;
+
   /** light - IVORY **/
   --ion-color-light: #fffef4;
   --ion-color-light-rgb: 255, 254, 244;

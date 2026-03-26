@@ -2,6 +2,7 @@ import React from 'react';
 import { IonImg } from '@ionic/react';
 import { useHistory, useLocation } from 'react-router-dom';
 import type { ContentSearchItem } from '../../types/contentTypes';
+import { getPlaceholderImage } from '../../utils/placeholderImages';
 import './ContentCards.css';
 
 interface ResourceCardProps {
@@ -39,7 +40,7 @@ const getMimeTypeLabel = (mimeType?: string): string => {
 const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
     const history = useHistory();
     const location = useLocation<{ parentRoute?: string }>();
-    const imageUrl = item.posterImage || item.appIcon || item.thumbnail || '';
+    const imageUrl = item.posterImage || item.appIcon || item.thumbnail || getPlaceholderImage(item.identifier);
     const viewLabel = getMimeTypeLabel(item.mimeType);
 
     return (
@@ -55,10 +56,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
         >
             {/* Image with overlay — mirrors CollectionCard structure */}
             <div className="resource-card-image-inner">
-                {imageUrl
-                    ? <IonImg src={imageUrl} alt={item.name} className="resource-card-image" />
-                    : <div className="resource-card-image-placeholder" />
-                }
+                <IonImg src={imageUrl} alt={item.name} className="resource-card-image" />
                 <div className="resource-card-gradient" />
                 <div className="resource-card-badge">{viewLabel}</div>
             </div>

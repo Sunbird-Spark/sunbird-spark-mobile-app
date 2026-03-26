@@ -8,12 +8,12 @@
 
 /* ── Header ── */
 .settings-page .settings-header {
-    box-shadow: 0 0.875rem 0.875rem rgba(var(--ion-color-dark-rgb, 0, 0, 0), 0.05);
-    background: var(--ion-color-light);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
+    background: #FFFFFF;
 }
 
 .settings-page .settings-toolbar {
-    --background: var(--ion-color-light) !important;
+    --background: #FFFFFF !important;
     --color: var(--ion-color-dark) !important;
     --border-width: 0 !important;
 }
