@@ -12,6 +12,9 @@ function makeMockDb() {
     update: vi.fn().mockResolvedValue(undefined),
     delete: vi.fn().mockResolvedValue(undefined),
     count: vi.fn().mockResolvedValue(0),
+    getDb: vi.fn().mockReturnValue({
+      query: vi.fn().mockResolvedValue({ values: [] }),
+    }),
   } as unknown as DatabaseService;
 }
 
@@ -185,6 +188,33 @@ describe('ContentDbService', () => {
     it('deletes by identifier', async () => {
       await svc.delete('do_456');
       expect(db.delete).toHaveBeenCalledWith('content', { eq: { identifier: 'do_456' } });
+    });
+  });
+
+  // ── getCollectionsContainingChild ──
+
+  describe('getCollectionsContainingChild', () => {
+    it('queries for collections with child_nodes containing the given id', async () => {
+      const mockQuery = vi.fn().mockResolvedValue({
+        values: [makeContent({ identifier: 'do_collection', mime_type: 'application/vnd.ekstep.content-collection', child_nodes: 'do_child1,do_child2' })],
+      });
+      vi.mocked(db.getDb).mockReturnValue({ query: mockQuery } as any);
+
+      const result = await svc.getCollectionsContainingChild('do_child1');
+      expect(result).toHaveLength(1);
+      expect(result[0].identifier).toBe('do_collection');
+      expect(mockQuery).toHaveBeenCalledWith(
+        expect.stringContaining('child_nodes LIKE'),
+        ['%do_child1%'],
+      );
+    });
+
+    it('returns empty array when no collections match', async () => {
+      const mockQuery = vi.fn().mockResolvedValue({ values: [] });
+      vi.mocked(db.getDb).mockReturnValue({ query: mockQuery } as any);
+
+      const result = await svc.getCollectionsContainingChild('do_nonexistent');
+      expect(result).toEqual([]);
     });
   });
 });

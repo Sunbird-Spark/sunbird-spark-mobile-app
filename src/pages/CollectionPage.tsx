@@ -23,6 +23,7 @@ import { useUser } from '../hooks/useUser';
 import { useForceSync } from '../hooks/useForceSync';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useLocalContentSet } from '../hooks/useLocalContentSet';
+import { useIsContentLocal } from '../hooks/useIsContentLocal';
 import { useCourseDownloadProgress } from '../hooks/useCourseDownloadProgress';
 import { useBatchDownloadStates } from '../hooks/useBatchDownloadStates';
 import { downloadManager } from '../services/download_manager';
@@ -155,7 +156,17 @@ const CollectionPage: React.FC = () => {
     return flattenLeafNodes(collectionData.children).map((n) => n.identifier);
   }, [collectionData?.children]);
 
-  const localContentSet = useLocalContentSet(leafIdentifiers, { includeParentVisibility: true });
+  // Check if this collection itself has been downloaded (spine ECAR imported).
+  // When the collection IS downloaded, all locally-available children (regardless of
+  // visibility) show as "downloaded in this collection". When NOT downloaded, no
+  // children show as downloaded — even if they exist locally from a standalone download
+  // or another collection. This avoids ref_count ambiguity when the same content
+  // appears in multiple collections.
+  const { isLocal: isCollectionDownloaded } = useIsContentLocal(collectionId, { includeParentVisibility: true });
+  const localContentSet = useLocalContentSet(
+    isCollectionDownloaded ? leafIdentifiers : [],
+    { includeParentVisibility: true },
+  );
   const courseProgress = useCourseDownloadProgress(collectionId, collectionData?.children, localContentSet);
   const downloadStates = useBatchDownloadStates(leafIdentifiers);
 

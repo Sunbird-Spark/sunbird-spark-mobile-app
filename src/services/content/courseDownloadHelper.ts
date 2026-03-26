@@ -47,17 +47,12 @@ export async function startBulkDownload(
   let spineStatus: BulkDownloadResult['spineStatus'] = 'skipped';
   if (options?.spineDownloadUrl) {
     spineStatus = await downloadSpineEcar(collectionId, options.spineDownloadUrl, options.pkgVersion);
-    console.debug(TAG, 'Spine download status:', spineStatus);
 
-    // If we just started a spine download, wait for it to reach status 2 (Imported)
-    // before enqueuing the rest. Limit wait to 30 seconds.
     if (spineStatus === 'started') {
-      console.debug(TAG, 'Waiting for spine import...', collectionId);
       let attempts = 0;
       while (attempts < 60) {
         const entry = await contentDbService.getByIdentifier(collectionId);
         if (entry && entry.content_state === 2) {
-          console.debug(TAG, 'Spine import complete.');
           break;
         }
         await new Promise(r => setTimeout(r, 500));
@@ -107,7 +102,6 @@ export async function startBulkDownload(
   }
 
   if (toEnqueue.length > 0) {
-    console.debug(TAG, `Enqueuing ${toEnqueue.length} downloads for collection ${collectionId}`);
     await downloadManager.enqueue(toEnqueue);
   }
 
