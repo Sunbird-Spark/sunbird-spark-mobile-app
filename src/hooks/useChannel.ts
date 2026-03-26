@@ -10,5 +10,6 @@ export const useChannel = (id: string): UseQueryResult<ApiResponse<any>, Error> 
     queryKey: ['channel', id],
     queryFn: () => channelService.read(id),
     enabled: !!id && AppInitializer.isInitialized(),
+    staleTime: 60 * 60 * 1000,
   });
 };
