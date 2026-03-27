@@ -1,23 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
 import { courseAssessmentDbService } from '../db/CourseAssessmentDbService';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import { AssessmentSyncRequest, ContentState, CourseContext, NetworkQueueType } from './types';
 
 export class CourseAssessmentEnqueuer {
-  /**
-   * Return the attempt_id to use for the current play session.
-   *
-   * If staged rows already exist for this content (app was killed mid-quiz),
-   * the most-recent row's attempt_id is reused so pre-crash and post-crash
-   * ASSESS events are grouped into the same sync request.
-   *
-   * If no rows exist (fresh attempt), a new UUID is returned.
-   */
-  async resolveAttemptId(uid: string, courseId: string, batchId: string, contentId: string): Promise<string> {
-    const existing = await courseAssessmentDbService.getLatestAttemptId(uid, courseId, batchId, contentId);
-    return existing ?? uuidv4();
-  }
-
   /**
    * Phase 1 — Capture: persist a raw ASSESS event to the staging table.
    * Called immediately when a player emits an ASSESS event.

@@ -4,11 +4,10 @@ import { courseAssessmentDbService } from '../db/CourseAssessmentDbService';
 
 vi.mock('../db/CourseAssessmentDbService', () => ({
   courseAssessmentDbService: {
-    getLatestAttemptId: vi.fn(),
-    insert:             vi.fn().mockResolvedValue(undefined),
-    getGroupedForSync:  vi.fn().mockResolvedValue([]),
-    deleteByIds:        vi.fn().mockResolvedValue(undefined),
-    getCount:           vi.fn().mockResolvedValue(0),
+    insert:            vi.fn().mockResolvedValue(undefined),
+    getGroupedForSync: vi.fn().mockResolvedValue([]),
+    deleteByIds:       vi.fn().mockResolvedValue(undefined),
+    getCount:          vi.fn().mockResolvedValue(0),
   },
 }));
 
@@ -18,12 +17,10 @@ vi.mock('../db/NetworkQueueDbService', () => ({
   },
 }));
 
-const UID     = 'user-1';
-const COURSE  = 'course-1';
-const BATCH   = 'batch-1';
-const CONTENT = 'content-1';
+const CONTEXT = { userId: 'user-1', courseId: 'course-1', batchId: 'batch-1' };
+const EVENT   = { eid: 'ASSESS', object: { id: 'content-1' }, ets: Date.now() };
 
-describe('CourseAssessmentEnqueuer — attempt_id stability', () => {
+describe('CourseAssessmentEnqueuer — attempt_id per play session', () => {
   let enqueuer: CourseAssessmentEnqueuer;
 
   beforeEach(() => {
@@ -31,30 +28,33 @@ describe('CourseAssessmentEnqueuer — attempt_id stability', () => {
     enqueuer = new CourseAssessmentEnqueuer();
   });
 
-  it('generates a new UUID when no staged rows exist (fresh attempt)', async () => {
-    vi.mocked(courseAssessmentDbService.getLatestAttemptId).mockResolvedValue(null);
+  it('persists ASSESS event with the supplied attempt_id', async () => {
+    await enqueuer.persistAssessEvent(EVENT, CONTEXT, 'attempt-abc');
 
-    const id = await enqueuer.resolveAttemptId(UID, COURSE, BATCH, CONTENT);
-
-    expect(typeof id).toBe('string');
-    expect(id.length).toBeGreaterThan(0);
+    expect(courseAssessmentDbService.insert).toHaveBeenCalledWith(
+      EVENT, CONTEXT, 'attempt-abc'
+    );
   });
 
-  it('reuses attempt_id from DB when staged rows exist (crash recovery)', async () => {
-    const crashedId = 'uuid-from-before-crash';
-    vi.mocked(courseAssessmentDbService.getLatestAttemptId).mockResolvedValue(crashedId);
+  it('two ASSESS events in the same play session share one attempt_id', async () => {
+    const attemptId = 'uuid-from-start';
 
-    const id = await enqueuer.resolveAttemptId(UID, COURSE, BATCH, CONTENT);
+    await enqueuer.persistAssessEvent({ ...EVENT, mid: 'Q1' }, CONTEXT, attemptId);
+    await enqueuer.persistAssessEvent({ ...EVENT, mid: 'Q2' }, CONTEXT, attemptId);
 
-    expect(id).toBe(crashedId);
+    const calls = vi.mocked(courseAssessmentDbService.insert).mock.calls;
+    expect(calls[0][2]).toBe(attemptId);
+    expect(calls[1][2]).toBe(attemptId);
   });
 
-  it('generates a different UUID on two successive fresh attempts (no pending rows)', async () => {
-    vi.mocked(courseAssessmentDbService.getLatestAttemptId).mockResolvedValue(null);
+  it('close-and-reopen uses a different attempt_id (no reuse across sessions)', async () => {
+    const session1Id = 'uuid-session-1';
+    const session2Id = 'uuid-session-2'; // new UUID generated on next START
 
-    const first  = await enqueuer.resolveAttemptId(UID, COURSE, BATCH, CONTENT);
-    const second = await enqueuer.resolveAttemptId(UID, COURSE, BATCH, CONTENT);
+    await enqueuer.persistAssessEvent(EVENT, CONTEXT, session1Id);
+    await enqueuer.persistAssessEvent(EVENT, CONTEXT, session2Id);
 
-    expect(first).not.toBe(second);
+    const calls = vi.mocked(courseAssessmentDbService.insert).mock.calls;
+    expect(calls[0][2]).not.toBe(calls[1][2]);
   });
 });

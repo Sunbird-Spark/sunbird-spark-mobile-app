@@ -14,7 +14,6 @@ import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
 import { syncService } from '../../services/sync/SyncService';
-import { courseAssessmentEnqueuer } from '../../services/sync/CourseAssessmentEnqueuer';
 import { useAuth } from '../../contexts/AuthContext';
 
 const QUML_MIME_TYPES = [
@@ -215,12 +214,11 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
 
     const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
 
-    // On START: reuse the existing attempt_id from DB if staged rows exist (crash
-    // recovery), otherwise generate a fresh UUID (new attempt).
-    if (eid === 'START' && collectionId && batchId && contentId && userId) {
-      void courseAssessmentEnqueuer
-        .resolveAttemptId(userId, collectionId, batchId, contentId)
-        .then((id: string) => { attemptIdRef.current = id; });
+    // Each START marks a new play session — always generate a fresh attempt_id.
+    // This ensures close-and-reopen and crash-and-restart both produce a new
+    // attempt, preventing duplicate question answers within the same attempt_id.
+    if (eid === 'START') {
+      attemptIdRef.current = uuidv4();
     }
 
     // Persist ASSESS events to the course_assessment staging table so they survive
