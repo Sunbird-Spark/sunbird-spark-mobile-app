@@ -17,8 +17,15 @@ vi.mock('../network/networkService', () => ({
     networkService: { isConnected: vi.fn().mockReturnValue(true), subscribe: vi.fn() },
 }));
 
+vi.mock('../course/ContentStateSyncService', () => ({
+    contentStateSyncService: {
+        getLocalCompletionPercentage: vi.fn().mockResolvedValue(null),
+    },
+}));
+
 import { networkService } from '../network/networkService';
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
+import { contentStateSyncService } from '../course/ContentStateSyncService';
 
 const mockEnrollmentResponse = {
     data: {
@@ -53,6 +60,7 @@ describe('EnrollmentService', () => {
         (networkService.isConnected as any).mockReturnValue(true);
         (enrolledCoursesDbService.upsertBatch as any).mockResolvedValue(undefined);
         (enrolledCoursesDbService.getByUser as any).mockResolvedValue([]);
+        (contentStateSyncService.getLocalCompletionPercentage as any).mockResolvedValue(null);
     });
 
     describe('getUserEnrollments', () => {
@@ -220,6 +228,56 @@ describe('EnrollmentService', () => {
             const result = await enrollmentService.getUserEnrollments('user_001');
 
             expect(result.data.courses[0].status).toBe(2);
+        });
+
+        it('should enrich completionPercentage from local content state cache when available', async () => {
+            (contentStateSyncService.getLocalCompletionPercentage as any).mockResolvedValue(75);
+            const courses: any[] = [{ courseId: 'do_course_001', batchId: 'batch_001', completionPercentage: 50, progress: 50 }];
+
+            const result = await enrollmentService.enrichWithLocalProgress(courses, 'user_001');
+
+            expect(result[0].completionPercentage).toBe(75);
+            expect(result[0].progress).toBe(75);
+        });
+
+        it('should keep server completionPercentage when no local cache exists', async () => {
+            (contentStateSyncService.getLocalCompletionPercentage as any).mockResolvedValue(null);
+            const courses: any[] = [{ courseId: 'do_course_001', batchId: 'batch_001', completionPercentage: 50, progress: 50 }];
+
+            const result = await enrollmentService.enrichWithLocalProgress(courses, 'user_001');
+
+            // Server value (50) preserved when local cache returns null
+            expect(result[0].completionPercentage).toBe(50);
+        });
+
+        it('should enrich offline DB courses with local content state progress', async () => {
+            (contentStateSyncService.getLocalCompletionPercentage as any).mockResolvedValue(60);
+            const courses: any[] = [{ courseId: 'do_course_001', batchId: 'batch_001', completionPercentage: 30, progress: 30 }];
+
+            const result = await enrollmentService.enrichWithLocalProgress(courses, 'user_001');
+
+            expect(result[0].completionPercentage).toBe(60);
+        });
+
+        it('should skip enrichment when batchId is missing', async () => {
+            (contentStateSyncService.getLocalCompletionPercentage as any).mockResolvedValue(80);
+            const courses: any[] = [{ courseId: 'do_course_001', batchId: '', completionPercentage: 40, progress: 40 }];
+
+            const result = await enrollmentService.enrichWithLocalProgress(courses, 'user_001');
+
+            // batchId empty → guard returns course unchanged
+            expect(result[0].completionPercentage).toBe(40);
+            expect(contentStateSyncService.getLocalCompletionPercentage).not.toHaveBeenCalled();
+        });
+
+        it('should not call upsertBatch when SQLite write fails silently', async () => {
+            mockHttpClient.get.mockResolvedValue(mockEnrollmentResponse);
+            (enrolledCoursesDbService.upsertBatch as any).mockRejectedValue(new Error('SQLite locked'));
+
+            const result = await enrollmentService.getUserEnrollments('user_001');
+
+            // Should still return the API response even if SQLite write fails
+            expect(result.data.courses).toHaveLength(1);
         });
 
         it('should map batch details from DB row into the course object', async () => {

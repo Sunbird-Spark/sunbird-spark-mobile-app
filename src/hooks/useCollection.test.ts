@@ -111,16 +111,14 @@ describe('useCollection', () => {
     expect(mockGet).toHaveBeenCalledWith('/course/v1/hierarchy/do_123');
   });
 
-  it('should return null when collectionId is undefined', async () => {
+  it('should return null when collectionId is undefined', () => {
+    // enabled: !!collectionId → false when undefined, query never runs
     const { result } = renderHook(() => useCollection(undefined), {
       wrapper: createWrapper(),
     });
 
-    await waitFor(() => {
-      expect(result.current.isSuccess).toBe(true);
-    });
-
-    expect(result.current.data).toBeNull();
+    expect(result.current.fetchStatus).toBe('idle');
+    expect(result.current.data).toBeUndefined();
     expect(mockGet).not.toHaveBeenCalled();
   });
 
@@ -138,15 +136,22 @@ describe('useCollection', () => {
     expect(result.current.data).toBeNull();
   });
 
-  it('should not fetch when AppInitializer is not initialized', () => {
+  it('should not fetch when AppInitializer is not initialized', async () => {
+    // query is enabled (collectionId present) but AppInitializer.isInitialized()
+    // returns false inside queryFn → skips API, reads offline cache instead
     vi.mocked(AppInitializer.isInitialized).mockReturnValue(false);
+    mockContentDbService.getByIdentifier.mockResolvedValue(null);
 
     const { result } = renderHook(() => useCollection('do_123'), {
       wrapper: createWrapper(),
     });
 
-    expect(result.current.fetchStatus).toBe('idle');
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
     expect(mockGet).not.toHaveBeenCalled();
+    expect(result.current.data).toBeNull();
   });
 
   it('should handle fetch errors by falling back to offline cache', async () => {
