@@ -1,11 +1,12 @@
-import { gzip } from 'pako';
+import { gzipSync, strToU8 } from 'fflate';
 
 /**
- * Gzip-compress a JSON string using pako.
- * Returns a Uint8Array (pako v2 dropped the `{to:'string'}` option).
+ * Gzip-compress a JSON string using fflate.
+ * strToU8 encodes the string as UTF-8 (identical to what pako did internally).
+ * Returns a Uint8Array — output is standard RFC 1952 gzip, H4sI prefix preserved.
  */
 export function gzipCompress(jsonString: string): Uint8Array {
-  return gzip(jsonString);
+  return gzipSync(strToU8(jsonString));
 }
 
 /**

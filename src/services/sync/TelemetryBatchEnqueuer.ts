@@ -42,7 +42,15 @@ export class TelemetryBatchEnqueuer {
       },
     };
 
-    const data = await gzipCompressAsync(JSON.stringify(envelope));
+    // Attempt gzip compression. If the worker fails (e.g. fflate error), fall
+    // back to storing raw JSON so the batch is never silently lost.
+    // NetworkQueueProcessor detects the format per-row by the H4sI prefix.
+    let data: string;
+    try {
+      data = await gzipCompressAsync(JSON.stringify(envelope));
+    } catch {
+      data = JSON.stringify(envelope);
+    }
 
     await networkQueueDbService.insert({
       type:       NetworkQueueType.TELEMETRY,
