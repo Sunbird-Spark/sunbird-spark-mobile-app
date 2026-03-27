@@ -235,7 +235,7 @@ ion-header ion-toolbar {
     --color: var(--ion-color-dark, #222222);
     --border-width: 0;
     --min-height: 3.5rem;
-    --padding-end: 16px;
+    --padding-end: 1rem;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 

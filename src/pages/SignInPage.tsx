@@ -18,7 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
 import './SignInPage.css';
 import useImpression from '../hooks/useImpression';
-import { useTranslation } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -333,16 +333,19 @@ const SignInPage: React.FC = () => {
 
             {/* Register Link */}
             <p className="sign-in-register-text">
-              {t('signInPage.newUser')}{' '}
-              <button
-                type="button"
-                onClick={handleRegister}
-                disabled={loading}
-                className="sign-in-register-link"
-              >
-                {t('signInPage.createAccount')}
-              </button>{' '}
-              {t('signInPage.toContinue')}
+              <Trans
+                i18nKey="signInPage.registerPrompt"
+                components={{
+                  link: (
+                    <button
+                      type="button"
+                      onClick={handleRegister}
+                      disabled={loading}
+                      className="sign-in-register-link"
+                    />
+                  ),
+                }}
+              />
             </p>
           </form>
         </div>

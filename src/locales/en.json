@@ -310,6 +310,7 @@
     "newUser": "New user? Please",
     "createAccount": "create an account",
     "toContinue": "to continue.",
+    "registerPrompt": "New user? Please <link>create an account</link> to continue.",
     "welcomeTitle": "Welcome to Sunbird!",
     "welcomeSubtitle": "Your learning journey starts here—log in to continue.",
     "signInWithGoogle": "Sign in with Google",

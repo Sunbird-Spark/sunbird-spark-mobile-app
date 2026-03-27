@@ -159,7 +159,8 @@ const SettingsPage: React.FC = () => {
           </div>
 
           {/* Terms of Use */}
-          <div
+          <button
+            type="button"
             className="profile-settings-card profile-settings-tou-card"
             onClick={() => router.push('/terms-of-use', 'forward', 'push')}
           >
@@ -168,7 +169,7 @@ const SettingsPage: React.FC = () => {
             </div>
             <span className="profile-settings-card-title profile-settings-tou-title">{t('termsOfUse')}</span>
             <IonIcon icon={chevronForwardOutline} className="profile-settings-tou-chevron" />
-          </div>
+          </button>
         </div>
       </IonContent>
     </IonPage>

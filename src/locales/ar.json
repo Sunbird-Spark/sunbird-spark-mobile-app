@@ -318,6 +318,7 @@
     "newUser": "مستخدم جديد؟ يرجى",
     "createAccount": "إنشاء حساب",
     "toContinue": "للمتابعة.",
+    "registerPrompt": "مستخدم جديد؟ يرجى <link>إنشاء حساب</link> للمتابعة.",
     "welcomeTitle": "مرحباً بك في Sunbird!",
     "welcomeSubtitle": "رحلتك التعليمية تبدأ هنا—سجّل الدخول للمتابعة.",
     "signInWithGoogle": "تسجيل الدخول باستخدام Google",
