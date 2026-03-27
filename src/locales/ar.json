@@ -42,6 +42,10 @@
   "selectLanguage": "اختر اللغة",
   "logout": "تسجيل الخروج",
   "settings": "الإعدادات",
+  "termsOfUse": "شروط الاستخدام",
+  "tnc": {
+    "notAvailable": "شروط الاستخدام غير متوفرة"
+  },
   "login": "تسجيل الدخول",
   "editProfile": "تعديل الملف الشخصي",
   "changePassword": "تغيير كلمة المرور",

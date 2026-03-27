@@ -51,6 +51,10 @@
   "selectLanguage": "Select Language",
   "logout": "Logout",
   "settings": "Settings",
+  "termsOfUse": "Terms of Use",
+  "tnc": {
+    "notAvailable": "Terms of Use not available"
+  },
   "login": "Log In",
   "editProfile": "Edit Profile",
   "changePassword": "Change Password",
