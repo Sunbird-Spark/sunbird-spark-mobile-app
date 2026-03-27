@@ -133,6 +133,7 @@ class SyncService {
       result.courseProgress   = partial.courseProgress;
       result.courseAssessment = partial.courseAssessment;
       result.errors           = partial.errors;
+      await keyValueDbService.set(KVKey.TELEMETRY_SYNC_LAST_RUN, String(Date.now()));
       return result;
     }
 
@@ -155,6 +156,7 @@ class SyncService {
     result.courseAssessment = partial.courseAssessment;
     result.errors           = partial.errors;
 
+    await keyValueDbService.set(KVKey.TELEMETRY_SYNC_LAST_RUN, String(Date.now()));
     return result;
   }
 
