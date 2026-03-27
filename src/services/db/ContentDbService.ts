@@ -4,7 +4,7 @@ import type { ContentEntry } from '../download_manager/types';
 const TABLE = 'content';
 
 export class ContentDbService {
-  constructor(private db: DatabaseService) {}
+  constructor(private db: DatabaseService) { }
 
   async upsert(entry: ContentEntry): Promise<void> {
     await this.db.insert(TABLE, entry as unknown as Record<string, unknown>, 'REPLACE');
@@ -53,6 +53,20 @@ export class ContentDbService {
 
   async delete(identifier: string): Promise<void> {
     await this.db.delete(TABLE, { eq: { identifier } });
+  }
+
+  /**
+   * Find collection entries whose child_nodes list contains the given identifier.
+   * Used for cleanup: when a leaf is deleted, check if its parent collection
+   * should be removed from the Downloads list.
+   */
+  async getCollectionsContainingChild(childIdentifier: string): Promise<ContentEntry[]> {
+    const db = this.db.getDb();
+    const result = await db.query(
+      `SELECT * FROM ${TABLE} WHERE mime_type LIKE '%collection%' AND child_nodes LIKE ?`,
+      [`%${childIdentifier}%`],
+    );
+    return (result.values ?? []) as ContentEntry[];
   }
 }
 

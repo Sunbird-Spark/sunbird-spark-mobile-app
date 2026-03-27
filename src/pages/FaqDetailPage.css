@@ -8,12 +8,12 @@
 
 /* ── Header ── */
 .faq-detail-page .fd-header {
-    box-shadow: none;
-    background: var(--ion-color-light);
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
+    background: var(--color-white);
 }
 
 .faq-detail-page .fd-toolbar {
-    --background: var(--ion-color-light) !important;
+    --background: var(--color-white) !important;
     --color: var(--ion-color-dark, var(--color-222222, #222222)) !important;
     --border-width: 0 !important;
 }
@@ -58,9 +58,10 @@
 }
 
 .fd-faq-item {
-    background: var(--ion-color-light);
-    border: 1px solid var(--ion-color-step-150, var(--color-d4d4d4, #D4D4D4));
+    background: var(--color-white);
+    border: none;
     border-radius: 0.75rem;
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     overflow: hidden;
     transition: box-shadow 0.2s ease;
 }
@@ -115,7 +116,7 @@
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
-    color: var(--ion-color-medium, var(--color-757575, #757575));
+    color: var(--color-757575, #757575);
     margin: 0 0 1rem;
     line-height: 1.6;
 }
@@ -208,10 +209,30 @@
     resize: vertical;
     outline: none;
     transition: border-color 0.15s ease;
+    margin-bottom: 0.75rem;
 }
 
 .fd-feedback-textarea:focus {
     border-color: var(--ion-color-primary);
+}
+
+.fd-feedback-cancel {
+    align-self: flex-start;
+    font-family: var(--ion-font-family);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--ion-color-dark);
+    background: transparent;
+    border: 1px solid var(--ion-color-step-150, #D4D4D4);
+    border-radius: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    margin-right: 0.5rem;
+}
+
+.fd-feedback-cancel:hover {
+    background: var(--ion-color-step-50, #f4f4f4);
 }
 
 .fd-feedback-submit {

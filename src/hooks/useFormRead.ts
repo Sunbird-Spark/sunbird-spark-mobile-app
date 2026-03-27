@@ -11,8 +11,11 @@ export const useFormRead = (
 ): UseQueryResult<ApiResponse<FormReadResponse>, Error> => {
   const { request } = options;
   return useQuery({
-    queryKey: ['form-read', request.type, request.subType, request.action],
+    queryKey: ['form-read', request.type, request.subType, request.action, request.component,
+      request.framework,
+      request.rootOrgId],
     queryFn: () => formService.formRead(request),
     enabled: AppInitializer.isInitialized(),
+    staleTime: 60 * 60 * 1000, // 1 hour — form schemas are static config
   });
 };

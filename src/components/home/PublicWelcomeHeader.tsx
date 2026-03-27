@@ -12,7 +12,7 @@ export const PublicWelcomeHeader: React.FC = () => {
   return (
     <IonToolbar
       style={{
-        '--background': 'var(--ion-color-light)',
+        '--background': 'var(--color-white)',
         '--color': 'var(--ion-color-dark, var(--color-222222, #222222))',
         '--border-width': '0',
         padding: '8px 16px',

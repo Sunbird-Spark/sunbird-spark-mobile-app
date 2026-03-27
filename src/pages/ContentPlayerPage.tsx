@@ -11,7 +11,7 @@ import {
 } from '@ionic/react';
 import { useParams } from 'react-router-dom';
 import { useIonRouter } from '@ionic/react';
-import { shareSocialOutline, cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
+import { cloudOfflineOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { useTranslation } from 'react-i18next';
 import { ContentPlayer } from '../components/players/ContentPlayer';
@@ -27,11 +27,11 @@ import { startContentDownload } from '../services/content/contentDownloadHelper'
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../services/content/hierarchyUtils';
 import { resolveContentForPlayer } from '../services/content/contentPlaybackResolver';
+import { contentDbService } from '../services/db/ContentDbService';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { downloadManager } from '../services/download_manager';
 import { BackIcon } from '../components/icons/CollectionIcons';
 import PageLoader from '../components/common/PageLoader';
-import RatingDialog from '../components/common/RatingDialog';
 import { telemetryService } from '../services/TelemetryService';
 import './ContentPlayerPage.css';
 import useImpression from '../hooks/useImpression';
@@ -49,13 +49,12 @@ const ContentPlayerPage: React.FC = () => {
   const { t } = useTranslation();
   const { isOffline } = useNetwork();
   const [isPlaying, setIsPlaying] = useState(false);
-  const [showRating, setShowRating] = useState(false);
 
   type ToastConfig = { message: string; color: 'success' | 'danger' | 'warning' | 'primary' | 'dark'; icon?: string };
   const [toastConfig, setToastConfig] = useState<ToastConfig | null>(null);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
 
-  const { data, isLoading, error, refetch } = useContentRead(contentId);
+  const { data, isLoading, error, refetch, fetchStatus } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
   const isNonDownloadable = !!(contentData?.mimeType && NON_DOWNLOADABLE_MIME_TYPES.includes(contentData.mimeType));
@@ -67,10 +66,7 @@ const ContentPlayerPage: React.FC = () => {
     refetch: refetchQuml,
   } = useQumlContent(contentId, { enabled: isQumlContent });
 
-  const rawPlayerMetadata = isQumlContent ? qumlData : contentData;
   const playerIsLoading = isLoading || (isQumlContent && isQumlLoading);
-  const playerError = error || (isQumlContent ? qumlError : null);
-  const mimeType = rawPlayerMetadata?.mimeType;
 
   // Download state (with optimistic UI override for post-delete snapping)
   const rawDownloadState = useDownloadState(contentId);
@@ -84,10 +80,47 @@ const ContentPlayerPage: React.FC = () => {
   const isLocal = deletedLocal ? false : rawIsLocal;
   const downloadState = deletedLocal ? null : rawDownloadState;
 
+  // API is unavailable when it errored, paused (offline), or completed with no data
+  const isApiUnavailable = !!error || fetchStatus === 'paused'
+    || (!isLoading && !contentData && fetchStatus === 'idle');
+
+  // Offline fallback: when API is unavailable but content is downloaded locally,
+  // load metadata from the ContentDb local_data field (saved during import).
+  const [localFallbackMeta, setLocalFallbackMeta] = useState<Record<string, unknown> | null>(null);
+  useEffect(() => {
+    if (!isLocal || !isApiUnavailable || contentData) return;
+    let cancelled = false;
+    contentDbService.getByIdentifier(contentId).then((entry) => {
+      if (cancelled || !entry?.local_data) return;
+      try {
+        const parsed = JSON.parse(entry.local_data);
+        parsed.identifier = entry.identifier;
+        if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
+        if (!cancelled) setLocalFallbackMeta(parsed);
+      } catch { /* ignore parse errors */ }
+    });
+    return () => { cancelled = true; };
+  }, [contentId, isLocal, isApiUnavailable, contentData]);
+
+  const apiMetadata = isQumlContent ? qumlData : contentData;
+  const rawPlayerMetadata = apiMetadata ?? localFallbackMeta;
+  // Don't show API error if we have local fallback data
+  const playerError = rawPlayerMetadata ? null : (error || (isQumlContent ? qumlError : null));
+  const mimeType = rawPlayerMetadata?.mimeType;
+
   // Resolve URLs to local filesystem paths when content is downloaded.
   // The resolver rewrites artifactUrl/streamingUrl/basePath to local Capacitor
   // webview URLs so players can load files from disk (both online and offline).
   const [resolvedMetadata, setResolvedMetadata] = useState<{ id: string; data: Record<string, unknown> } | null>(null);
+
+  // Reset stale fallback/resolved state when navigating to a different content item.
+  // Without this, rawPlayerMetadata could briefly reuse the previous content's local data.
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setLocalFallbackMeta(null);
+    setResolvedMetadata(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
+  }, [contentId]);
   useEffect(() => {
     if (!rawPlayerMetadata?.identifier || !isLocal) {
       return;
@@ -100,6 +133,10 @@ const ContentPlayerPage: React.FC = () => {
   }, [rawPlayerMetadata, isLocal]);
 
   const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+
+  // Loading guards for offline fallback pipeline
+  const isLocalFallbackPending = isLocal && isApiUnavailable && !contentData && !localFallbackMeta;
+  const isResolving = isLocal && (resolvedMetadata == null || resolvedMetadata.id !== rawPlayerMetadata?.identifier) && !!rawPlayerMetadata?.identifier;
 
   // Related content
   const contentLoaded = !isLoading && !!contentData;
@@ -204,23 +241,10 @@ const ContentPlayerPage: React.FC = () => {
 
   const handleClosePlayer = useCallback(() => {
     setIsPlaying(false);
-    setShowRating(true);
     ScreenOrientation.unlock().catch(() => { });
   }, []);
 
-  const handleShare = useCallback(() => {
-    void telemetryService.share({
-      edata: {
-        dir: 'Out',
-        type: 'Link',
-        items: [{
-          id: contentId,
-          type: contentData?.contentType || 'Content',
-          ver: String(contentData?.pkgVersion || '1'),
-        }],
-      },
-    });
-  }, [contentId, contentData]);
+
 
   // Unlock orientation on unmount
   useEffect(() => {
@@ -307,6 +331,7 @@ const ContentPlayerPage: React.FC = () => {
               metadata={playerMetadata}
               onPlayerEvent={handlePlayerEvent}
               onTelemetryEvent={handleTelemetryEvent}
+              contentMeta={telemetryObject}
             />
           </div>
         </IonContent>
@@ -347,20 +372,13 @@ const ContentPlayerPage: React.FC = () => {
                   onResume={handleResumeDownload}
                 />
               )}
-              <button type="button"
-                className="cp-icon-btn"
-                aria-label="Share"
-                onClick={handleShare}
-              >
-                <IonIcon icon={shareSocialOutline} color="primary" />
-              </button>
             </div>
           </div>
         </IonToolbar>
       </IonHeader>
 
       <IonContent>
-        {playerIsLoading ? (
+        {playerIsLoading || isLocalFallbackPending || isResolving ? (
           <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
           <PageLoader
@@ -385,11 +403,13 @@ const ContentPlayerPage: React.FC = () => {
                 onClick={handlePlay}
                 aria-label={`Play ${playerMetadata.name}`}
               >
-                <IonImg
-                  src={playerMetadata.appIcon || playerMetadata.posterImage || 'https://images.pexels.com/photos/3913025/pexels-photo-3913025.jpeg?auto=compress&cs=tinysrgb&w=800'}
-                  alt={playerMetadata.name}
-                  className="cp-thumbnail"
-                />
+                {(playerMetadata.posterImage || playerMetadata.appIcon) && (
+                  <IonImg
+                    src={playerMetadata.posterImage || playerMetadata.appIcon}
+                    alt={playerMetadata.name}
+                    className="cp-thumbnail"
+                  />
+                )}
                 <div className="cp-play-button">
                   <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="var(--ion-color-primary)" />
@@ -403,11 +423,6 @@ const ContentPlayerPage: React.FC = () => {
         )}
       </IonContent>
 
-      <RatingDialog
-        open={showRating}
-        onClose={() => setShowRating(false)}
-        contentMeta={telemetryObject ? { id: telemetryObject.id, type: telemetryObject.type, ver: telemetryObject.ver } : undefined}
-      />
       <IonToast
         isOpen={!!toastConfig}
         message={toastConfig?.message || ''}

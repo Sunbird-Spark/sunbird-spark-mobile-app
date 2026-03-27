@@ -8,7 +8,7 @@
 
 /* ── Header ── */
 .my-learning__header {
-  background-color: #ffffff;
+  background-color: var(--color-white);
   padding: 12px 16px;
   padding-top: calc(var(--safe-area-top) + 12px);
   display: flex;
@@ -61,7 +61,7 @@
 
 .my-learning__sign-in-button {
   background-color: var(--ion-color-primary);
-  color: #ffffff;
+  color: var(--color-white);
   border: none;
   border-radius: 10px;
   padding: 12px 32px;
@@ -91,16 +91,16 @@
 
 .my-learning__heading-wrapper {
   padding: 12px 16px 4px;
-  background-color: #ffffff;
+  background-color: var(--color-white);
 }
 
 /* ── Tab bar ── */
 .my-learning__tab-bar {
   display: flex;
-  border-bottom: 1px solid rgb(230, 230, 230);
+  border-bottom: 1px solid var(--color-e6e6e6, #e6e6e6);
   overflow-x: auto;
   scrollbar-width: none;
-  background-color: #ffffff;
+  background-color: var(--color-white);
 }
 
 .my-learning__tab-bar::-webkit-scrollbar {
@@ -115,7 +115,7 @@
   font-family: var(--ion-font-family);
   font-size: 14px;
   font-weight: 400;
-  color: rgb(130, 130, 130);
+  color: var(--color-828282, #828282);
   cursor: pointer;
   white-space: nowrap;
   position: relative;
@@ -147,9 +147,9 @@
 
 /* ── Course card ── */
 .my-learning__card {
-  background-color: #ffffff;
+  background-color: var(--color-white);
   border-radius: 20px;
-  box-shadow: 2px 2px 20px 0px #00000017;
+  box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
   padding: 14px;
   display: flex;
   gap: 12px;
@@ -169,13 +169,6 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-.my-learning__card-thumbnail-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
-  border-radius: 12px;
 }
 
 .my-learning__card-content {
@@ -231,7 +224,7 @@
 .my-learning__progress-bar-track {
   flex: 1;
   height: 5px;
-  background-color: rgb(244, 244, 244);
+  background-color: var(--color-f4f4f4, #f4f4f4);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -271,7 +264,7 @@
 .my-learning__empty {
   font-family: var(--ion-font-family);
   font-size: 14px;
-  color: rgb(100, 100, 100);
+  color: var(--color-646464, #646464);
   text-align: center;
   padding: 48px 16px;
 }
@@ -282,7 +275,7 @@
 }
 
 .my-learning__progress-card {
-  background-color: rgb(255, 241, 199);
+  background-color: var(--color-warm-yellow);
   border-radius: 20px;
   padding: 16px;
 }
@@ -332,7 +325,7 @@
   font-family: var(--ion-font-family);
   font-size: 14px;
   font-weight: 400;
-  color: rgb(100, 100, 100);
+  color: var(--color-646464, #646464);
 }
 
 /* ── Recommended section ── */
@@ -355,13 +348,13 @@
 .my-learning__error-text {
   font-family: var(--ion-font-family);
   font-size: 14px;
-  color: rgb(100, 100, 100);
+  color: var(--color-646464, #646464);
   margin: 0 0 12px 0;
 }
 
 .my-learning__retry-btn {
   background-color: var(--ion-color-primary);
-  color: #ffffff;
+  color: var(--color-white);
   border: none;
   border-radius: 8px;
   padding: 8px 20px;

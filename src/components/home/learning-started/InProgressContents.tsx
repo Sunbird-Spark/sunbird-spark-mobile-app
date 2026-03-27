@@ -3,6 +3,7 @@ import _ from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
+import { getPlaceholderImage } from '../../../utils/placeholderImages';
 import './InProgressContents.css';
 
 interface InProgressContentsProps {
@@ -29,7 +30,7 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
         {displayCourses.map((course) => {
           const collectionId = course.collectionId || course.courseId;
           const badge = _.get(course, 'content.primaryCategory', t('course'));
-          const title = course.courseName || _.get(course, 'content.name', 'Untitled Course');
+          const title = course.courseName || _.get(course, 'content.name') || t('untitled');
           const thumbnail = _.get(course, 'content.posterImage')
             || _.get(course, 'content.appIcon', '');
           const progress = course.completionPercentage ?? 0;
@@ -57,9 +58,11 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
               </div>
 
               <div className="in-progress__thumbnail-wrapper">
-                {thumbnail && (
-                  <img src={thumbnail} alt={title} className="in-progress__thumbnail" />
-                )}
+                <img
+                  src={thumbnail || getPlaceholderImage(collectionId || 'default')}
+                  alt={title}
+                  className="in-progress__thumbnail"
+                />
               </div>
             </div>
           );

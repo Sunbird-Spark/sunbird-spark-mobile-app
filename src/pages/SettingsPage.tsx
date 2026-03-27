@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonContent,
+  IonItem,
+  IonLabel,
   IonPage,
   IonIcon,
   IonButtons,
@@ -8,8 +10,11 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
+  useIonRouter,
 } from '@ionic/react';
-import { chevronBackOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
+import { chevronBackOutline, chevronForwardOutline, documentTextOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
+import { LanguageSelector } from '../components/common/LanguageSelector';
 import {
   settingsService,
   SYNC_DATA_OPTIONS,
@@ -24,6 +29,8 @@ import useImpression from '../hooks/useImpression';
 
 const SettingsPage: React.FC = () => {
   useImpression({ pageid: 'SettingsPage', env: 'settings' });
+  const { t } = useTranslation();
+  const router = useIonRouter();
   const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');
   const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');
@@ -68,16 +75,19 @@ const SettingsPage: React.FC = () => {
       <IonHeader className="settings-header ion-no-border">
         <IonToolbar className="settings-toolbar">
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label="Back" className="settings-back-btn" color="primary" />
+            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label={t('back')} className="settings-back-btn" color="primary" />
           </IonButtons>
-          <IonTitle className="settings-title">Settings</IonTitle>
+          <IonTitle className="settings-title">{t('settings')}</IonTitle>
+          <IonButtons slot="end">
+            <LanguageSelector />
+          </IonButtons>
         </IonToolbar>
       </IonHeader>
 
       <IonContent className="settings-content">
         <div className="settings-section">
-          <h3 className="profile-settings-heading">Preferences</h3>
-          <p className="profile-settings-subheading">Manage your data consumption and app behavior.</p>
+          <h3 className="profile-settings-heading">{t('settingsPage.preferences')}</h3>
+          <p className="profile-settings-subheading">{t('settingsPage.preferencesDesc')}</p>
 
           {/* Sync Data Card */}
           <div className="profile-settings-card">
@@ -86,8 +96,8 @@ const SettingsPage: React.FC = () => {
             </div>
             <div className="profile-settings-card-content">
               <div>
-                <h4 className="profile-settings-card-title">Sync Usage Data</h4>
-                <p className="profile-settings-card-desc">Keep your progress updated across all devices</p>
+                <h4 className="profile-settings-card-title">{t('settingsPage.syncUsageData')}</h4>
+                <p className="profile-settings-card-desc">{t('settingsPage.syncDesc')}</p>
               </div>
               <div className="profile-settings-options">
                 {SYNC_DATA_OPTIONS.map((option) => (
@@ -98,7 +108,7 @@ const SettingsPage: React.FC = () => {
                     aria-pressed={syncData === option.value}
                     onClick={() => handleSyncDataChange(option.value as SyncDataValue)}
                   >
-                    {option.label}
+                    {t(`settingsPage.${option.value}`)}
                   </button>
                 ))}
               </div>
@@ -112,8 +122,8 @@ const SettingsPage: React.FC = () => {
             </div>
             <div className="profile-settings-card-content">
               <div>
-                <h4 className="profile-settings-card-title">Download contents</h4>
-                <p className="profile-settings-card-desc">Offline access for your learning material</p>
+                <h4 className="profile-settings-card-title">{t('settingsPage.downloadContents')}</h4>
+                <p className="profile-settings-card-desc">{t('settingsPage.downloadDesc')}</p>
               </div>
               <div className="profile-settings-options">
                 {DOWNLOAD_CONTENT_OPTIONS.map((option) => (
@@ -124,7 +134,7 @@ const SettingsPage: React.FC = () => {
                     aria-pressed={downloadContents === option.value}
                     onClick={() => handleDownloadContentChange(option.value as DownloadContentValue)}
                   >
-                    {option.label}
+                    {t(`settingsPage.${option.value}`)}
                   </button>
                 ))}
               </div>
@@ -138,11 +148,11 @@ const SettingsPage: React.FC = () => {
             </div>
             <div className="profile-settings-card-content">
               <div>
-                <span className="profile-settings-version-label">System</span>
+                <span className="profile-settings-version-label">{t('settingsPage.system')}</span>
                 <h4 className="profile-settings-version-name">{appName || 'Sunbird'}</h4>
               </div>
               <div className="profile-settings-version-row">
-                <span className="profile-settings-version-desc">Build version</span>
+                <span className="profile-settings-version-desc">{t('settingsPage.buildVersion')}</span>
                 {appVersion && (
                   <span className="profile-settings-version-badge">
                     v{appVersion}{appBuild ? ` (${appBuild})` : ''}
@@ -151,6 +161,18 @@ const SettingsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Terms of Use */}
+          <IonItem
+            className="profile-action-item"
+            button
+            detail={false}
+            onClick={() => router.push('/terms-of-use', 'forward', 'push')}
+          >
+            <IonIcon icon={documentTextOutline} slot="start" className="profile-action-chevron" />
+            <IonLabel className="profile-action-label">{t('termsOfUse')}</IonLabel>
+            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+          </IonItem>
         </div>
       </IonContent>
     </IonPage>

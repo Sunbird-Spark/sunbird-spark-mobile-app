@@ -25,6 +25,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   needsTnC: boolean;
   tncData: TnCData | null;
+  tncUrl: string | null;
   completeTnC: () => void;
   onboardingDismissed: boolean;
   completeOnboarding: () => void;
@@ -57,6 +58,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Fetch user profile reactively when userId is set
   const { data: profile } = useUser(userId);
+
+  const tncUrl = useMemo(() => profile?.tncLatestVersionUrl || null, [profile]);
 
   // Derive TnC state from profile — no separate state needed
   const tncData = useMemo(() => {
@@ -224,6 +227,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         logout,
         needsTnC,
         tncData,
+        tncUrl,
         completeTnC,
         onboardingDismissed,
         completeOnboarding,

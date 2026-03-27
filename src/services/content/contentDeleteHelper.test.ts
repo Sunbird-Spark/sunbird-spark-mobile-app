@@ -13,6 +13,8 @@ vi.mock('@capacitor/filesystem', () => ({
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: {
     getByIdentifier: vi.fn(),
+    getByIdentifiers: vi.fn().mockResolvedValue([]),
+    getCollectionsContainingChild: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     decrementRefCount: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(undefined),
@@ -86,7 +88,7 @@ describe('deleteDownloadedContent', () => {
     expect(contentDbService.delete).toHaveBeenCalledWith('do_1');
   });
 
-  it('soft deletes when ref_count > 1', async () => {
+  it('soft deletes when ref_count > 1 — keeps artifacts, sets visibility=Parent', async () => {
     vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
       identifier: 'do_1',
       content_state: 2,
@@ -97,12 +99,15 @@ describe('deleteDownloadedContent', () => {
 
     const result = await deleteDownloadedContent('do_1');
 
-    expect(result).toEqual({ deleted: true, freedBytes: 50000 });
+    expect(result).toEqual({ deleted: true, freedBytes: 0 });
     expect(contentDbService.decrementRefCount).toHaveBeenCalledWith('do_1');
+    // Visibility set to Parent so it's hidden from standalone Downloads list
     expect(contentDbService.update).toHaveBeenCalledWith('do_1', {
-      content_state: 1,
-      size_on_device: 0,
+      visibility: 'Parent',
     });
+    // Artifacts kept on disk for collection offline playback
+    expect(Filesystem.rmdir).not.toHaveBeenCalled();
+    // DB row preserved (not hard-deleted)
     expect(contentDbService.delete).not.toHaveBeenCalled();
   });
 
@@ -138,5 +143,95 @@ describe('deleteDownloadedContent', () => {
 
     await deleteDownloadedContent('do_1');
     expect(downloadManager.cancel).not.toHaveBeenCalled();
+  });
+
+  // ── Collection deletion ──
+
+  it('decrements children ref_counts when deleting a collection', async () => {
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'do_collection',
+      content_state: 2,
+      ref_count: 1,
+      size_on_device: 3400,
+      path: '/content/do_collection',
+      mime_type: 'application/vnd.ekstep.content-collection',
+      child_nodes: 'do_child1,do_child2',
+    } as any);
+
+    vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([
+      { identifier: 'do_child1', ref_count: 1, path: '/content/do_child1' } as any,
+      { identifier: 'do_child2', ref_count: 2, path: '/content/do_child2' } as any,
+    ]);
+
+    await deleteDownloadedContent('do_collection');
+
+    // Collection itself hard-deleted
+    expect(contentDbService.delete).toHaveBeenCalledWith('do_collection');
+    // Child1 (ref_count=1) → hard delete
+    expect(contentDbService.delete).toHaveBeenCalledWith('do_child1');
+    expect(Filesystem.rmdir).toHaveBeenCalledWith({ path: '/content/do_child1', recursive: true });
+    // Child2 (ref_count=2) → decrement only
+    expect(contentDbService.decrementRefCount).toHaveBeenCalledWith('do_child2');
+    expect(contentDbService.delete).not.toHaveBeenCalledWith('do_child2');
+  });
+
+  // ── Orphaned collection cleanup ──
+
+  it('removes orphaned collection when last child is hard-deleted', async () => {
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'do_leaf',
+      content_state: 2,
+      ref_count: 1,
+      size_on_device: 5000,
+      path: '/content/do_leaf',
+    } as any);
+
+    // After hard-delete, find parent collection referencing this child
+    vi.mocked(contentDbService.getCollectionsContainingChild).mockResolvedValue([
+      {
+        identifier: 'do_collection',
+        child_nodes: 'do_leaf,do_other',
+        path: '/content/do_collection',
+        content_state: 2,
+      } as any,
+    ]);
+
+    // do_other is also gone (no remaining downloaded children)
+    vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([]);
+
+    await deleteDownloadedContent('do_leaf');
+
+    // Orphaned collection should be cleaned up
+    expect(contentDbService.delete).toHaveBeenCalledWith('do_collection');
+    expect(downloadManager.notifyContentDeleted).toHaveBeenCalledWith('do_collection');
+  });
+
+  it('does not remove collection when it still has downloaded children', async () => {
+    vi.mocked(contentDbService.getByIdentifier).mockResolvedValue({
+      identifier: 'do_leaf',
+      content_state: 2,
+      ref_count: 1,
+      size_on_device: 5000,
+      path: '/content/do_leaf',
+    } as any);
+
+    vi.mocked(contentDbService.getCollectionsContainingChild).mockResolvedValue([
+      {
+        identifier: 'do_collection',
+        child_nodes: 'do_leaf,do_other',
+        path: '/content/do_collection',
+        content_state: 2,
+      } as any,
+    ]);
+
+    // do_other still exists and is downloaded
+    vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue([
+      { identifier: 'do_other', content_state: 2 } as any,
+    ]);
+
+    await deleteDownloadedContent('do_leaf');
+
+    // Collection should NOT be cleaned up
+    expect(contentDbService.delete).not.toHaveBeenCalledWith('do_collection');
   });
 });
