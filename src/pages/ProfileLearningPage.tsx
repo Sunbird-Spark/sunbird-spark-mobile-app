@@ -14,6 +14,8 @@ import {
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem, Directory } from '@capacitor/filesystem';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { certificateService } from '../services/CertificateService';
@@ -190,6 +192,19 @@ const ProfileLearningPage: React.FC = () => {
     setDownloadingId(courseId);
     setDownloadError(null);
     try {
+      // Request storage permissions on Android
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        const permission = await Filesystem.checkPermissions();
+        if (permission.publicStorage !== 'granted') {
+          const requested = await Filesystem.requestPermissions();
+          if (requested.publicStorage !== 'granted') {
+            setDownloadError(t('storagePermissionDenied', 'Storage permission is required to download certificates'));
+            setDownloadingId(null);
+            return;
+          }
+        }
+      }
+
       await certificateService.downloadAndSave(certId, courseName, format, templateUrl);
       setSuccessToast(true);
     } catch (err) {
