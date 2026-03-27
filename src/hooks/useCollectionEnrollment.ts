@@ -34,6 +34,7 @@ export interface CollectionEnrollmentState {
   enrollableBatches: BatchListItem[];
 
   // Batch details
+  batchName: string | undefined;
   isBatchEnded: boolean;
   isBatchUpcoming: boolean;
   batchStartDate: string | undefined;
@@ -170,18 +171,28 @@ export function useCollectionEnrollment(
   // 9. Batch dates — captured once on mount
   const [now] = useState(Date.now);
 
+  // Offline fallback: batch status/name stored in enrolled_courses.details
+  const offlineBatchStatus = enrollment?.batch?.status; // 0=upcoming, 1=ongoing, 2=ended
+
+  const batchName = (batchReadQuery.data?.data?.response?.name as string | undefined)
+    ?? enrollment?.batch?.name;
+
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
-    if (!endDateStr) return false;
-    const endMs = new Date(endDateStr).getTime();
-    return Number.isFinite(endMs) && endMs < now;
-  }, [batchReadQuery.data, now]);
+    if (endDateStr) {
+      const endMs = new Date(endDateStr).getTime();
+      return Number.isFinite(endMs) && endMs < now;
+    }
+    // Offline fallback: status 2 = ended
+    return offlineBatchStatus === 2;
+  }, [batchReadQuery.data, offlineBatchStatus, now]);
 
   const isBatchUpcoming = useMemo(() => {
     const startDateStr = batchReadQuery.data?.data?.response?.startDate as string | undefined;
-    if (!startDateStr) return false;
-    return new Date(startDateStr).getTime() > now;
-  }, [batchReadQuery.data, now]);
+    if (startDateStr) return new Date(startDateStr).getTime() > now;
+    // Offline fallback: status 0 = upcoming
+    return offlineBatchStatus === 0;
+  }, [batchReadQuery.data, offlineBatchStatus, now]);
 
   const batchStartDate = batchReadQuery.data?.data?.response?.startDate as string | undefined;
   const batchEnrollmentType = batchReadQuery.data?.data?.response?.enrollmentType as string | undefined;
@@ -200,6 +211,7 @@ export function useCollectionEnrollment(
     isEnrolled,
     enrolledBatchId,
     enrollableBatches,
+    batchName,
     isBatchEnded,
     isBatchUpcoming,
     batchStartDate,
