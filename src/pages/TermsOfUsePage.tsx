@@ -103,7 +103,7 @@ const TermsOfUsePage: React.FC = () => {
               defaultHref="/profile/settings"
               icon={chevronBackOutline}
               text=""
-              className="settings-back-btn"
+              className="tnc-back-btn"
               color="primary"
             />
           </IonButtons>
