@@ -376,17 +376,7 @@ const CollectionPage: React.FC = () => {
   }, [forceSync.forceSyncError]);
 
   // Intercept hardware/software back button when content player is open
-  useEffect(() => {
-    if (!playingContentId) return;
-    const handler = (ev: Event) => {
-      (ev as CustomEvent).detail.register(100, () => {
-        setPlayingContentId(null);
-      });
-    };
-    document.addEventListener('ionBackButton', handler);
-    return () => document.removeEventListener('ionBackButton', handler);
-  }, [playingContentId]);
-
+  
   // Related content search
   const hierarchySuccess = !isError && !!collectionData;
   const { data: searchData } = useContentSearch({

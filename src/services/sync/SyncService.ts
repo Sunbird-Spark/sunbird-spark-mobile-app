@@ -56,8 +56,8 @@ class SyncService {
   }
 
   /** Persist a raw ASSESS event to the staging table. Call from TelemetryService.save(). */
-  async captureAssessmentEvent(event: any, context: CourseContext): Promise<void> {
-    await courseAssessmentEnqueuer.persistAssessEvent(event, context);
+  async captureAssessmentEvent(event: any, context: CourseContext, attemptId: string): Promise<void> {
+    await courseAssessmentEnqueuer.persistAssessEvent(event, context, attemptId);
   }
 
   /**

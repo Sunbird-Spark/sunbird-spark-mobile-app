@@ -49,7 +49,7 @@ export class CourseAssessmentDbService {
 
     const groupMap = new Map<string, AssessmentGroup>();
     for (const row of rows) {
-      const key = `${row.uid}||${row.course_id}||${row.batch_id}||${row.content_id}`;
+      const key = `${row.uid}||${row.course_id}||${row.batch_id}||${row.content_id}||${row.attempt_id}`;
       let group = groupMap.get(key);
       if (!group) {
         group = {
@@ -75,6 +75,23 @@ export class CourseAssessmentDbService {
     }
 
     return Array.from(groupMap.values());
+  }
+
+  /**
+   * Return the attempt_id from the most-recently inserted row for this content context,
+   * or null if no staged rows exist.
+   * Used by resolveAttemptId to detect a mid-quiz crash and reuse the same attempt_id.
+   */
+  async getLatestAttemptId(uid: string, courseId: string, batchId: string, contentId: string): Promise<string | null> {
+    const db = databaseService.getDb();
+    const result = await db.query(
+      `SELECT attempt_id FROM course_assessment
+       WHERE uid = ? AND course_id = ? AND batch_id = ? AND content_id = ?
+       ORDER BY created_at DESC LIMIT 1`,
+      [uid, courseId, batchId, contentId]
+    );
+    const rows = (result.values ?? []) as Array<{ attempt_id: string }>;
+    return rows.length > 0 ? rows[0].attempt_id : null;
   }
 
   async deleteByIds(ids: number[]): Promise<void> {
