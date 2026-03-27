@@ -4,7 +4,7 @@ import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
 import { EcmlPlayer } from './EcmlPlayer';
 import QumlPlayer from './QumlPlayer';
-import RatingDialog from '../common/RatingDialog';
+import RatingDialog, { RatingDialogContentMeta } from '../common/RatingDialog';
 import { useRatingTimer } from '../../hooks/useRatingTimer';
 
 // MIME type to player component mapping
@@ -32,6 +32,7 @@ interface ContentPlayerProps {
   objectRollup?: Record<string, any>;
   onPlayerEvent?: (event: any) => void;
   onTelemetryEvent?: (event: any) => void;
+  contentMeta?: RatingDialogContentMeta;
 }
 
 export const ContentPlayer: React.FC<ContentPlayerProps> = ({
@@ -43,9 +44,15 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   objectRollup,
   onPlayerEvent,
   onTelemetryEvent,
+  contentMeta,
 }) => {
   const [ratingOpen, setRatingOpen] = useState(false);
-  const openRating = useCallback(() => setRatingOpen(true), []);
+  const openRating = useCallback(() => {
+    // Only open rating dialog if contentMeta is provided for telemetry
+    if (contentMeta) {
+      setRatingOpen(true);
+    }
+  }, [contentMeta]);
   const { onContentEnd, onContentStart } = useRatingTimer(openRating);
 
   // On mobile, some players (e.g. PDF) emit END/START only via onPlayerEvent,
@@ -80,6 +87,7 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
       <RatingDialog
         open={ratingOpen}
         onClose={() => setRatingOpen(false)}
+        contentMeta={contentMeta}
       />
     </div>
   );

@@ -21,6 +21,7 @@ export function useNotificationRead() {
       return response?.data?.feeds ?? [];
     },
     enabled: !!userId,
+    staleTime: 10 * 60 * 1000, // 10 mins — user-specific, changes more frequently
     retry: 1,
   });
 

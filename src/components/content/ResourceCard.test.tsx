@@ -22,6 +22,25 @@ vi.mock('react-router-dom', () => ({
 // Mock CSS import
 vi.mock('./ContentCards.css', () => ({}));
 
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => {
+      const translations: Record<string, string> = {
+        untitled: 'Untitled',
+        'mimeType.video': 'Video',
+        'mimeType.pdf': 'PDF',
+        'mimeType.epub': 'EPUB',
+        'mimeType.html': 'HTML',
+        'mimeType.ecml': 'ECML',
+        'mimeType.h5p': 'H5P',
+        'mimeType.view': 'View',
+      };
+      return translations[key] ?? key;
+    },
+  }),
+}));
+
 describe('ResourceCard', () => {
   const mockItem: ContentSearchItem = {
     identifier: 'do_12345',
@@ -68,11 +87,11 @@ describe('ResourceCard', () => {
       expect(img).toHaveAttribute('src', 'https://example.com/thumb.jpg');
     });
 
-    it('renders placeholder when no image is available', () => {
+    it('renders a placeholder image when no image is available', () => {
       const item = { ...mockItem, posterImage: undefined, appIcon: undefined, thumbnail: undefined };
       render(<ResourceCard item={item} />);
-      expect(screen.queryByTestId('ion-img')).not.toBeInTheDocument();
-      expect(document.querySelector('.resource-card-image-placeholder')).toBeInTheDocument();
+      const img = screen.getByTestId('ion-img');
+      expect(img.getAttribute('src')).toMatch(/\/assets\/placeholders\/placeholder-\d+\.webp/);
     });
   });
 

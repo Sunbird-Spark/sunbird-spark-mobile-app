@@ -91,7 +91,7 @@ const HelpAndSupportPage: React.FC = () => {
         <IonPage className="help-support-page">
             {/* ── Header ── */}
             <IonHeader className="hs-header ion-no-border">
-                <IonToolbar className="hs-toolbar" color="light">
+                <IonToolbar className="hs-toolbar">
                     <IonTitle className="hs-title">{t('helpAndSupport')}</IonTitle>
                     <IonButtons slot="end">
                         <button className="hs-header-icon-btn" onClick={() => setShowModal(true)}>
@@ -143,7 +143,7 @@ const HelpAndSupportPage: React.FC = () => {
                 onDidDismiss={() => setShowModal(false)}
                 className="hs-report-modal"
             >
-                <IonPage>
+                <div className="hs-modal-root">
                     <div className="hs-modal-header">
                         <span className="hs-modal-title">{t('reportIssue')}</span>
                         <button className="hs-modal-close" onClick={() => setShowModal(false)}>
@@ -209,7 +209,7 @@ const HelpAndSupportPage: React.FC = () => {
                             {t('submitFeedback')}
                         </button>
                     </div>
-                </IonPage>
+                </div>
             </IonModal>
 
             <IonToast

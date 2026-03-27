@@ -24,6 +24,7 @@ export const useQumlContent = (
   return useQuery({
     queryKey: ['quml', 'questionset', questionSetId],
     enabled: enabled && Boolean(questionSetId),
+    staleTime: 60 * 60 * 1000, // 1 hour — question set hierarchy is static between publishes
     queryFn: async () => {
       const hierarchyResp = await questionSetService.getHierarchy<any>(questionSetId);
 

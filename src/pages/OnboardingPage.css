@@ -1,11 +1,11 @@
 /* Onboarding Page */
 
 .onboarding-page {
-  --background: #ffffff;
+  --background: var(--color-white);
 }
 
 .onboarding-content {
-  --background: #ffffff;
+  --background: var(--color-white);
 }
 
 .onboarding-container {
@@ -27,7 +27,7 @@
 .onboarding-subtitle {
   font-size: 22px;
   font-weight: 700;
-  color: #000000;
+  color: var(--color-000000, #000000);
   line-height: 1.3;
   margin: 0 0 24px 0;
 }
@@ -79,7 +79,7 @@
 
 .onboarding-progress__label {
   font-size: 14px;
-  color: #000000;
+  color: var(--color-000000, #000000);
   white-space: nowrap;
   margin-left: 2px;
 }
@@ -88,7 +88,7 @@
 .onboarding-question {
   font-size: 20px;
   font-weight: 700;
-  color: #000000;
+  color: var(--color-000000, #000000);
   line-height: 1.3;
   margin: 0 0 20px 0;
 }
@@ -119,7 +119,7 @@
 .onboarding-chip--default {
   background: var(--ion-color-primary-contrast);
   border: 1px solid var(--ion-color-primary);
-  color: #000000;
+  color: var(--color-000000, #000000);
 }
 
 .onboarding-chip--selected {
@@ -147,7 +147,7 @@
   border: 1px solid var(--ion-color-primary);
   border-radius: 12px;
   font-size: 16px;
-  color: #000000;
+  color: var(--color-000000, #000000);
   background: var(--ion-color-primary-contrast);
   outline: none;
   box-sizing: border-box;

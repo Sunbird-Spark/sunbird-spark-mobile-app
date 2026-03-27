@@ -36,7 +36,7 @@
 
 /* ── Video Hero Section ── */
 .video-hero {
-    background: var(--ion-color-light);
+    background: var(--color-white);
     padding: 1rem 1.25rem;
     padding-bottom: 1.875rem;
     box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
@@ -136,7 +136,7 @@
 
 /* ── Related Videos Stack ── */
 .related-videos-section {
-    background: var(--ion-color-light);
+    background: var(--color-white);
     border-radius: 1.25rem;
     padding: 1.5rem 1.25rem;
     margin: 0 1.25rem 1.5rem 1.25rem;
@@ -176,7 +176,7 @@
     transform: translate(-50%, -50%);
     width: 1.25rem;
     height: 1.25rem;
-    background: var(--ion-color-light);
+    background: var(--color-white);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -236,11 +236,10 @@
 .horizontal-scroll-container .standard-card {
     min-width: 10.875rem;
     width: 10.875rem;
-    background: var(--ion-color-light);
+    background: var(--color-white);;
     border-radius: 0.875rem;
     padding: 0.75rem;
-    box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
-    /* shadow-20-4 */
+    box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     display: flex;
     flex-direction: column;
 }
@@ -261,7 +260,7 @@
     padding: 0.25rem 0.5rem;
     border-radius: 1.25rem;
     border: 1px solid var(--ion-color-primary-tint);
-    background-color: rgb(255, 241, 199);
+    background-color: var(--color-warm-yellow);
     color: var(--ion-color-dark, var(--color-000000, #000000));
     margin-bottom: 0.5rem;
 }
@@ -269,7 +268,7 @@
 .horizontal-scroll-container .textbook-badge {
     /* Need specific border/bg if it's different in design tokens, fallback to same for now */
     border-color: var(--ion-color-primary-tint);
-    background-color: rgb(255, 241, 199);
+    background-color: var(--color-warm-yellow);
 }
 
 .horizontal-scroll-container h3 {

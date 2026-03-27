@@ -27,8 +27,8 @@ export const ResourcesSectionWrapper: React.FC<ResourcesSectionWrapperProps> = (
     },
   });
 
-  const title = section.title || section.name || t('resourceCenter');
-  const subtitle = section.subtitle || t('resourceCenterSubtitle');
+  const label = t('resourceCenter');
+  const heading = section.subtitle || section.title || t('resourceCenterSubtitle');
   const content: ContentSearchItem[] = data?.data?.content || [];
 
   if (isLoading) {
@@ -36,7 +36,7 @@ export const ResourcesSectionWrapper: React.FC<ResourcesSectionWrapperProps> = (
       <section className="resource-center-section">
         <div className="resource-center-label-row">
           <span className="resource-center-line" />
-          <span className="resource-center-label">{title}</span>
+          <span className="resource-center-label">{label}</span>
           <span className="resource-center-line" />
         </div>
         <div style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
@@ -52,11 +52,11 @@ export const ResourcesSectionWrapper: React.FC<ResourcesSectionWrapperProps> = (
     <section className="resource-center-section">
       <div className="resource-center-label-row">
         <span className="resource-center-line" />
-        <span className="resource-center-label">{title}</span>
+        <span className="resource-center-label">{label}</span>
         <span className="resource-center-line" />
       </div>
 
-      <h2 className="resource-center-heading">{subtitle}</h2>
+      <h2 className="resource-center-heading">{heading}</h2>
 
       <div className="resource-center-scroll">
         {content.map((item) => (

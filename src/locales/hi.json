@@ -41,6 +41,10 @@
   "selectLanguage": "भाषा चुनें",
   "logout": "लॉग आउट",
   "settings": "सेटिंग्स",
+  "termsOfUse": "उपयोग की शर्तें",
+  "tnc": {
+    "notAvailable": "उपयोग की शर्तें उपलब्ध नहीं हैं"
+  },
   "login": "लॉग इन",
   "editProfile": "प्रोफ़ाइल संपादित करें",
   "changePassword": "पासवर्ड बदलें",
@@ -208,6 +212,19 @@
     "somethingWentWrong": "कुछ गलत हो गया।",
     "goToHome": "होम पर जाएं",
     "goBack": "वापस जाएं"
+  },
+  "settingsPage": {
+    "preferences": "प्राथमिकताएं",
+    "preferencesDesc": "अपनी डेटा खपत और ऐप व्यवहार प्रबंधित करें।",
+    "syncUsageData": "उपयोग डेटा सिंक करें",
+    "syncDesc": "सभी डिवाइस पर अपनी प्रगति अपडेट रखें",
+    "downloadContents": "सामग्री डाउनलोड करें",
+    "downloadDesc": "अपनी शिक्षण सामग्री के लिए ऑफलाइन एक्सेस",
+    "system": "सिस्टम",
+    "buildVersion": "बिल्ड संस्करण",
+    "off": "बंद",
+    "wifi": "वाईफाई",
+    "always": "हमेशा"
   },
   "scanQRCode": "QR कोड स्कैन करें",
   "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",

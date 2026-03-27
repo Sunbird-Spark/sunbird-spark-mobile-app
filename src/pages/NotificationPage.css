@@ -1,10 +1,10 @@
 /* Notification Page */
 .notification-page {
-  --background: #f5f5f5;
+  --background: var(--color-f5f5f5, #f5f5f5);
 }
 
 .notification-page__header {
-  --background: #ffffff;
+  --background: var(--color-white);
 }
 
 .notification-page__header-inner {
@@ -29,7 +29,7 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 600;
   font-size: 1.25rem;
-  color: #222222;
+  color: var(--ion-color-dark, var(--color-222222, #222222));
   margin: 0;
 }
 
@@ -54,7 +54,7 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
   font-size: 0.875rem;
-  color: #CC8545;
+  color: var(--ion-color-primary-tint);
 }
 
 .notification-section__delete-all {
@@ -63,7 +63,7 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
   font-size: 0.875rem;
-  color: #CC8545;
+  color: var(--ion-color-primary-tint);
   cursor: pointer;
   padding: 0.25rem;
   -webkit-tap-highlight-color: transparent;
@@ -74,7 +74,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  background: #ffffff;
+  background: var(--color-white);
   border: 1px solid transparent;
   border-radius: 14px;
   box-shadow: 2px 2px 20px 0px rgba(0, 0, 0, 0.09);
@@ -87,7 +87,7 @@
 }
 
 .notification-card--unread {
-  border: 1.5px solid #CC8545;
+  border: 1.5px solid var(--ion-color-primary-tint);
 }
 
 /* Brown dot for unread — positioned on the left edge */
@@ -98,7 +98,7 @@
   transform: translateY(-50%);
   width: 8px;
   height: 8px;
-  background: #CC8545;
+  background: var(--ion-color-primary-tint);
   border-radius: 50%;
 }
 
@@ -112,7 +112,7 @@
   font-weight: 500;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #222222;
+  color: var(--ion-color-dark, var(--color-222222, #222222));
   margin: 0 0 0.25rem 0;
 }
 
@@ -120,7 +120,7 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 400;
   font-size: 0.75rem;
-  color: #999999;
+  color: var(--color-999999, #999999);
   margin: 0;
 }
 
@@ -136,7 +136,7 @@
   flex-shrink: 0;
   min-width: 36px;
   min-height: 36px;
-  color: #CC8545;
+  color: var(--ion-color-primary-tint);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -154,7 +154,7 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
   font-size: 1.125rem;
-  color: #222222;
+  color: var(--ion-color-dark, var(--color-222222, #222222));
   margin: 0 0 0.5rem 0;
 }
 
@@ -162,7 +162,7 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 400;
   font-size: 0.875rem;
-  color: #999999;
+  color: var(--color-999999, #999999);
   margin: 0;
 }
 
@@ -180,6 +180,6 @@
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
   font-size: 1rem;
-  color: #222222;
+  color: var(--ion-color-dark, var(--color-222222, #222222));
   margin: 0;
 }
