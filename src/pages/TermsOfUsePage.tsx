@@ -13,7 +13,6 @@ import { useTranslation } from 'react-i18next';
 import PageLoader from '../components/common/PageLoader';
 import { useAuth } from '../contexts/AuthContext';
 import { SystemSettingService } from '../services/SystemSettingService';
-import { userService } from '../services/UserService';
 import useImpression from '../hooks/useImpression';
 import './TermsAndConditionsPage.css';
 
@@ -21,9 +20,9 @@ import './TermsAndConditionsPage.css';
  * Terms of Use page - displays TnC HTML for both logged-in and guest users.
  * 
  * Data sources (in priority order):
- * 1. User profile (tncLatestVersionUrl) - for logged-in users
- * 2. System setting 'tncConfig' - for guest users
- * 3. Direct profile fetch - if context data is stale
+ * 1. User profile (tncLatestVersionUrl) from AuthContext - for logged-in users
+ *    AuthContext already fetches user profile via useUser(userId) with React Query caching
+ * 2. System setting 'tncConfig' - for guest users or fallback
  * 
  * System setting format:
  * {
@@ -42,45 +41,26 @@ const TermsOfUsePage: React.FC = () => {
 
   useEffect(() => {
     const loadTermsUrl = async () => {
-      // Priority 1: User profile URL (for logged-in users)
+      // Priority 1: User profile URL from AuthContext (for logged-in users)
+      // AuthContext already fetches user profile via useUser(userId) with React Query caching
       if (tncUrl) {
         setTermsUrl(tncUrl);
-        setLoading(false);
+        // Keep loading true until iframe onLoad fires
         return;
       }
 
-      // Priority 2: Fetch from user profile if authenticated
-      if (userId && isAuthenticated) {
-        try {
-          const response = await userService.userRead(userId);
-          const profile = (response.data as any)?.response;
-          if (profile?.tncLatestVersionUrl) {
-            setTermsUrl(profile.tncLatestVersionUrl);
-            setLoading(false);
-            return;
-          }
-        } catch (error) {
-          console.error('Failed to fetch user profile for TnC URL:', error);
-        }
-      }
-
-      // Priority 3: System setting (for guest users or fallback)
+      // Priority 2: System setting (for guest users or fallback)
       try {
         const systemSettingService = new SystemSettingService();
         const response = await systemSettingService.read('tncConfig');
         
-        console.log('TnC System Setting Full Response:', response);
-        
         // Parse the system setting structure
         let settingValue = response?.data?.response?.value ?? response?.data?.value;
-        
-        console.log('TnC Setting Value (raw):', settingValue, 'Type:', typeof settingValue);
         
         // If the value is a string, parse it as JSON
         if (typeof settingValue === 'string') {
           try {
             settingValue = JSON.parse(settingValue);
-            console.log('TnC Setting Value (parsed):', settingValue);
           } catch (parseError) {
             console.error('Failed to parse TnC setting value as JSON:', parseError);
           }
@@ -90,18 +70,15 @@ const TermsOfUsePage: React.FC = () => {
           // Get the latest version key
           const latestVersion = settingValue.latestVersion;
           
-          console.log('Latest Version:', latestVersion);
-          
           // Get the URL from the version-specific object
           let systemTncUrl = null;
           if (latestVersion && settingValue[latestVersion]) {
             systemTncUrl = settingValue[latestVersion].url;
-            console.log('Found TnC URL from version key:', systemTncUrl);
           }
           
           if (systemTncUrl) {
             setTermsUrl(systemTncUrl);
-            setLoading(false);
+            // Keep loading true until iframe onLoad fires
             return;
           }
         }
@@ -138,7 +115,7 @@ const TermsOfUsePage: React.FC = () => {
         {loading && <PageLoader message={t('loading')} />}
         {!loading && !termsUrl && (
           <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ion-color-medium)' }}>
-            <p>{t('tnc.notAvailable') || 'Terms of Use not available'}</p>
+            <p>{t('tnc.notAvailable', 'Terms of Use not available')}</p>
           </div>
         )}
         {termsUrl && (
@@ -148,6 +125,8 @@ const TermsOfUsePage: React.FC = () => {
             className="tnc-iframe"
             onLoad={() => setLoading(false)}
             style={{ display: loading ? 'none' : 'block' }}
+            sandbox="allow-same-origin allow-scripts allow-forms"
+            referrerPolicy="no-referrer"
           />
         )}
       </IonContent>

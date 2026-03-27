@@ -51,6 +51,9 @@
   "logout": "Se déconnecter",
   "settings": "Paramètres",
   "termsOfUse": "Conditions d'utilisation",
+  "tnc": {
+    "notAvailable": "Conditions d'utilisation non disponibles"
+  },
   "login": "Se connecter",
   "editProfile": "Modifier le profil",
   "changePassword": "Changer le mot de passe",

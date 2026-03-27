@@ -51,6 +51,9 @@
   "logout": "Sair",
   "settings": "Configurações",
   "termsOfUse": "Termos de Uso",
+  "tnc": {
+    "notAvailable": "Termos de Uso não disponíveis"
+  },
   "login": "Entrar",
   "editProfile": "Editar perfil",
   "changePassword": "Alterar senha",

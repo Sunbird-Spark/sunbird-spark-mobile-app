@@ -42,6 +42,9 @@
   "logout": "लॉग आउट",
   "settings": "सेटिंग्स",
   "termsOfUse": "उपयोग की शर्तें",
+  "tnc": {
+    "notAvailable": "उपयोग की शर्तें उपलब्ध नहीं हैं"
+  },
   "login": "लॉग इन",
   "editProfile": "प्रोफ़ाइल संपादित करें",
   "changePassword": "पासवर्ड बदलें",
