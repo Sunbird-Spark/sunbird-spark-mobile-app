@@ -60,6 +60,11 @@
     overflow: hidden;
 }
 
+[dir="rtl"] .pl-filter-dropdown {
+    right: auto;
+    left: 0.75rem;
+}
+
 .pl-filter-option {
     display: block;
     width: 100%;
@@ -73,6 +78,10 @@
     color: var(--ion-color-dark, var(--color-222222, #222222));
     cursor: pointer;
     transition: background 0.15s;
+}
+
+[dir="rtl"] .pl-filter-option {
+    text-align: right;
 }
 
 .pl-filter-option:hover {

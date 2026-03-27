@@ -138,6 +138,11 @@
     padding-right: 0.75rem;
 }
 
+[dir="rtl"] .pd-modal-header {
+    padding-right: 0;
+    padding-left: 0.75rem;
+}
+
 /* Close ✕ button */
 .pd-modal-close-btn {
     background: none;

@@ -38,6 +38,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+[dir="rtl"] .rating-dialog-close-btn {
+  right: auto;
+  left: 0.75rem;
+}
+
 .rating-dialog-badge {
   width: 80px;
   height: 80px;
