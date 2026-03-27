@@ -229,11 +229,11 @@ const SignInPage: React.FC = () => {
           />
 
           {/* Welcome Heading */}
-          <h1 className="sign-in-welcome">Welcome to Sunbird!</h1>
+          <h1 className="sign-in-welcome">{t('signInPage.welcomeTitle')}</h1>
 
           {/* Subtitle */}
           <p className="sign-in-subtitle">
-            Your learning journey starts here—log<br />in to continue.
+            {t('signInPage.welcomeSubtitle')}
           </p>
 
           {/* Error Message */}
@@ -252,7 +252,7 @@ const SignInPage: React.FC = () => {
             ) : (
               <>
                 <GoogleIcon />
-                <span>Sign in with Google</span>
+                <span>{t('signInPage.signInWithGoogle')}</span>
               </>
             )}
           </button>
@@ -260,7 +260,7 @@ const SignInPage: React.FC = () => {
           {/* OR Divider */}
           <div className="sign-in-divider">
             <div className="sign-in-divider-line" />
-            <span className="sign-in-divider-text">OR</span>
+            <span className="sign-in-divider-text">{t('signInPage.or')}</span>
             <div className="sign-in-divider-line" />
           </div>
 
@@ -274,11 +274,11 @@ const SignInPage: React.FC = () => {
           >
             {/* Email / Mobile Number */}
             <div className="sign-in-form-group">
-              <label className="sign-in-label" htmlFor="sign-in-email">Email ID / Mobile Number</label>
+              <label className="sign-in-label" htmlFor="sign-in-email">{t('signInPage.emailOrMobile')}</label>
               <input
                 id="sign-in-email"
                 type="text"
-                placeholder="Enter Email ID / Mobile Number"
+                placeholder={t('signInPage.enterEmailOrMobile')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
@@ -288,12 +288,12 @@ const SignInPage: React.FC = () => {
 
             {/* Password */}
             <div className="sign-in-form-group">
-              <label className="sign-in-label" htmlFor="sign-in-password">Password</label>
+              <label className="sign-in-label" htmlFor="sign-in-password">{t('signInPage.password')}</label>
               <div className="sign-in-password-wrapper">
                 <input
                   id="sign-in-password"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter Password"
+                  placeholder={t('signInPage.enterPassword')}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
@@ -303,7 +303,7 @@ const SignInPage: React.FC = () => {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="sign-in-eye-btn"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? t('signInPage.hidePassword') : t('signInPage.showPassword')}
                 >
                   <IonIcon icon={showPassword ? eyeOffOutline : eyeOutline} />
                 </button>
@@ -318,7 +318,7 @@ const SignInPage: React.FC = () => {
                 disabled={loading}
                 className="sign-in-forgot-btn"
               >
-                Forgot password?
+                {t('signInPage.forgotPassword')}
               </button>
             </div>
 
@@ -328,21 +328,21 @@ const SignInPage: React.FC = () => {
               disabled={!isFormValid || loading}
               className="sign-in-login-btn"
             >
-              {loading ? <IonSpinner name="crescent" /> : 'Login'}
+              {loading ? <IonSpinner name="crescent" /> : t('signInPage.login')}
             </button>
 
             {/* Register Link */}
             <p className="sign-in-register-text">
-              New user? Please{' '}
+              {t('signInPage.newUser')}{' '}
               <button
                 type="button"
                 onClick={handleRegister}
                 disabled={loading}
                 className="sign-in-register-link"
               >
-                create an account
-              </button>
-              <br />to continue.
+                {t('signInPage.createAccount')}
+              </button>{' '}
+              {t('signInPage.toContinue')}
             </p>
           </form>
         </div>

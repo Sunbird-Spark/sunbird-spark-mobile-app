@@ -51,9 +51,6 @@
   "logout": "Sair",
   "settings": "Configurações",
   "termsOfUse": "Termos de Uso",
-  "tnc": {
-    "notAvailable": "Termos de Uso não disponíveis"
-  },
   "login": "Entrar",
   "editProfile": "Editar perfil",
   "changePassword": "Alterar senha",
@@ -264,6 +261,7 @@
     "previewCertificate": "Visualizar certificado",
     "resumeAll": "Retomar tudo",
     "pauseAll": "Pausar tudo",
+    "allDownloaded": "Todo o conteúdo já baixado",
     "allContentDownloaded": "Todo o conteúdo já foi baixado",
     "deleteAllDownloads": "Excluir todos os downloads",
     "downloadAllConfirm": "Baixar tudo ({{count}} itens) para {{type}} <strong>{{title}}</strong>?",
@@ -289,6 +287,7 @@
     "view": "Ver"
   },
   "tnc": {
+    "notAvailable": "Termos de Uso não disponíveis",
     "title": "Termos e Condições",
     "iAgree": "Eu entendo e aceito os Termos de Uso do SUNBIRD",
     "continue": "Continuar",
@@ -306,7 +305,22 @@
     "googleSecurityError": "Falha no login do Google devido às suas configurações de segurança do Google",
     "googleSignInFailed": "Falha no login do Google",
     "unableToOpen": "Não foi possível abrir. Por favor, tente novamente",
-    "unableToOpenRegistration": "Não foi possível abrir o cadastro. Por favor, tente novamente"
+    "unableToOpenRegistration": "Não foi possível abrir o cadastro. Por favor, tente novamente",
+    "forgotPassword": "Esqueceu a senha?",
+    "newUser": "Novo usuário? Por favor",
+    "createAccount": "crie uma conta",
+    "toContinue": "para continuar.",
+    "welcomeTitle": "Bem-vindo ao Sunbird!",
+    "welcomeSubtitle": "Sua jornada de aprendizado começa aqui—faça login para continuar.",
+    "signInWithGoogle": "Entrar com Google",
+    "or": "OU",
+    "emailOrMobile": "E-mail / Número de celular",
+    "enterEmailOrMobile": "Digite o e-mail / número de celular",
+    "password": "Senha",
+    "enterPassword": "Digite a senha",
+    "showPassword": "Mostrar senha",
+    "hidePassword": "Ocultar senha",
+    "login": "Entrar"
   },
   "settingsPage": {
     "preferences": "Preferências",
@@ -335,5 +349,15 @@
     "apr": "Abr",
     "may": "Mai",
     "jun": "Jun"
+  },
+  "pageLoader": {
+    "somethingWentWrong": "Algo deu errado"
+  },
+  "collectionAccordion": {
+    "deleteUnit": "Excluir unidade",
+    "deleteUnitMessage": "Excluir todos os conteúdos baixados da unidade {{unitName}}?",
+    "deleteUnitDownloads": "Excluir downloads da unidade",
+    "downloadRemaining": "Baixar restante ({{count}} itens)",
+    "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)"
   }
 }

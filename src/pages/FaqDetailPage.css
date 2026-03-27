@@ -231,6 +231,11 @@
     margin-right: 0.5rem;
 }
 
+[dir="rtl"] .fd-feedback-cancel {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
 .fd-feedback-cancel:hover {
     background: var(--ion-color-step-50, #f4f4f4);
 }

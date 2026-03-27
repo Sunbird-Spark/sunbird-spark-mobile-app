@@ -542,7 +542,7 @@ const CollectionPage: React.FC = () => {
             {/* View Downloaded Only toggle — inline below overview for non-trackable */}
             {viewState === 'default' && (
               <div className="cp-toggle-section">
-                <span className="cp-toggle-label">View downloaded only</span>
+                <span className="cp-toggle-label">{t('download.viewDownloadedOnly')}</span>
                 <IonToggle
                   className="custom-toggle"
                   checked={viewDownloadedOnly}

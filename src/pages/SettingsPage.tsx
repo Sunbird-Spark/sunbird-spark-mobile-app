@@ -1,15 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonContent,
-  IonItem,
-  IonLabel,
   IonPage,
   IonIcon,
-  IonButtons,
-  IonBackButton,
   IonHeader,
-  IonToolbar,
-  IonTitle,
   useIonRouter,
 } from '@ionic/react';
 import { chevronBackOutline, chevronForwardOutline, documentTextOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
@@ -72,16 +66,18 @@ const SettingsPage: React.FC = () => {
 
   return (
     <IonPage className="settings-page">
-      <IonHeader className="settings-header ion-no-border">
-        <IonToolbar className="settings-toolbar">
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label={t('back')} className="settings-back-btn" color="primary" />
-          </IonButtons>
-          <IonTitle className="settings-title">{t('settings')}</IonTitle>
-          <IonButtons slot="end">
+      <IonHeader className="ion-no-border">
+        <div className="page-header">
+          <div className="page-header__start">
+            <button className="page-header__back-btn" onClick={() => router.goBack()} aria-label={t('back')}>
+              <IonIcon icon={chevronBackOutline} />
+            </button>
+            <span className="page-header__title">{t('settings')}</span>
+          </div>
+          <div className="page-header__actions">
             <LanguageSelector />
-          </IonButtons>
-        </IonToolbar>
+          </div>
+        </div>
       </IonHeader>
 
       <IonContent className="settings-content">
@@ -163,16 +159,16 @@ const SettingsPage: React.FC = () => {
           </div>
 
           {/* Terms of Use */}
-          <IonItem
-            className="profile-action-item"
-            button
-            detail={false}
+          <div
+            className="profile-settings-card profile-settings-tou-card"
             onClick={() => router.push('/terms-of-use', 'forward', 'push')}
           >
-            <IonIcon icon={documentTextOutline} slot="start" className="profile-action-chevron" />
-            <IonLabel className="profile-action-label">{t('termsOfUse')}</IonLabel>
-            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-          </IonItem>
+            <div className="profile-settings-tou-icon">
+              <IonIcon icon={documentTextOutline} />
+            </div>
+            <span className="profile-settings-card-title profile-settings-tou-title">{t('termsOfUse')}</span>
+            <IonIcon icon={chevronForwardOutline} className="profile-settings-tou-chevron" />
+          </div>
         </div>
       </IonContent>
     </IonPage>
