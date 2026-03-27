@@ -12,6 +12,8 @@ import { contentDbService } from '../../services/db/ContentDbService';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
+import { syncService } from '../../services/sync/SyncService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const QUML_MIME_TYPES = [
   'application/vnd.sunbird.questionset',
@@ -42,6 +44,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   currentContentStatus,
   skipContentStateUpdate = false,
 }) => {
+  const { userId } = useAuth();
   const { data, isLoading, error, refetch } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
@@ -165,7 +168,18 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     console.log('[CollectionContentPlayer] Telemetry event:', event);
     void telemetryService.save(event);
     handleTelemetryStateUpdate(event);
-  }, [handleTelemetryStateUpdate]);
+
+    // Persist ASSESS events to the course_assessment staging table so they survive
+    // app crashes and can be synced later (offline-safe path).
+    const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
+    if (eid === 'ASSESS' && collectionId && batchId && userId) {
+      void syncService.captureAssessmentEvent(event, {
+        userId,
+        courseId: collectionId,
+        batchId,
+      });
+    }
+  }, [handleTelemetryStateUpdate, collectionId, batchId, userId]);
 
   // Wait for offline URL resolution to complete before mounting the player.
   // Player web components read config once on mount and don't detect prop changes,

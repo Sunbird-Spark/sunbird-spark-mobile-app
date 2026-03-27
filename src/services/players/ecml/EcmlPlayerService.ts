@@ -3,8 +3,7 @@ import { EcmlPlayerConfig, EcmlPlayerContextProps, EcmlPlayerMetadata } from './
 import { buildEcmlPlayerContext } from '../PlayerContextService';
 
 // webview=true: renderer enters preview mode (needed for postMessage config delivery)
-// isMobile=true: enables mobile-specific dispatchers and events in the renderer.
-const PREVIEW_URL = '/content-player/preview.html?webview=true&isMobile=true';
+const PREVIEW_URL = '/content-player/preview.html?webview=true';
 
 export class EcmlPlayerService {
   async createConfig(
@@ -32,12 +31,15 @@ export class EcmlPlayerService {
         bgImage: 'assets/icons/splacebackground_1.png',
         webLink: '',
       },
-      plugins: [{ id: 'org.sunbird.player.endpage', ver: 1.1, type: 'plugin' }],
+      plugins: [
+        { id: 'org.sunbird.player.endpage', ver: 1.1, type: 'plugin' },
+        { id: 'org.sunbird.iframeEvent', ver: 1.0, type: 'plugin' },
+      ],
       sideMenu: {
-        showShare: true,
-        showDownload: true,
-        showExit: false,
-        showPrint: true,
+        showShare: false,
+        showDownload: false,
+        showExit: true,
+        showPrint: false,
         showReplay: true,
       },
       enableTelemetryValidation: false
