@@ -203,6 +203,7 @@
   "downloadAsPdf": "Download as PDF",
   "downloadAsPng": "Download as PNG",
   "certificateSavedToDocuments": "Certificate saved to Documents",
+  "certificateSavedToGallery": "Certificate saved to Gallery",
   "noCertificate": "No Certificate",
   "noEnrolledCourses": "No enrolled courses yet.",
   "certificateDownloadError": "Failed to download certificate",

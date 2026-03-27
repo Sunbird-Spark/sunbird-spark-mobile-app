@@ -167,7 +167,7 @@ const ProfileLearningPage: React.FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [successToast, setSuccessToast] = useState(false);
+  const [successFormat, setSuccessFormat] = useState<CertificateFormat | null>(null);
 
   // Track which course the format picker is open for
   const [pendingCourse, setPendingCourse] = useState<TrackableCollection | null>(null);
@@ -206,7 +206,7 @@ const ProfileLearningPage: React.FC = () => {
       }
 
       await certificateService.downloadAndSave(certId, courseName, format, templateUrl);
-      setSuccessToast(true);
+      setSuccessFormat(format);
     } catch (err) {
       console.error('Certificate download error:', err);
       setDownloadError(t('certificateDownloadError'));
@@ -354,9 +354,9 @@ const ProfileLearningPage: React.FC = () => {
 
       {/* Success toast */}
       <IonToast
-        isOpen={successToast}
-        onDidDismiss={() => setSuccessToast(false)}
-        message={t('certificateSavedToDocuments')}
+        isOpen={successFormat !== null}
+        onDidDismiss={() => setSuccessFormat(null)}
+        message={successFormat === 'png' ? t('certificateSavedToGallery') : t('certificateSavedToDocuments')}
         duration={3000}
         position="bottom"
         color="success"
