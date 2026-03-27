@@ -15,7 +15,7 @@ import {
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { Capacitor } from '@capacitor/core';
-import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Filesystem } from '@capacitor/filesystem';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { certificateService } from '../services/CertificateService';
