@@ -140,7 +140,7 @@ export class BatchService {
    */
   private async updateLocalContentStateCache(request: ContentStateUpdateRequest): Promise<void> {
     try {
-      const key = `cache:content_state_${request.userId}_${request.courseId}`;
+      const key = `cache:content_state_${request.userId}_${request.courseId}_${request.batchId}`;
       const raw = await keyValueDbService.getRaw(key);
       const cached: ContentStateReadResponse = raw
         ? JSON.parse(raw)
@@ -185,7 +185,7 @@ export class BatchService {
       if (leafNodesCount === 0) return;
 
       // Read the freshly-updated content state cache to count completed items
-      const key = `cache:content_state_${request.userId}_${request.courseId}`;
+      const key = `cache:content_state_${request.userId}_${request.courseId}_${request.batchId}`;
       const raw = await keyValueDbService.getRaw(key);
       const cached: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
       const completedCount = (cached.contentList ?? []).filter(c => c.status === 2).length;

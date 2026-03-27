@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNetwork } from '../providers/NetworkProvider';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
   useBatchListForLearner,
@@ -71,6 +72,8 @@ export function useCollectionEnrollment(
   batchIdParam?: string,
 ): CollectionEnrollmentState {
   const { userId, isAuthenticated } = useAuth();
+  const { isOffline } = useNetwork();
+  const wasOfflineRef = useRef(isOffline);
 
   // 1. Fetch user's enrollments
   const enrollmentsQuery = useUserEnrollmentList(userId, {
@@ -128,6 +131,18 @@ export function useCollectionEnrollment(
       : null,
     { enabled: isEnrolled && leafContentIds.length > 0 },
   );
+
+  // Refetch content state immediately when device transitions offline → online.
+  // Without this, TanStack serves the stale KV cache for the entire staleTime window
+  // even though the server may have newer merged progress from another device or
+  // from queued offline updates that SyncScheduler just flushed.
+  useEffect(() => {
+    const wasOffline = wasOfflineRef.current;
+    wasOfflineRef.current = isOffline;
+    if (wasOffline && !isOffline && isEnrolled && leafContentIds.length > 0) {
+      void contentStateQuery.refetch();
+    }
+  }, [isOffline]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // 6. Derive progress
   const contentList: ContentStateItem[] = contentStateQuery.data?.data?.contentList ?? [];

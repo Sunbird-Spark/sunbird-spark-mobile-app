@@ -145,6 +145,17 @@ const CollectionPage: React.FC = () => {
   const { isOffline } = useNetwork();
   const [isDownloadStarting, setIsDownloadStarting] = useState(false);
 
+  // Refetch collection hierarchy the moment device comes back online so the UI
+  // immediately shows server data instead of the stale offline-cached hierarchy.
+  const wasCollectionOfflineRef = useRef(isOffline);
+  useEffect(() => {
+    const wasOffline = wasCollectionOfflineRef.current;
+    wasCollectionOfflineRef.current = isOffline;
+    if (wasOffline && !isOffline) {
+      void refetchCollection();
+    }
+  }, [isOffline]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Toggle for downloaded content filter — ON by default when opened offline
   const [viewDownloadedOnly, setViewDownloadedOnly] = useState(isOffline);
 
@@ -813,8 +824,8 @@ const CollectionPage: React.FC = () => {
 
             {/* Info Cards */}
             <div className="info-cards-container">
-              {/* Certificate Card — A3: always shown for enrolled users, A6: not for creator */}
-              {!isCreator && (
+              {/* Certificate Card — A3: always shown for enrolled users, A6: not for creator, hidden offline */}
+              {!isCreator && !isOffline && (
                 <div className="info-card">
                   <div className="info-card-header">
                     <CertificateIcon />
