@@ -877,6 +877,7 @@ const CollectionPage: React.FC = () => {
               collectionId={collectionId}
               hasCertificate={enrollment.hasCertificate}
               progressBeforePlayer={progressBeforePlayerRef.current}
+              isOffline={isOffline}
             />
 
             {/* Task 4: Certificate Preview Modal (in-app) */}

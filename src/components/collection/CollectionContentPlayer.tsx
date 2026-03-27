@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { IonPage, IonContent } from '@ionic/react';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../players/ContentPlayer';
@@ -13,6 +14,7 @@ import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
 import { syncService } from '../../services/sync/SyncService';
+import { courseAssessmentEnqueuer } from '../../services/sync/CourseAssessmentEnqueuer';
 import { useAuth } from '../../contexts/AuthContext';
 
 const QUML_MIME_TYPES = [
@@ -174,6 +176,11 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     [hierarchyRoot, contentId],
   );
 
+  // Stable attempt_id for the current play session — regenerated on every START event
+  // so that all ASSESS events within one attempt share one ID, and a second offline
+  // attempt generates a distinct ID that survives as a separate sync group.
+  const attemptIdRef = useRef<string>(uuidv4());
+
   // Content state update hook — bridges telemetry events to API
   const handleTelemetryStateUpdate = useContentStateUpdate({
     collectionId,
@@ -205,7 +212,27 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   const handleTelemetryEvent = useCallback((event: any) => {
     void telemetryService.save(event);
     handleTelemetryStateUpdate(event);
-  }, [handleTelemetryStateUpdate]);
+
+    const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
+
+    // On START: reuse the existing attempt_id from DB if staged rows exist (crash
+    // recovery), otherwise generate a fresh UUID (new attempt).
+    if (eid === 'START' && collectionId && batchId && contentId && userId) {
+      void courseAssessmentEnqueuer
+        .resolveAttemptId(userId, collectionId, batchId, contentId)
+        .then((id: string) => { attemptIdRef.current = id; });
+    }
+
+    // Persist ASSESS events to the course_assessment staging table so they survive
+    // app crashes and can be synced later (offline-safe path).
+    if (eid === 'ASSESS' && collectionId && batchId && userId) {
+      void syncService.captureAssessmentEvent(event, {
+        userId,
+        courseId: collectionId,
+        batchId,
+      }, attemptIdRef.current);
+    }
+  }, [handleTelemetryStateUpdate, collectionId, batchId, userId]);
 
   // Build contentMeta for rating dialog telemetry
   const contentMeta = useMemo(() => {
@@ -216,18 +243,6 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
       ver: String(playerMetadata.pkgVersion || '1'),
     };
   }, [playerMetadata]);
-
-    // Persist ASSESS events to the course_assessment staging table so they survive
-    // app crashes and can be synced later (offline-safe path).
-    const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
-    if (eid === 'ASSESS' && collectionId && batchId && userId) {
-      void syncService.captureAssessmentEvent(event, {
-        userId,
-        courseId: collectionId,
-        batchId,
-      });
-    }
-  }, [handleTelemetryStateUpdate, collectionId, batchId, userId]);
 
   // Wait for offline URL resolution to complete before mounting the player.
   // Player web components read config once on mount and don't detect prop changes,
