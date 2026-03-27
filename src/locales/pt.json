@@ -193,6 +193,7 @@
   "downloadAsPdf": "Baixar como PDF",
   "downloadAsPng": "Baixar como PNG",
   "certificateSavedToDocuments": "Certificado salvo nos documentos",
+  "certificateSavedToGallery": "Certificado salvo na galeria",
   "noCertificate": "Sem certificado",
   "noEnrolledCourses": "Nenhum curso matriculado ainda.",
   "certificateDownloadError": "Falha ao baixar o certificado",

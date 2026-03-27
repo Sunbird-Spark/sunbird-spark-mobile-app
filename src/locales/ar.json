@@ -213,6 +213,7 @@
   "downloadAsPdf": "تحميل بصيغة PDF",
   "downloadAsPng": "تحميل بصيغة PNG",
   "certificateSavedToDocuments": "تم حفظ الشهادة في المستندات",
+  "certificateSavedToGallery": "تم حفظ الشهادة في المعرض",
   "noCertificate": "لا توجد شهادة",
   "noEnrolledCourses": "لا توجد دورات مسجلة بعد.",
   "certificateDownloadError": "فشل تحميل الشهادة",

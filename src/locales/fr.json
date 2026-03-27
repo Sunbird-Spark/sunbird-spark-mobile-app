@@ -193,6 +193,7 @@
   "downloadAsPdf": "Télécharger en PDF",
   "downloadAsPng": "Télécharger en PNG",
   "certificateSavedToDocuments": "Certificat enregistré dans les documents",
+  "certificateSavedToGallery": "Certificat enregistré dans la galerie",
   "noCertificate": "Aucun certificat",
   "noEnrolledCourses": "Aucun cours inscrit pour l'instant.",
   "certificateDownloadError": "Échec du téléchargement du certificat",
