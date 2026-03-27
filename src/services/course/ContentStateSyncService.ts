@@ -243,7 +243,7 @@ export class ContentStateSyncService {
   async readContentState(
     request: ContentStateReadRequest,
   ): Promise<ApiResponse<ContentStateReadResponse>> {
-    const cacheKey = `cache:content_state_${request.userId}_${request.courseId}`;
+    const cacheKey = `cache:content_state_${request.userId}_${request.courseId}_${request.batchId}`;
 
     // ── Offline path ────────────────────────────────────────────────────
     if (!networkService.isConnected()) {

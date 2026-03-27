@@ -5,6 +5,8 @@ import { OrganizationService } from '../OrganizationService';
 import { SystemSettingService } from '../SystemSettingService';
 import { NativeConfigServiceInstance } from '../NativeConfigService';
 import { userService } from '../UserService';
+import { networkService } from '../network/networkService';
+import { userDbService } from '../db/UserDbService';
 
 /**
  * Telemetry path for player web components.
@@ -75,26 +77,47 @@ export async function buildPlayerContext(
   let userOrgHashTagIds: string[] = [];
   let userSlug = '';
   if (isLoggedIn) {
-    try {
-      const profileResponse = await userService.userRead(uid);
-      const profile = profileResponse?.data?.response;
-      if (profile) {
-        userData = {
-          firstName: profile.firstName || 'Guest',
-          lastName: profile.lastName || '',
-        };
-        // User's channel acts as slug for org search
-        if (profile.channel) {
-          userSlug = profile.channel;
+    if (!networkService.isConnected()) {
+      // Offline: read cached user from local DB
+      try {
+        const localUser = await userDbService.getById(uid);
+        if (localUser?.details) {
+          const displayName = localUser.details.displayName || '';
+          const nameParts = displayName.trim().split(/\s+/);
+          userData = {
+            firstName: nameParts[0] || 'Guest',
+            lastName: nameParts.slice(1).join(' '),
+          };
+          // Extract channel from roles[0].scope[0].organisationId
+          const roles = localUser.details.roles as unknown as Array<{ scope?: Array<{ organisationId?: string }> }>;
+          const orgId = roles?.[0]?.scope?.[0]?.organisationId;
+          if (orgId) userSlug = orgId;
         }
-        // Extract organisation hashTagIds for tags/dims
-        const orgs = profile.organisations as Array<{ hashTagId?: string }> | undefined;
-        if (orgs) {
-          userOrgHashTagIds = _.compact(orgs.map((o) => o.hashTagId));
-        }
+      } catch (error) {
+        console.warn('PlayerContextService: Failed to read local user data:', error);
       }
-    } catch (error) {
-      console.warn('PlayerContextService: Failed to fetch user profile:', error);
+    } else {
+      try {
+        const profileResponse = await userService.userRead(uid);
+        const profile = profileResponse?.data?.response;
+        if (profile) {
+          userData = {
+            firstName: profile.firstName || 'Guest',
+            lastName: profile.lastName || '',
+          };
+          // User's channel acts as slug for org search
+          if (profile.channel) {
+            userSlug = profile.channel;
+          }
+          // Extract organisation hashTagIds for tags/dims
+          const orgs = profile.organisations as Array<{ hashTagId?: string }> | undefined;
+          if (orgs) {
+            userOrgHashTagIds = _.compact(orgs.map((o) => o.hashTagId));
+          }
+        }
+      } catch (error) {
+        console.warn('PlayerContextService: Failed to fetch user profile:', error);
+      }
     }
   }
 

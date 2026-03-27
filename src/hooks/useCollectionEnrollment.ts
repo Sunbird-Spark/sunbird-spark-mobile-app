@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNetwork } from '../providers/NetworkProvider';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import {
   useBatchListForLearner,
@@ -34,6 +35,7 @@ export interface CollectionEnrollmentState {
   enrollableBatches: BatchListItem[];
 
   // Batch details
+  batchName: string | undefined;
   isBatchEnded: boolean;
   isBatchUpcoming: boolean;
   batchStartDate: string | undefined;
@@ -70,6 +72,8 @@ export function useCollectionEnrollment(
   batchIdParam?: string,
 ): CollectionEnrollmentState {
   const { userId, isAuthenticated } = useAuth();
+  const { isOffline } = useNetwork();
+  const wasOfflineRef = useRef(isOffline);
 
   // 1. Fetch user's enrollments
   const enrollmentsQuery = useUserEnrollmentList(userId, {
@@ -128,6 +132,18 @@ export function useCollectionEnrollment(
     { enabled: isEnrolled && leafContentIds.length > 0 },
   );
 
+  // Refetch content state immediately when device transitions offline → online.
+  // Without this, TanStack serves the stale KV cache for the entire staleTime window
+  // even though the server may have newer merged progress from another device or
+  // from queued offline updates that SyncScheduler just flushed.
+  useEffect(() => {
+    const wasOffline = wasOfflineRef.current;
+    wasOfflineRef.current = isOffline;
+    if (wasOffline && !isOffline && isEnrolled && leafContentIds.length > 0) {
+      void contentStateQuery.refetch();
+    }
+  }, [isOffline]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // 6. Derive progress
   const contentList: ContentStateItem[] = contentStateQuery.data?.data?.contentList ?? [];
   const contentStatusMap = useMemo(() => getContentStatusMap(contentList), [contentList]);
@@ -170,18 +186,28 @@ export function useCollectionEnrollment(
   // 9. Batch dates — captured once on mount
   const [now] = useState(Date.now);
 
+  // Offline fallback: batch status/name stored in enrolled_courses.details
+  const offlineBatchStatus = enrollment?.batch?.status; // 0=upcoming, 1=ongoing, 2=ended
+
+  const batchName = (batchReadQuery.data?.data?.response?.name as string | undefined)
+    ?? enrollment?.batch?.name;
+
   const isBatchEnded = useMemo(() => {
     const endDateStr = batchReadQuery.data?.data?.response?.endDate as string | undefined;
-    if (!endDateStr) return false;
-    const endMs = new Date(endDateStr).getTime();
-    return Number.isFinite(endMs) && endMs < now;
-  }, [batchReadQuery.data, now]);
+    if (endDateStr) {
+      const endMs = new Date(endDateStr).getTime();
+      return Number.isFinite(endMs) && endMs < now;
+    }
+    // Offline fallback: status 2 = ended
+    return offlineBatchStatus === 2;
+  }, [batchReadQuery.data, offlineBatchStatus, now]);
 
   const isBatchUpcoming = useMemo(() => {
     const startDateStr = batchReadQuery.data?.data?.response?.startDate as string | undefined;
-    if (!startDateStr) return false;
-    return new Date(startDateStr).getTime() > now;
-  }, [batchReadQuery.data, now]);
+    if (startDateStr) return new Date(startDateStr).getTime() > now;
+    // Offline fallback: status 0 = upcoming
+    return offlineBatchStatus === 0;
+  }, [batchReadQuery.data, offlineBatchStatus, now]);
 
   const batchStartDate = batchReadQuery.data?.data?.response?.startDate as string | undefined;
   const batchEnrollmentType = batchReadQuery.data?.data?.response?.enrollmentType as string | undefined;
@@ -200,6 +226,7 @@ export function useCollectionEnrollment(
     isEnrolled,
     enrolledBatchId,
     enrollableBatches,
+    batchName,
     isBatchEnded,
     isBatchUpcoming,
     batchStartDate,

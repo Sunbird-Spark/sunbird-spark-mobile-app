@@ -94,12 +94,21 @@ const CollectionPage: React.FC = () => {
   // Track whether this Ionic view is currently active (visible).
   // State-based so child components (e.g. CourseCompletionDialog) can react to it.
   const [isViewActive, setIsViewActive] = useState(false);
-  useIonViewDidEnter(() => { setIsViewActive(true); });
+  useIonViewDidEnter(() => {
+    setIsViewActive(true);
+    // Safety net: if the query is still idle (AppInitializer timing race) or
+    // previously errored, re-trigger it now that the view is fully visible.
+    if ((fetchStatus === 'idle' || isError) && !isLoading) {
+      void refetchCollection();
+    }
+  });
   useIonViewWillLeave(() => { setIsViewActive(false); });
 
   // Data fetching
-  const { data: collectionData, isLoading, isError, fetchStatus } = useCollection(collectionId);
-  const isQueryIdle = fetchStatus === 'idle' && !collectionData && !isError;
+  const { data: collectionData, isLoading, isError, fetchStatus, refetch: refetchCollection } = useCollection(collectionId);
+  // 'paused' = TanStack paused the query due to network detection (should not happen
+  // with networkMode:'offlineFirst' on useCollection, but kept as a safety net).
+  const isQueryIdle = (fetchStatus === 'idle' || fetchStatus === 'paused') && !collectionData && !isError;
 
   const isTrackable =
     (collectionData?.trackable?.enabled?.toLowerCase() ?? '') === 'yes';
@@ -135,6 +144,17 @@ const CollectionPage: React.FC = () => {
   // ── Download infrastructure (all views — trackable enrolled + non-trackable default) ──
   const { isOffline } = useNetwork();
   const [isDownloadStarting, setIsDownloadStarting] = useState(false);
+
+  // Refetch collection hierarchy the moment device comes back online so the UI
+  // immediately shows server data instead of the stale offline-cached hierarchy.
+  const wasCollectionOfflineRef = useRef(isOffline);
+  useEffect(() => {
+    const wasOffline = wasCollectionOfflineRef.current;
+    wasCollectionOfflineRef.current = isOffline;
+    if (wasOffline && !isOffline) {
+      void refetchCollection();
+    }
+  }, [isOffline]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Toggle for downloaded content filter — ON by default when opened offline
   const [viewDownloadedOnly, setViewDownloadedOnly] = useState(isOffline);
@@ -263,11 +283,24 @@ const CollectionPage: React.FC = () => {
   // True when all active items are IMPORTING (extracting) — no pause/resume in that phase
   const isImporting = useMemo(() => {
     if (!courseProgress.isDownloading) return false;
+    let hasQueued = false;
     for (const [, state] of downloadStates) {
       if (state.state === 'DOWNLOADING' || state.state === 'PAUSED') return false;
+      if (['QUEUED', 'IMPORTING', 'RETRY_WAIT'].includes(state.state)) hasQueued = true;
     }
-    return true; // downloading but no DOWNLOADING/PAUSED items → extracting phase
+    return hasQueued; // only true when QUEUED/IMPORTING items exist (not when all FAILED)
   }, [courseProgress.isDownloading, downloadStates]);
+
+  // Collection-level download failure state for the header icon
+  const downloadFailureState = useMemo((): 'none' | 'partial' | 'all_failed' => {
+    if (courseProgress.isDownloading || (courseProgress.allDownloaded && localContentSet.size > 0)) return 'none';
+    let failedCount = 0;
+    for (const id of leafIdentifiers) {
+      if (downloadStates.get(id)?.state === 'FAILED') failedCount++;
+    }
+    if (failedCount === 0) return 'none';
+    return localContentSet.size > 0 ? 'partial' : 'all_failed';
+  }, [courseProgress.isDownloading, courseProgress.allDownloaded, localContentSet, leafIdentifiers, downloadStates]);
 
   // Pre-compute ring geometry for the header progress indicator
   const dlRingRadius = 16;
@@ -375,8 +408,6 @@ const CollectionPage: React.FC = () => {
     }
   }, [forceSync.forceSyncError]);
 
-  // Intercept hardware/software back button when content player is open
-  
   // Related content search
   const hierarchySuccess = !isError && !!collectionData;
   const { data: searchData } = useContentSearch({
@@ -572,6 +603,30 @@ const CollectionPage: React.FC = () => {
                       />
                     </button>
                   )
+                ) : downloadFailureState === 'all_failed' ? (
+                  /* All downloads failed — red error icon, tap to retry via download sheet */
+                  <button
+                    className="collection-page-icon-btn"
+                    onClick={() => setIsDownloadSheetOpen(true)}
+                    aria-label="Download failed — tap to retry"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="1.5" />
+                      <path d="M12 8V12M12 16H12.01" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                ) : downloadFailureState === 'partial' ? (
+                  /* Partial download — yellow warning download icon, tap to retry failures */
+                  <button
+                    className="collection-page-icon-btn"
+                    onClick={() => setIsDownloadSheetOpen(true)}
+                    aria-label="Partial download — tap to retry failed items"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M4 20H20" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </button>
                 ) : (
                   /* Download button — opens download sheet */
                   <button
@@ -769,8 +824,8 @@ const CollectionPage: React.FC = () => {
 
             {/* Info Cards */}
             <div className="info-cards-container">
-              {/* Certificate Card — A3: always shown for enrolled users, A6: not for creator */}
-              {!isCreator && (
+              {/* Certificate Card — A3: always shown for enrolled users, A6: not for creator, hidden offline */}
+              {!isCreator && !isOffline && (
                 <div className="info-card">
                   <div className="info-card-header">
                     <CertificateIcon />
@@ -833,6 +888,7 @@ const CollectionPage: React.FC = () => {
               collectionId={collectionId}
               hasCertificate={enrollment.hasCertificate}
               progressBeforePlayer={progressBeforePlayerRef.current}
+              isOffline={isOffline}
             />
 
             {/* Task 4: Certificate Preview Modal (in-app) */}
