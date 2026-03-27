@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { telemetryDbService } from '../db/TelemetryDbService';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import { deviceService } from '../device/deviceService';
-import { gzipCompress, gzipStringToBase64 } from './compression';
+import { gzipCompressAsync } from './compression';
 import { syncConfig } from './SyncConfig';
 import { NetworkQueueType } from './types';
 
@@ -42,7 +42,7 @@ export class TelemetryBatchEnqueuer {
       },
     };
 
-    const data = gzipStringToBase64(gzipCompress(JSON.stringify(envelope)));
+    const data = await gzipCompressAsync(JSON.stringify(envelope));
 
     await networkQueueDbService.insert({
       type:       NetworkQueueType.TELEMETRY,

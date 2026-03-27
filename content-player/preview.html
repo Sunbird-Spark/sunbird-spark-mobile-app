@@ -50,6 +50,27 @@
         };
     })();
 
+    // Telemetry bridge: the genie-canvas renderer logs every V3 telemetry event
+    // via console.log("V3 Telemetry Event - ", eventObject) but never postMessages
+    // the parent frame. Intercept those logs and forward the event objects to the
+    // parent so the React layer can persist them (ASSESS → course_assessment table).
+    (function () {
+        var _log = console.log;
+        console.log = function () {
+            _log.apply(console, arguments);
+            try {
+                var msg = arguments[0];
+                if (typeof msg === 'string' && msg.indexOf('V3 Telemetry Event') === 0 && arguments.length > 1) {
+                    var raw = arguments[1];
+                    var ev = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+                    if (ev && ev.eid) {
+                        window.parent.postMessage(ev, window.location.origin || '*');
+                    }
+                }
+            } catch (_e) { /* ignore parse/post errors */ }
+        };
+    })();
+
     // Stubs for Cordova/native APIs expected when isMobile=true.
     var noop = function () {};
     window.genieservice = { getContentMetadata: noop, launchPortal: noop };

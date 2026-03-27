@@ -20,3 +20,35 @@ export function gzipStringToBase64(bytes: Uint8Array): string {
   }
   return btoa(binary);
 }
+
+let _worker: Worker | null = null;
+let _msgId = 0;
+const _pending = new Map<number, { resolve: (s: string) => void; reject: (e: Error) => void }>();
+
+function getCompressionWorker(): Worker {
+  if (!_worker) {
+    _worker = new Worker(new URL('./compression.worker.ts', import.meta.url), { type: 'module' });
+    _worker.onmessage = (e: MessageEvent<{ id: number; result: string }>) => {
+      const p = _pending.get(e.data.id);
+      if (p) { p.resolve(e.data.result); _pending.delete(e.data.id); }
+    };
+    _worker.onerror = (err: ErrorEvent) => {
+      _pending.forEach(({ reject }) => reject(new Error(err.message)));
+      _pending.clear();
+      _worker = null; // reset so next call gets a fresh worker
+    };
+  }
+  return _worker;
+}
+
+/**
+ * Gzip-compress jsonString off the main thread and return base64.
+ * Drop-in async replacement for gzipStringToBase64(gzipCompress(json)).
+ */
+export function gzipCompressAsync(jsonString: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const id = ++_msgId;
+    _pending.set(id, { resolve, reject });
+    getCompressionWorker().postMessage({ id, data: jsonString });
+  });
+}
