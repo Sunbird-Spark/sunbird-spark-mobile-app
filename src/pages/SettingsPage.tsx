@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   IonContent,
+  IonItem,
+  IonLabel,
   IonPage,
   IonIcon,
   IonButtons,
@@ -8,8 +10,9 @@ import {
   IonHeader,
   IonToolbar,
   IonTitle,
+  useIonRouter,
 } from '@ionic/react';
-import { chevronBackOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
+import { chevronBackOutline, chevronForwardOutline, documentTextOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/common/LanguageSelector';
 import {
@@ -27,6 +30,7 @@ import useImpression from '../hooks/useImpression';
 const SettingsPage: React.FC = () => {
   useImpression({ pageid: 'SettingsPage', env: 'settings' });
   const { t } = useTranslation();
+  const router = useIonRouter();
   const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');
   const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');
@@ -157,6 +161,18 @@ const SettingsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Terms of Use */}
+          <IonItem
+            className="profile-action-item"
+            button
+            detail={false}
+            onClick={() => router.push('/terms-of-use', 'forward', 'push')}
+          >
+            <IonIcon icon={documentTextOutline} slot="start" className="profile-action-chevron" />
+            <IonLabel className="profile-action-label">{t('termsOfUse')}</IonLabel>
+            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+          </IonItem>
         </div>
       </IonContent>
     </IonPage>
