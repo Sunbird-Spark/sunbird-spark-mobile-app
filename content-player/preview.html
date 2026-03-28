@@ -50,30 +50,30 @@
         };
     })();
 
-    // Telemetry bridge: the genie-canvas renderer logs every V3 telemetry event
-    // via console.log("V3 Telemetry Event - ", eventObject) but never postMessages
-    // the parent frame. Intercept those logs and forward the event objects to the
-    // parent so the React layer can persist them (ASSESS → course_assessment table).
-    (function () {
-        var _log = console.log;
-        console.log = function () {
-            _log.apply(console, arguments);
-            try {
-                var msg = arguments[0];
-                if (typeof msg === 'string' && msg.indexOf('V3 Telemetry Event') === 0 && arguments.length > 1) {
-                    var raw = arguments[1];
-                    var ev = (typeof raw === 'string') ? JSON.parse(raw) : raw;
-                    if (ev && ev.eid) {
-                        window.parent.postMessage(ev, window.location.origin || '*');
-                    }
-                }
-            } catch (_e) { /* ignore parse/post errors */ }
-        };
-    })();
-
     // Stubs for Cordova/native APIs expected when isMobile=true.
     var noop = function () {};
-    window.genieservice = { getContentMetadata: noop, launchPortal: noop };
+
+    // Bridge exit calls from the ECML renderer back to the parent frame.
+    // The endpage plugin calls exitApp() → we postMessage EXIT to the React app.
+    function postExitToParent() {
+        console.log('[ECML-iframe] postExitToParent called');
+        window.parent.postMessage({ eid: 'EXIT', edata: { type: 'EXIT' } }, window.location.origin);
+    }
+    window.exitApp = postExitToParent;
+    window.genieservice = {
+        getContentMetadata: noop,
+        launchPortal: noop,
+        endGenieCanvas: postExitToParent,
+        showExitConfirmPopup: postExitToParent,
+        endContent: noop
+    };
+
+    // Ensure window.cordova exists BEFORE script.min.1.1.js loads.
+    // The endpage controller checks window.cordova to show the clickable
+    // Exit button (ng-if="isCordova"). Without this, Exit is non-interactive.
+    if (!window.cordova) {
+        window.cordova = { plugins: {}, file: { dataDirectory: '' } };
+    }
     window.StatusBar = {
         hide: noop, show: noop, isVisible: true,
         overlaysWebView: noop, styleDefault: noop,
@@ -99,6 +99,70 @@
     <!-- injector:js -->
     <script src="script.min.1.1.js"></script>
     <!-- endinjector -->
+
+    <script>
+    // The renderer sets isbrowserpreview from the ?webview query param.
+    // In Capacitor we are in a mobile webview, not a desktop browser preview,
+    // so force it off so the endpage gotTohome() actually calls exitApp().
+    if (typeof isbrowserpreview !== 'undefined') isbrowserpreview = false;
+
+    // script.min.1.1.js overwrites window.exitApp with its own version that
+    // calls navigator.app.exitApp() (a Cordova API that doesn't exist here).
+    // Re-apply our bridge so clicks on the endpage Exit button post EXIT
+    // back to the parent React app.
+    function postExitToParent() {
+        console.log('[ECML-iframe] postExitToParent called');
+        window.parent.postMessage({ eid: 'EXIT', edata: { type: 'EXIT' } }, window.location.origin);
+    }
+    window.exitApp = postExitToParent;
+    if (window.genieservice) {
+        window.genieservice.endGenieCanvas = postExitToParent;
+        window.genieservice.showExitConfirmPopup = postExitToParent;
+    }
+
+    // Bridge telemetry events from the renderer to the parent React app.
+    // The renderer dispatches CustomEvent("TelemetryEvent") on document inside
+    // the iframe — these don't cross the iframe boundary, so we forward them.
+    document.addEventListener('TelemetryEvent', function (e) {
+        var detail = e.detail;
+        if (detail) {
+            window.parent.postMessage(detail, window.location.origin);
+        }
+    });
+
+    // Bridge renderer:content:start → parent as a START event.
+    if (typeof EkstepRendererAPI !== 'undefined') {
+        EkstepRendererAPI.addEventListener('renderer:content:start', function () {
+            console.log('[ECML-iframe] renderer:content:start fired — posting START');
+            window.parent.postMessage({
+                eid: 'START',
+                ets: Date.now(),
+                edata: { type: 'START' }
+            }, window.location.origin);
+        });
+    }
+
+    // Bridge renderer:content:end → parent as an END event with summary.
+    // EkstepRendererAPI is available after script.min.1.1.js loads.
+    // The summary must include progress:100 and endpageseen:true so the
+    // content state update hook (useContentStateUpdate) marks it completed.
+    if (typeof EkstepRendererAPI !== 'undefined') {
+        EkstepRendererAPI.addEventListener('renderer:content:end', function () {
+            console.log('[ECML-iframe] renderer:content:end fired — posting END');
+            window.parent.postMessage({
+                eid: 'END',
+                edata: {
+                    type: 'END',
+                    summary: [
+                        { progress: 100 },
+                        { endpageseen: true },
+                        { visitedcontentend: true }
+                    ]
+                }
+            }, window.location.origin);
+        });
+    }
+    </script>
 
     <script>
     (function () {

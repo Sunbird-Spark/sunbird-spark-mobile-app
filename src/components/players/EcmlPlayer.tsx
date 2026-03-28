@@ -126,7 +126,7 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
         iframe.onload = null;
       }
     };
-  }, [metadata]);
+  }, [metadata.identifier, metadata.isAvailableLocally]);
 
   return (
     <iframe

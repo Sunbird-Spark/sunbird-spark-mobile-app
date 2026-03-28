@@ -292,6 +292,11 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
     return { activeCount: count, avgProgress: count > 0 ? totalPct / count : 0 };
   }, [downloadableLeaves, downloadStates]);
 
+  const failedCount = useMemo(() => {
+    if (!downloadStates) return 0;
+    return downloadableLeaves.filter((l) => downloadStates.get(l.identifier)?.state === 'FAILED').length;
+  }, [downloadableLeaves, downloadStates]);
+
   const confirmDelete = async () => {
     setShowAlert(false);
     if (deleting) return;
@@ -377,6 +382,62 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
           {localCount}/{downloadableLeaves.length}
         </span>
       </div>
+    );
+  }
+
+  // Partial: some items downloaded, some failed — yellow warning download icon
+  if (failedCount > 0 && localCount > 0) {
+    return (
+      <button
+        onClick={handleDownloadRemaining}
+        disabled={isOffline || loading}
+        style={{
+          background: 'none', border: 'none', padding: '4px',
+          cursor: isOffline ? 'default' : 'pointer',
+          opacity: isOffline ? 0.4 : 1, flexShrink: 0,
+          display: 'flex', alignItems: 'center', gap: '4px',
+        }}
+        aria-label={`Partial download — retry ${failedCount} failed item(s)`}
+      >
+        {loading ? (
+          <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
+        ) : (
+          <>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M4 20H20" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            <span style={{ fontSize: '0.7rem', color: 'var(--ion-color-warning, #ffc409)' }}>
+              {localCount}/{downloadableLeaves.length}
+            </span>
+          </>
+        )}
+      </button>
+    );
+  }
+
+  // All failed: no items downloaded, some failed — red error icon
+  if (failedCount > 0 && localCount === 0) {
+    return (
+      <button
+        onClick={handleDownloadRemaining}
+        disabled={isOffline || loading}
+        style={{
+          background: 'none', border: 'none', padding: '4px',
+          cursor: isOffline ? 'default' : 'pointer',
+          opacity: isOffline ? 0.4 : 1, flexShrink: 0,
+        }}
+        aria-label="Download failed — tap to retry"
+      >
+        {loading ? (
+          <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
+        ) : (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="1.5" />
+            <path d="M12 8V12M12 16H12.01" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </button>
     );
   }
 

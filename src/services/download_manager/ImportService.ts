@@ -1,6 +1,7 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Zip } from 'capa-zip';
 import { CapacitorHttp } from '@capacitor/core';
+import JSZip from 'jszip';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import type { ImportResult, ImportPhase, ContentEntry } from './types';
@@ -122,9 +123,9 @@ export class ImportService {
         // Extract/copy payload based on contentDisposition + contentEncoding
         const contentState = await this.extractPayload(item, tmpUri, destUri);
 
-        // Flatten: move contents of "widgets/" to root if they exist.
+        // Standardize Directory Structure: move widgets to root, normalize plugin paths.
         // Legacy renderers/plugins often expect a flat structure relative to content root.
-        await this.flattenDirectory(destUri);
+        await this.normalizeStructure(destUri);
 
         // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
         // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
@@ -240,6 +241,24 @@ export class ImportService {
     } else if (disposition === 'inline' && encoding === 'identity') {
       // Uncompressed (PDF, MP4, WebM) → copy directly
       await this.copyAsset(itemSourcePath, destUri);
+    } else if (mimeType === 'application/vnd.ekstep.ecml-archive') {
+      // ECML archives: attempt normal unzip first.
+      // Older ECML ECARs contain a content-plugins inner ZIP with absolute entry
+      // paths (e.g. /assets/content-plugins/…). capa-zip enforces path safety
+      // and throws "Invalid zip entry path" for any entry starting with '/'.
+      // Fall back to jszip which sanitizes absolute paths and normalises
+      // assets/content-plugins/ → content-plugins/ so the renderer finds them.
+      try {
+        await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
+      } catch (err) {
+        const msg = String((err as Error)?.message ?? err);
+        if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
+          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with jszip:', msg);
+          await this.extractWithJszip(itemSourcePath, destUri);
+        } else {
+          throw err;
+        }
+      }
     } else {
       // Default (inline + gzip) → unzip
       await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
@@ -250,6 +269,42 @@ export class ImportService {
   private async copyAsset(source: string, destDir: string): Promise<void> {
     const filename = source.split('/').pop() || 'artifact';
     await Filesystem.copy({ from: source, to: `${destDir}/${filename}` });
+  }
+
+  /**
+   * Extract a ZIP using jszip, sanitizing absolute entry paths.
+   * Paths starting with '/' have the leading slash stripped.
+   * Entries at 'assets/content-plugins/' are remapped to 'content-plugins/'
+   * so the ECML renderer finds them at the expected root-relative location.
+   */
+  private async extractWithJszip(sourceFile: string, destDir: string): Promise<void> {
+    const fileResult = await Filesystem.readFile({ path: sourceFile });
+    const zip = await JSZip.loadAsync(fileResult.data as string, { base64: true });
+
+    let count = 0;
+    for (const [rawPath, zipEntry] of Object.entries(zip.files)) {
+      if (zipEntry.dir) continue;
+
+      // Strip leading slash; reject path traversal segments
+      let safePath = rawPath.startsWith('/') ? rawPath.slice(1) : rawPath;
+      if (safePath.split('/').some((part) => part === '..')) continue;
+      if (!safePath) continue;
+
+      // Normalise: assets/content-plugins/ → content-plugins/ (renderer expects this at root)
+      if (safePath.startsWith('assets/content-plugins/')) {
+        safePath = safePath.slice('assets/'.length);
+      }
+
+      const fullPath = `${destDir}/${safePath}`;
+      const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));
+      await Filesystem.mkdir({ path: parentDir, recursive: true }).catch(() => { });
+
+      const fileData = await zipEntry.async('base64');
+      await Filesystem.writeFile({ path: fullPath, data: fileData });
+      count++;
+    }
+
+    console.debug('[ImportService] jszip extracted', count, 'entries to:', destDir);
   }
 
   // ══════════════════════════════════════════════════
@@ -545,37 +600,106 @@ export class ImportService {
   }
 
   /**
-   * Move everything inside [destUri]/widgets/ to [destUri] root.
-   * This prepares the directory structure for legacy renderer compatibility.
+   * Normalize directory structure by flattening legacy subdirectories like widgets
+   * and content-plugins (which might be inside assets/ or widgets/) to the root.
+   * This prepares the structure for legacy renderer compatibility.
    */
-  private async flattenDirectory(destUri: string): Promise<void> {
+  private async normalizeStructure(destUri: string): Promise<void> {
     try {
-      const widgetsUri = `${destUri}/widgets`;
+      // 1. Root level flattening for 'widgets/' (some legacy tools put entries here)
+      await this.moveEntriesToRoot(destUri, 'widgets');
 
-      // Check if widgets directory exists
-      const stat = await Filesystem.stat({ path: widgetsUri }).catch(() => null);
-      if (!stat || stat.type !== 'directory') return;
+      // 2. Normalize 'content-plugins/' from common legacy subdirectories.
+      // We merge from multiple potential locations to 'content-plugins/' at root.
+      const locations = [
+        'assets/content-plugins',
+        'widgets/content-plugins',
+        'content/content-plugins',
+        'assets', // Fallback: some plugins are packed loose in assets/
+        'widgets', // Fallback: some plugins are packed loose in widgets/
+      ];
 
-      const result = await Filesystem.readdir({ path: widgetsUri });
-      for (const entry of result.files) {
-        const oldPath = `${widgetsUri}/${entry.name}`;
-        const newPath = `${destUri}/${entry.name}`;
+      for (const location of locations) {
+        await this.mergePluginFolders(destUri, location);
+      }
+    } catch (err) {
+      console.warn('[ImportService] Structure normalization failed:', err);
+    }
+  }
 
-        // Move to root. Failure may occur if naming collisions exist (e.g. nested assets folder).
-        await Filesystem.rename({
-          from: oldPath,
-          to: newPath
-        }).catch((err) => {
-          console.warn(`[ImportService] Could not move ${entry.name} from widgets (exists at root?):`, err);
+  /**
+   * Move all plugin folders from [destUri]/[subPath] to [destUri]/content-plugins/.
+   * Identifies plugins by the presence of a 'manifest.json' file.
+   */
+  private async mergePluginFolders(destUri: string, subPath: string): Promise<void> {
+    const sourceUri = `${destUri}/${subPath}`;
+    const destPluginsUri = `${destUri}/content-plugins`;
+
+    const stat = await Filesystem.stat({ path: sourceUri }).catch(() => null);
+    if (!stat || stat.type !== 'directory') return;
+
+    // Skip root content-plugins directory as it's our destination
+    if (subPath === 'content-plugins') return;
+
+    const { files } = await Filesystem.readdir({ path: sourceUri });
+
+    for (const entry of files) {
+      if (entry.type !== 'directory') continue;
+
+      const oldPath = `${sourceUri}/${entry.name}`;
+      const newPath = `${destPluginsUri}/${entry.name}`;
+
+      // Check if this folder is actually a plugin (contains manifest.json)
+      const manifestFile = `${oldPath}/manifest.json`;
+      const hasManifest = await Filesystem.stat({ path: manifestFile }).then(() => true).catch(() => false);
+
+      if (hasManifest) {
+        console.debug(`[ImportService] Normalizing plugin ${entry.name} from ${subPath}...`);
+        await Filesystem.mkdir({ path: destPluginsUri, recursive: true }).catch(() => { });
+
+        // If the plugin already exists at the destination, remove it first to allow the rename/move.
+        // Filesystem.rename often fails if the target is an existing non-empty directory.
+        const existsAtDest = await Filesystem.stat({ path: newPath }).then(() => true).catch(() => false);
+        if (existsAtDest) {
+          console.debug(`[ImportService] Plugin ${entry.name} already exists at root, overwriting...`);
+          await Filesystem.rmdir({ path: newPath, recursive: true }).catch(() => { });
+        }
+
+        await Filesystem.rename({ from: oldPath, to: newPath }).catch((err) => {
+          // Failure might occur if the plugin already exists at the destination
+          console.warn(`[ImportService] Could not move plugin ${entry.name}:`, err);
         });
       }
-
-      // Cleanup the now-empty widgets folder
-      await Filesystem.rmdir({ path: widgetsUri }).catch(() => { });
-      console.debug('[ImportService] Flattened widgets structure for:', destUri);
-    } catch (err) {
-      console.warn('[ImportService] Flattening failed:', err);
     }
+
+    // Cleanup the source subdirectory if it's now empty.
+    const remaining = await Filesystem.readdir({ path: sourceUri }).catch(() => ({ files: [] }));
+    if (remaining.files.length === 0) {
+      await Filesystem.rmdir({ path: sourceUri }).catch(() => { });
+    }
+  }
+
+  /**
+   * Move all top-level entries from [destUri]/[subDir] to [destUri] root.
+   */
+  private async moveEntriesToRoot(destUri: string, subDir: string): Promise<void> {
+    const sourceUri = `${destUri}/${subDir}`;
+    const stat = await Filesystem.stat({ path: sourceUri }).catch(() => null);
+    if (!stat || stat.type !== 'directory') return;
+
+    const result = await Filesystem.readdir({ path: sourceUri });
+    for (const entry of result.files) {
+      const oldPath = `${sourceUri}/${entry.name}`;
+      const newPath = `${destUri}/${entry.name}`;
+
+      await Filesystem.rename({ from: oldPath, to: newPath }).catch((err) => {
+        console.warn(`[ImportService] Could not move ${entry.name} from ${subDir} root:`, err);
+      });
+    }
+
+    // Cleanup the folder
+    await Filesystem.rmdir({ path: sourceUri }).catch(() => { });
+    console.debug(`[ImportService] Flattened ${subDir} structure for:`, destUri);
   }
 }
 
