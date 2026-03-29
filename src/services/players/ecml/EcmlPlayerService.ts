@@ -60,9 +60,9 @@ export class EcmlPlayerService {
       config.build_number = '1.0';
       config.version = '1.0';
 
-      // Use 'content-plugins' so it concatenates properly with basePath, reflecting the normalized structure
-      config.devicePluginspath = 'content-plugins';
-      config.previewPluginspath = 'content-plugins';
+      // Use '/content-plugins' so it concatenates properly with the stripped internal basePath, yielding a valid structure
+      config.devicePluginspath = '/content-plugins';
+      config.previewPluginspath = '/content-plugins';
 
       // Ensure plugin discovery repos use absolute URLs.
       // Order: 1. Content-specific plugins, 2. Content Root, 3. Global content storage (shared), 4. App Core Plugins
