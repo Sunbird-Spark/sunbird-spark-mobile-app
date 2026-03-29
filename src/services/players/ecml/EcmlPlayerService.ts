@@ -94,6 +94,7 @@ export class EcmlPlayerService {
         build_number: '',
         version: '',
       },
+      path: basePath, // <--- CRITICAL: Overwrite path as renderer uses t.path for e.path local resolution
       basePath: basePath,
       baseDir: basePath,
       isAvailableLocally: isLocal,
