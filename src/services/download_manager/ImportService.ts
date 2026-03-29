@@ -123,9 +123,6 @@ export class ImportService {
         // Extract/copy payload based on contentDisposition + contentEncoding
         const contentState = await this.extractPayload(item, tmpUri, destUri);
 
-        // Standardize Directory Structure: move widgets to root, normalize plugin paths.
-        // Legacy renderers/plugins often expect a flat structure relative to content root.
-        await this.normalizeStructure(destUri);
 
         // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
         // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
@@ -600,96 +597,6 @@ export class ImportService {
   }
 
   /**
-   * Normalize directory structure by flattening legacy subdirectories like widgets
-   * and content-plugins (which might be inside assets/ or widgets/) to the root.
-   * This prepares the structure for legacy renderer compatibility.
-   */
-  private async normalizeStructure(destUri: string): Promise<void> {
-    try {
-      // 1. Root level flattening for 'widgets/' (some legacy tools put entries here)
-      await this.moveEntriesToRoot(destUri, 'widgets');
-
-      // 2. Normalize 'content-plugins/' from common legacy subdirectories.
-      // We merge from multiple potential locations to 'content-plugins/' at root.
-      const locations = [
-        'assets/content-plugins',
-        'widgets/content-plugins',
-        'content/content-plugins',
-        'assets', // Fallback: some plugins are packed loose in assets/
-        'widgets', // Fallback: some plugins are packed loose in widgets/
-      ];
-
-      for (const location of locations) {
-        await this.mergePluginFolders(destUri, location);
-      }
-    } catch (err) {
-      console.warn('[ImportService] Structure normalization failed:', err);
-    }
-  }
-
-  /**
-   * Move all plugin folders from [destUri]/[subPath] to [destUri]/content-plugins/.
-   * Identifies plugins by the presence of a 'manifest.json' file.
-   */
-  private async mergePluginFolders(destUri: string, subPath: string): Promise<void> {
-    const sourceUri = `${destUri}/${subPath}`;
-    const destPluginsUri = `${destUri}/content-plugins`;
-
-    const stat = await Filesystem.stat({ path: sourceUri }).catch(() => null);
-    if (!stat || stat.type !== 'directory') return;
-
-    // Skip root content-plugins directory as it's our destination
-    if (subPath === 'content-plugins') return;
-
-    const { files } = await Filesystem.readdir({ path: sourceUri });
-
-    for (const entry of files) {
-      if (entry.type !== 'directory') continue;
-
-      const oldPath = `${sourceUri}/${entry.name}`;
-      const newPath = `${destPluginsUri}/${entry.name}`;
-
-      // Check if this folder is actually a plugin (contains manifest.json)
-      const manifestFile = `${oldPath}/manifest.json`;
-      const hasManifest = await Filesystem.stat({ path: manifestFile }).then(() => true).catch(() => false);
-
-      if (hasManifest) {
-        console.debug(`[ImportService] Normalizing plugin ${entry.name} from ${subPath}...`);
-        await Filesystem.mkdir({ path: destPluginsUri, recursive: true }).catch(() => { });
-
-        // If the plugin already exists at the destination, remove it first to allow the rename/move.
-        // Filesystem.rename often fails if the target is an existing non-empty directory.
-        const existsAtDest = await Filesystem.stat({ path: newPath }).then(() => true).catch(() => false);
-        if (existsAtDest) {
-          console.debug(`[ImportService] Plugin ${entry.name} already exists at root, overwriting...`);
-          await Filesystem.rmdir({ path: newPath, recursive: true }).catch(() => { });
-        }
-
-        await Filesystem.rename({ from: oldPath, to: newPath }).catch((err) => {
-          // Failure might occur if the plugin already exists at the destination
-          console.warn(`[ImportService] Could not move plugin ${entry.name}:`, err);
-        });
-      }
-    }
-
-    // Cleanup the source subdirectory if it's now empty.
-    const remaining = await Filesystem.readdir({ path: sourceUri }).catch(() => ({ files: [] }));
-    if (remaining.files.length === 0) {
-      await Filesystem.rmdir({ path: sourceUri }).catch(() => { });
-    }
-  }
-
-  /**
-   * Move all top-level entries from [destUri]/[subDir] to [destUri] root.
-   */
-  private async moveEntriesToRoot(destUri: string, subDir: string): Promise<void> {
-    const sourceUri = `${destUri}/${subDir}`;
-    const stat = await Filesystem.stat({ path: sourceUri }).catch(() => null);
-    if (!stat || stat.type !== 'directory') return;
-
-    const result = await Filesystem.readdir({ path: sourceUri });
-    for (const entry of result.files) {
-      const oldPath = `${sourceUri}/${entry.name}`;
       const newPath = `${destUri}/${entry.name}`;
 
       await Filesystem.rename({ from: oldPath, to: newPath }).catch((err) => {
