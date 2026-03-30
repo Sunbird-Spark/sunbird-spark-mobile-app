@@ -39,26 +39,26 @@ describe('SyncScheduler', () => {
 
   it('does not autoSync before interval fires', () => {
     syncScheduler.start();
-    vi.advanceTimersByTime(59_000);
+    vi.advanceTimersByTime(299_000);
     expect(mockAutoSync).not.toHaveBeenCalled();
   });
 
-  it('calls autoSync after 1 minute interval', () => {
+  it('calls autoSync after 5 minute interval', () => {
     syncScheduler.start();
-    vi.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(300_000);
     expect(mockAutoSync).toHaveBeenCalledTimes(1);
   });
 
   it('calls autoSync multiple times across multiple intervals', () => {
     syncScheduler.start();
-    vi.advanceTimersByTime(180_000);
+    vi.advanceTimersByTime(900_000);
     expect(mockAutoSync).toHaveBeenCalledTimes(3);
   });
 
   it('does not start a second interval if already running', () => {
     syncScheduler.start();
     syncScheduler.start(); // second call should be a no-op
-    vi.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(300_000);
     // Still only 1 call (not 2)
     expect(mockAutoSync).toHaveBeenCalledTimes(1);
   });
@@ -92,7 +92,7 @@ describe('SyncScheduler', () => {
   it('stops the interval on stop()', () => {
     syncScheduler.start();
     syncScheduler.stop();
-    vi.advanceTimersByTime(120_000);
+    vi.advanceTimersByTime(600_000);
     expect(mockAutoSync).not.toHaveBeenCalled();
   });
 
@@ -107,7 +107,7 @@ describe('SyncScheduler', () => {
     syncScheduler.start();
     syncScheduler.stop();
     syncScheduler.start();
-    vi.advanceTimersByTime(60_000);
+    vi.advanceTimersByTime(300_000);
     expect(mockAutoSync).toHaveBeenCalledTimes(1);
   });
 
