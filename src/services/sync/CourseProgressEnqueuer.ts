@@ -11,19 +11,19 @@ export class CourseProgressEnqueuer {
    */
   async enqueue(request: UpdateContentStateRequest): Promise<void> {
     await networkQueueDbService.insert({
-      type:       NetworkQueueType.COURSE_PROGRESS,
-      priority:   1,
-      timestamp:  Date.now(),
-      data:       JSON.stringify({ request }),
+      type: NetworkQueueType.COURSE_PROGRESS,
+      priority: 1,
+      timestamp: Date.now(),
+      data: JSON.stringify({ request }),
       item_count: request.contents.length,
     });
 
     // Update local caches immediately — do not wait for sync
     for (const content of request.contents) {
       const { courseId, batchId, contentId } = content;
-      const userId   = request.userId;
+      const userId = request.userId;
       const progress = content.progress;
-      const status   = content.status ?? 0;
+      const status = content.status ?? 0;
 
       // 1. Update enrolled_courses.progress (drives offline enrollment list)
       // Only update when progress is explicitly provided — defaulting to 0 would
@@ -40,11 +40,11 @@ export class CourseProgressEnqueuer {
       // 2. Update cache:content_state_* (drives getLocalCompletionPercentage enrichment)
       const cacheKey = `cache:content_state_${userId}_${courseId}_${batchId}`;
       try {
-        const raw    = await keyValueDbService.getRaw(cacheKey);
+        const raw = await keyValueDbService.getRaw(cacheKey);
         const cached = raw ? (JSON.parse(raw) as ContentStateReadResponse) : { contentList: [] };
-        const list   = [...(cached.contentList ?? [])];
-        const idx    = list.findIndex(i => i.contentId === contentId);
-        const patch  = { contentId, status, progress };
+        const list = [...(cached.contentList ?? [])];
+        const idx = list.findIndex(i => i.contentId === contentId);
+        const patch = { contentId, status, progress };
         if (idx >= 0) {
           list[idx] = { ...list[idx], ...patch };
         } else {

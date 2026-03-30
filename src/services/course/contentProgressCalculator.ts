@@ -97,7 +97,8 @@ export function calculateContentProgress(
   const endPageSeen = Boolean(summaryMap.endpageseen);
   const visitedContentEnd = Boolean(summaryMap.visitedcontentend);
 
-  if (PLAYBACK_MIME_TYPES.indexOf(mimeType ?? '') > -1) {
+  const lowerMime = (mimeType ?? '').toLowerCase();
+  if (PLAYBACK_MIME_TYPES.indexOf(lowerMime) > -1) {
     return calculatePlaybackProgress(
       progressNum,
       visitedLength,
@@ -107,7 +108,7 @@ export function calculateContentProgress(
     );
   }
 
-  if (OTHER_MIME_TYPES.indexOf(mimeType ?? '') > -1) {
+  if (OTHER_MIME_TYPES.indexOf(lowerMime) > -1) {
     return absoluteProgress(progressNum, 0);
   }
 

@@ -11,10 +11,14 @@ export interface CourseDownloadProgress {
   completed: number;
   /** Overall percentage (0–100) across all items. */
   overallPercent: number;
-  /** True if at least one item is queued/downloading/importing for this collection. */
+  /** True if at least one item is queued/downloading/importing/paused/retry_wait for this collection. */
   isDownloading: boolean;
+  /** True if all items are purely in PAUSED state. */
+  isPaused: boolean;
   /** True if all downloadable items have completed. */
   allDownloaded: boolean;
+  /** True if EVERY single leaf node is local (including non-downloadable ones). */
+  isFullyLocal: boolean;
   /** Number of failed items. */
   failedCount: number;
 }
@@ -24,7 +28,9 @@ const EMPTY: CourseDownloadProgress = {
   completed: 0,
   overallPercent: 0,
   isDownloading: false,
+  isPaused: false,
   allDownloaded: false,
+  isFullyLocal: false,
   failedCount: 0,
 };
 
@@ -98,9 +104,20 @@ export function useCourseDownloadProgress(
       }
     });
 
+    // Refresh immediately when network comes back online to correctly resume
+    // visual progress from QUEUED/RETRY_WAIT states.
+    const networkHandler = () => {
+      lastRefresh = 0;
+      doRefresh();
+    };
+    window.addEventListener('online', networkHandler);
+    window.addEventListener('offline', networkHandler);
+
     return () => {
       cancelled = true;
       unsub();
+      window.removeEventListener('online', networkHandler);
+      window.removeEventListener('offline', networkHandler);
       if (timeout) clearTimeout(timeout);
     };
   }, [refresh]);
@@ -109,24 +126,41 @@ export function useCourseDownloadProgress(
     if (!collectionId || !aggregate || aggregate.total === 0) {
       // Check if everything is already local
       if (children && downloadableCount === 0) {
-        const totalLeaves = children ? flattenLeafNodes(children).filter(isDownloadable).length : 0;
+        const leafNodes = flattenLeafNodes(children);
+        const total = leafNodes.length;
+        const allLocal = total > 0 && leafNodes.every(l => localIdentifiers.has(l.identifier));
         return {
           ...EMPTY,
-          allDownloaded: totalLeaves > 0 && localIdentifiers.size >= totalLeaves,
+          allDownloaded: total > 0 && downloadableCount === 0,
+          isFullyLocal: allLocal,
         };
       }
       return EMPTY;
     }
 
-    const isDownloading = aggregate.total > 0 && aggregate.completed < aggregate.total;
-    const failedCount = 0; // TODO: track from aggregate when DownloadManager exposes it
+    const isDownloading = aggregate.total > 0 && aggregate.activeCount > 0;
+    const isPaused = isDownloading && aggregate.pausedCount > 0 && aggregate.pausedCount === aggregate.activeCount;
+    const failedCount = aggregate.failedCount;
+
+    const allLeaves = children ? flattenLeafNodes(children) : [];
+    const totalLeavesCount = allLeaves.length;
+    const downloadableCountLeaves = allLeaves.filter(isDownloadable).length;
+
+    // Fully local = EVERY item is in local DB (unlikely for courses with YouTube etc)
+    const isFullyLocal = totalLeavesCount > 0 && allLeaves.every(l => localIdentifiers.has(l.identifier));
+
+    // For the UI, "allDownloaded" should be true only if all DOWNLOADABLE items are local.
+    // However, the user wants "partial" icons even for success if YouTube is missing.
+    const allDownloaded = downloadableCountLeaves > 0 && downloadableCount === 0;
 
     return {
       total: aggregate.total,
       completed: aggregate.completed,
       overallPercent: aggregate.overallPercent,
       isDownloading,
-      allDownloaded: aggregate.completed >= aggregate.total,
+      isPaused,
+      allDownloaded,
+      isFullyLocal,
       failedCount,
     };
   }, [aggregate, collectionId, children, downloadableCount, localIdentifiers]);

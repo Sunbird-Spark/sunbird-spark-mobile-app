@@ -1,6 +1,7 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Zip } from 'capa-zip';
 import { CapacitorHttp } from '@capacitor/core';
+import JSZip from 'jszip';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import type { ImportResult, ImportPhase, ContentEntry } from './types';
@@ -122,9 +123,6 @@ export class ImportService {
         // Extract/copy payload based on contentDisposition + contentEncoding
         const contentState = await this.extractPayload(item, tmpUri, destUri);
 
-        // Flatten: move contents of "widgets/" to root if they exist.
-        // Legacy renderers/plugins often expect a flat structure relative to content root.
-        await this.flattenDirectory(destUri);
 
         // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
         // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
@@ -240,6 +238,24 @@ export class ImportService {
     } else if (disposition === 'inline' && encoding === 'identity') {
       // Uncompressed (PDF, MP4, WebM) → copy directly
       await this.copyAsset(itemSourcePath, destUri);
+    } else if (mimeType === 'application/vnd.ekstep.ecml-archive') {
+      // ECML archives: attempt normal unzip first.
+      // Older ECML ECARs contain a content-plugins inner ZIP with absolute entry
+      // paths (e.g. /assets/content-plugins/…). capa-zip enforces path safety
+      // and throws "Invalid zip entry path" for any entry starting with '/'.
+      // Fall back to jszip which sanitizes absolute paths and normalises
+      // assets/content-plugins/ → content-plugins/ so the renderer finds them.
+      try {
+        await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
+      } catch (err) {
+        const msg = String((err as Error)?.message ?? err);
+        if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
+          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with jszip:', msg);
+          await this.extractWithJszip(itemSourcePath, destUri);
+        } else {
+          throw err;
+        }
+      }
     } else {
       // Default (inline + gzip) → unzip
       await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
@@ -250,6 +266,42 @@ export class ImportService {
   private async copyAsset(source: string, destDir: string): Promise<void> {
     const filename = source.split('/').pop() || 'artifact';
     await Filesystem.copy({ from: source, to: `${destDir}/${filename}` });
+  }
+
+  /**
+   * Extract a ZIP using jszip, sanitizing absolute entry paths.
+   * Paths starting with '/' have the leading slash stripped.
+   * Entries at 'assets/content-plugins/' are remapped to 'content-plugins/'
+   * so the ECML renderer finds them at the expected root-relative location.
+   */
+  private async extractWithJszip(sourceFile: string, destDir: string): Promise<void> {
+    const fileResult = await Filesystem.readFile({ path: sourceFile });
+    const zip = await JSZip.loadAsync(fileResult.data as string, { base64: true });
+
+    let count = 0;
+    for (const [rawPath, zipEntry] of Object.entries(zip.files)) {
+      if (zipEntry.dir) continue;
+
+      // Strip leading slash; reject path traversal segments
+      let safePath = rawPath.startsWith('/') ? rawPath.slice(1) : rawPath;
+      if (safePath.split('/').some((part) => part === '..')) continue;
+      if (!safePath) continue;
+
+      // Normalise: assets/content-plugins/ → content-plugins/ (renderer expects this at root)
+      if (safePath.startsWith('assets/content-plugins/')) {
+        safePath = safePath.slice('assets/'.length);
+      }
+
+      const fullPath = `${destDir}/${safePath}`;
+      const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));
+      await Filesystem.mkdir({ path: parentDir, recursive: true }).catch(() => { });
+
+      const fileData = await zipEntry.async('base64');
+      await Filesystem.writeFile({ path: fullPath, data: fileData });
+      count++;
+    }
+
+    console.debug('[ImportService] jszip extracted', count, 'entries to:', destDir);
   }
 
   // ══════════════════════════════════════════════════
@@ -541,40 +593,6 @@ export class ImportService {
       console.debug('[ImportService] Restructured for renderer:', subDir);
     } catch (err) {
       console.warn('[ImportService] restructureForRenderer failed:', err);
-    }
-  }
-
-  /**
-   * Move everything inside [destUri]/widgets/ to [destUri] root.
-   * This prepares the directory structure for legacy renderer compatibility.
-   */
-  private async flattenDirectory(destUri: string): Promise<void> {
-    try {
-      const widgetsUri = `${destUri}/widgets`;
-
-      // Check if widgets directory exists
-      const stat = await Filesystem.stat({ path: widgetsUri }).catch(() => null);
-      if (!stat || stat.type !== 'directory') return;
-
-      const result = await Filesystem.readdir({ path: widgetsUri });
-      for (const entry of result.files) {
-        const oldPath = `${widgetsUri}/${entry.name}`;
-        const newPath = `${destUri}/${entry.name}`;
-
-        // Move to root. Failure may occur if naming collisions exist (e.g. nested assets folder).
-        await Filesystem.rename({
-          from: oldPath,
-          to: newPath
-        }).catch((err) => {
-          console.warn(`[ImportService] Could not move ${entry.name} from widgets (exists at root?):`, err);
-        });
-      }
-
-      // Cleanup the now-empty widgets folder
-      await Filesystem.rmdir({ path: widgetsUri }).catch(() => { });
-      console.debug('[ImportService] Flattened widgets structure for:', destUri);
-    } catch (err) {
-      console.warn('[ImportService] Flattening failed:', err);
     }
   }
 }

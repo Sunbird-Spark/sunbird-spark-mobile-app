@@ -111,8 +111,9 @@ export function useCollectionEnrollment(
   const maxAttemptsMap = useMemo(() => {
     const map: Record<string, number> = {};
     for (const node of leafNodes) {
-      if (typeof node.maxAttempts === 'number' && node.maxAttempts > 0) {
-        map[node.identifier] = node.maxAttempts;
+      if (node.contentType === 'SelfAssess') {
+        const attempts = typeof node.maxAttempts === 'number' && node.maxAttempts > 0 ? node.maxAttempts : 10;
+        map[node.identifier] = attempts;
       }
     }
     return map;
