@@ -1,6 +1,6 @@
 import { IonActionSheet, IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, useLocation } from 'react-router-dom';
 import { appUpdateService } from './services/AppUpdateService';
@@ -163,7 +163,9 @@ const PushNotificationGuard: React.FC = () => {
   const queryClient = useQueryClient();
   const { interact } = useInteract();
   const interactRef = useRef(interact);
-  interactRef.current = interact;
+  useLayoutEffect(() => {
+    interactRef.current = interact;
+  });
 
   useEffect(() => {
     const handleForeground = () => {
