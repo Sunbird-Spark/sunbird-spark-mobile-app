@@ -14,6 +14,9 @@ vi.mock('@capacitor/filesystem', () => ({
     readFile: vi.fn().mockResolvedValue({ data: '{}' }),
     copy: vi.fn().mockResolvedValue(undefined),
     stat: vi.fn().mockResolvedValue({ size: 1024 }),
+    readdir: vi.fn().mockResolvedValue({ files: [] }),
+    writeFile: vi.fn().mockResolvedValue(undefined),
+    rename: vi.fn().mockResolvedValue(undefined),
   },
   Directory: { Data: 'DATA', Cache: 'CACHE' },
   Encoding: { UTF8: 'utf8' },
@@ -27,6 +30,17 @@ vi.mock('capa-zip', () => ({
 
 vi.mock('../db/DatabaseService', () => ({ DatabaseService: vi.fn(), databaseService: {} }));
 vi.mock('../db/ContentDbService', () => ({ ContentDbService: vi.fn(), contentDbService: {} }));
+vi.mock('jszip', () => {
+  return {
+    default: {
+      loadAsync: vi.fn().mockResolvedValue({
+        files: {
+          'index.ecml': { dir: false, async: vi.fn().mockResolvedValue('base64data') },
+        },
+      }),
+    },
+  };
+});
 
 function makeMockDb() {
   return {
@@ -40,6 +54,7 @@ function makeMockContentDb() {
     upsert: vi.fn().mockResolvedValue(undefined),
     getByIdentifier: vi.fn().mockResolvedValue(null),
     updateSizeOnDevice: vi.fn().mockResolvedValue(undefined),
+    update: vi.fn().mockResolvedValue(undefined),
   } as unknown as ContentDbService;
 }
 
@@ -65,6 +80,17 @@ describe('ImportService', () => {
       const result = await svc.import('do_123', '/path/to/file.ecar');
       expect(result.status).toBe('FAILED');
       expect(result.errors?.[0]).toBe('IMPORT_FAILED_MANIFEST_NOT_FOUND');
+    });
+
+    it('falls back to hierarchy.json if manifest.json is missing', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockImplementation(async (options) => {
+        if (options.path.endsWith('manifest.json')) throw new Error('not found');
+        return { data: JSON.stringify({ ver: '1.1', archive: { items: [{ identifier: 'do_123', mimeType: 'collection' }] } }) };
+      });
+
+      const result = await svc.import('do_123', '/path/to/file.ecar');
+      expect(result.status).toBe('SUCCESS');
     });
   });
 
@@ -426,6 +452,123 @@ describe('ImportService', () => {
 
       const upsertedRow = vi.mocked(contentDb.upsert).mock.calls[0][0] as ContentEntry;
       expect(upsertedRow.visibility).toBe('Default');
+    });
+  });
+
+  // ── Helpers / Edge Cases ──
+
+  describe('restructureForRenderer', () => {
+    it('restructures H5P content correctly', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({
+          ver: '1.1',
+          archive: {
+            items: [
+              {
+                identifier: 'do_h5p',
+                mimeType: 'application/vnd.ekstep.h5p-archive',
+                status: 'Live',
+                artifactUrl: 'do_h5p/artifact.h5p',
+              },
+            ],
+          },
+        }),
+      } as any);
+
+      vi.mocked(Filesystem.readdir).mockResolvedValue({
+        files: [{ name: 'index.html' }, { name: 'assets' }], // assets should be skipped
+      } as any);
+
+      const result = await svc.import('do_h5p', '/path/to/file.ecar');
+      expect(result.status).toBe('SUCCESS');
+      expect(Filesystem.rename).toHaveBeenCalledWith(expect.objectContaining({
+        from: expect.stringContaining('index.html'),
+        to: expect.stringContaining('assets/public/content/h5p/do_h5p-latest/index.html'),
+      }));
+    });
+  });
+
+  describe('downloadIcon', () => {
+    it('downloads and saves application icon', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+
+      // Mock CapacitorHttp correctly if not already mocked
+      vi.mock('@capacitor/core', async () => {
+        const actual = await vi.importActual('@capacitor/core');
+        return {
+          ...actual,
+          CapacitorHttp: {
+            get: vi.fn(),
+          },
+        };
+      });
+      const { CapacitorHttp } = await import('@capacitor/core');
+
+      vi.mocked(CapacitorHttp.get).mockResolvedValue({
+        status: 200,
+        data: 'base64iconbytes',
+      } as any);
+
+      vi.mocked(contentDb.getByIdentifier).mockResolvedValue({
+        identifier: 'do_123',
+        local_data: JSON.stringify({ name: 'Test' }),
+      } as any);
+
+      // Trigger via import with contentMeta
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({ ver: '1.1', archive: { items: [{ identifier: 'do_123', mimeType: 'pdf' }] } }),
+      } as any);
+
+      await svc.import('do_123', '/p.ecar', { appIcon: 'http://example.com/icon.png' });
+
+      expect(CapacitorHttp.get).toHaveBeenCalledWith(expect.objectContaining({ url: 'http://example.com/icon.png' }));
+      expect(Filesystem.writeFile).toHaveBeenCalledWith(expect.objectContaining({
+        path: expect.stringContaining('appIcon.png'),
+        data: 'base64iconbytes',
+      }));
+      expect(contentDb.update).toHaveBeenCalledWith('do_123', expect.objectContaining({
+        local_data: expect.stringContaining('appIconLocal'),
+      }));
+    });
+  });
+
+  describe('Edge Cases', () => {
+    it('skips item if pkgVersion in DB is higher', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({ ver: '1.1', archive: { items: [{ identifier: 'do_old', pkgVersion: 2, mimeType: 'pdf' }] } })
+      } as any);
+
+      vi.mocked(contentDb.getByIdentifiers).mockResolvedValue([{
+        identifier: 'do_old',
+        local_data: JSON.stringify({ pkgVersion: 5 }),
+        content_state: 2,
+      } as any]);
+
+      const result = await svc.import('do_old', '/p.ecar');
+      expect(result.status).toBe('ALREADY_EXIST');
+    });
+
+    it('handles non-array audience/pragma/dialcodes', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({
+          ver: '1.1',
+          archive: {
+            items: [{
+              identifier: 'do_str',
+              mimeType: 'pdf',
+              audience: 'Instructor',
+              pragma: 'test',
+            }]
+          }
+        })
+      } as any);
+
+      await svc.import('do_str', '/p.ecar');
+      const upserted = vi.mocked(contentDb.upsert).mock.calls[0][0] as ContentEntry;
+      expect(upserted.audience).toBe('Instructor');
     });
   });
 });
