@@ -203,7 +203,7 @@ const CollectionPage: React.FC = () => {
     setIsDownloadSheetOpen(false);
     if (!collectionData?.children) return;
     if (isOffline) {
-      setToastMessage(t('download.noInternet'));
+      setToastMessage({ message: t('download.noInternet'), color: 'warning', icon: warningOutline });
       return;
     }
     setIsDownloadStarting(true);
@@ -216,12 +216,12 @@ const CollectionPage: React.FC = () => {
         pkgVersion,
       });
       if (result.enqueued === 0 && result.skippedLocal > 0) {
-        setToastMessage(t('download.allDownloaded'));
+        setToastMessage({ message: t('download.allDownloaded') });
       } else if (result.enqueued > 0) {
-        setToastMessage(t('download.downloadingItems', { count: result.enqueued }));
+        setToastMessage({ message: t('download.downloadingItems', { count: result.enqueued }) });
       }
     } catch {
-      setToastMessage(t('download.failedToStart'));
+      setToastMessage({ message: t('download.failedToStart'), color: 'danger', icon: warningOutline });
     } finally {
       setIsDownloadStarting(false);
     }
@@ -247,9 +247,9 @@ const CollectionPage: React.FC = () => {
       downloadManager.notifyContentDeleted(collectionId);
       // Reset the "success toast shown" flag so it fires again after a fresh download
       localStorage.removeItem(`dl_toast_shown_${collectionId}`);
-      setToastMessage(t('download.deleted'));
+      setToastMessage({ message: t('download.deleted') });
     } catch {
-      setToastMessage(t('download.deleteFailed'));
+      setToastMessage({ message: t('download.deleteFailed'), color: 'danger', icon: warningOutline });
     } finally {
       setIsDeleting(false);
     }
@@ -258,7 +258,7 @@ const CollectionPage: React.FC = () => {
   // Pause / Resume all downloads for this collection
   const handlePauseAll = useCallback(async () => {
     for (const [id, state] of downloadStates) {
-      if (state.state === 'DOWNLOADING') {
+      if (['DOWNLOADING', 'QUEUED', 'RETRY_WAIT'].includes(state.state)) {
         await downloadManager.pause(id);
       }
     }
@@ -270,14 +270,6 @@ const CollectionPage: React.FC = () => {
         await downloadManager.resume(id);
       }
     }
-  }, [downloadStates]);
-
-  // Check if any items are paused (to show resume vs pause button in header)
-  const hasPausedItems = useMemo(() => {
-    for (const [, state] of downloadStates) {
-      if (state.state === 'PAUSED') return true;
-    }
-    return false;
   }, [downloadStates]);
 
   // True when all active items are IMPORTING (extracting) — no pause/resume in that phase
@@ -293,14 +285,20 @@ const CollectionPage: React.FC = () => {
 
   // Collection-level download failure state for the header icon
   const downloadFailureState = useMemo((): 'none' | 'partial' | 'all_failed' => {
-    if (courseProgress.isDownloading || (courseProgress.allDownloaded && localContentSet.size > 0)) return 'none';
+    // If anything is currently active (queued/downloading/importing/paused), don't show failure state yet
+    if (courseProgress.isDownloading) return 'none';
+
+    // Count non-retried failures for this collection
     let failedCount = 0;
     for (const id of leafIdentifiers) {
       if (downloadStates.get(id)?.state === 'FAILED') failedCount++;
     }
+
     if (failedCount === 0) return 'none';
+
+    // If some items succeeded and some failed, it's 'partial'; if none succeeded and some failed, it's 'all_failed'
     return localContentSet.size > 0 ? 'partial' : 'all_failed';
-  }, [courseProgress.isDownloading, courseProgress.allDownloaded, localContentSet, leafIdentifiers, downloadStates]);
+  }, [courseProgress.isDownloading, localContentSet, leafIdentifiers, downloadStates]);
 
   // Pre-compute ring geometry for the header progress indicator
   const dlRingRadius = 16;
@@ -333,7 +331,8 @@ const CollectionPage: React.FC = () => {
   const { data: userProfile } = useUser(userId);
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  type ToastConfig = { message: string; color?: string; icon?: string };
+  const [toastMessage, setToastMessage] = useState<ToastConfig | null>(null);
   const [consentToastMessage, setConsentToastMessage] = useState('');
 
   // Download event toast (success/failure per-item, similar to ContentPlayerPage)
@@ -576,8 +575,8 @@ const CollectionPage: React.FC = () => {
                   ) : (
                     /* Downloading — circular progress ring with pause/resume */
                     <button
-                      onClick={hasPausedItems ? handleResumeAll : handlePauseAll}
-                      aria-label={hasPausedItems ? t('download.resumeAll') : t('download.pauseAll')}
+                      onClick={courseProgress.isPaused ? handleResumeAll : handlePauseAll}
+                      aria-label={courseProgress.isPaused ? t('download.resumeAll') : t('download.pauseAll')}
                       style={{
                         position: 'relative', width: 44, height: 44, padding: 0,
                         border: 'none', background: 'none', cursor: 'pointer',
@@ -598,7 +597,7 @@ const CollectionPage: React.FC = () => {
                         />
                       </svg>
                       <IonIcon
-                        icon={hasPausedItems ? play : pause}
+                        icon={courseProgress.isPaused ? play : pause}
                         style={{ fontSize: '18px', color: 'var(--ion-color-primary)', position: 'relative', zIndex: 1 }}
                       />
                     </button>
@@ -1054,7 +1053,7 @@ const CollectionPage: React.FC = () => {
             className="cp-bottom-cta"
             onClick={() => {
               if (isCreator) {
-                setToastMessage(t('collection.creatorCannotEnrol'));
+                setToastMessage({ message: t('collection.creatorCannotEnrol'), color: 'warning', icon: warningOutline });
               } else {
                 setIsBatchModalOpen(true);
               }
@@ -1235,13 +1234,13 @@ const CollectionPage: React.FC = () => {
       {/* Page-level toast (creator error, etc.) — visible across all view states */}
       <IonToast
         isOpen={!!toastMessage}
-        onDidDismiss={() => setToastMessage('')}
-        message={toastMessage}
-        icon={warningOutline}
+        onDidDismiss={() => setToastMessage(null)}
+        message={toastMessage?.message || ''}
+        icon={toastMessage?.icon}
         duration={3500}
         position="bottom"
-        color="warning"
-        cssClass="cp-creator-toast"
+        color={toastMessage?.color}
+        cssClass={toastMessage?.color ? "cp-creator-toast" : undefined}
       />
 
       {/* Download success/failure toast */}

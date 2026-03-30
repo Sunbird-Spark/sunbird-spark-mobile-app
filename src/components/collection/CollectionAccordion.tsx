@@ -8,6 +8,7 @@ import { isSelfAssess } from '../../services/course/enrollmentMapper';
 import { flattenLeafNodes, isDownloadable } from '../../services/content/hierarchyUtils';
 import { startBulkDownload } from '../../services/content/courseDownloadHelper';
 import { deleteDownloadedContent } from '../../services/content/contentDeleteHelper';
+import { downloadManager } from '../../services/download_manager';
 
 const COLLECTION_MIME = 'application/vnd.ekstep.content-collection';
 
@@ -61,17 +62,37 @@ interface EnrollmentData {
 }
 
 // ── Tiny inline progress ring for per-item indicators ──
-const ItemProgressRing: React.FC<{ progress: number; size?: number }> = ({ progress, size = 18 }) => {
+const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOWNLOADING' | 'PAUSED'; onClick?: (e: React.MouseEvent) => void }> = ({ progress, size = 18, state, onClick }) => {
   const r = (size - 3) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (progress / 100) * circ;
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-light, #e0e0e0)" strokeWidth="2" />
-      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-primary)" strokeWidth="2"
-        strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
-        transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-    </svg>
+    <div
+      onClick={onClick}
+      style={{
+        position: 'relative', width: size, height: size, flexShrink: 0,
+        cursor: onClick ? 'pointer' : 'default',
+        display: 'flex', alignItems: 'center', justifyContent: 'center'
+      }}
+      aria-label={state === 'PAUSED' ? 'Resume download' : 'Pause download'}
+      role={onClick ? 'button' : undefined}
+    >
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', top: 0, left: 0 }}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-light, #e0e0e0)" strokeWidth="2" />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-primary)" strokeWidth="2"
+          strokeDasharray={circ} strokeDashoffset={offset} strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`} />
+      </svg>
+      {state === 'PAUSED' ? (
+        <svg width={size * 0.5} height={size * 0.5} viewBox="0 0 24 24" fill="var(--ion-color-primary)" style={{ zIndex: 1 }}>
+          <path d="M5 3l14 9-14 9V3z" />
+        </svg>
+      ) : state === 'DOWNLOADING' ? (
+        <svg width={size * 0.45} height={size * 0.45} viewBox="0 0 24 24" fill="var(--ion-color-primary)" style={{ zIndex: 1 }}>
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+        </svg>
+      ) : null}
+    </div>
   );
 };
 
@@ -81,6 +102,7 @@ interface CurriculumLeafItemProps {
   collectionId: string;
   contentBlocked: boolean;
   onContentClick: (leafId: string) => void;
+  onMaxAttemptsClick?: () => void;
   t: (key: string) => string;
   enrollmentData?: EnrollmentData;
   isLocal: boolean;
@@ -93,6 +115,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
   node,
   contentBlocked,
   onContentClick,
+  onMaxAttemptsClick,
   t,
   enrollmentData,
   isLocal,
@@ -104,7 +127,8 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
   const status = enrollmentData?.contentStatusMap[node.identifier];
   const attemptInfo = enrollmentData?.contentAttemptInfoMap[node.identifier];
   const selfAssess = enrollmentData ? isSelfAssess(node) : false;
-  const maxExceeded = selfAssess && node.maxAttempts && node.maxAttempts > 0 && (attemptInfo?.attemptCount ?? 0) >= node.maxAttempts;
+  const effectiveMaxAttempts = selfAssess && typeof node.maxAttempts === 'number' && node.maxAttempts > 0 ? node.maxAttempts : 10;
+  const maxExceeded = selfAssess && (attemptInfo?.attemptCount ?? 0) >= effectiveMaxAttempts;
 
   const dimmed = isOffline && !isLocal;
   const blocked = contentBlocked || maxExceeded || dimmed;
@@ -116,16 +140,34 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
   return (
     <div
       className="cp-curriculum-item"
-      onClick={() => !blocked && onContentClick(node.identifier)}
-      style={blocked ? { opacity: dimmed ? 0.4 : 0.6, pointerEvents: dimmed ? 'none' : contentBlocked || maxExceeded ? 'none' : undefined } : undefined}
+      onClick={() => {
+        if (dimmed) return;
+        if (contentBlocked) {
+          onContentClick(node.identifier); // let it bubble to show Join toast
+          return;
+        }
+        if (maxExceeded) {
+          onMaxAttemptsClick?.();
+          return;
+        }
+        onContentClick(node.identifier);
+      }}
+      style={dimmed || contentBlocked ? { opacity: dimmed ? 0.4 : 0.6 } : undefined}
     >
       <div className="cp-curriculum-item-left">
         {enrollmentData && getStatusIcon(status)}
         <span className="cp-curriculum-item-icon">
           {isVideoMime(node.mimeType) ? <VideoIcon size={22} /> : <DocumentIcon size={22} />}
         </span>
-        <div>
-          <span className="cp-curriculum-item-title">{node.name}</span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
+            <span className="cp-curriculum-item-title" style={{ flex: 1 }}>{node.name}</span>
+            {selfAssess && enrollmentData && (
+              <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--ion-color-medium)', flexShrink: 0, marginTop: '2px' }}>
+                {attemptInfo?.attemptCount ?? 0}/{effectiveMaxAttempts}
+              </span>
+            )}
+          </div>
           {selfAssess && attemptInfo?.bestScore && (
             <div style={{ fontSize: '0.7rem', color: 'var(--ion-color-medium)', marginTop: 2 }}>
               Best Score: {attemptInfo.bestScore.totalScore}/{attemptInfo.bestScore.totalMaxScore}
@@ -146,9 +188,31 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {showProgress && downloadable && isActiveDownload && downloadState && (
           downloadState.state === 'DOWNLOADING' || downloadState.state === 'PAUSED' ? (
-            <ItemProgressRing progress={Math.round(downloadState.progress)} />
+            <ItemProgressRing
+              progress={Math.round(downloadState.progress)}
+              state={downloadState.state as 'DOWNLOADING' | 'PAUSED'}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (downloadState.state === 'DOWNLOADING') {
+                  void downloadManager.pause(node.identifier);
+                } else {
+                  void downloadManager.resume(node.identifier);
+                }
+              }}
+            />
           ) : (
-            <IonSpinner name="crescent" style={{ width: 16, height: 16, color: 'var(--ion-color-primary)' }} />
+            <div
+              style={{ display: 'flex' }}
+              onClick={(e) => {
+                // If it's queued or waiting to retry, pausing is valid.
+                if (downloadState.state === 'QUEUED' || downloadState.state === 'RETRY_WAIT') {
+                  e.stopPropagation();
+                  void downloadManager.pause(node.identifier);
+                }
+              }}
+            >
+              <IonSpinner name="crescent" style={{ width: 16, height: 16, color: 'var(--ion-color-primary)' }} />
+            </div>
           )
         )}
         {/* Error icon if failed */}
@@ -173,6 +237,7 @@ interface ExpandedUnitContentProps {
   collectionId: string;
   contentBlocked: boolean;
   onContentClick: (leafId: string) => void;
+  onMaxAttemptsClick?: () => void;
   t: (key: string) => string;
   depth?: number;
   enrollmentData?: EnrollmentData;
@@ -187,6 +252,7 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
   collectionId,
   contentBlocked,
   onContentClick,
+  onMaxAttemptsClick,
   t,
   depth = 0,
   enrollmentData,
@@ -214,6 +280,7 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
                 collectionId={collectionId}
                 contentBlocked={contentBlocked}
                 onContentClick={onContentClick}
+                onMaxAttemptsClick={onMaxAttemptsClick}
                 t={t}
                 depth={depth + 1}
                 enrollmentData={enrollmentData}
@@ -233,6 +300,7 @@ const ExpandedUnitContent: React.FC<ExpandedUnitContentProps> = ({
             collectionId={collectionId}
             contentBlocked={contentBlocked}
             onContentClick={onContentClick}
+            onMaxAttemptsClick={onMaxAttemptsClick}
             t={t}
             enrollmentData={enrollmentData}
             isLocal={localContentSet?.has(node.identifier) ?? false}
@@ -278,18 +346,22 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
   const hasAnyLocal = localCount > 0;
 
   // Count active downloads in this unit & compute aggregate progress
-  const { activeCount, avgProgress } = useMemo(() => {
-    if (!downloadStates) return { activeCount: 0, avgProgress: 0 };
+  const { activeCount, avgProgress, anyPaused, anyActive } = useMemo(() => {
+    if (!downloadStates) return { activeCount: 0, avgProgress: 0, anyPaused: false, anyActive: false };
     let count = 0;
     let totalPct = 0;
+    let anyPaused = false;
+    let anyActive = false;
     for (const l of downloadableLeaves) {
       const s = downloadStates.get(l.identifier);
       if (s && ['DOWNLOADING', 'PAUSED', 'QUEUED', 'IMPORTING', 'RETRY_WAIT'].includes(s.state)) {
         count++;
         totalPct += s.progress;
+        if (s.state === 'PAUSED') anyPaused = true;
+        if (s.state === 'DOWNLOADING' || s.state === 'QUEUED' || s.state === 'RETRY_WAIT') anyActive = true;
       }
     }
-    return { activeCount: count, avgProgress: count > 0 ? totalPct / count : 0 };
+    return { activeCount: count, avgProgress: count > 0 ? totalPct / count : 0, anyPaused, anyActive };
   }, [downloadableLeaves, downloadStates]);
 
   const failedCount = useMemo(() => {
@@ -331,6 +403,26 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
     }
   };
 
+  const handleUnitPause = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    for (const l of downloadableLeaves) {
+      const s = downloadStates?.get(l.identifier);
+      if (s && (s.state === 'DOWNLOADING' || s.state === 'QUEUED' || s.state === 'RETRY_WAIT')) {
+        void downloadManager.pause(l.identifier);
+      }
+    }
+  };
+
+  const handleUnitResume = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    for (const l of downloadableLeaves) {
+      const s = downloadStates?.get(l.identifier);
+      if (s && s.state === 'PAUSED') {
+        void downloadManager.resume(l.identifier);
+      }
+    }
+  };
+
   if (!hasDownloadable) return null;
 
   // All downloaded — show delete icon
@@ -365,8 +457,9 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
     );
   }
 
-  // Items actively downloading — show progress ring with count
+  // Items actively downloading / paused — show progress ring with count
   if (activeCount > 0) {
+    const parentState = anyActive ? 'DOWNLOADING' : (anyPaused ? 'PAUSED' : undefined);
     return (
       <div
         style={{
@@ -377,7 +470,12 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <ItemProgressRing progress={Math.round(avgProgress)} size={20} />
+        <ItemProgressRing
+          progress={Math.round(avgProgress)}
+          size={20}
+          state={parentState}
+          onClick={parentState === 'DOWNLOADING' ? handleUnitPause : handleUnitResume}
+        />
         <span style={{ fontSize: '0.7rem', color: 'var(--ion-color-primary)' }}>
           {localCount}/{downloadableLeaves.length}
         </span>
@@ -389,7 +487,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
   if (failedCount > 0 && localCount > 0) {
     return (
       <button
-        onClick={handleDownloadRemaining}
+        onClick={(e) => { handleDownloadRemaining(e); handleUnitResume(e); }}
         disabled={isOffline || loading}
         style={{
           background: 'none', border: 'none', padding: '4px',
@@ -508,6 +606,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
   const router = useIonRouter();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showJoinToast, setShowJoinToast] = useState(false);
+  const [showMaxAttemptsToast, setShowMaxAttemptsToast] = useState(false);
 
   // Progress indicators visible for enrolled + default (not anonymous/unenrolled)
   const showProgress = viewState === 'enrolled' || viewState === 'default';
@@ -577,6 +676,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
                 collectionId={collectionId}
                 contentBlocked={contentBlocked}
                 onContentClick={handleContentClick}
+                onMaxAttemptsClick={() => setShowMaxAttemptsToast(true)}
                 t={t}
                 enrollmentData={enrollmentData}
                 localContentSet={localContentSet}
@@ -621,6 +721,16 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
         isOpen={showJoinToast}
         onDidDismiss={() => setShowJoinToast(false)}
         message="Join the course to access content."
+        duration={2500}
+        position="bottom"
+        color="warning"
+      />
+
+      {/* Toast for exceeded max attempts on SelfAssess */}
+      <IonToast
+        isOpen={showMaxAttemptsToast}
+        onDidDismiss={() => setShowMaxAttemptsToast(false)}
+        message="You have reached the maximum allowed attempts for this content."
         duration={2500}
         position="bottom"
         color="warning"

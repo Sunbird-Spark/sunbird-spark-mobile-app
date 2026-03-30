@@ -595,19 +595,6 @@ export class ImportService {
       console.warn('[ImportService] restructureForRenderer failed:', err);
     }
   }
-
-  /**
-      const newPath = `${destUri}/${entry.name}`;
-
-      await Filesystem.rename({ from: oldPath, to: newPath }).catch((err) => {
-        console.warn(`[ImportService] Could not move ${entry.name} from ${subDir} root:`, err);
-      });
-    }
-
-    // Cleanup the folder
-    await Filesystem.rmdir({ path: sourceUri }).catch(() => { });
-    console.debug(`[ImportService] Flattened ${subDir} structure for:`, destUri);
-  }
 }
 
 export const importService = new ImportService(databaseService, contentDbService);

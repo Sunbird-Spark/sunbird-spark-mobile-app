@@ -77,6 +77,9 @@ export interface AggregateProgress {
   completed: number;
   total: number;
   overallPercent: number;
+  failedCount: number;
+  activeCount: number;
+  pausedCount: number;
 }
 
 // ── Content DB (import target) ──

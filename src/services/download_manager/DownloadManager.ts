@@ -279,6 +279,8 @@ export class DownloadManager {
     this.activeDownloads.delete(identifier);
     await this.transition(identifier, DownloadState.PAUSED);
     this.emit({ type: 'state_change', identifier });
+    // If we paused a queued item, we should process the queue to start any other pending items
+    await this.processQueue();
   }
 
   async resume(identifier: string): Promise<void> {
@@ -382,6 +384,15 @@ export class DownloadManager {
     const completed = entries.filter(
       (e) => e.state === DownloadState.COMPLETED
     ).length;
+    const failedCount = entries.filter(
+      (e) => e.state === DownloadState.FAILED
+    ).length;
+    const activeCount = entries.filter(
+      (e) => e.state !== DownloadState.COMPLETED && e.state !== DownloadState.FAILED && e.state !== DownloadState.CANCELLED
+    ).length;
+    const pausedCount = entries.filter(
+      (e) => e.state === DownloadState.PAUSED
+    ).length;
     const total = entries.length;
     const overallPercent =
       total > 0
@@ -390,7 +401,7 @@ export class DownloadManager {
         )
         : 0;
 
-    return { parentIdentifier, completed, total, overallPercent };
+    return { parentIdentifier, completed, total, overallPercent, failedCount, activeCount, pausedCount };
   }
 
   async getEntry(

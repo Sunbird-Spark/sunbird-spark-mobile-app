@@ -114,7 +114,7 @@ export interface ContentAttemptInfo {
  * Result: attemptCount=4, bestScore = highest totalScore among those 4.
  */
 export function getContentAttemptInfoMap(
-  contentList:     ContentStateItem[],
+  contentList: ContentStateItem[],
   maxAttemptsMap?: Record<string, number>,
 ): Record<string, ContentAttemptInfo> {
   const map: Record<string, ContentAttemptInfo> = {};

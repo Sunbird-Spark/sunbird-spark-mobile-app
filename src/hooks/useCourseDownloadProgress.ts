@@ -11,8 +11,10 @@ export interface CourseDownloadProgress {
   completed: number;
   /** Overall percentage (0–100) across all items. */
   overallPercent: number;
-  /** True if at least one item is queued/downloading/importing for this collection. */
+  /** True if at least one item is queued/downloading/importing/paused/retry_wait for this collection. */
   isDownloading: boolean;
+  /** True if all items are purely in PAUSED state. */
+  isPaused: boolean;
   /** True if all downloadable items have completed. */
   allDownloaded: boolean;
   /** Number of failed items. */
@@ -24,6 +26,7 @@ const EMPTY: CourseDownloadProgress = {
   completed: 0,
   overallPercent: 0,
   isDownloading: false,
+  isPaused: false,
   allDownloaded: false,
   failedCount: 0,
 };
@@ -98,9 +101,20 @@ export function useCourseDownloadProgress(
       }
     });
 
+    // Refresh immediately when network comes back online to correctly resume
+    // visual progress from QUEUED/RETRY_WAIT states.
+    const networkHandler = () => {
+      lastRefresh = 0;
+      doRefresh();
+    };
+    window.addEventListener('online', networkHandler);
+    window.addEventListener('offline', networkHandler);
+
     return () => {
       cancelled = true;
       unsub();
+      window.removeEventListener('online', networkHandler);
+      window.removeEventListener('offline', networkHandler);
       if (timeout) clearTimeout(timeout);
     };
   }, [refresh]);
@@ -118,14 +132,16 @@ export function useCourseDownloadProgress(
       return EMPTY;
     }
 
-    const isDownloading = aggregate.total > 0 && aggregate.completed < aggregate.total;
-    const failedCount = 0; // TODO: track from aggregate when DownloadManager exposes it
+    const isDownloading = aggregate.total > 0 && aggregate.activeCount > 0;
+    const isPaused = isDownloading && aggregate.pausedCount > 0 && aggregate.pausedCount === aggregate.activeCount;
+    const failedCount = aggregate.failedCount;
 
     return {
       total: aggregate.total,
       completed: aggregate.completed,
       overallPercent: aggregate.overallPercent,
       isDownloading,
+      isPaused,
       allDownloaded: aggregate.completed >= aggregate.total,
       failedCount,
     };
