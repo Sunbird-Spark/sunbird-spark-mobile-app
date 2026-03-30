@@ -126,7 +126,7 @@ export function useCourseDownloadProgress(
     if (!collectionId || !aggregate || aggregate.total === 0) {
       // Check if everything is already local
       if (children && downloadableCount === 0) {
-        const leafNodes = flattenLeafNodes(children);
+        const leafNodes = flattenLeafNodes(children).filter(isDownloadable);
         const total = leafNodes.length;
         const allLocal = total > 0 && leafNodes.every(l => localIdentifiers.has(l.identifier));
         return {
@@ -142,16 +142,15 @@ export function useCourseDownloadProgress(
     const isPaused = isDownloading && aggregate.pausedCount > 0 && aggregate.pausedCount === aggregate.activeCount;
     const failedCount = aggregate.failedCount;
 
-    const allLeaves = children ? flattenLeafNodes(children) : [];
+    const allLeaves = children ? flattenLeafNodes(children).filter(isDownloadable) : [];
     const totalLeavesCount = allLeaves.length;
-    const downloadableCountLeaves = allLeaves.filter(isDownloadable).length;
+    const downloadableCountLeaves = totalLeavesCount; // They are the same after filtering
 
-    // Fully local = EVERY item is in local DB (unlikely for courses with YouTube etc)
+    // Fully local = EVERY downloadable item is in local DB
     const isFullyLocal = totalLeavesCount > 0 && allLeaves.every(l => localIdentifiers.has(l.identifier));
 
     // For the UI, "allDownloaded" should be true only if all DOWNLOADABLE items are local.
-    // However, the user wants "partial" icons even for success if YouTube is missing.
-    const allDownloaded = downloadableCountLeaves > 0 && downloadableCount === 0;
+    const allDownloaded = totalLeavesCount > 0 && downloadableCount === 0;
 
     return {
       total: aggregate.total,
