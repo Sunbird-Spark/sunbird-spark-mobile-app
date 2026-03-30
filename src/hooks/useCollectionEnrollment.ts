@@ -112,7 +112,7 @@ export function useCollectionEnrollment(
     const map: Record<string, number> = {};
     for (const node of leafNodes) {
       if (node.contentType === 'SelfAssess') {
-        const attempts = typeof node.maxAttempts === 'number' && node.maxAttempts > 0 ? node.maxAttempts : 10;
+        const attempts = typeof node.maxAttempts === 'number' && node.maxAttempts;
         map[node.identifier] = attempts;
       }
     }
@@ -128,6 +128,7 @@ export function useCollectionEnrollment(
         batchId: enrolledBatchId,
         contentIds: leafContentIds,
         fields: ['progress', 'score', 'status'],
+        maxAttemptsMap,
       }
       : null,
     { enabled: isEnrolled && leafContentIds.length > 0 },

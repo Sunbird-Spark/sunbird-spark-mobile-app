@@ -40,7 +40,7 @@ export class BatchService {
   }
 
   public contentStateRead(
-    request: ContentStateReadRequest
+    request: ContentStateReadRequest & { maxAttemptsMap?: Record<string, number> }
   ): Promise<ApiResponse<ContentStateReadResponse>> {
     // Delegates to ContentStateSyncService which handles:
     //  • offline → local DB read

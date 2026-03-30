@@ -50,7 +50,7 @@ export function useBatchRead(
 
 // ─── useContentState ─────────────────────────────────────────────────────────
 export function useContentState(
-  request: ContentStateReadRequest | null,
+  request: (ContentStateReadRequest & { maxAttemptsMap?: Record<string, number> }) | null,
   options?: { enabled?: boolean }
 ): UseQueryResult<ApiResponse<ContentStateReadResponse>, Error> {
   const enabled = (options?.enabled ?? true) && AppInitializer.isInitialized();

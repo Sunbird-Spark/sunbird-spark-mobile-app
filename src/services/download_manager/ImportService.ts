@@ -4,6 +4,7 @@ import { CapacitorHttp } from '@capacitor/core';
 import JSZip from 'jszip';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
+import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
 import type { ImportResult, ImportPhase, ContentEntry } from './types';
 
 type ProgressCallback = (phase: ImportPhase, percent: number) => void;
@@ -212,20 +213,20 @@ export class ImportService {
     const disposition = item.contentDisposition || 'inline';
     const encoding = item.contentEncoding || 'gzip';
     const mimeType = item.mimeType || '';
-    const isCollection = mimeType.includes('collection');
-    const isQuestionSet = mimeType.includes('questionset');
+    const isCollection = mimeType.toLowerCase().includes('collection');
+    const isQuestionSet = mimeType.toLowerCase().includes('questionset');
+    const isNonDownloadable = NON_DOWNLOADABLE_MIME_TYPES.some(m => m.toLowerCase() === mimeType.toLowerCase());
 
-    // Collections / question sets → metadata only (hierarchy, no playable artifact)
+    // Collections / question sets → metadata available (hierarchy), no playable binary component
     if (isCollection || isQuestionSet) return 2;
 
-    // Online-only content (YouTube, external URLs) → never needs a local artifact
-    if (disposition === 'online') return 2;
+    // Online-only content (YouTube, external URLs) → metadata only, no artifact
+    if (isNonDownloadable || disposition === 'online') return 0;
 
     // No artifact URL, or artifact URL is a remote server path (https://...).
     // This happens in spine ECARs where leaf items list the CDN URL but the
-    // actual file is delivered in the individual leaf ECAR. Return 0 (ONLY_SPINE)
-    // so that filterItems allows the leaf ECAR to import later and extract the file.
-    if (!artifactUrl || artifactUrl.startsWith('https:')) return 0;
+    // actual file is delivered in the individual leaf ECAR.
+    if (!artifactUrl || artifactUrl.toLowerCase().startsWith('http')) return 0;
 
     const itemSourcePath = `${tmpUri}/${artifactUrl}`;
 
@@ -287,10 +288,8 @@ export class ImportService {
       if (safePath.split('/').some((part) => part === '..')) continue;
       if (!safePath) continue;
 
-      // Normalise: assets/content-plugins/ → content-plugins/ (renderer expects this at root)
-      if (safePath.startsWith('assets/content-plugins/')) {
-        safePath = safePath.slice('assets/'.length);
-      }
+      // Preserve original paths; do not force-remap assets/content-plugins/ to the root.
+      // The renderer's repo configuration will handle searching both locations.
 
       const fullPath = `${destDir}/${safePath}`;
       const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));

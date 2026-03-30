@@ -37,23 +37,6 @@ export class CourseProgressEnqueuer {
         }
       }
 
-      // 2. Update cache:content_state_* (drives getLocalCompletionPercentage enrichment)
-      const cacheKey = `cache:content_state_${userId}_${courseId}_${batchId}`;
-      try {
-        const raw = await keyValueDbService.getRaw(cacheKey);
-        const cached = raw ? (JSON.parse(raw) as ContentStateReadResponse) : { contentList: [] };
-        const list = [...(cached.contentList ?? [])];
-        const idx = list.findIndex(i => i.contentId === contentId);
-        const patch = { contentId, status, progress };
-        if (idx >= 0) {
-          list[idx] = { ...list[idx], ...patch };
-        } else {
-          list.push(patch as any);
-        }
-        await keyValueDbService.setRaw(cacheKey, JSON.stringify({ ...cached, contentList: list }));
-      } catch {
-        // best-effort — enrichment falls back to server value if this fails
-      }
     }
   }
 }

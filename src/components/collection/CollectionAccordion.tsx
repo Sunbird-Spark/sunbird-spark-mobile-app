@@ -128,8 +128,8 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
   const status = enrollmentData?.contentStatusMap[node.identifier];
   const attemptInfo = enrollmentData?.contentAttemptInfoMap[node.identifier];
   const selfAssess = enrollmentData ? isSelfAssess(node) : false;
-  const effectiveMaxAttempts = selfAssess && typeof node.maxAttempts === 'number' && node.maxAttempts > 0 ? node.maxAttempts : 10;
-  const maxExceeded = selfAssess && (attemptInfo?.attemptCount ?? 0) >= effectiveMaxAttempts;
+  const effectiveMaxAttempts = selfAssess && typeof node.maxAttempts === 'number' && node.maxAttempts > 0 ? node.maxAttempts : null;
+  const maxExceeded = !!(effectiveMaxAttempts && (attemptInfo?.attemptCount ?? 0) >= effectiveMaxAttempts);
 
   const dimmed = isOffline && !isLocal;
   const blocked = contentBlocked || maxExceeded || dimmed;
@@ -163,7 +163,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
             <span className="cp-curriculum-item-title" style={{ flex: 1 }}>{node.name}</span>
-            {selfAssess && enrollmentData && (
+            {effectiveMaxAttempts && (
               <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--ion-color-medium)', flexShrink: 0, marginTop: '2px' }}>
                 {attemptInfo?.attemptCount ?? 0}/{effectiveMaxAttempts}
               </span>

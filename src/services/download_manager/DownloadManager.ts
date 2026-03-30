@@ -15,6 +15,7 @@ import {
   type DownloadEvent,
   type DownloadListener,
 } from './types';
+import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
 
 const MAX_RETRIES_DEFAULT = 3;
 const BACKOFF_BASE_MS = 2000;
@@ -140,6 +141,15 @@ export class DownloadManager {
     const now = Date.now();
 
     for (const req of requests) {
+      // Root Fix: Do not enqueue streaming-only or non-downloadable types (YouTube/External URL)
+      if (req.mimeType) {
+        const mime = req.mimeType.toLowerCase();
+        if (NON_DOWNLOADABLE_MIME_TYPES.some(m => m.toLowerCase() === mime)) {
+          console.warn(`[DownloadManager] Skipping non-downloadable MIME type: ${req.mimeType} (ID: ${req.identifier})`);
+          continue;
+        }
+      }
+
       // Check if user cancelled this before — skip auto-re-queue
       const wasCancelled = await this.downloadDb.wasCancelledByUser(req.identifier);
       if (wasCancelled) continue;

@@ -42,15 +42,19 @@ export function parseTimestamp(ts: unknown): number {
 // ── Score array merge ────────────────────────────────────────────────────────
 
 /**
- * Union two score arrays by `attemptId`.
+ * Union two score arrays by `attemptId` and enforce `maxAttempts` constraints.
  *
  * Rules:
  *  - Network entries are authoritative (server-confirmed) — they win on
  *    `attemptId` collision.
  *  - Local-only entries represent un-synced offline attempts and are appended.
- *  - Entries without an `attemptId` are dropped (cannot deduplicate safely).
+ *  - If combined count > maxAttempts: Sort by score DESC and take the Top N.
  */
-export function mergeScores(local: unknown[], network: unknown[]): unknown[] {
+export function mergeScores(
+  local: unknown[],
+  network: unknown[],
+  maxAttempts?: number
+): unknown[] {
   const map = new Map<string, unknown>();
 
   for (const s of network) {
@@ -62,7 +66,24 @@ export function mergeScores(local: unknown[], network: unknown[]): unknown[] {
     if (id && !map.has(id)) map.set(id, s);
   }
 
-  return Array.from(map.values());
+  const combined = Array.from(map.values());
+
+  // Enforcement of maxAttempts rule: Keep Top N highest scores
+  if (typeof maxAttempts === 'number' && maxAttempts > 0 && combined.length > maxAttempts) {
+    return combined
+      .sort((a, b) => {
+        const scoreA = (a as any).totalScore ?? 0;
+        const scoreB = (b as any).totalScore ?? 0;
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        // Tie-break: more recent attempt wins
+        const tsA = parseTimestamp((a as any).lastAttemptedOn);
+        const tsB = parseTimestamp((b as any).lastAttemptedOn);
+        return tsB - tsA;
+      })
+      .slice(0, maxAttempts);
+  }
+
+  return combined;
 }
 
 // ── Per-item merge ───────────────────────────────────────────────────────────
@@ -93,31 +114,33 @@ function getField(item: ContentStateItem, field: string): unknown {
 export function mergeItem(
   local: ContentStateItem,
   network: ContentStateItem,
+  maxAttempts?: number,
 ): ContentStateItem {
-  const localAccessTs   = parseTimestamp(getField(local,   'lastAccessTime'));
+  const localAccessTs = parseTimestamp(getField(local, 'lastAccessTime'));
   const networkAccessTs = parseTimestamp(getField(network, 'lastAccessTime'));
 
-  const localCompletedTs   = parseTimestamp(getField(local,   'lastCompletedTime'));
+  const localCompletedTs = parseTimestamp(getField(local, 'lastCompletedTime'));
   const networkCompletedTs = parseTimestamp(getField(network, 'lastCompletedTime'));
 
   const mergedLastAccessTime =
     localAccessTs >= networkAccessTs
-      ? getField(local,   'lastAccessTime')
+      ? getField(local, 'lastAccessTime')
       : getField(network, 'lastAccessTime');
 
   const mergedLastCompletedTime = (() => {
     if (localCompletedTs === 0 && networkCompletedTs === 0)
       return getField(local, 'lastCompletedTime') ?? null;
     if (localCompletedTs === 0) return getField(network, 'lastCompletedTime');
-    if (networkCompletedTs === 0) return getField(local,  'lastCompletedTime');
+    if (networkCompletedTs === 0) return getField(local, 'lastCompletedTime');
     return localCompletedTs >= networkCompletedTs
-      ? getField(local,   'lastCompletedTime')
+      ? getField(local, 'lastCompletedTime')
       : getField(network, 'lastCompletedTime');
   })();
 
   const mergedScores = mergeScores(
-    Array.isArray(local.score)   ? local.score   : [],
+    Array.isArray(local.score) ? local.score : [],
     Array.isArray(network.score) ? network.score : [],
+    maxAttempts,
   );
 
   return {
@@ -126,14 +149,14 @@ export function mergeItem(
     // 2. Overlay local fields (may have fresher non-progress data)
     ...local,
     // 3. Override with explicitly merged progress fields (always wins)
-    contentId:          local.contentId,
-    status:             Math.max(local.status ?? 0, network.status ?? 0),
-    progress:           Math.max(getNum(local, 'progress'),        getNum(network, 'progress')),
-    viewCount:          Math.max(getNum(local, 'viewCount'),       getNum(network, 'viewCount')),
-    completedCount:     Math.max(getNum(local, 'completedCount'),  getNum(network, 'completedCount')),
-    lastAccessTime:     mergedLastAccessTime,
-    lastCompletedTime:  mergedLastCompletedTime,
-    score:              mergedScores,
+    contentId: local.contentId,
+    status: Math.max(local.status ?? 0, network.status ?? 0),
+    progress: Math.max(getNum(local, 'progress'), getNum(network, 'progress')),
+    viewCount: Math.max(getNum(local, 'viewCount'), getNum(network, 'viewCount')),
+    completedCount: Math.max(getNum(local, 'completedCount'), getNum(network, 'completedCount')),
+    lastAccessTime: mergedLastAccessTime,
+    lastCompletedTime: mergedLastCompletedTime,
+    score: mergedScores,
   };
 }
 
@@ -152,20 +175,22 @@ export function mergeItem(
  * Result: c1, c2, c4, c5 all completed → sent to UI and written to both sides.
  */
 export function mergeContentLists(
-  local:   ContentStateItem[],
+  local: ContentStateItem[],
   network: ContentStateItem[],
+  maxAttemptsMap?: Record<string, number>,
 ): ContentStateItem[] {
   const networkMap = new Map<string, ContentStateItem>(
     network.map((i) => [i.contentId, i]),
   );
 
   const result: ContentStateItem[] = [];
-  const seen   = new Set<string>();
+  const seen = new Set<string>();
 
   // Local-first: merge with network counterpart if it exists
   for (const l of local) {
     const n = networkMap.get(l.contentId);
-    result.push(n ? mergeItem(l, n) : l);
+    const maxAttempts = maxAttemptsMap?.[l.contentId];
+    result.push(n ? mergeItem(l, n, maxAttempts) : l);
     seen.add(l.contentId);
   }
 
@@ -241,7 +266,7 @@ export class ContentStateSyncService {
    * Network PATCH errors are swallowed — the local DB is always correct.
    */
   async readContentState(
-    request: ContentStateReadRequest,
+    request: ContentStateReadRequest & { maxAttemptsMap?: Record<string, number> },
   ): Promise<ApiResponse<ContentStateReadResponse>> {
     const cacheKey = `cache:content_state_${request.userId}_${request.courseId}_${request.batchId}`;
 
@@ -254,9 +279,9 @@ export class ContentStateSyncService {
     let networkResponse: ApiResponse<ContentStateReadResponse>;
     try {
       const body: Record<string, unknown> = {
-        userId:     request.userId,
-        courseId:   request.courseId,
-        batchId:    request.batchId,
+        userId: request.userId,
+        courseId: request.courseId,
+        batchId: request.batchId,
         contentIds: request.contentIds,
       };
       if (request.fields?.length) body.fields = request.fields;
@@ -294,10 +319,10 @@ export class ContentStateSyncService {
     }
 
     // ── Merge ───────────────────────────────────────────────────────────
-    const mergedList = mergeContentLists(localList, networkList);
+    const mergedList = mergeContentLists(localList, networkList, request.maxAttemptsMap);
 
     const networkNeedsUpdate = hasChanged(networkList, mergedList);
-    const localNeedsUpdate   = hasChanged(localList,   mergedList);
+    const localNeedsUpdate = hasChanged(localList, mergedList);
 
     // Patch network in background — don't block the UI
     if (networkNeedsUpdate) {
@@ -351,7 +376,7 @@ export class ContentStateSyncService {
     cacheKey: string,
   ): Promise<ApiResponse<ContentStateReadResponse>> {
     try {
-      const raw  = await keyValueDbService.getRaw(cacheKey);
+      const raw = await keyValueDbService.getRaw(cacheKey);
       const data: ContentStateReadResponse = raw
         ? (JSON.parse(raw) as ContentStateReadResponse)
         : { contentList: [] };
@@ -371,15 +396,15 @@ export class ContentStateSyncService {
    * Errors are swallowed; on next online read the merge will retry.
    */
   private async patchNetworkWithMerged(
-    request:    ContentStateReadRequest,
+    request: ContentStateReadRequest,
     mergedList: ContentStateItem[],
   ): Promise<void> {
     try {
       const contents = mergedList.map((item) => ({
-        contentId:  item.contentId,
-        status:     item.status ?? 0,
-        courseId:   request.courseId,
-        batchId:    request.batchId,
+        contentId: item.contentId,
+        status: item.status ?? 0,
+        courseId: request.courseId,
+        batchId: request.batchId,
         ...(getField(item, 'lastAccessTime') != null && {
           lastAccessTime: String(getField(item, 'lastAccessTime')),
         }),

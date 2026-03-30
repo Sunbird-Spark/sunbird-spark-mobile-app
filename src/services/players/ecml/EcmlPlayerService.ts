@@ -78,9 +78,9 @@ export class EcmlPlayerService {
       config.devicePluginspath = '/widgets/content-plugins';
       config.previewPluginspath = '/content-plugins';
 
-      // Ensure plugin discovery repos use absolute URLs.
-      // Order: 1. Content-specific plugins, 2. Content Root, 3. Global content storage (shared), 4. App Core Plugins
+      // Order: 1. Content-specific plugins, 2. Legacy assets/content-plugins, 3. Content Root, ...
       repos.unshift(`${basePath}content-plugins`);
+      repos.unshift(`${basePath}assets/content-plugins`);
       repos.unshift(`${basePath}widgets/content-plugins`);
       repos.push(basePath);
 
