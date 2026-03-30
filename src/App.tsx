@@ -69,8 +69,7 @@ const AppUpdateGuard: React.FC = () => {
     appUpdateService.isUpdateAvailable()
       .then((available) => {
         if (!cancelled && available) setShowUpdateSheet(true);
-      })
-      .catch(() => { /* isUpdateAvailable catches internally — this is unreachable */ });
+      });
     return () => { cancelled = true; };
   }, []);
 
