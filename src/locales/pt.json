@@ -220,6 +220,7 @@
     "failedToLoad": "Falha ao carregar a integração.",
     "skip": "Pular",
     "somethingWentWrong": "Algo deu errado.",
+    "failedToSavePreferences": "Falha ao salvar preferências",
     "goToHome": "Ir para o início",
     "goBack": "Voltar"
   },

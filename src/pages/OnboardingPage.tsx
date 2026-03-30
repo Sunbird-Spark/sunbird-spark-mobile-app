@@ -150,7 +150,7 @@ const OnboardingPage: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to save onboarding', err);
-      setToastMessage(t('onboarding.somethingWentWrong'));
+      setToastMessage(t('onboarding.failedToSavePreferences'));
     } finally {
       // Always move forward — don't block the user if the API call fails.
       completeOnboarding();
@@ -171,7 +171,7 @@ const OnboardingPage: React.FC = () => {
       });
     } catch (err) {
       console.error('Failed to skip onboarding', err);
-      setToastMessage(t('onboarding.somethingWentWrong'));
+      setToastMessage(t('onboarding.failedToSavePreferences'));
     } finally {
       completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });

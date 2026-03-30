@@ -230,6 +230,7 @@
     "failedToLoad": "Failed to load onboarding.",
     "skip": "Skip",
     "somethingWentWrong": "Something went wrong.",
+    "failedToSavePreferences": "Failed to save preferences",
     "goToHome": "Go to Home",
     "goBack": "Go back"
   },

@@ -187,6 +187,7 @@
     "failedToLoad": "فشل تحميل الإعداد.",
     "skip": "تخطي",
     "somethingWentWrong": "حدث خطأ ما.",
+    "failedToSavePreferences": "فشل في حفظ التفضيلات",
     "goToHome": "الذهاب إلى الرئيسية",
     "goBack": "رجوع"
   },
