@@ -129,8 +129,9 @@ export class NetworkQueueProcessor {
   ): Promise<void> {
     const db = networkQueueDbService;
 
+    // 400 = malformed payload (bad JSON, schema mismatch) — retrying won't help
     // 413 = payload permanently too large, retrying won't help
-    if (httpStatus === 413) {
+    if (httpStatus === 413 || httpStatus === 400) {
       await db.markFailed(msg_id, error, maxRetries, maxRetries);
       return;
     }

@@ -103,7 +103,8 @@ export class NetworkQueueDbService {
     const db = databaseService.getDb();
     await db.run(
       `DELETE FROM network_queue WHERE type = ? AND data NOT LIKE 'H4sI%' AND data NOT LIKE '{%'`,
-      [NetworkQueueType.TELEMETRY]
+      [NetworkQueueType.TELEMETRY],
+      false
     );
   }
 
@@ -122,7 +123,8 @@ export class NetworkQueueDbService {
     const db = databaseService.getDb();
     await db.run(
       `DELETE FROM network_queue WHERE status = 'DEAD_LETTER' AND timestamp < ?`,
-      [cutoff]
+      [cutoff],
+      false
     );
   }
 

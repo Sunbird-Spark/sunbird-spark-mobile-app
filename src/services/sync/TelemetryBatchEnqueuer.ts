@@ -23,11 +23,15 @@ export class TelemetryBatchEnqueuer {
     const rows = await telemetryDbService.getPending(batchSize);
     if (rows.length === 0) return 0;
 
-    const events = rows.map(r => {
-      try { return JSON.parse(r.event); } catch { return null; }
-    }).filter(Boolean);
+    // Parse each row individually; track which rows succeeded so we only delete those
+    const parsed = rows.map(r => {
+      try { return { row: r, event: JSON.parse(r.event) }; } catch { return null; }
+    }).filter((x): x is { row: typeof rows[0]; event: any } => x !== null);
 
-    if (events.length === 0) return 0;
+    if (parsed.length === 0) return 0;
+
+    const events    = parsed.map(p => p.event);
+    const parsedIds = parsed.map(p => p.row.event_id);
 
     const did = await deviceService.getHashedDeviceId().catch(() => '');
 
@@ -60,8 +64,9 @@ export class TelemetryBatchEnqueuer {
       item_count: events.length,
     });
 
-    // Delete source rows immediately — network_queue is the durability layer
-    await telemetryDbService.deleteByIds(rows.map(r => r.event_id));
+    // Only delete the rows that parsed successfully — malformed rows are left in
+    // telemetry_db and will be retried, rather than being silently discarded.
+    await telemetryDbService.deleteByIds(parsedIds);
 
     return events.length;
   }

@@ -22,15 +22,19 @@ export class CourseProgressEnqueuer {
     for (const content of request.contents) {
       const { courseId, batchId, contentId } = content;
       const userId   = request.userId;
-      const progress = content.progress ?? 0;
+      const progress = content.progress;
       const status   = content.status ?? 0;
 
       // 1. Update enrolled_courses.progress (drives offline enrollment list)
-      try {
-        const courseStatus = status === 2 ? 'completed' : 'active';
-        await enrolledCoursesDbService.updateProgress(courseId, userId, progress, courseStatus as any);
-      } catch {
-        // best-effort
+      // Only update when progress is explicitly provided — defaulting to 0 would
+      // visually reset the progress bar for in-progress (status=1) updates.
+      if (progress !== undefined) {
+        try {
+          const courseStatus = status === 2 ? 'completed' : 'active';
+          await enrolledCoursesDbService.updateProgress(courseId, userId, progress, courseStatus as any);
+        } catch {
+          // best-effort
+        }
       }
 
       // 2. Update cache:content_state_* (drives getLocalCompletionPercentage enrichment)

@@ -152,7 +152,7 @@ export class BatchService {
         const patch: ContentStateItem = {
           contentId: update.contentId,
           status:    update.status,
-          ...(update.lastAccessTime != null && { lastAccessTime: update.lastAccessTime as unknown as number }),
+          ...(update.lastAccessTime != null && { lastAccessTime: update.lastAccessTime }),
         };
         const idx = contentList.findIndex(c => c.contentId === update.contentId);
         if (idx >= 0) {

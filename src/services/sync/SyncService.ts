@@ -41,11 +41,12 @@ class SyncService {
     // Reset DEAD_LETTER rows so they get another chance on next sync
     // Also purge stale telemetry rows that were stored as gzip base64 (legacy format)
     await networkQueueDbService.purgeStaleTelemetry().catch(() => {});
-    await networkQueueDbService.resetDeadLetter().catch(() => {});
 
-    // Phase 7 cleanup — purge stale data on every cold start
+    // Phase 7 cleanup — purge stale dead-letter rows BEFORE resetting, so aged entries
+    // are removed rather than flipped back to PENDING and retried indefinitely
     await telemetryDbService.deleteOlderThan(7).catch(() => {});
     await networkQueueDbService.purgeDeadLetter(30).catch(() => {});
+    await networkQueueDbService.resetDeadLetter().catch(() => {});
   }
 
   /** Enqueue a course progress update and fire a background sync immediately. */
@@ -197,8 +198,9 @@ class SyncService {
           partial.courseProgress.syncedCount +
           partial.courseAssessment.syncedCount;
 
-        // Stop when a batch produced no successes (all errored or empty)
-        hasMore = totalSuccess > 0 && partial.errors.length === 0;
+        // Stop when a batch produced no successes — errors are collected and returned
+        // to the caller but should not halt draining of healthy queue entries.
+        hasMore = totalSuccess > 0;
       }
     } finally {
       this.isSyncing = false;
