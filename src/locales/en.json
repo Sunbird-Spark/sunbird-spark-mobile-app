@@ -1,4 +1,10 @@
 {
+  "appUpdate": {
+    "header": "Update Available",
+    "subHeader": "A new version of the app is available. Update now to get the latest features and improvements.",
+    "updateNow": "Update Now",
+    "later": "Later"
+  },
   "home": "Home",
   "explore": "Explore",
   "myLearning": "My Learning",

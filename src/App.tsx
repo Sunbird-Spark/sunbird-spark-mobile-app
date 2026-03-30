@@ -1,10 +1,10 @@
-import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
+import { IonActionSheet, IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, useLocation } from 'react-router-dom';
-import { App as CapacitorApp } from '@capacitor/app';
-import { AppUpdate } from '@capawesome/capacitor-app-update';
+import { appUpdateService } from './services/AppUpdateService';
+import { useTranslation } from 'react-i18next';
 import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
@@ -58,6 +58,40 @@ import SettingsPage from './pages/SettingsPage';
 import BackButtonHandler from './components/common/BackButtonHandler';
 
 setupIonicReact();
+
+/** Checks for app updates on startup and shows a bottom sheet prompt if an update is available */
+const AppUpdateGuard: React.FC = () => {
+  const { t } = useTranslation();
+  const [showUpdateSheet, setShowUpdateSheet] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    appUpdateService.isUpdateAvailable()
+      .then((available) => {
+        if (!cancelled && available) setShowUpdateSheet(true);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <IonActionSheet
+      isOpen={showUpdateSheet}
+      header={t('appUpdate.header')}
+      subHeader={t('appUpdate.subHeader')}
+      buttons={[
+        {
+          text: t('appUpdate.updateNow'),
+          handler: () => { void appUpdateService.openAppStore(); },
+        },
+        {
+          text: t('appUpdate.later'),
+          role: 'cancel',
+        },
+      ]}
+      onDidDismiss={() => setShowUpdateSheet(false)}
+    />
+  );
+};
 
 /** Redirects to /terms-and-conditions when TnC is pending after login */
 const TnCGuard: React.FC = () => {
@@ -134,20 +168,7 @@ const PushNotificationGuard: React.FC = () => {
       );
     };
 
-    const handleUpdateApp = async () => {
-      try {
-        // Preferred: native plugin handles market:// intent correctly on all GMS devices
-        await AppUpdate.openAppStore();
-      } catch {
-        // Fallback: openAppStore() unavailable (non-GMS / web) — open HTTPS Play Store URL
-        try {
-          const { id } = await CapacitorApp.getInfo();
-          window.open(`https://play.google.com/store/apps/details?id=${id}`, '_system');
-        } catch {
-          // Not on native platform (web/test) — no-op
-        }
-      }
-    };
+    const handleUpdateApp = () => { void appUpdateService.openAppStore(); };
 
     window.addEventListener('push:foreground', handleForeground);
     window.addEventListener('push:tapped', handleTap);
@@ -183,6 +204,7 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
+        <AppUpdateGuard />
         <TnCGuard />
         <LogoutGuard />
         <OnboardingGuard />
