@@ -93,17 +93,18 @@ export class NetworkQueueDbService {
   }
 
   /**
-   * Delete telemetry rows whose data is not valid gzip base64.
-   * Valid gzip base64 always starts with 'H4sI' (the base64 of the gzip magic
-   * bytes 0x1F 0x8B 0x08 0x00). Rows with comma-separated byte values (the
-   * pako v2 regression) or any other corrupt format start with different chars
-   * and will never succeed — delete them rather than retrying forever.
+   * Delete telemetry rows whose data is neither valid gzip base64 nor a JSON
+   * fallback payload. Valid gzip base64 starts with 'H4sI' (RFC 1952 magic
+   * bytes). JSON fallback rows start with '{'. Any other format is corrupt
+   * (e.g. the pako v2 comma-separated byte values regression) and will never
+   * succeed — delete them rather than retrying forever.
    */
   async purgeStaleTelemetry(): Promise<void> {
     const db = databaseService.getDb();
     await db.run(
-      `DELETE FROM network_queue WHERE type = ? AND data NOT LIKE 'H4sI%'`,
-      [NetworkQueueType.TELEMETRY]
+      `DELETE FROM network_queue WHERE type = ? AND data NOT LIKE 'H4sI%' AND data NOT LIKE '{%'`,
+      [NetworkQueueType.TELEMETRY],
+      false
     );
   }
 
@@ -122,7 +123,8 @@ export class NetworkQueueDbService {
     const db = databaseService.getDb();
     await db.run(
       `DELETE FROM network_queue WHERE status = 'DEAD_LETTER' AND timestamp < ?`,
-      [cutoff]
+      [cutoff],
+      false
     );
   }
 

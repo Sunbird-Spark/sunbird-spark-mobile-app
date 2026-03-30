@@ -322,6 +322,29 @@ export class ContentStateSyncService {
     };
   }
 
+  /**
+   * Read the local content state cache for a course and return the locally-
+   * calculated completion percentage, or null if no cache exists yet.
+   *
+   * Used by EnrollmentService to keep MyLearning progress in sync with the
+   * per-leaf-node progress shown on the Collection Details page.
+   */
+  async getLocalCompletionPercentage(
+    userId: string,
+    courseId: string,
+    batchId: string,
+    leafNodesCount: number,
+  ): Promise<number | null> {
+    if (!leafNodesCount || leafNodesCount <= 0) return null;
+    const cacheKey = `cache:content_state_${userId}_${courseId}_${batchId}`;
+    const raw = await keyValueDbService.getRaw(cacheKey).catch(() => null);
+    if (!raw) return null;
+    const contentList = (JSON.parse(raw) as ContentStateReadResponse).contentList ?? [];
+    if (contentList.length === 0) return null;
+    const completed = contentList.filter(item => item.status === 2).length;
+    return Math.round((completed / leafNodesCount) * 100);
+  }
+
   // ── Private helpers ─────────────────────────────────────────────────────
 
   private async readFromDb(

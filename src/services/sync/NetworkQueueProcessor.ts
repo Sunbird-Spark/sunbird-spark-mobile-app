@@ -75,7 +75,11 @@ export class NetworkQueueProcessor {
     const reqConfig = syncConfig.getRequestConfig(entry.type);
     const headers   = await authHeadersBuilder.build(entry.type);
 
-    if (reqConfig.isGzipped) {
+    // Per-row detection: gzip rows start with H4sI (base64 of RFC 1952 magic bytes).
+    // If compression failed at enqueue time, data is raw JSON — send it as JSON instead.
+    const isCompressed = reqConfig.isGzipped && entry.data.startsWith('H4sI');
+
+    if (isCompressed) {
       // CapacitorHttp Android: setRequestBody() prioritises Content-Type "application/json"
       // and writes body.toString() as UTF-8 text, so binary bytes above 127 are corrupted.
       // Using Content-Type "application/octet-stream" routes through the dataType:'file'
@@ -90,12 +94,17 @@ export class NetworkQueueProcessor {
       });
       this.assertHttpSuccess(response.status, response.data);
     } else {
-      // Course progress / assessment: send JSON body
+      // Compression fallback (fflate failed) or non-gzip types: send JSON body.
+      // Override headers to remove gzip-specific fields if they were set.
+      const jsonHeaders = { ...headers };
+      jsonHeaders['Content-Type'] = 'application/json';
+      delete jsonHeaders['Content-Encoding'];
+
       const response = await CapacitorHttp.request({
-        url:    reqConfig.url,
-        method: reqConfig.method,
-        headers,
-        data:   JSON.parse(entry.data),
+        url:     reqConfig.url,
+        method:  reqConfig.method,
+        headers: jsonHeaders,
+        data:    JSON.parse(entry.data),
       });
       this.assertHttpSuccess(response.status, response.data);
     }
@@ -120,8 +129,9 @@ export class NetworkQueueProcessor {
   ): Promise<void> {
     const db = networkQueueDbService;
 
+    // 400 = malformed payload (bad JSON, schema mismatch) — retrying won't help
     // 413 = payload permanently too large, retrying won't help
-    if (httpStatus === 413) {
+    if (httpStatus === 413 || httpStatus === 400) {
       await db.markFailed(msg_id, error, maxRetries, maxRetries);
       return;
     }

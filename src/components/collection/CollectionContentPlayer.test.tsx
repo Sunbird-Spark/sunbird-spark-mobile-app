@@ -97,6 +97,11 @@ vi.mock('../../services/db/ContentDbService', () => ({
 // Mock CSS import
 vi.mock('../../pages/ContentPlayerPage.css', () => ({}));
 
+// Mock useAuth — component needs userId for telemetry/sync calls
+vi.mock('../../contexts/AuthContext', () => ({
+  useAuth: () => ({ userId: 'test-user', isAuthenticated: true }),
+}));
+
 const mockOnClose = vi.fn();
 
 const defaultContentData = {

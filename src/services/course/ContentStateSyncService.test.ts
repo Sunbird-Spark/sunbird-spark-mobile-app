@@ -543,3 +543,70 @@ describe('ContentStateSyncService', () => {
     });
   });
 });
+
+// ── getLocalCompletionPercentage ──────────────────────────────────────────────
+
+describe('ContentStateSyncService.getLocalCompletionPercentage', () => {
+  let service: ContentStateSyncService;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    service = new ContentStateSyncService();
+  });
+
+  it('returns null when leafNodesCount is 0', async () => {
+    const result = await service.getLocalCompletionPercentage('u1', 'c1', 'b1', 0);
+    expect(result).toBeNull();
+    expect(vi.mocked(keyValueDbService.getRaw)).not.toHaveBeenCalled();
+  });
+
+  it('returns null when no cache exists', async () => {
+    vi.mocked(keyValueDbService.getRaw).mockResolvedValue(null);
+    const result = await service.getLocalCompletionPercentage('u1', 'c1', 'b1', 10);
+    expect(result).toBeNull();
+  });
+
+  it('returns null when cached contentList is empty', async () => {
+    vi.mocked(keyValueDbService.getRaw).mockResolvedValue(JSON.stringify({ contentList: [] }));
+    const result = await service.getLocalCompletionPercentage('u1', 'c1', 'b1', 5);
+    expect(result).toBeNull();
+  });
+
+  it('calculates percentage from items with status 2', async () => {
+    vi.mocked(keyValueDbService.getRaw).mockResolvedValue(JSON.stringify({
+      contentList: [
+        { contentId: 'x1', status: 2 },
+        { contentId: 'x2', status: 2 },
+        { contentId: 'x3', status: 1 },
+        { contentId: 'x4', status: 0 },
+      ],
+    }));
+    // 2 of 4 completed, leafNodesCount=4 → 50%
+    const result = await service.getLocalCompletionPercentage('u1', 'c1', 'b1', 4);
+    expect(result).toBe(50);
+  });
+
+  it('reads from the correct cache key including batchId', async () => {
+    vi.mocked(keyValueDbService.getRaw).mockResolvedValue(null);
+    await service.getLocalCompletionPercentage('user-1', 'course-1', 'batch-1', 5);
+    expect(vi.mocked(keyValueDbService.getRaw))
+      .toHaveBeenCalledWith('cache:content_state_user-1_course-1_batch-1');
+  });
+
+  it('returns null when getRaw throws', async () => {
+    vi.mocked(keyValueDbService.getRaw).mockRejectedValue(new Error('DB error'));
+    const result = await service.getLocalCompletionPercentage('u1', 'c1', 'b1', 5);
+    expect(result).toBeNull();
+  });
+
+  it('returns 100 when all items completed', async () => {
+    vi.mocked(keyValueDbService.getRaw).mockResolvedValue(JSON.stringify({
+      contentList: [
+        { contentId: 'x1', status: 2 },
+        { contentId: 'x2', status: 2 },
+      ],
+    }));
+    const result = await service.getLocalCompletionPercentage('u1', 'c1', 'b1', 2);
+    expect(result).toBe(100);
+  });
+});

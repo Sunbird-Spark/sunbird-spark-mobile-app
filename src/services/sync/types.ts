@@ -43,12 +43,12 @@ export interface ContentState {
   contentId:       string;
   courseId:        string;
   batchId:         string;
-  status?:         0 | 1 | 2;  // 0=not_started, 1=in_progress, 2=completed
-  progress?:       number;     // 0-100
+  status?:         number;  // 0=not_started, 1=in_progress, 2=completed
+  progress?:       number;  // 0-100
   result?:         string;
   grade?:          string;
   score?:          string;
-  lastAccessTime?: number;
+  lastAccessTime?: string;  // formatted UTC string, e.g. '2026-03-25 10:00:00:000+0000'
 }
 
 export interface UpdateContentStateRequest {
