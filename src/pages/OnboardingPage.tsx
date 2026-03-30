@@ -148,13 +148,14 @@ const OnboardingPage: React.FC = () => {
         userId,
         framework: { onboardingDetails: { isSkipped: false, data: formattedData } },
       });
-      completeOnboarding();
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-      router.push('/home', 'root', 'replace');
     } catch (err) {
       console.error('Failed to save onboarding', err);
       setToastMessage(t('onboarding.somethingWentWrong'));
     } finally {
+      // Always move forward — don't block the user if the API call fails.
+      completeOnboarding();
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      router.push('/home', 'root', 'replace');
       setIsSubmitting(false);
     }
   };
@@ -168,13 +169,13 @@ const OnboardingPage: React.FC = () => {
         userId,
         framework: { onboardingDetails: { isSkipped: true, data: {} } },
       });
-      completeOnboarding();
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-      router.push('/home', 'root', 'replace');
     } catch (err) {
       console.error('Failed to skip onboarding', err);
       setToastMessage(t('onboarding.somethingWentWrong'));
     } finally {
+      completeOnboarding();
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      router.push('/home', 'root', 'replace');
       setIsSubmitting(false);
     }
   }, [isSubmitting, userId, router, completeOnboarding, queryClient, t]);
