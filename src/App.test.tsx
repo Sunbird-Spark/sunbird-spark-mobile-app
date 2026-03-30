@@ -277,6 +277,12 @@ vi.mock('./services/AppUpdateService', () => ({
   },
 }));
 
+// Mock useInteract
+const mockInteract = vi.fn();
+vi.mock('./hooks/useInteract', () => ({
+  default: () => ({ interact: mockInteract }),
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -312,6 +318,7 @@ describe('App', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockIsUpdateAvailable.mockResolvedValue(false);
+    mockOpenAppStore.mockResolvedValue(undefined);
   });
 
   it('renders without crashing', () => {
@@ -374,7 +381,7 @@ describe('App', () => {
     });
   });
 
-  it('calls openAppStore when Update Now is tapped', async () => {
+  it('calls openAppStore and tracks interact when Update Now is tapped', async () => {
     mockIsUpdateAvailable.mockResolvedValue(true);
     render(<App />);
     await waitFor(() => {
@@ -382,9 +389,10 @@ describe('App', () => {
     });
     await userEvent.click(screen.getByTestId('action-sheet-btn-0'));
     expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
+    expect(mockInteract).toHaveBeenCalledWith({ id: 'app-update-now', pageid: 'AppUpdate' });
   });
 
-  it('dismisses the sheet when Later is tapped', async () => {
+  it('dismisses the sheet and tracks interact when Later is tapped', async () => {
     mockIsUpdateAvailable.mockResolvedValue(true);
     render(<App />);
     await waitFor(() => {
@@ -394,5 +402,15 @@ describe('App', () => {
     await waitFor(() => {
       expect(screen.queryByTestId('app-update-sheet')).not.toBeInTheDocument();
     });
+    expect(mockInteract).toHaveBeenCalledWith({ id: 'app-update-later', pageid: 'AppUpdate' });
+  });
+
+  it('tracks interact and opens app store when push:update-app event is dispatched', async () => {
+    render(<App />);
+    window.dispatchEvent(new CustomEvent('push:update-app'));
+    await waitFor(() => {
+      expect(mockInteract).toHaveBeenCalledWith({ id: 'push-notification-update-app', pageid: 'AppUpdate' });
+    });
+    expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
   });
 });
