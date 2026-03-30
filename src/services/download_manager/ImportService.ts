@@ -284,7 +284,7 @@ export class ImportService {
       if (zipEntry.dir) continue;
 
       // Strip leading slash; reject path traversal segments
-      let safePath = rawPath.startsWith('/') ? rawPath.slice(1) : rawPath;
+      const safePath = rawPath.startsWith('/') ? rawPath.slice(1) : rawPath;
       if (safePath.split('/').some((part) => part === '..')) continue;
       if (!safePath) continue;
 
