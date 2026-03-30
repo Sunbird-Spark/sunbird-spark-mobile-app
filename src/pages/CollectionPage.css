@@ -302,6 +302,15 @@
   border-left: 2px solid #e8e8e8;
 }
 
+[dir="rtl"] .cp-curriculum-nested-indented {
+  margin-left: 0;
+  margin-right: 0.75rem;
+  padding-left: 0;
+  padding-right: 0.75rem;
+  border-left: none;
+  border-right: 2px solid #e8e8e8;
+}
+
 .cp-curriculum-subunit {
   margin-bottom: 0.5rem;
 }
@@ -349,6 +358,11 @@
   padding-right: 1rem;
 }
 
+[dir="rtl"] .cp-related-header {
+  padding-right: 0;
+  padding-left: 1rem;
+}
+
 .cp-related-scroll {
   display: flex;
   overflow-x: auto;
@@ -357,6 +371,11 @@
   padding-right: 1rem;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+}
+
+[dir="rtl"] .cp-related-scroll {
+  padding-right: 0;
+  padding-left: 1rem;
 }
 
 .cp-related-scroll::-webkit-scrollbar {
@@ -534,6 +553,11 @@
   top: 50%;
   transform: translateY(-50%);
   pointer-events: none;
+}
+
+[dir="rtl"] .cp-batch-select-icon {
+  right: auto;
+  left: 1rem;
 }
 
 .cp-batch-modal-cta-wrap {
@@ -788,6 +812,11 @@
   margin-right: 0.75rem;
 }
 
+[dir="rtl"] .cp-toggle-label {
+  margin-right: 0;
+  margin-left: 0.75rem;
+}
+
 .custom-toggle {
   --track-background: var(--ion-color-step-100, #e0e0e0);
   --track-background-checked: var(--ion-color-primary);
@@ -946,6 +975,11 @@
   overflow: hidden;
 }
 
+[dir="rtl"] .cp-menu-dropdown {
+  right: auto;
+  left: 0;
+}
+
 .cp-menu-item {
   display: block;
   width: 100%;
@@ -956,6 +990,10 @@
   font-size: 0.875rem;
   color: var(--ion-color-dark, #222);
   cursor: pointer;
+}
+
+[dir="rtl"] .cp-menu-item {
+  text-align: right;
 }
 
 .cp-menu-item:active {

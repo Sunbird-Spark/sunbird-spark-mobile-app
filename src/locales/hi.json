@@ -184,6 +184,7 @@
   "downloadAsPdf": "PDF के रूप में डाउनलोड करें",
   "downloadAsPng": "PNG के रूप में डाउनलोड करें",
   "certificateSavedToDocuments": "प्रमाणपत्र दस्तावेज़ों में सहेजा गया",
+  "certificateSavedToGallery": "प्रमाणपत्र गैलरी में सहेजा गया",
   "noCertificate": "कोई प्रमाणपत्र नहीं",
   "noEnrolledCourses": "अभी तक कोई कोर्स नामांकित नहीं।",
   "certificateDownloadError": "प्रमाणपत्र डाउनलोड करने में विफल",
@@ -210,6 +211,7 @@
     "failedToLoad": "ऑनबोर्डिंग लोड करने में विफल।",
     "skip": "छोड़ें",
     "somethingWentWrong": "कुछ गलत हो गया।",
+    "failedToSavePreferences": "प्राथमिकताएँ सहेजने में विफल",
     "goToHome": "होम पर जाएं",
     "goBack": "वापस जाएं"
   },

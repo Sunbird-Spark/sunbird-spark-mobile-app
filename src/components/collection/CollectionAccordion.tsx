@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal, IonToast, IonSpinner, useIonRouter, IonAlert } from '@ionic/react';
 import { chevronDownOutline } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import type { DownloadProgress } from '../../services/download_manager/types';
 import { VideoIcon, DocumentIcon } from '../icons/CollectionIcons';
@@ -334,6 +335,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
   spineDownloadUrl,
   spinePkgVersion,
 }) => {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
@@ -433,7 +435,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
           onClick={handleDeleteClick}
           disabled={deleting}
           style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', flexShrink: 0 }}
-          aria-label="Delete unit downloads"
+          aria-label={t('collectionAccordion.deleteUnitDownloads')}
         >
           {deleting ? (
             <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
@@ -446,11 +448,11 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
         <IonAlert
           isOpen={showAlert}
           onDidDismiss={() => setShowAlert(false)}
-          header="Delete Unit"
-          message={`Delete all downloaded contents for Unit ${unit.name || ''}?`}
+          header={t('collectionAccordion.deleteUnit')}
+          message={t('collectionAccordion.deleteUnitMessage', { unitName: unit.name || '' })}
           buttons={[
-            { text: 'Cancel', role: 'cancel' },
-            { text: 'Delete', role: 'destructive', handler: confirmDelete },
+            { text: t('cancel'), role: 'cancel' },
+            { text: t('download.delete'), role: 'destructive', handler: confirmDelete },
           ]}
         />
       </>
@@ -550,7 +552,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
         opacity: isOffline ? 0.4 : 1, flexShrink: 0,
         display: 'flex', alignItems: 'center', gap: '4px',
       }}
-      aria-label={hasAnyLocal ? `Download remaining (${downloadableLeaves.length - localCount} items)` : `Download unit contents (${downloadableLeaves.length} items)`}
+      aria-label={hasAnyLocal ? t('collectionAccordion.downloadRemaining', { count: downloadableLeaves.length - localCount }) : t('collectionAccordion.downloadUnit', { count: downloadableLeaves.length })}
     >
       {loading ? (
         <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />

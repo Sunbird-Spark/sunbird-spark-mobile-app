@@ -2,6 +2,7 @@ import React, { useEffect, useId, useRef } from 'react';
 import { IonPopover } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGE_CONFIG } from '../../config/languages';
+import './LanguageSelector.css';
 
 export const LanguageSelector: React.FC = () => {
     const popoverRef = useRef<HTMLIonPopoverElement>(null);
@@ -58,15 +59,8 @@ export const LanguageSelector: React.FC = () => {
                             <button
                                 key={lang.code}
                                 onClick={() => handleLanguageChange(lang)}
+                                className="language-selector-option"
                                 style={{
-                                    display: 'block',
-                                    width: '100%',
-                                    padding: '0.75rem 1rem',
-                                    background: 'transparent',
-                                    border: 'none',
-                                    textAlign: 'left',
-                                    cursor: 'pointer',
-                                    fontSize: '0.875rem',
                                     color: isActive ? 'var(--ion-color-primary)' : 'var(--ion-color-dark, var(--color-222222, #222222))',
                                 }}
                             >

@@ -77,6 +77,11 @@
     z-index: 0;
 }
 
+[dir="rtl"] .dc-delete-action {
+    right: auto;
+    left: 0;
+}
+
 .dc-delete-action:active {
     opacity: 0.7;
 }

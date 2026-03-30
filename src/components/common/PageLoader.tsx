@@ -1,5 +1,6 @@
 import sunbirdLogo from '../../assets/sunbird-logo-new.png';
 import './PageLoader.css';
+import { useTranslation } from 'react-i18next';
 
 interface PageLoaderProps {
   message?: string;
@@ -8,7 +9,8 @@ interface PageLoaderProps {
 }
 
 const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry }) => {
-  const displayMessage = message || 'Loading...';
+  const { t } = useTranslation();
+  const displayMessage = message || t('loading');
 
   return (
     <div className="page-loader">
@@ -20,7 +22,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry 
               <div className="page-loader-ring page-loader-ring-error" />
               <div className="page-loader-ring-inner page-loader-ring-inner-error" />
               <div className="page-loader-logo-circle">
-                <img src={sunbirdLogo} alt="Error" className="page-loader-logo" />
+                <img src={sunbirdLogo} alt={t('error')} className="page-loader-logo" />
               </div>
             </>
           ) : (
@@ -28,7 +30,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry 
               <div className="page-loader-ring page-loader-ring-spin" />
               <div className="page-loader-ring-inner page-loader-ring-pulse" />
               <div className="page-loader-logo-circle">
-                <img src={sunbirdLogo} alt="Loading" className="page-loader-logo" />
+                <img src={sunbirdLogo} alt={t('loading')} className="page-loader-logo" />
               </div>
             </>
           )}
@@ -38,11 +40,11 @@ const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry 
         <div className="page-loader-text">
           {error ? (
             <>
-              <p className="page-loader-error-title">Something went wrong</p>
+              <p className="page-loader-error-title">{t('pageLoader.somethingWentWrong')}</p>
               <p className="page-loader-error-message">{error}</p>
               {onRetry && (
                 <button onClick={onRetry} className="page-loader-retry-btn">
-                  Retry
+                  {t('retry')}
                 </button>
               )}
             </>

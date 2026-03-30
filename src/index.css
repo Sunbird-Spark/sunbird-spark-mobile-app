@@ -181,12 +181,61 @@
     }
 }
 
+/* ── Shared div-based page header (matches MyLearning pattern) ── */
+.page-header {
+    background-color: var(--color-white);
+    padding: 0.75rem 1rem;
+    padding-top: calc(var(--safe-area-top) + 0.75rem);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
+}
+
+.page-header__start {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.page-header__title {
+    font-family: var(--ion-font-family);
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: var(--ion-color-dark, var(--color-222222, #222222));
+}
+
+.page-header__back-btn {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--ion-color-primary);
+    flex-shrink: 0;
+}
+
+.page-header__back-btn ion-icon {
+    font-size: 1.25rem;
+}
+
+.page-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
+
 /* Header Styling - Brand Palette */
 ion-header ion-toolbar {
     --background: var(--color-white);
     --color: var(--ion-color-dark, #222222);
     --border-width: 0;
     --min-height: 3.5rem;
+    --padding-end: 1rem;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
 }
 
@@ -464,7 +513,7 @@ ion-tab-button:hover {
     height: 3.1875rem;
     background: var(--ion-color-primary);
     top: -1rem;
-    right: -1rem;
+    inset-inline-end: -1rem;
 }
 
 .hero-dot-yellow {
@@ -472,7 +521,7 @@ ion-tab-button:hover {
     height: 1.5625rem;
     background: var(--ion-color-warning);
     top: 3rem;
-    right: 2rem;
+    inset-inline-end: 2rem;
 }
 
 .hero-dot-brick-small {
@@ -480,8 +529,7 @@ ion-tab-button:hover {
     height: 1.3125rem;
     background: var(--ion-color-primary);
     top: 5.5rem;
-    right: -0.5rem;
-    left: auto;
+    inset-inline-end: -0.5rem;
 }
 
 .hero-content {
@@ -630,6 +678,10 @@ ion-tab-button:hover {
 
 .content-carousel-arrow-inline:hover {
     transform: translateX(0.25rem);
+}
+
+[dir="rtl"] .content-carousel-arrow-inline:hover {
+    transform: translateX(-0.25rem);
 }
 
 .content-carousel-scroll {
@@ -1268,7 +1320,7 @@ ion-tab-button:hover {
 }
 
 .profile-action-item {
-    --background: var(--color-white);
+    --background: transparent;
     --border-color: var(--ion-color-primary);
     --border-width: 1px;
     --border-style: solid;

@@ -51,9 +51,6 @@
   "logout": "Se déconnecter",
   "settings": "Paramètres",
   "termsOfUse": "Conditions d'utilisation",
-  "tnc": {
-    "notAvailable": "Conditions d'utilisation non disponibles"
-  },
   "login": "Se connecter",
   "editProfile": "Modifier le profil",
   "changePassword": "Changer le mot de passe",
@@ -193,6 +190,7 @@
   "downloadAsPdf": "Télécharger en PDF",
   "downloadAsPng": "Télécharger en PNG",
   "certificateSavedToDocuments": "Certificat enregistré dans les documents",
+  "certificateSavedToGallery": "Certificat enregistré dans la galerie",
   "noCertificate": "Aucun certificat",
   "noEnrolledCourses": "Aucun cours inscrit pour l'instant.",
   "certificateDownloadError": "Échec du téléchargement du certificat",
@@ -219,6 +217,7 @@
     "failedToLoad": "Échec du chargement de l'intégration.",
     "skip": "Passer",
     "somethingWentWrong": "Quelque chose s'est mal passé.",
+    "failedToSavePreferences": "Échec de l'enregistrement des préférences",
     "goToHome": "Aller à l'accueil",
     "goBack": "Retour"
   },
@@ -264,6 +263,7 @@
     "previewCertificate": "Aperçu du certificat",
     "resumeAll": "Tout reprendre",
     "pauseAll": "Tout mettre en pause",
+    "allDownloaded": "Tout le contenu déjà téléchargé",
     "allContentDownloaded": "Tout le contenu est déjà téléchargé",
     "deleteAllDownloads": "Supprimer tous les téléchargements",
     "downloadAllConfirm": "Télécharger tout ({{count}} éléments) pour {{type}} <strong>{{title}}</strong> ?",
@@ -289,6 +289,7 @@
     "view": "Voir"
   },
   "tnc": {
+    "notAvailable": "Conditions d'utilisation non disponibles",
     "title": "Conditions d'utilisation",
     "iAgree": "Je comprends et accepte les Conditions d'utilisation de SUNBIRD",
     "continue": "Continuer",
@@ -306,7 +307,23 @@
     "googleSecurityError": "Échec de la connexion Google en raison de vos paramètres de sécurité Google",
     "googleSignInFailed": "Échec de la connexion Google",
     "unableToOpen": "Impossible d'ouvrir. Veuillez réessayer",
-    "unableToOpenRegistration": "Impossible d'ouvrir l'inscription. Veuillez réessayer"
+    "unableToOpenRegistration": "Impossible d'ouvrir l'inscription. Veuillez réessayer",
+    "forgotPassword": "Mot de passe oublié ?",
+    "newUser": "Nouvel utilisateur ? Veuillez",
+    "createAccount": "créer un compte",
+    "toContinue": "pour continuer.",
+    "registerPrompt": "Nouvel utilisateur ? Veuillez <link>créer un compte</link> pour continuer.",
+    "welcomeTitle": "Bienvenue sur Sunbird !",
+    "welcomeSubtitle": "Votre parcours d'apprentissage commence ici—connectez-vous pour continuer.",
+    "signInWithGoogle": "Se connecter avec Google",
+    "or": "OU",
+    "emailOrMobile": "Email / Numéro de téléphone",
+    "enterEmailOrMobile": "Entrez l'email / numéro de téléphone",
+    "password": "Mot de passe",
+    "enterPassword": "Entrez le mot de passe",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "login": "Connexion"
   },
   "settingsPage": {
     "preferences": "Préférences",
@@ -335,5 +352,15 @@
     "apr": "Avr",
     "may": "Mai",
     "jun": "Juin"
+  },
+  "pageLoader": {
+    "somethingWentWrong": "Une erreur s'est produite"
+  },
+  "collectionAccordion": {
+    "deleteUnit": "Supprimer l'unité",
+    "deleteUnitMessage": "Supprimer tous les contenus téléchargés pour l'unité {{unitName}} ?",
+    "deleteUnitDownloads": "Supprimer les téléchargements de l'unité",
+    "downloadRemaining": "Télécharger le reste ({{count}} éléments)",
+    "downloadUnit": "Télécharger le contenu de l'unité ({{count}} éléments)"
   }
 }

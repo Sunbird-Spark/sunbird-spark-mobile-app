@@ -235,3 +235,7 @@
     width: 0.75rem;
     height: 0.75rem;
 }
+
+[dir="rtl"] .resource-card-arrow {
+    transform: scaleX(-1);
+}

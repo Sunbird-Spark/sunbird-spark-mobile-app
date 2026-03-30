@@ -33,6 +33,11 @@
     margin-right: 0.5rem;
 }
 
+[dir="rtl"] .search-input-box svg {
+    margin-right: 0;
+    margin-left: 0.5rem;
+}
+
 .search-text-input {
     width: 100%;
     border: none;
