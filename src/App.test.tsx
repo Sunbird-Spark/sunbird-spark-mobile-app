@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 
@@ -32,8 +33,28 @@ vi.mock('@ionic/react', () => ({
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   IonBadge: ({ children }: any) => <span data-testid="ion-badge">{children}</span>,
   IonToast: () => null,
-  IonActionSheet: ({ isOpen, header }: any) =>
-    isOpen ? <div data-testid="app-update-sheet">{header}</div> : null,
+  IonActionSheet: ({ isOpen, header, buttons = [], onDidDismiss }: any) => {
+    if (!isOpen) return null;
+    const handleButtonClick = (btn: any) => {
+      if (typeof btn?.handler === 'function') btn.handler();
+      if (typeof onDidDismiss === 'function') onDidDismiss();
+    };
+    return (
+      <div data-testid="app-update-sheet">
+        <span>{header}</span>
+        {Array.isArray(buttons) && buttons.map((btn: any, index: number) => (
+          <button
+            key={index}
+            type="button"
+            data-testid={`action-sheet-btn-${index}`}
+            onClick={() => handleButtonClick(btn)}
+          >
+            {btn.text}
+          </button>
+        ))}
+      </div>
+    );
+  },
   setupIonicReact: vi.fn(),
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
@@ -350,6 +371,28 @@ describe('App', () => {
     render(<App />);
     await waitFor(() => {
       expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
+  });
+
+  it('calls openAppStore when Update Now is tapped', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(true);
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByTestId('action-sheet-btn-0'));
+    expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
+  });
+
+  it('dismisses the sheet when Later is tapped', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(true);
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByTestId('action-sheet-btn-1'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('app-update-sheet')).not.toBeInTheDocument();
     });
   });
 });
