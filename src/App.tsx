@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, useLocation } from 'react-router-dom';
 import { appUpdateService } from './services/AppUpdateService';
+import useInteract from './hooks/useInteract';
 import { useTranslation } from 'react-i18next';
 import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
@@ -62,6 +63,7 @@ setupIonicReact();
 /** Checks for app updates on startup and shows a bottom sheet prompt if an update is available */
 const AppUpdateGuard: React.FC = () => {
   const { t } = useTranslation();
+  const { interact } = useInteract();
   const [showUpdateSheet, setShowUpdateSheet] = useState(false);
 
   useEffect(() => {
@@ -81,11 +83,17 @@ const AppUpdateGuard: React.FC = () => {
       buttons={[
         {
           text: t('appUpdate.updateNow'),
-          handler: () => { void appUpdateService.openAppStore(); },
+          handler: () => {
+            interact({ id: 'app-update-now', pageid: 'AppUpdate' });
+            void appUpdateService.openAppStore();
+          },
         },
         {
           text: t('appUpdate.later'),
           role: 'cancel',
+          handler: () => {
+            interact({ id: 'app-update-later', pageid: 'AppUpdate' });
+          },
         },
       ]}
       onDidDismiss={() => setShowUpdateSheet(false)}
@@ -153,6 +161,9 @@ const OnboardingGuard: React.FC = () => {
 const PushNotificationGuard: React.FC = () => {
   const router = useIonRouter();
   const queryClient = useQueryClient();
+  const { interact } = useInteract();
+  const interactRef = useRef(interact);
+  interactRef.current = interact;
 
   useEffect(() => {
     const handleForeground = () => {
@@ -168,7 +179,10 @@ const PushNotificationGuard: React.FC = () => {
       );
     };
 
-    const handleUpdateApp = () => { void appUpdateService.openAppStore(); };
+    const handleUpdateApp = () => {
+      interactRef.current({ id: 'push-notification-update-app', pageid: 'AppUpdate' });
+      void appUpdateService.openAppStore();
+    };
 
     window.addEventListener('push:foreground', handleForeground);
     window.addEventListener('push:tapped', handleTap);
