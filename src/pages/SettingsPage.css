@@ -4,35 +4,7 @@
 
 .settings-page {
     --background: var(--ion-color-step-50);
-}
-
-/* ── Header ── */
-.settings-page .settings-header {
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
-    background: var(--color-white);
-}
-
-.settings-page .settings-toolbar {
-    --background: var(--color-white) !important;
-    --color: var(--ion-color-dark) !important;
-    --border-width: 0 !important;
-}
-
-.settings-page .settings-toolbar .settings-title,
-.settings-page .settings-toolbar .settings-back-btn {
-    color: var(--ion-color-dark) !important;
-}
-
-.settings-title {
-    font-family: var(--ion-font-family);
-    font-size: 1.125rem;
-    font-weight: 500;
-    text-align: left;
-    padding-inline-start: 0;
-}
-
-.settings-back-btn {
-    --color: var(--ion-color-primary) !important;
+    background: var(--ion-color-step-50, #f4f4f4);
 }
 
 /* ── Content ── */
@@ -42,4 +14,46 @@
 
 .settings-section {
     padding: 1.25rem 0.9375rem 0;
+}
+
+/* ── Terms of Use card ── */
+.profile-settings-tou-card {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    text-align: start;
+    font: inherit;
+    color: inherit;
+}
+
+.profile-settings-tou-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    background: rgba(var(--ion-color-secondary-rgb), 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.profile-settings-tou-icon ion-icon {
+    color: var(--ion-color-secondary);
+    font-size: 1.25rem;
+}
+
+.profile-settings-tou-title {
+    flex: 1;
+    margin: 0;
+}
+
+.profile-settings-tou-chevron {
+    color: var(--ion-color-medium);
+    font-size: 1.125rem;
+    flex-shrink: 0;
 }

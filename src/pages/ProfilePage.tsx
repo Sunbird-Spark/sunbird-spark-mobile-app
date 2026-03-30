@@ -80,7 +80,7 @@ const ProfilePage: React.FC = () => {
   if (!isAuthenticated) {
     return (
       <IonPage>
-        <AppHeader title={t('profile')} transparent />
+        <AppHeader title={t('profile')} />
 
         <IonContent fullscreen className="profile-content">
           {/* Guest profile card */}
@@ -127,7 +127,7 @@ const ProfilePage: React.FC = () => {
   // ── Authenticated view ───────────────────────────────────────────────────────
   return (
     <IonPage>
-      <AppHeader title={t('profile')} transparent />
+      <AppHeader title={t('profile')} />
 
       <IonContent fullscreen className="profile-content">
         {/* Profile Info Card */}

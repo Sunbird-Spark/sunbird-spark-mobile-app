@@ -91,7 +91,7 @@ describe('TelemetryTracker', () => {
         edata: expect.objectContaining({
           type: 'content',
           mode: 'play',
-          timespent: expect.any(Number),
+          timespent: expect.any(String),
         }),
       }),
     );

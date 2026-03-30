@@ -82,7 +82,7 @@ export const TelemetryTracker: React.FC<TelemetryTrackerProps> = ({
         // A11: fire SUMMARY alongside END
         const startTime = startTimeRef.current || Date.now();
         const endTime = Date.now();
-        const timespent = (endTime - startTime) / 1000;
+        const timespent = String((endTime - startTime) / 1000);
         void telemetryRef.current.summary({
           edata: {
             type: 'content',

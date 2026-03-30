@@ -328,7 +328,7 @@ describe('DatabaseService', () => {
       const svc = getInitializedService();
       await svc.insert('users', { id: 'u1', name: 'Alice' });
       expect(mockConn.run).toHaveBeenCalledWith(
-        'INSERT INTO users (id, name) VALUES (?, ?)', ['u1', 'Alice']
+        'INSERT INTO users (id, name) VALUES (?, ?)', ['u1', 'Alice'], false
       );
     });
 
@@ -337,7 +337,7 @@ describe('DatabaseService', () => {
       await svc.insert('key_value', { key: 'k', value: 'v', updated_at: 1 }, 'REPLACE');
       expect(mockConn.run).toHaveBeenCalledWith(
         'INSERT OR REPLACE INTO key_value (key, value, updated_at) VALUES (?, ?, ?)',
-        ['k', 'v', 1]
+        ['k', 'v', 1], false
       );
     });
 
@@ -346,7 +346,7 @@ describe('DatabaseService', () => {
       await svc.insert('telemetry', { event_id: 'e1', synced: 0 }, 'IGNORE');
       expect(mockConn.run).toHaveBeenCalledWith(
         'INSERT OR IGNORE INTO telemetry (event_id, synced) VALUES (?, ?)',
-        ['e1', 0]
+        ['e1', 0], false
       );
     });
   });
@@ -358,7 +358,7 @@ describe('DatabaseService', () => {
       const svc = getInitializedService();
       await svc.update('users', { details: '{}' }, { eq: { id: 'u1' } });
       expect(mockConn.run).toHaveBeenCalledWith(
-        'UPDATE users SET details = ? WHERE id = ?', ['{}', 'u1']
+        'UPDATE users SET details = ? WHERE id = ?', ['{}', 'u1'], false
       );
     });
 
@@ -371,7 +371,7 @@ describe('DatabaseService', () => {
       );
       expect(mockConn.run).toHaveBeenCalledWith(
         'UPDATE enrolled_courses SET progress = ?, status = ? WHERE course_id = ? AND user_id = ?',
-        [50, 'active', 'c1', 'u1']
+        [50, 'active', 'c1', 'u1'], false
       );
     });
 
@@ -380,7 +380,7 @@ describe('DatabaseService', () => {
       await svc.update('telemetry', { synced: 1 }, { in: { event_id: ['e1', 'e2'] } });
       expect(mockConn.run).toHaveBeenCalledWith(
         'UPDATE telemetry SET synced = ? WHERE event_id IN (?, ?)',
-        [1, 'e1', 'e2']
+        [1, 'e1', 'e2'], false
       );
     });
 
@@ -397,13 +397,13 @@ describe('DatabaseService', () => {
     it('generates DELETE with eq WHERE', async () => {
       const svc = getInitializedService();
       await svc.delete('users', { eq: { id: 'u1' } });
-      expect(mockConn.run).toHaveBeenCalledWith('DELETE FROM users WHERE id = ?', ['u1']);
+      expect(mockConn.run).toHaveBeenCalledWith('DELETE FROM users WHERE id = ?', ['u1'], false);
     });
 
     it('generates DELETE without WHERE when not provided', async () => {
       const svc = getInitializedService();
       await svc.delete('telemetry');
-      expect(mockConn.run).toHaveBeenCalledWith('DELETE FROM telemetry', []);
+      expect(mockConn.run).toHaveBeenCalledWith('DELETE FROM telemetry', [], false);
     });
 
     it('generates DELETE with combined eq + lt', async () => {
@@ -411,7 +411,7 @@ describe('DatabaseService', () => {
       await svc.delete('telemetry', { eq: { synced: 1 }, lt: { timestamp: 9000 } });
       expect(mockConn.run).toHaveBeenCalledWith(
         'DELETE FROM telemetry WHERE synced = ? AND timestamp < ?',
-        [1, 9000]
+        [1, 9000], false
       );
     });
   });

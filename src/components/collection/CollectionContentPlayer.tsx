@@ -1,4 +1,5 @@
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { IonPage, IonContent } from '@ionic/react';
 import { ScreenOrientation } from '@capacitor/screen-orientation';
 import { ContentPlayer } from '../players/ContentPlayer';
@@ -12,6 +13,8 @@ import { contentDbService } from '../../services/db/ContentDbService';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
 import { telemetryService } from '../../services/TelemetryService';
+import { syncService } from '../../services/sync/SyncService';
+import { useAuth } from '../../contexts/AuthContext';
 
 const QUML_MIME_TYPES = [
   'application/vnd.sunbird.questionset',
@@ -42,6 +45,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   currentContentStatus,
   skipContentStateUpdate = false,
 }) => {
+  const { userId } = useAuth();
   const { data, isLoading, error, refetch, fetchStatus } = useContentRead(contentId);
   const contentData = data?.data?.content;
   const isQumlContent = QUML_MIME_TYPES.includes(contentData?.mimeType);
@@ -171,6 +175,11 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     [hierarchyRoot, contentId],
   );
 
+  // Stable attempt_id for the current play session — regenerated on every START event
+  // so that all ASSESS events within one attempt share one ID, and a second offline
+  // attempt generates a distinct ID that survives as a separate sync group.
+  const attemptIdRef = useRef<string>(uuidv4());
+
   // Content state update hook — bridges telemetry events to API
   const handleTelemetryStateUpdate = useContentStateUpdate({
     collectionId,
@@ -202,7 +211,26 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   const handleTelemetryEvent = useCallback((event: any) => {
     void telemetryService.save(event);
     handleTelemetryStateUpdate(event);
-  }, [handleTelemetryStateUpdate]);
+
+    const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
+
+    // Each START marks a new play session — always generate a fresh attempt_id.
+    // This ensures close-and-reopen and crash-and-restart both produce a new
+    // attempt, preventing duplicate question answers within the same attempt_id.
+    if (eid === 'START') {
+      attemptIdRef.current = uuidv4();
+    }
+
+    // Persist ASSESS events to the course_assessment staging table so they survive
+    // app crashes and can be synced later (offline-safe path).
+    if (eid === 'ASSESS' && collectionId && batchId && userId) {
+      void syncService.captureAssessmentEvent(event, {
+        userId,
+        courseId: collectionId,
+        batchId,
+      }, attemptIdRef.current);
+    }
+  }, [handleTelemetryStateUpdate, collectionId, batchId, userId]);
 
   // Build contentMeta for rating dialog telemetry
   const contentMeta = useMemo(() => {

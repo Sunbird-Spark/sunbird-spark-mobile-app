@@ -179,7 +179,7 @@ const HomePage: React.FC = () => {
 
   return (
     <IonPage className="home-page">
-      <IonHeader>
+      <IonHeader className="ion-no-border">
         <PublicWelcomeHeader />
       </IonHeader>
 

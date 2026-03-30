@@ -195,6 +195,11 @@
     padding-right: 3rem;
 }
 
+[dir="rtl"] .sign-in-password-wrapper .sign-in-input {
+    padding-right: 1rem;
+    padding-left: 3rem;
+}
+
 .sign-in-eye-btn {
     position: absolute;
     right: 1rem;
@@ -209,6 +214,12 @@
     justify-content: center;
     color: var(--ion-color-medium, #999);
     font-size: 1.25rem;
+    z-index: 10;
+}
+
+[dir="rtl"] .sign-in-eye-btn {
+    right: auto;
+    left: 1rem;
 }
 
 .sign-in-eye-btn ion-icon {
@@ -221,6 +232,10 @@
     display: flex;
     justify-content: flex-end;
     margin-top: -0.5rem;
+}
+
+[dir="rtl"] .sign-in-forgot-row {
+    justify-content: flex-start;
 }
 
 .sign-in-forgot-btn {

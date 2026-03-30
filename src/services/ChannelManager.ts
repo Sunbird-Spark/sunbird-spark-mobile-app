@@ -1,4 +1,6 @@
 import { getClient } from '../lib/http-client';
+import { syncConfig } from './sync/SyncConfig';
+import { keyValueDbService, KVKey } from './db/KeyValueDbService';
 
 /**
  * ChannelManager handles dynamic channel ID management
@@ -16,6 +18,8 @@ export class ChannelManager {
     httpClient.updateHeaders([
       { key: 'x-channel-id', value: channelId, action: 'add' },
     ]);
+    syncConfig.setChannelId(channelId);
+    keyValueDbService.set(KVKey.ACTIVE_CHANNEL_ID, channelId).catch(() => {});
   }
 
   /**

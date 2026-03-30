@@ -43,9 +43,6 @@
   "logout": "تسجيل الخروج",
   "settings": "الإعدادات",
   "termsOfUse": "شروط الاستخدام",
-  "tnc": {
-    "notAvailable": "شروط الاستخدام غير متوفرة"
-  },
   "login": "تسجيل الدخول",
   "editProfile": "تعديل الملف الشخصي",
   "changePassword": "تغيير كلمة المرور",
@@ -274,6 +271,7 @@
     "previewCertificate": "معاينة الشهادة",
     "resumeAll": "استئناف الكل",
     "pauseAll": "إيقاف الكل مؤقتاً",
+    "allDownloaded": "تم تنزيل جميع المحتويات مسبقًا",
     "allContentDownloaded": "جميع المحتويات تم تنزيلها",
     "deleteAllDownloads": "حذف جميع التنزيلات",
     "downloadAllConfirm": "تنزيل الكل ({{count}} عنصر) لـ {{type}} <strong>{{title}}</strong>؟",
@@ -299,6 +297,7 @@
     "view": "عرض"
   },
   "tnc": {
+    "notAvailable": "شروط الاستخدام غير متوفرة",
     "title": "الشروط والأحكام",
     "iAgree": "أفهم وأقبل شروط استخدام SUNBIRD",
     "continue": "متابعة",
@@ -316,7 +315,23 @@
     "googleSecurityError": "فشل تسجيل الدخول بـ Google بسبب إعدادات أمان Google الخاصة بك",
     "googleSignInFailed": "فشل تسجيل الدخول بـ Google",
     "unableToOpen": "تعذّر الفتح. يرجى المحاولة مرة أخرى",
-    "unableToOpenRegistration": "تعذّر فتح صفحة التسجيل. يرجى المحاولة مرة أخرى"
+    "unableToOpenRegistration": "تعذّر فتح صفحة التسجيل. يرجى المحاولة مرة أخرى",
+    "forgotPassword": "هل نسيت كلمة المرور؟",
+    "newUser": "مستخدم جديد؟ يرجى",
+    "createAccount": "إنشاء حساب",
+    "toContinue": "للمتابعة.",
+    "registerPrompt": "مستخدم جديد؟ يرجى <link>إنشاء حساب</link> للمتابعة.",
+    "welcomeTitle": "مرحباً بك في Sunbird!",
+    "welcomeSubtitle": "رحلتك التعليمية تبدأ هنا—سجّل الدخول للمتابعة.",
+    "signInWithGoogle": "تسجيل الدخول باستخدام Google",
+    "or": "أو",
+    "emailOrMobile": "البريد الإلكتروني / رقم الجوال",
+    "enterEmailOrMobile": "أدخل البريد الإلكتروني / رقم الجوال",
+    "password": "كلمة المرور",
+    "enterPassword": "أدخل كلمة المرور",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "login": "تسجيل الدخول"
   },
   "settingsPage": {
     "preferences": "التفضيلات",
@@ -337,5 +352,23 @@
   "invalidQRTitle": "رمز QR غير صالح",
   "invalidQRMessage": "رمز QR هذا ليس رمز DIAL صالحاً. يرجى المحاولة مرة أخرى.",
   "tryAgain": "حاول مرة أخرى",
-  "dialCodeResults": "نتائج رمز QR"
+  "dialCodeResults": "نتائج رمز QR",
+  "months": {
+    "jan": "يناير",
+    "feb": "فبراير",
+    "mar": "مارس",
+    "apr": "أبريل",
+    "may": "مايو",
+    "jun": "يونيو"
+  },
+  "pageLoader": {
+    "somethingWentWrong": "حدث خطأ ما"
+  },
+  "collectionAccordion": {
+    "deleteUnit": "حذف الوحدة",
+    "deleteUnitMessage": "حذف جميع المحتويات المحملة للوحدة {{unitName}}؟",
+    "deleteUnitDownloads": "حذف تنزيلات الوحدة",
+    "downloadRemaining": "تنزيل المتبقي ({{count}} عناصر)",
+    "downloadUnit": "تنزيل محتويات الوحدة ({{count}} عناصر)"
+  }
 }

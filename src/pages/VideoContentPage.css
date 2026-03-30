@@ -18,6 +18,11 @@
     padding-right: 1rem;
 }
 
+[dir="rtl"] .header-actions {
+    padding-right: 0;
+    padding-left: 1rem;
+}
+
 .action-btn {
     background: none;
     border: none;

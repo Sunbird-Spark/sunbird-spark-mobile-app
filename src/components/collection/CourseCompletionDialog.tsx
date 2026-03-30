@@ -12,6 +12,7 @@ interface CourseCompletionDialogProps {
    *  Lets us detect a <100→≥100 transition that happened while this
    *  component was unmounted (player fullscreen replaces the page). */
   progressBeforePlayer: number | null;
+  isOffline?: boolean;
 }
 
 export default function CourseCompletionDialog({
@@ -22,6 +23,7 @@ export default function CourseCompletionDialog({
   collectionId,
   hasCertificate,
   progressBeforePlayer,
+  isOffline,
 }: CourseCompletionDialogProps) {
   const [open, setOpen] = useState(false);
   const previousProgressRef = useRef<number | null>(null);
@@ -103,7 +105,7 @@ export default function CourseCompletionDialog({
           You have successfully completed this course.
         </p>
 
-        {hasCertificate ? (
+        {!isOffline && (hasCertificate ? (
           <p className="cp-completion-dialog-note">
             You can download your certificate from the Profile page.
           </p>
@@ -114,7 +116,7 @@ export default function CourseCompletionDialog({
             </svg>
             <span>Note: This course does not have a certificate.</span>
           </div>
-        )}
+        ))}
 
         <button
           className="cp-completion-dialog-btn"

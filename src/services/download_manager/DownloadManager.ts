@@ -640,6 +640,13 @@ export class DownloadManager {
             await this.transition(entry.identifier, DownloadState.COMPLETED);
             await this.downloadDb.update(entry.identifier, { progress: 100 });
 
+            // Persist the actual download size (ECAR file bytes) as size_on_device.
+            // This is the value shown during download and is more accurate than
+            // the Filesystem.stat directory size (which returns ~3KB inode size).
+            if (entry.total_bytes > 0) {
+              await contentDbService.updateSizeOnDevice(entry.identifier, entry.total_bytes);
+            }
+
             // If this leaf belongs to a collection, mark it as 'Parent' visibility
             // so it doesn't appear individually in Downloaded Contents page.
             // Then check if all siblings are done → upgrade parent content_state to 2.

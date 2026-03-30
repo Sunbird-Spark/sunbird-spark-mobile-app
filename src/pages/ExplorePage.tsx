@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useReducer } from 'react';
 import {
-    IonPage, IonHeader, IonToolbar, IonContent, IonModal,
+    IonPage, IonHeader, IonContent, IonModal,
     IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher,
     IonRefresherContent, IonSpinner,
 } from '@ionic/react';
@@ -264,54 +264,52 @@ const ExplorePage: React.FC = () => {
     return (
         <IonPage>
             <IonHeader className="ion-no-border">
-                <IonToolbar style={{ '--background': 'var(--color-white)', '--padding-top': 'var(--safe-area-top)', padding: '16px 16px', boxShadow: '0 14px 14px rgba(0, 0, 0, 0.05)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-                        {showSearch ? (
-                            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--color-f0f0f0, #f0f0f0)', borderRadius: '8px', padding: '6px 10px' }}>
-                                <SearchIcon />
-                                <input
-                                    ref={searchInputRef}
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder={t('searchContentPlaceholder')}
-                                    style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '15px', color: 'var(--ion-color-dark, #222222)' }}
-                                />
-                                <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '2px', cursor: 'pointer', display: 'flex' }}>
-                                    <CloseIcon />
+                <div className="page-header">
+                    {showSearch ? (
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--color-f0f0f0, #f0f0f0)', borderRadius: '0.5rem', padding: '0.375rem 0.625rem' }}>
+                            <SearchIcon />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={t('searchContentPlaceholder')}
+                                style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '0.9375rem', color: 'var(--ion-color-dark, var(--color-222222, #222222))' }}
+                            />
+                            <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '0.125rem', cursor: 'pointer', display: 'flex' }}>
+                                <CloseIcon />
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <h1 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
+                                {t('exploreTitle')}
+                            </h1>
+                            <div className="page-header__actions">
+                                <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '0.25rem', cursor: 'pointer' }}>
+                                    <SearchIcon />
                                 </button>
+                                <QRScanButton />
+                                <button
+                                    onClick={handleOpenFilter}
+                                    aria-label={t('filters')}
+                                    style={{ background: 'none', border: 'none', padding: '0.25rem', cursor: 'pointer', position: 'relative' }}
+                                >
+                                    <FilterIcon />
+                                    {activeFilterCount > 0 && (
+                                        <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--ion-color-primary)', color: 'var(--color-white)', borderRadius: '50%', width: '0.875rem', height: '0.875rem', fontSize: '0.5625rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                                            {activeFilterCount}
+                                        </span>
+                                    )}
+                                </button>
+                                <LanguageSelector />
                             </div>
-                        ) : (
-                            <>
-                                <h1 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--ion-color-dark, #222222)', margin: 0 }}>
-                                    {t('exploreTitle')}
-                                </h1>
-                                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                                    <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
-                                        <SearchIcon />
-                                    </button>
-                                    <QRScanButton />
-                                    <button
-                                        onClick={handleOpenFilter}
-                                        aria-label={t('filters')}
-                                        style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', position: 'relative' }}
-                                    >
-                                        <FilterIcon />
-                                        {activeFilterCount > 0 && (
-                                            <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--ion-color-primary)', color: 'white', borderRadius: '50%', width: '14px', height: '14px', fontSize: '9px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
-                                                {activeFilterCount}
-                                            </span>
-                                        )}
-                                    </button>
-                                    <LanguageSelector />
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </IonToolbar>
+                        </>
+                    )}
+                </div>
             </IonHeader>
 
-            <IonContent fullscreen style={{ '--background': 'rgb(244, 244, 244)' }}>
+            <IonContent fullscreen style={{ '--background': 'var(--color-f4f4f4, #f4f4f4)' }}>
                 {urlDialCode && (
                     <div style={{
                         background: 'var(--ion-color-primary)',

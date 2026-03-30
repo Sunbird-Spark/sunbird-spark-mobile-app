@@ -52,9 +52,6 @@
   "logout": "Logout",
   "settings": "Settings",
   "termsOfUse": "Terms of Use",
-  "tnc": {
-    "notAvailable": "Terms of Use not available"
-  },
   "login": "Log In",
   "editProfile": "Edit Profile",
   "changePassword": "Change Password",
@@ -140,12 +137,14 @@
     "error": "Could not load FAQs"
   },
   "tnc": {
+    "notAvailable": "Terms of Use not available",
     "title": "Terms And Conditions",
     "iAgree": "I understand & accept the SUNBIRD Terms of Use",
     "continue": "Continue",
     "acceptFailed": "Unable to record your acceptance. Please try again later.",
     "error": "Error"
   },
+  "welcome": "Welcome",
   "heroSection": {
     "title": "Knowledge that moves you forward.",
     "subtitle": "Unlock your potential and explore a world of knowledge. Start your journey with 100+ courses built for your future.",
@@ -308,7 +307,23 @@
     "googleSecurityError": "Google sign-in failed due to your Google security settings",
     "googleSignInFailed": "Google sign-in failed",
     "unableToOpen": "Unable to open. Please try again",
-    "unableToOpenRegistration": "Unable to open registration. Please try again"
+    "unableToOpenRegistration": "Unable to open registration. Please try again",
+    "forgotPassword": "Forgot password?",
+    "newUser": "New user? Please",
+    "createAccount": "create an account",
+    "toContinue": "to continue.",
+    "registerPrompt": "New user? Please <link>create an account</link> to continue.",
+    "welcomeTitle": "Welcome to Sunbird!",
+    "welcomeSubtitle": "Your learning journey starts here—log in to continue.",
+    "signInWithGoogle": "Sign in with Google",
+    "or": "OR",
+    "emailOrMobile": "Email ID / Mobile Number",
+    "enterEmailOrMobile": "Enter Email ID / Mobile Number",
+    "password": "Password",
+    "enterPassword": "Enter Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "login": "Login"
   },
   "settingsPage": {
     "preferences": "Preferences",
@@ -337,5 +352,15 @@
     "apr": "Apr",
     "may": "May",
     "jun": "Jun"
+  },
+  "pageLoader": {
+    "somethingWentWrong": "Something went wrong"
+  },
+  "collectionAccordion": {
+    "deleteUnit": "Delete Unit",
+    "deleteUnitMessage": "Delete all downloaded contents for Unit {{unitName}}?",
+    "deleteUnitDownloads": "Delete unit downloads",
+    "downloadRemaining": "Download remaining ({{count}} items)",
+    "downloadUnit": "Download unit contents ({{count}} items)"
   }
 }
