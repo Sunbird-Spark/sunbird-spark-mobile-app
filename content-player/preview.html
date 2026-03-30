@@ -130,6 +130,24 @@
         }
     });
 
+    // Type 2: Renderer API events
+    if (typeof EkstepRendererAPI !== 'undefined') {
+        var catchAll = function (eventData) {
+            if (eventData) {
+                // Determine if eventData is the raw telemetry or a wrapper (e.g. { target: { eid: ... } })
+                var flatData = (eventData.eid || eventData.event) ? eventData : (eventData.target || eventData.detail || eventData);
+
+                // Ignore if still no eid (invalid or wrapper without data)
+                if (flatData && (flatData.eid || flatData.event)) {
+                    console.log('[ECML-iframe] Firing Telemetry (API):', flatData.eid || flatData.event);
+                    window.parent.postMessage(flatData, window.location.origin);
+                }
+            }
+        };
+        EkstepRendererAPI.addEventListener('telemetryEvent', catchAll);
+        EkstepRendererAPI.addEventListener('renderer:telemetry:event', catchAll);
+    }
+
     // Bridge renderer:content:start → parent as a START event.
     if (typeof EkstepRendererAPI !== 'undefined') {
         EkstepRendererAPI.addEventListener('renderer:content:start', function () {

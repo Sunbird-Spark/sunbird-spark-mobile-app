@@ -136,14 +136,17 @@ export function useCourseDownloadProgress(
     const isPaused = isDownloading && aggregate.pausedCount > 0 && aggregate.pausedCount === aggregate.activeCount;
     const failedCount = aggregate.failedCount;
 
+    const leaves = children ? flattenLeafNodes(children).filter(isDownloadable) : [];
+    const totalLeaves = leaves.length;
+
     return {
       total: aggregate.total,
       completed: aggregate.completed,
       overallPercent: aggregate.overallPercent,
       isDownloading,
       isPaused,
-      allDownloaded: aggregate.completed >= aggregate.total,
+      allDownloaded: totalLeaves > 0 && downloadableCount === 0,
       failedCount,
     };
-  }, [aggregate, collectionId, children, downloadableCount, localIdentifiers]);
+  }, [aggregate, collectionId, children, downloadableCount]);
 }

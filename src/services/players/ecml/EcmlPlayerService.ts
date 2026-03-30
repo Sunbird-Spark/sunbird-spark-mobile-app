@@ -46,7 +46,20 @@ export class EcmlPlayerService {
         showPrint: false,
         showReplay: true,
       },
-      enableTelemetryValidation: false
+      enableTelemetryValidation: false,
+      telemetryConfig: {
+        origin: 'sunbird-portal',
+        pdata: context.pdata,
+        env: 'contentplayer',
+        channel: context.channel,
+        did: context.did,
+        sid: context.sid,
+        uid: context.uid,
+        endpoint: '',
+        host: '',
+        authtoken: '',
+        dispatcher: 'postMessage'
+      }
     };
 
     if (isLocal && basePath) {

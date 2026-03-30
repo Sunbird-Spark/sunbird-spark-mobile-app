@@ -283,22 +283,28 @@ const CollectionPage: React.FC = () => {
     return hasQueued; // only true when QUEUED/IMPORTING items exist (not when all FAILED)
   }, [courseProgress.isDownloading, downloadStates]);
 
-  // Collection-level download failure state for the header icon
-  const downloadFailureState = useMemo((): 'none' | 'partial' | 'all_failed' => {
-    // If anything is currently active (queued/downloading/importing/paused), don't show failure state yet
+  // Collection-level download state summary for the header icon
+  const collectionDownloadStatus = useMemo((): 'none' | 'partial_error' | 'all_failed' | 'partial_local' => {
+    // If anything is currently active (queued/downloading/importing/paused), don't show summary state yet
     if (courseProgress.isDownloading) return 'none';
 
-    // Count non-retried failures for this collection
+    // If we have any failures, they take priority for UI feedback (retry action)
     let failedCount = 0;
     for (const id of leafIdentifiers) {
       if (downloadStates.get(id)?.state === 'FAILED') failedCount++;
     }
 
-    if (failedCount === 0) return 'none';
+    if (failedCount > 0) {
+      return localContentSet.size > 0 ? 'partial_error' : 'all_failed';
+    }
 
-    // If some items succeeded and some failed, it's 'partial'; if none succeeded and some failed, it's 'all_failed'
-    return localContentSet.size > 0 ? 'partial' : 'all_failed';
-  }, [courseProgress.isDownloading, localContentSet, leafIdentifiers, downloadStates]);
+    // No errors; check if we are partially local (some units downloaded, others not enqueued etc)
+    if (localContentSet.size > 0 && !courseProgress.allDownloaded) {
+      return 'partial_local';
+    }
+
+    return 'none';
+  }, [courseProgress.isDownloading, courseProgress.allDownloaded, localContentSet, leafIdentifiers, downloadStates]);
 
   // Pre-compute ring geometry for the header progress indicator
   const dlRingRadius = 16;
@@ -602,7 +608,7 @@ const CollectionPage: React.FC = () => {
                       />
                     </button>
                   )
-                ) : downloadFailureState === 'all_failed' ? (
+                ) : collectionDownloadStatus === 'all_failed' ? (
                   /* All downloads failed — red error icon, tap to retry via download sheet */
                   <button
                     className="collection-page-icon-btn"
@@ -614,12 +620,13 @@ const CollectionPage: React.FC = () => {
                       <path d="M12 8V12M12 16H12.01" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                   </button>
-                ) : downloadFailureState === 'partial' ? (
-                  /* Partial download — yellow warning download icon, tap to retry failures */
+                ) : collectionDownloadStatus === 'partial_error' || collectionDownloadStatus === 'partial_local' ? (
+                  /* Partial status (failures or pending) — yellow warning download icon, tap to retry/download remaining */
                   <button
                     className="collection-page-icon-btn"
                     onClick={() => setIsDownloadSheetOpen(true)}
-                    aria-label="Partial download — tap to retry failed items"
+                    aria-label={collectionDownloadStatus === 'partial_error' ? "Partial download — tap to retry failed items" : "Partial download — tap to download remaining items"}
+                    style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
                   >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                       <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
