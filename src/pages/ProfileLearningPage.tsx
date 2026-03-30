@@ -11,6 +11,7 @@ import {
   IonToast,
   IonToolbar,
   useIonRouter,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -173,6 +174,11 @@ const ProfileLearningPage: React.FC = () => {
   const [pendingCourse, setPendingCourse] = useState<TrackableCollection | null>(null);
 
   const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmentList(userId);
+
+  useIonViewDidEnter(() => {
+    refetch();
+  });
+
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 
   const filteredCourses = useMemo(() => {

@@ -4,6 +4,7 @@ import {
   IonContent,
   IonHeader,
   IonPage,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import PageLoader from '../components/common/PageLoader';
 import { useTranslation } from 'react-i18next';
@@ -211,6 +212,10 @@ const MyLearningPage: React.FC = () => {
     error,
     refetch,
   } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+
+  useIonViewDidEnter(() => {
+    refetch();
+  });
 
   const enrolledCourses: TrackableCollection[] = _.get(enrollmentData, 'data.courses', []);
   const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
