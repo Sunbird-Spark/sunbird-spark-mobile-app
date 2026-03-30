@@ -47,11 +47,18 @@ export class DownloadManager {
 
     // Listen for network changes
     this.unsubscribeNetwork = this.networkSvc.subscribe((state) => {
-      const wasOffline = !this.networkState.connected;
+      const wasDisconnected = !state.connected;
+      const wasPreviouslyConnected = this.networkState.connected;
       this.networkState = state;
 
+      // Connection lost → pause downloads
+      if (wasPreviouslyConnected && wasDisconnected) {
+        console.debug('[DownloadManager] Signal lost — stopping active downloads');
+        this.stopDownloadsOnSignalLoss();
+      }
+
       // Back online → process queue
-      if (wasOffline && state.connected) {
+      if (!wasPreviouslyConnected && state.connected) {
         this.processQueue();
       }
     });
@@ -835,6 +842,20 @@ export class DownloadManager {
     });
 
     this.emit({ type: 'state_change', identifier });
+  }
+
+  /** Signal lost while downloading → stop and set retry_wait */
+  private async stopDownloadsOnSignalLoss(): Promise<void> {
+    const active = Array.from(this.activeDownloads.entries());
+    for (const [identifier, { nativeId }] of active) {
+      try {
+        await CapacitorDownloader.stop({ id: nativeId });
+        this.activeDownloads.delete(identifier);
+        await this.transition(identifier, DownloadState.RETRY_WAIT);
+      } catch (err) {
+        console.warn(`[DownloadManager] Could not stop ${identifier} on signal loss:`, err);
+      }
+    }
   }
 
   private async recoverCrashedEntries(): Promise<void> {

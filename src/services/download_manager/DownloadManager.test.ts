@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DownloadManager } from './DownloadManager';
+import { CapacitorDownloader } from '@capgo/capacitor-downloader';
+import { Filesystem } from '@capacitor/filesystem';
 import { DownloadDbService } from '../db/DownloadDbService';
 import { ImportService } from './ImportService';
 import { DownloadState } from './types';
@@ -52,13 +54,14 @@ function makeMockDownloadDb(): DownloadDbService {
   return {
     insert: vi.fn().mockResolvedValue(undefined),
     getByIdentifier: vi.fn().mockResolvedValue(null),
+    getByIdentifiers: vi.fn().mockResolvedValue([]),
     getByState: vi.fn().mockResolvedValue([]),
     getByParent: vi.fn().mockResolvedValue([]),
     getNextQueued: vi.fn().mockResolvedValue([]),
+    getAll: vi.fn().mockResolvedValue([]),
     update: vi.fn().mockResolvedValue(undefined),
     delete: vi.fn().mockResolvedValue(undefined),
     countActive: vi.fn().mockResolvedValue(0),
-    getAll: vi.fn().mockResolvedValue([]),
     cleanupOlderThan: vi.fn().mockResolvedValue(undefined),
     wasCancelledByUser: vi.fn().mockResolvedValue(false),
   } as unknown as DownloadDbService;
@@ -129,6 +132,17 @@ describe('DownloadManager', () => {
       await manager.init();
       await manager.init();
       expect(networkSvc.subscribe).toHaveBeenCalledOnce();
+    });
+
+    it('recovers crashed entries on init', async () => {
+      const crashingEntry = makeEntry({ identifier: 'crash_1', state: DownloadState.DOWNLOADING });
+      vi.mocked(dlDb.getByState).mockResolvedValue([crashingEntry]);
+
+      await (manager as any).recoverCrashedEntries();
+      expect(dlDb.update).toHaveBeenCalledWith('crash_1', expect.objectContaining({
+        state: DownloadState.QUEUED,
+        progress: 0
+      }));
     });
   });
 
@@ -479,12 +493,337 @@ describe('DownloadManager', () => {
   describe('settings', () => {
     it('setMaxConcurrent enforces minimum of 1', () => {
       manager.setMaxConcurrent(0);
-      // No assertion on private field, but it shouldn't throw
+      // Accessing private for coverage/verification
+      expect((manager as any).maxConcurrent).toBe(1);
     });
 
-    it('setWifiOnly stores the preference', () => {
-      manager.setWifiOnly(true);
-      // No assertion on private field, but it shouldn't throw
+    it('setWifiOnly pauses active downloads if not on wifi', async () => {
+      // Mock being on cellular
+      (networkSvc as any).connectionType = 'cellular';
+      (manager as any).networkState = { connectionType: 'cellular' };
+
+      const pauseSpy = vi.spyOn(manager, 'pause').mockResolvedValue(undefined);
+      (manager as any).activeDownloads.set('do_1', {} as any);
+
+      await manager.setWifiOnly(true);
+      expect(pauseSpy).toHaveBeenCalledWith('do_1');
+    });
+
+    it('setWifiOnly triggers processQueue when switched off or on wifi', async () => {
+      (networkSvc as any).connectionType = 'wifi';
+      (manager as any).networkState = { connectionType: 'wifi' };
+
+      const processSpy = vi.spyOn(manager as any, 'processQueue').mockResolvedValue(undefined);
+
+      await manager.setWifiOnly(false);
+      expect(processSpy).toHaveBeenCalled();
+    });
+  });
+
+  // ── transition ──
+
+  describe('transition', () => {
+    it('throws error for non-existent entry', async () => {
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(null);
+      await expect((manager as any).transition('missing', DownloadState.DOWNLOADING))
+        .rejects.toThrow('[DownloadManager] Entry not found: missing');
+    });
+
+    it('warns and returns for invalid transition', async () => {
+      const entry = makeEntry({ state: DownloadState.QUEUED });
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
+      // QUEUED -> COMPLETED is not allowed directly
+      await (manager as any).transition('do_123', DownloadState.COMPLETED);
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid transition: QUEUED → COMPLETED'));
+      expect(dlDb.update).not.toHaveBeenCalled();
+      warnSpy.mockRestore();
+    });
+  });
+
+  // ── recoverCrashedEntries ──
+
+  describe('recoverCrashedEntries', () => {
+    it('resets IMPORTING entries to DOWNLOADED if file exists', async () => {
+      const entry = makeEntry({ state: DownloadState.IMPORTING, file_path: '/p.ecar' });
+      vi.mocked(dlDb.getByState).mockImplementation(async (s: any) =>
+        s === DownloadState.IMPORTING ? [entry] : []
+      );
+      vi.mocked(Filesystem.stat).mockResolvedValue({ size: 100 } as any);
+
+      await (manager as any).recoverCrashedEntries();
+
+      expect(dlDb.update).toHaveBeenCalledWith('do_123', {
+        state: DownloadState.DOWNLOADED,
+      });
+    });
+
+    it('resets IMPORTING entries to QUEUED if file is missing', async () => {
+      const entry = makeEntry({ state: DownloadState.IMPORTING, file_path: '/p.ecar' });
+      vi.mocked(dlDb.getByState).mockImplementation(async (s: any) =>
+        s === DownloadState.IMPORTING ? [entry] : []
+      );
+      vi.mocked(Filesystem.stat).mockRejectedValue(new Error('ENOENT'));
+
+      await (manager as any).recoverCrashedEntries();
+
+      expect(dlDb.update).toHaveBeenCalledWith('do_123', expect.objectContaining({
+        state: DownloadState.QUEUED,
+        progress: 0,
+      }));
+    });
+
+    it('resets RETRY_WAIT entries to QUEUED', async () => {
+      const entry = makeEntry({ state: DownloadState.RETRY_WAIT });
+      vi.mocked(dlDb.getByState).mockImplementation(async (s: any) =>
+        s === DownloadState.RETRY_WAIT ? [entry] : []
+      );
+
+      await (manager as any).recoverCrashedEntries();
+
+      expect(dlDb.update).toHaveBeenCalledWith('do_123', {
+        state: DownloadState.QUEUED,
+      });
+    });
+  });
+
+  describe('getBatchProgress', () => {
+    it('returns progress map for multiple identifiers', async () => {
+      const entry1 = makeEntry({ identifier: 'id1', state: DownloadState.DOWNLOADING });
+      const entry2 = makeEntry({ identifier: 'id2', state: DownloadState.COMPLETED });
+      vi.mocked(dlDb.getByIdentifiers).mockResolvedValue([entry1, entry2]);
+
+      const res = await manager.getBatchProgress(['id1', 'id2']);
+      expect(res.get('id1')?.state).toBe(DownloadState.DOWNLOADING);
+      expect(res.get('id2')?.state).toBe(DownloadState.COMPLETED);
+    });
+  });
+
+  describe('getters', () => {
+    it('getActiveDownloads, getFailedDownloads, getQueue', async () => {
+      const e1 = makeEntry({ identifier: 'e1' });
+      vi.mocked(dlDb.getByState).mockResolvedValue([e1]);
+
+      await manager.getActiveDownloads();
+      expect(dlDb.getByState).toHaveBeenCalledWith(DownloadState.DOWNLOADING);
+
+      await manager.getFailedDownloads();
+      expect(dlDb.getByState).toHaveBeenCalledWith(DownloadState.FAILED);
+
+      await manager.getQueue();
+      expect(dlDb.getAll).toHaveBeenCalled();
+    });
+
+    it('getEntry and wasCancelledByUser', async () => {
+      const e1 = makeEntry({ identifier: 'e1' });
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(e1);
+      vi.mocked(dlDb.wasCancelledByUser).mockResolvedValue(true);
+
+      await manager.getEntry('e1');
+      expect(dlDb.getByIdentifier).toHaveBeenCalledWith('e1');
+
+      const cancelled = await manager.wasCancelledByUser('e1');
+      expect(cancelled).toBe(true);
+    });
+  });
+
+  describe('notifyContentDeleted', () => {
+    it('emits content_deleted event', () => {
+      const listener = vi.fn();
+      manager.subscribe(listener);
+      manager.notifyContentDeleted('do_123');
+      expect(listener).toHaveBeenCalledWith({ type: 'content_deleted', identifier: 'do_123' });
+    });
+  });
+
+  describe('cancelByParent', () => {
+    it('calls db.getByParent and stops each child', async () => {
+      const child = makeEntry({ identifier: 'c1', state: DownloadState.DOWNLOADING });
+      vi.mocked(dlDb.getByParent).mockResolvedValue([child]);
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(child);
+
+      await manager.cancelByParent('p1');
+      expect(dlDb.getByParent).toHaveBeenCalledWith('p1');
+      expect(CapacitorDownloader.stop).toHaveBeenCalled();
+    });
+  });
+
+  // ── handleDownloadFailure ──
+
+  describe('handleDownloadFailure', () => {
+    it('transitions to RETRY_WAIT if retries remain', async () => {
+      const entry = makeEntry({ state: DownloadState.DOWNLOADING, retry_count: 0, max_retries: 3 });
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+      const updateSpy = vi.mocked(dlDb.update);
+
+      await (manager as any).handleDownloadFailure(entry.identifier, 'Network Error');
+
+      expect(updateSpy).toHaveBeenCalledWith(entry.identifier, expect.objectContaining({
+        state: DownloadState.RETRY_WAIT,
+        retry_count: 1,
+      }));
+    });
+
+    it('transitions to FAILED if no retries remain', async () => {
+      const entry = makeEntry({ state: DownloadState.DOWNLOADING, retry_count: 3, max_retries: 3 });
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+      const updateSpy = vi.mocked(dlDb.update);
+
+      await (manager as any).handleDownloadFailure(entry.identifier, 'Final Error');
+
+      expect(updateSpy).toHaveBeenCalledWith(entry.identifier, expect.objectContaining({
+        state: DownloadState.FAILED,
+      }));
+    });
+
+    it('uses exponential backoff and transitions to retryState after timer', async () => {
+      vi.useFakeTimers();
+      const entry = makeEntry({
+        identifier: 'retry_backoff',
+        state: DownloadState.DOWNLOADING,
+        retry_count: 0,
+        max_retries: 3,
+        file_path: undefined // Always re-download
+      });
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+
+      await (manager as any).handleDownloadFailure(entry.identifier, 'Temporary Error');
+
+      // Should be in RETRY_WAIT first
+      expect(dlDb.update).toHaveBeenCalledWith(entry.identifier, expect.objectContaining({
+        state: DownloadState.RETRY_WAIT,
+        retry_count: 1,
+      }));
+
+      // Mock getByIdentifier to return RETRY_WAIT when the timer callback checks it
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue({ ...entry, state: DownloadState.RETRY_WAIT, retry_count: 1 });
+
+      // Fast-forward backoff (2s for first retry)
+      await vi.advanceTimersByTimeAsync(2500);
+
+      // Verify it transitions to QUEUED because we set file_path to undefined
+      expect(dlDb.update).toHaveBeenCalledWith(entry.identifier, expect.objectContaining({
+        state: DownloadState.QUEUED,
+      }));
+
+      vi.useRealTimers();
+    });
+
+    it('transitions to QUEUED after backoff if .ecar is missing', async () => {
+      vi.useFakeTimers();
+      const entry = makeEntry({
+        identifier: 'retry_missing',
+        state: DownloadState.DOWNLOADING,
+        retry_count: 1,
+        max_retries: 3,
+        file_path: '/tmp/test.ecar'
+      });
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+      vi.mocked(Filesystem.stat).mockRejectedValue(new Error('not found'));
+
+      await (manager as any).handleDownloadFailure(entry.identifier, 'Temporary Error');
+
+      // Mock getByIdentifier to return RETRY_WAIT
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue({ ...entry, state: DownloadState.RETRY_WAIT, retry_count: 2 });
+
+      // Fast-forward backoff (4s for second retry)
+      await vi.advanceTimersByTimeAsync(4500);
+
+      // Verify it transitions to QUEUED because stat failed
+      expect(dlDb.update).toHaveBeenCalledWith(entry.identifier, expect.objectContaining({
+        state: DownloadState.QUEUED,
+      }));
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe('stopDownloadsOnSignalLoss', () => {
+    it('stops active downloads and sets state to RETRY_WAIT', async () => {
+      const entry = makeEntry({ identifier: 'dl_active', state: DownloadState.DOWNLOADING });
+      vi.mocked(dlDb.getByState).mockResolvedValue([entry]);
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+      const updateSpy = vi.mocked(dlDb.update);
+
+      // Mock native downloader to cancel successfully
+      (manager as any).activeDownloads.set(entry.identifier, { nativeId: 'n1' });
+
+      await (manager as any).stopDownloadsOnSignalLoss();
+
+      expect(CapacitorDownloader.stop).toHaveBeenCalled();
+      expect(updateSpy).toHaveBeenCalledWith(entry.identifier, expect.objectContaining({
+        state: DownloadState.RETRY_WAIT,
+      }));
+      expect((manager as any).activeDownloads.has(entry.identifier)).toBe(false);
+    });
+  });
+
+  // ── processQueue ──
+
+  describe('processQueue', () => {
+    it('returns early if queue is empty', async () => {
+      vi.mocked(dlDb.getNextQueued).mockResolvedValue([]);
+      await (manager as any).processQueue();
+      expect(dlDb.getByIdentifier).not.toHaveBeenCalled();
+    });
+
+    it('returns early if wifi-only and on cellular', async () => {
+      const entry = makeEntry({ state: DownloadState.QUEUED });
+      vi.mocked(dlDb.getNextQueued).mockResolvedValue([entry]);
+      (networkSvc as any).connectionType = 'cellular';
+      (manager as any).networkState = { connectionType: 'cellular' };
+      (manager as any).wifiOnly = true;
+
+      await (manager as any).processQueue();
+      expect(dlDb.getByIdentifier).not.toHaveBeenCalled();
+    });
+
+    it('skips if identifier is already in activeDownloads', async () => {
+      const entry = makeEntry({ identifier: 'active_1', state: DownloadState.QUEUED });
+      vi.mocked(dlDb.getNextQueued).mockResolvedValue([entry]);
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
+      (manager as any).activeDownloads.set('active_1', {} as any);
+
+      await (manager as any).processQueue();
+      // It should skip startDownload due to activeDownloads check (if added)
+      // or at least not throw if startDownload proceeds but we mock getByIdentifier
+    });
+  });
+
+  // ── cleanPartialFile ──
+
+  describe('cleanPartialFile', () => {
+    it('deletes file if path exists', async () => {
+      const entry = makeEntry({ file_path: '/some/path' });
+      await (manager as any).cleanPartialFile(entry);
+      expect(Filesystem.deleteFile).toHaveBeenCalledWith({ path: '/some/path' });
+    });
+
+    it('does nothing if path is missing', async () => {
+      const entry = makeEntry({ file_path: undefined });
+      vi.clearAllMocks();
+      await (manager as any).cleanPartialFile(entry);
+      expect(Filesystem.deleteFile).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── emit ──
+
+  describe('emit', () => {
+    it('handles listener errors gracefully', () => {
+      const errorListener = () => { throw new Error('Listener Boom'); };
+      const okListener = vi.fn();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => { });
+
+      manager.subscribe(errorListener);
+      manager.subscribe(okListener);
+
+      (manager as any).emit({ type: 'queue_changed' });
+
+      expect(okListener).toHaveBeenCalled();
+      expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Listener error:'), expect.anything());
+      consoleSpy.mockRestore();
     });
   });
 

@@ -180,7 +180,6 @@ export class BatchService {
               totalMaxScore,
               lastAccessTime: patch.lastAccessTime ?? new Date().toISOString(),
             }];
-            patch.status = 2;
           }
         }
 
