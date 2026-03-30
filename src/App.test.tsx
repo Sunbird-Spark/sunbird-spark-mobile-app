@@ -404,4 +404,13 @@ describe('App', () => {
     });
     expect(mockInteract).toHaveBeenCalledWith({ id: 'app-update-later', pageid: 'AppUpdate' });
   });
+
+  it('tracks interact and opens app store when push:update-app event is dispatched', async () => {
+    render(<App />);
+    window.dispatchEvent(new CustomEvent('push:update-app'));
+    await waitFor(() => {
+      expect(mockInteract).toHaveBeenCalledWith({ id: 'push-notification-update-app', pageid: 'AppUpdate' });
+    });
+    expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
+  });
 });
