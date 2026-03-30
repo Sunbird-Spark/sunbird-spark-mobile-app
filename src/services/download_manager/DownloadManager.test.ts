@@ -40,7 +40,7 @@ vi.mock('../db/ContentDbService', () => ({
 }));
 vi.mock('../network/networkService', () => ({
   networkService: {
-    subscribe: vi.fn().mockReturnValue(() => {}),
+    subscribe: vi.fn().mockReturnValue(() => { }),
   },
 }));
 vi.mock('./ImportService', () => ({
@@ -72,7 +72,7 @@ function makeMockImportService(): ImportService {
 
 function makeMockNetworkService() {
   return {
-    subscribe: vi.fn().mockReturnValue(() => {}),
+    subscribe: vi.fn().mockReturnValue(() => { }),
   };
 }
 
@@ -467,6 +467,9 @@ describe('DownloadManager', () => {
         completed: 0,
         total: 0,
         overallPercent: 0,
+        activeCount: 0,
+        failedCount: 0,
+        pausedCount: 0,
       });
     });
   });

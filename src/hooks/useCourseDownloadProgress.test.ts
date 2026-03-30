@@ -52,6 +52,9 @@ describe('useCourseDownloadProgress', () => {
       completed: 0,
       total: 0,
       overallPercent: 0,
+      activeCount: 0,
+      failedCount: 0,
+      pausedCount: 0,
     });
 
     const { result } = renderHook(() =>
@@ -69,6 +72,9 @@ describe('useCourseDownloadProgress', () => {
       completed: 2,
       total: 5,
       overallPercent: 45,
+      activeCount: 3,
+      failedCount: 0,
+      pausedCount: 0,
     };
     vi.mocked(downloadManager.getAggregateProgress).mockResolvedValue(agg);
 
@@ -92,13 +98,16 @@ describe('useCourseDownloadProgress', () => {
       completed: 3,
       total: 3,
       overallPercent: 100,
+      activeCount: 0,
+      failedCount: 0,
+      pausedCount: 0,
     };
     vi.mocked(downloadManager.getAggregateProgress).mockResolvedValue(agg);
 
     const children = [makeUnit('u1', [makeLeaf('a'), makeLeaf('b'), makeLeaf('c')])];
 
     const { result } = renderHook(() =>
-      useCourseDownloadProgress('course1', children, new Set()),
+      useCourseDownloadProgress('course1', children, new Set(['a', 'b', 'c'])),
     );
     await act(async () => { });
 
@@ -114,12 +123,18 @@ describe('useCourseDownloadProgress', () => {
         completed: 0,
         total: 2,
         overallPercent: 0,
+        activeCount: 2,
+        failedCount: 0,
+        pausedCount: 0,
       })
       .mockResolvedValueOnce({
         parentIdentifier: 'course1',
         completed: 1,
         total: 2,
         overallPercent: 50,
+        activeCount: 1,
+        failedCount: 0,
+        pausedCount: 0,
       });
 
     const children = [makeUnit('u1', [makeLeaf('a'), makeLeaf('b')])];
@@ -146,6 +161,9 @@ describe('useCourseDownloadProgress', () => {
       completed: 0,
       total: 0,
       overallPercent: 0,
+      activeCount: 0,
+      failedCount: 0,
+      pausedCount: 0,
     });
 
     const { unmount } = renderHook(() =>
