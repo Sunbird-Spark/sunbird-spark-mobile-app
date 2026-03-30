@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 // Mock Ionic components
@@ -32,6 +32,8 @@ vi.mock('@ionic/react', () => ({
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   IonBadge: ({ children }: any) => <span data-testid="ion-badge">{children}</span>,
   IonToast: () => null,
+  IonActionSheet: ({ isOpen, header }: any) =>
+    isOpen ? <div data-testid="app-update-sheet">{header}</div> : null,
   setupIonicReact: vi.fn(),
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
@@ -242,6 +244,18 @@ vi.mock('./services/push/notificationRouter', () => ({
   routeNotification: vi.fn(),
 }));
 
+// Mock AppUpdateService
+const { mockIsUpdateAvailable, mockOpenAppStore } = vi.hoisted(() => ({
+  mockIsUpdateAvailable: vi.fn().mockResolvedValue(false),
+  mockOpenAppStore: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('./services/AppUpdateService', () => ({
+  appUpdateService: {
+    isUpdateAvailable: mockIsUpdateAvailable,
+    openAppStore: mockOpenAppStore,
+  },
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -274,6 +288,11 @@ vi.mock('./hooks/useUser', () => ({
 }));
 
 describe('App', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsUpdateAvailable.mockResolvedValue(false);
+  });
+
   it('renders without crashing', () => {
     render(<App />);
     expect(screen.getByTestId('ion-app')).toBeInTheDocument();
@@ -308,5 +327,29 @@ describe('App', () => {
     render(<App />);
     // The app renders the home page by default
     expect(screen.getByTestId('home-page')).toBeInTheDocument();
+  });
+
+  it('checks for app update on startup', async () => {
+    render(<App />);
+    await waitFor(() => {
+      expect(mockIsUpdateAvailable).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('does not open app store when no update is available', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(false);
+    render(<App />);
+    await waitFor(() => {
+      expect(mockIsUpdateAvailable).toHaveBeenCalled();
+    });
+    expect(mockOpenAppStore).not.toHaveBeenCalled();
+  });
+
+  it('shows update action sheet when update is available', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(true);
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
   });
 });
