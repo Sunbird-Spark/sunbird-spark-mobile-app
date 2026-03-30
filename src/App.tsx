@@ -1,10 +1,11 @@
-import { IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
+import { IonActionSheet, IonApp, IonRouterOutlet, setupIonicReact, useIonRouter } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Redirect, Route, useLocation } from 'react-router-dom';
-import { App as CapacitorApp } from '@capacitor/app';
-import { AppUpdate } from '@capawesome/capacitor-app-update';
+import { appUpdateService } from './services/AppUpdateService';
+import useInteract from './hooks/useInteract';
+import { useTranslation } from 'react-i18next';
 import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
@@ -52,11 +53,53 @@ import CourseDetailsPage from './pages/CourseDetailsPage';
 import CollectionPage from './pages/CollectionPage';
 import ContentPlayerPage from './pages/ContentPlayerPage';
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage';
+import TermsOfUsePage from './pages/TermsOfUsePage';
 import ProfileLearningPage from './pages/ProfileLearningPage';
 import SettingsPage from './pages/SettingsPage';
 import BackButtonHandler from './components/common/BackButtonHandler';
 
 setupIonicReact();
+
+/** Checks for app updates on startup and shows a bottom sheet prompt if an update is available */
+const AppUpdateGuard: React.FC = () => {
+  const { t } = useTranslation();
+  const { interact } = useInteract();
+  const [showUpdateSheet, setShowUpdateSheet] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    appUpdateService.isUpdateAvailable()
+      .then((available) => {
+        if (!cancelled && available) setShowUpdateSheet(true);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  return (
+    <IonActionSheet
+      isOpen={showUpdateSheet}
+      header={t('appUpdate.header')}
+      subHeader={t('appUpdate.subHeader')}
+      buttons={[
+        {
+          text: t('appUpdate.updateNow'),
+          handler: () => {
+            interact({ id: 'app-update-now', pageid: 'AppUpdate' });
+            void appUpdateService.openAppStore();
+          },
+        },
+        {
+          text: t('appUpdate.later'),
+          role: 'cancel',
+          handler: () => {
+            interact({ id: 'app-update-later', pageid: 'AppUpdate' });
+          },
+        },
+      ]}
+      onDidDismiss={() => setShowUpdateSheet(false)}
+    />
+  );
+};
 
 /** Redirects to /terms-and-conditions when TnC is pending after login */
 const TnCGuard: React.FC = () => {
@@ -118,6 +161,11 @@ const OnboardingGuard: React.FC = () => {
 const PushNotificationGuard: React.FC = () => {
   const router = useIonRouter();
   const queryClient = useQueryClient();
+  const { interact } = useInteract();
+  const interactRef = useRef(interact);
+  useLayoutEffect(() => {
+    interactRef.current = interact;
+  });
 
   useEffect(() => {
     const handleForeground = () => {
@@ -133,19 +181,9 @@ const PushNotificationGuard: React.FC = () => {
       );
     };
 
-    const handleUpdateApp = async () => {
-      try {
-        // Preferred: native plugin handles market:// intent correctly on all GMS devices
-        await AppUpdate.openAppStore();
-      } catch {
-        // Fallback: openAppStore() unavailable (non-GMS / web) — open HTTPS Play Store URL
-        try {
-          const { id } = await CapacitorApp.getInfo();
-          window.open(`https://play.google.com/store/apps/details?id=${id}`, '_system');
-        } catch {
-          // Not on native platform (web/test) — no-op
-        }
-      }
+    const handleUpdateApp = () => {
+      interactRef.current({ id: 'push-notification-update-app', pageid: 'AppUpdate' });
+      void appUpdateService.openAppStore();
     };
 
     window.addEventListener('push:foreground', handleForeground);
@@ -182,6 +220,7 @@ const App: React.FC = () => {
   return (
     <IonApp>
       <IonReactRouter>
+        <AppUpdateGuard />
         <TnCGuard />
         <LogoutGuard />
         <OnboardingGuard />
@@ -256,6 +295,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/terms-and-conditions">
             <TermsAndConditionsPage />
+          </Route>
+          <Route exact path="/terms-of-use">
+            <TermsOfUsePage />
           </Route>
           <Route exact path="/onboarding">
             <OnboardingPage />

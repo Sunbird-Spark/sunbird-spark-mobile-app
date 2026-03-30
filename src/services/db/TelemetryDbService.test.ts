@@ -145,6 +145,29 @@ describe('TelemetryDbService', () => {
     });
   });
 
+  // ── deleteByIds ────────────────────────────────────────────────────────────
+
+  describe('deleteByIds', () => {
+    it('is a no-op for empty array', async () => {
+      await svc.deleteByIds([]);
+      expect(db.delete).not.toHaveBeenCalled();
+    });
+
+    it('deletes rows matching the provided event IDs', async () => {
+      await svc.deleteByIds(['e1', 'e2', 'e3']);
+      expect(db.delete).toHaveBeenCalledWith(
+        'telemetry',
+        { in: { event_id: ['e1', 'e2', 'e3'] } }
+      );
+    });
+
+    it('works with a single event ID', async () => {
+      await svc.deleteByIds(['only-one']);
+      const [, where] = vi.mocked(db.delete).mock.calls[0];
+      expect(where?.in?.event_id).toEqual(['only-one']);
+    });
+  });
+
   // ── deleteOlderThan ────────────────────────────────────────────────────────
 
   describe('deleteOlderThan', () => {

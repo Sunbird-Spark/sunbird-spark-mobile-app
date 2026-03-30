@@ -18,6 +18,18 @@ export function getLeafContentIds(node: HierarchyContentNode): string[] {
   return [node.identifier];
 }
 
+/**
+ * Recursively extract all leaf (playable) nodes as full objects from hierarchy.
+ * Use this when you need node metadata (e.g. maxAttempts) beyond just the ID.
+ */
+export function getLeafNodes(node: HierarchyContentNode): HierarchyContentNode[] {
+  if (node.children?.length) {
+    return node.children.flatMap(getLeafNodes);
+  }
+  if ((node.mimeType ?? '').toLowerCase() === COLLECTION_MIME) return [];
+  return [node];
+}
+
 /** Find the user's enrollment for a specific course. */
 export function getEnrollmentForCollection(
   enrollments: TrackableCollection[],
@@ -88,21 +100,55 @@ export interface ContentAttemptInfo {
   bestScore?: ContentScoreInfo;
 }
 
-/** Map contentId → { attemptCount, bestScore } from content state (score.length = currentAttempts). */
+/**
+ * Map contentId → { attemptCount, bestScore } from content state.
+ *
+ * `maxAttemptsMap` is optional. When provided and a content item has more score
+ * entries than its allowed `maxAttempts`, the scores are sorted descending by
+ * `totalScore` and only the top `maxAttempts` entries are kept.  This ensures
+ * `attemptCount` (= effective score array length) never exceeds `maxAttempts`
+ * and always reflects the highest-scoring attempts.
+ *
+ * Example: maxAttempts=4, local has 3 scores, network has 4 scores (one shared).
+ * After merge: 6 unique entries → sorted by totalScore → keep top 4.
+ * Result: attemptCount=4, bestScore = highest totalScore among those 4.
+ */
 export function getContentAttemptInfoMap(
-  contentList: ContentStateItem[],
+  contentList:     ContentStateItem[],
+  maxAttemptsMap?: Record<string, number>,
 ): Record<string, ContentAttemptInfo> {
   const map: Record<string, ContentAttemptInfo> = {};
+
   contentList.forEach((item) => {
     if (item.contentId == null) return;
-    const score = item.score;
-    const attemptCount = Array.isArray(score) ? score.length : 0;
+
+    const rawScores = Array.isArray(item.score) ? item.score : [];
+    const maxAttempts = maxAttemptsMap?.[item.contentId];
+
+    // Cap to top-N by totalScore when maxAttempts is defined and exceeded
+    let scores = rawScores;
+    if (typeof maxAttempts === 'number' && maxAttempts > 0 && rawScores.length > maxAttempts) {
+      scores = [...rawScores]
+        .sort((a, b) => {
+          const aScore = typeof (a as any)?.totalScore === 'number' ? (a as any).totalScore : 0;
+          const bScore = typeof (b as any)?.totalScore === 'number' ? (b as any).totalScore : 0;
+          return bScore - aScore; // descending
+        })
+        .slice(0, maxAttempts);
+    }
+
+    const attemptCount = scores.length;
     const entry: ContentAttemptInfo = { attemptCount };
-    if (Array.isArray(score) && score.length > 0) {
+
+    if (scores.length > 0) {
       let best: ContentScoreInfo | undefined;
-      for (const s of score) {
+      for (const s of scores) {
         const attempt = s as { totalScore?: number; totalMaxScore?: number } | undefined;
-        if (attempt && typeof attempt.totalScore === 'number' && typeof attempt.totalMaxScore === 'number') {
+        if (
+          attempt &&
+          typeof attempt.totalScore === 'number' &&
+          typeof attempt.totalMaxScore === 'number'
+        ) {
           if (!best || attempt.totalScore > best.totalScore) {
             best = { totalScore: attempt.totalScore, totalMaxScore: attempt.totalMaxScore };
           }
@@ -110,8 +156,10 @@ export function getContentAttemptInfoMap(
       }
       if (best) entry.bestScore = best;
     }
+
     map[item.contentId] = entry;
   });
+
   return map;
 }
 

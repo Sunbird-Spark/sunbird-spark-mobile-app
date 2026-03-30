@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useIonRouter } from '@ionic/react';
+import { useHistory } from 'react-router-dom';
 import {
   IonContent,
   IonHeader,
@@ -174,7 +174,7 @@ const SwipeableCard: React.FC<{
 const DownloadedContentsPage: React.FC = () => {
   useImpression({ pageid: 'DownloadedContentsPage', env: 'profile' });
   const { t } = useTranslation();
-  const router = useIonRouter();
+  const history = useHistory();
   const [items, setItems] = useState<ContentEntry[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<ContentEntry | null>(null);
   const [showAlert, setShowAlert] = useState(false);
@@ -247,7 +247,7 @@ const DownloadedContentsPage: React.FC = () => {
                   const path = e.mime_type?.includes('collection')
                     ? `/collection/${e.identifier}`
                     : `/content/${e.identifier}`;
-                  router.push(path, 'forward', 'push');
+                  history.push(path, { parentRoute: '/profile/downloaded-contents' });
                 }}
               />
             ))}

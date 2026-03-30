@@ -49,7 +49,7 @@ const NotificationPage: React.FC = () => {
     const additionalInfo = notification.action?.additionalInfo;
 
     if (actionType === 'certificateUpdate') {
-      router.push('/profile');
+      router.push('/profile/learning');
     } else {
       const url = additionalInfo?.contentURL ?? additionalInfo?.deepLink;
       if (url) router.push(url);

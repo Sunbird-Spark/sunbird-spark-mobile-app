@@ -3,13 +3,10 @@ import {
   IonContent,
   IonPage,
   IonIcon,
-  IonButtons,
-  IonBackButton,
   IonHeader,
-  IonToolbar,
-  IonTitle,
+  useIonRouter,
 } from '@ionic/react';
-import { chevronBackOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
+import { chevronBackOutline, chevronForwardOutline, documentTextOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/common/LanguageSelector';
 import {
@@ -27,6 +24,7 @@ import useImpression from '../hooks/useImpression';
 const SettingsPage: React.FC = () => {
   useImpression({ pageid: 'SettingsPage', env: 'settings' });
   const { t } = useTranslation();
+  const router = useIonRouter();
   const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');
   const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');
@@ -68,16 +66,18 @@ const SettingsPage: React.FC = () => {
 
   return (
     <IonPage className="settings-page">
-      <IonHeader className="settings-header ion-no-border">
-        <IonToolbar className="settings-toolbar">
-          <IonButtons slot="start">
-            <IonBackButton defaultHref="/profile" icon={chevronBackOutline} text="" aria-label={t('back')} className="settings-back-btn" color="primary" />
-          </IonButtons>
-          <IonTitle className="settings-title">{t('settings')}</IonTitle>
-          <IonButtons slot="end">
+      <IonHeader className="ion-no-border">
+        <div className="page-header">
+          <div className="page-header__start">
+            <button className="page-header__back-btn" onClick={() => router.goBack()} aria-label={t('back')}>
+              <IonIcon icon={chevronBackOutline} />
+            </button>
+            <span className="page-header__title">{t('settings')}</span>
+          </div>
+          <div className="page-header__actions">
             <LanguageSelector />
-          </IonButtons>
-        </IonToolbar>
+          </div>
+        </div>
       </IonHeader>
 
       <IonContent className="settings-content">
@@ -157,6 +157,19 @@ const SettingsPage: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Terms of Use */}
+          <button
+            type="button"
+            className="profile-settings-card profile-settings-tou-card"
+            onClick={() => router.push('/terms-of-use', 'forward', 'push')}
+          >
+            <div className="profile-settings-tou-icon">
+              <IonIcon icon={documentTextOutline} />
+            </div>
+            <span className="profile-settings-card-title profile-settings-tou-title">{t('termsOfUse')}</span>
+            <IonIcon icon={chevronForwardOutline} className="profile-settings-tou-chevron" />
+          </button>
         </div>
       </IonContent>
     </IonPage>

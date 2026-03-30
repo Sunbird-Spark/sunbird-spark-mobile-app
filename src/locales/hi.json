@@ -1,4 +1,10 @@
 {
+  "appUpdate": {
+    "header": "अपडेट उपलब्ध है",
+    "subHeader": "ऐप का एक नया संस्करण उपलब्ध है। नवीनतम सुविधाओं और सुधारों के लिए अभी अपडेट करें।",
+    "updateNow": "अभी अपडेट करें",
+    "later": "बाद में"
+  },
   "home": "होम",
   "explore": "एक्सप्लोर",
   "myLearning": "मेरी शिक्षा",
@@ -41,6 +47,10 @@
   "selectLanguage": "भाषा चुनें",
   "logout": "लॉग आउट",
   "settings": "सेटिंग्स",
+  "termsOfUse": "उपयोग की शर्तें",
+  "tnc": {
+    "notAvailable": "उपयोग की शर्तें उपलब्ध नहीं हैं"
+  },
   "login": "लॉग इन",
   "editProfile": "प्रोफ़ाइल संपादित करें",
   "changePassword": "पासवर्ड बदलें",
@@ -180,6 +190,7 @@
   "downloadAsPdf": "PDF के रूप में डाउनलोड करें",
   "downloadAsPng": "PNG के रूप में डाउनलोड करें",
   "certificateSavedToDocuments": "प्रमाणपत्र दस्तावेज़ों में सहेजा गया",
+  "certificateSavedToGallery": "प्रमाणपत्र गैलरी में सहेजा गया",
   "noCertificate": "कोई प्रमाणपत्र नहीं",
   "noEnrolledCourses": "अभी तक कोई कोर्स नामांकित नहीं।",
   "certificateDownloadError": "प्रमाणपत्र डाउनलोड करने में विफल",
@@ -206,6 +217,7 @@
     "failedToLoad": "ऑनबोर्डिंग लोड करने में विफल।",
     "skip": "छोड़ें",
     "somethingWentWrong": "कुछ गलत हो गया।",
+    "failedToSavePreferences": "प्राथमिकताएँ सहेजने में विफल",
     "goToHome": "होम पर जाएं",
     "goBack": "वापस जाएं"
   },

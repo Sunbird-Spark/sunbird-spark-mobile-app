@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { AppInitializer } from '../AppInitializer';
 import { BatchService } from '../services/course/BatchService';
+
 import type {
   BatchListResponse,
   BatchReadResponse,
@@ -63,6 +64,15 @@ export function useContentState(
     ],
     queryFn: () => batchService.contentStateRead(request!),
     enabled: enabled && !!request && request.contentIds.length > 0,
+    // 'offlineFirst' mirrors the same pattern as useCollection: run the queryFn
+    // once regardless of navigator.onLine so ContentStateSyncService can serve
+    // progress data from its local DB cache when the device is offline.
+    // Without this, TanStack pauses the query when offline and contentStatusMap
+    // stays empty → all progress shows as 0%.
+    networkMode: 'offlineFirst',
+    // Keep successful responses fresh for 2 minutes to avoid redundant API calls
+    // when navigating in and out of the collection page while online.
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -102,6 +112,11 @@ export function useContentStateUpdateMutation(): UseMutationResult<
   return useMutation({
     mutationFn: (request: ContentStateUpdateRequest) =>
       batchService.contentStateUpdate(request),
+    // 'always' ensures the mutation fires even when offline so BatchService can
+    // queue the update to local DB and network_queue for later sync.
+    // The default 'online' mode would pause the mutation until connectivity returns,
+    // meaning offline progress would not be persisted locally.
+    networkMode: 'always',
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({
         queryKey: ['contentState', variables.userId, variables.courseId, variables.batchId],

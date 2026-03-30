@@ -1,0 +1,84 @@
+import { v4 as uuidv4 } from 'uuid';
+import { telemetryDbService } from '../db/TelemetryDbService';
+import { networkQueueDbService } from '../db/NetworkQueueDbService';
+import { deviceService } from '../device/deviceService';
+import { gzipCompressAsync } from './compression';
+import { syncConfig } from './SyncConfig';
+import { NetworkQueueType } from './types';
+
+export class TelemetryBatchEnqueuer {
+  /**
+   * Read up to batchSize pending telemetry events, gzip-compress them, and
+   * insert one network_queue row. Deletes the source rows immediately after
+   * a successful enqueue — network_queue is the durability layer with its
+   * own retry/dead-letter logic, so the originals are no longer needed.
+   *
+   * If the network_queue insert fails the delete is never reached, keeping
+   * the rows safe for the next processBatch() call.
+   *
+   * @returns number of events enqueued (0 = nothing to process)
+   */
+  async processBatch(): Promise<number> {
+    const batchSize = syncConfig.getSyncBatchSize();
+    const rows = await telemetryDbService.getPending(batchSize);
+    if (rows.length === 0) return 0;
+
+    // Parse each row individually; track which rows succeeded so we only delete those
+    const parsed = rows.map(r => {
+      try { return { row: r, event: JSON.parse(r.event) }; } catch { return null; }
+    }).filter((x): x is { row: typeof rows[0]; event: any } => x !== null);
+
+    if (parsed.length === 0) return 0;
+
+    const events    = parsed.map(p => p.event);
+    const parsedIds = parsed.map(p => p.row.event_id);
+
+    const did = await deviceService.getHashedDeviceId().catch(() => '');
+
+    const envelope = {
+      id:     'api.sunbird.telemetry',
+      ver:    '3.0',
+      ets:    Date.now(),
+      events,
+      params: {
+        did,
+        msgid: uuidv4(),
+      },
+    };
+
+    // Attempt gzip compression. If the worker fails (e.g. fflate error), fall
+    // back to storing raw JSON so the batch is never silently lost.
+    // NetworkQueueProcessor detects the format per-row by the H4sI prefix.
+    let data: string;
+    try {
+      data = await gzipCompressAsync(JSON.stringify(envelope));
+    } catch {
+      data = JSON.stringify(envelope);
+    }
+
+    await networkQueueDbService.insert({
+      type:       NetworkQueueType.TELEMETRY,
+      priority:   2,
+      timestamp:  Date.now(),
+      data,
+      item_count: events.length,
+    });
+
+    // Only delete the rows that parsed successfully — malformed rows are left in
+    // telemetry_db and will be retried, rather than being silently discarded.
+    await telemetryDbService.deleteByIds(parsedIds);
+
+    return events.length;
+  }
+
+  async hasThresholdCrossed(): Promise<boolean> {
+    const count = await telemetryDbService.getPendingCount();
+    return count >= syncConfig.getSyncThreshold();
+  }
+
+  async getPendingCount(): Promise<number> {
+    return telemetryDbService.getPendingCount();
+  }
+}
+
+export const telemetryBatchEnqueuer = new TelemetryBatchEnqueuer();

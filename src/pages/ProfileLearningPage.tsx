@@ -11,9 +11,12 @@ import {
   IonToast,
   IonToolbar,
   useIonRouter,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
+import { Capacitor } from '@capacitor/core';
+import { Filesystem } from '@capacitor/filesystem';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import { certificateService } from '../services/CertificateService';
@@ -165,12 +168,17 @@ const ProfileLearningPage: React.FC = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [downloadError, setDownloadError] = useState<string | null>(null);
-  const [successToast, setSuccessToast] = useState(false);
+  const [successFormat, setSuccessFormat] = useState<CertificateFormat | null>(null);
 
   // Track which course the format picker is open for
   const [pendingCourse, setPendingCourse] = useState<TrackableCollection | null>(null);
 
   const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmentList(userId);
+
+  useIonViewDidEnter(() => {
+    refetch();
+  });
+
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 
   const filteredCourses = useMemo(() => {
@@ -190,8 +198,21 @@ const ProfileLearningPage: React.FC = () => {
     setDownloadingId(courseId);
     setDownloadError(null);
     try {
+      // Request storage permissions on Android
+      if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+        const permission = await Filesystem.checkPermissions();
+        if (permission.publicStorage !== 'granted') {
+          const requested = await Filesystem.requestPermissions();
+          if (requested.publicStorage !== 'granted') {
+            setDownloadError(t('storagePermissionDenied', 'Storage permission is required to download certificates'));
+            setDownloadingId(null);
+            return;
+          }
+        }
+      }
+
       await certificateService.downloadAndSave(certId, courseName, format, templateUrl);
-      setSuccessToast(true);
+      setSuccessFormat(format);
     } catch (err) {
       console.error('Certificate download error:', err);
       setDownloadError(t('certificateDownloadError'));
@@ -277,20 +298,6 @@ const ProfileLearningPage: React.FC = () => {
           </div>
         )}
 
-        {/* Download error banner */}
-        {downloadError && (
-          <div style={{
-            margin: '1rem',
-            padding: '0.75rem 1rem',
-            background: 'var(--ion-color-danger-tint)',
-            borderRadius: '0.5rem',
-            fontSize: '0.875rem',
-            color: 'var(--ion-color-danger-shade)',
-          }}>
-            {downloadError}
-          </div>
-        )}
-
         {/* Course list */}
         {!isLoading && !isError && (
           <div className="pl-cards-container">
@@ -337,11 +344,21 @@ const ProfileLearningPage: React.FC = () => {
         ]}
       />
 
+      {/* Error toast */}
+      <IonToast
+        isOpen={downloadError !== null}
+        onDidDismiss={() => setDownloadError(null)}
+        message={downloadError ?? ''}
+        duration={3000}
+        position="bottom"
+        color="danger"
+      />
+
       {/* Success toast */}
       <IonToast
-        isOpen={successToast}
-        onDidDismiss={() => setSuccessToast(false)}
-        message={t('certificateSavedToDocuments')}
+        isOpen={successFormat !== null}
+        onDidDismiss={() => setSuccessFormat(null)}
+        message={successFormat === 'png' ? t('certificateSavedToGallery') : t('certificateSavedToDocuments')}
         duration={3000}
         position="bottom"
         color="success"

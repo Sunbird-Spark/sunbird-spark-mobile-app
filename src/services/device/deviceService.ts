@@ -238,13 +238,13 @@ class DeviceService {
       os: this.state.operatingSystem,
       make: `${this.state.manufacturer} ${this.state.model}`.trim(),
       id: this.state.deviceId,
-      mem: '',
-      idisk: '',
-      edisk: '',
-      scrn: '',
+      mem: 0,
+      idisk: 0,
+      edisk: 0,
+      scrn: 0,
       camera: '',
       cpu: '',
-      sims: '',
+      sims: 0,
       cap: [],
     };
   }

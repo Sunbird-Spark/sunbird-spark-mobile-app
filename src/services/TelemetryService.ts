@@ -170,7 +170,10 @@ export class TelemetryService {
   ): Promise<void> {
     if (!$t.isInitialized) return;
     const sdkOptions = options ? this._buildOptions({ edata: {}, ...options }) : {};
-    await $t.start({ ...config, ...data }, contentId, contentVer, {}, sdkOptions);
+    // $t.start(config, contentId, contentVer, edata, options) — the SDK uses the 4th
+    // arg as edata. Pass {} as config (SDK only uses it for lazy init, which we do
+    // separately) and merge our data into the 4th arg where it belongs.
+    await $t.start({}, contentId, contentVer, { ...config, ...data }, sdkOptions);
   }
 
   async end(input: TelemetryEventInput): Promise<void> {
@@ -234,8 +237,11 @@ export class TelemetryService {
       } catch {
         eventJson = JSON.stringify({ eid, raw: '[non-serializable event]' });
       }
+      // Use event.mid as the key (same as _persistEvent) so INSERT OR IGNORE
+      // deduplicates when the player's internal $t SDK and the DOM telemetryEvent
+      // path both deliver the same event to us.
       await telemetryDbService.insert({
-        event_id: uuidv4(),
+        event_id: event?.mid || uuidv4(),
         event: eventJson,
         event_type: eid,
         timestamp: typeof event?.ets === 'number' ? event.ets : Date.now(),

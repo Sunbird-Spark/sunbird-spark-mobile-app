@@ -107,7 +107,7 @@ export interface BatchReadResponse {
 export interface ContentStateItem {
   contentId: string;
   status?: number;
-  lastAccessTime?: number;
+  lastAccessTime?: string;
   score?: unknown[];
   [key: string]: unknown;
 }

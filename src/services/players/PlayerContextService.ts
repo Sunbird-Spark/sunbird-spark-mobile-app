@@ -5,6 +5,8 @@ import { OrganizationService } from '../OrganizationService';
 import { SystemSettingService } from '../SystemSettingService';
 import { NativeConfigServiceInstance } from '../NativeConfigService';
 import { userService } from '../UserService';
+import { networkService } from '../network/networkService';
+import { userDbService } from '../db/UserDbService';
 
 /**
  * Telemetry path for player web components.
@@ -12,7 +14,7 @@ import { userService } from '../UserService';
  * For web components running inside the app (not in iframes), this is the
  * full path the SDK will POST to.
  */
-export const TELEMETRY_ENDPOINT = '/data/v3/telemetry';
+export const TELEMETRY_ENDPOINT = '/data/v1/telemetry';
 
 export interface PlayerContext {
   mode: string;
@@ -75,26 +77,47 @@ export async function buildPlayerContext(
   let userOrgHashTagIds: string[] = [];
   let userSlug = '';
   if (isLoggedIn) {
-    try {
-      const profileResponse = await userService.userRead(uid);
-      const profile = profileResponse?.data?.response;
-      if (profile) {
-        userData = {
-          firstName: profile.firstName || 'Guest',
-          lastName: profile.lastName || '',
-        };
-        // User's channel acts as slug for org search
-        if (profile.channel) {
-          userSlug = profile.channel;
+    if (!networkService.isConnected()) {
+      // Offline: read cached user from local DB
+      try {
+        const localUser = await userDbService.getById(uid);
+        if (localUser?.details) {
+          const displayName = localUser.details.displayName || '';
+          const nameParts = displayName.trim().split(/\s+/);
+          userData = {
+            firstName: nameParts[0] || 'Guest',
+            lastName: nameParts.slice(1).join(' '),
+          };
+          // Extract channel from roles[0].scope[0].organisationId
+          const roles = localUser.details.roles as unknown as Array<{ scope?: Array<{ organisationId?: string }> }>;
+          const orgId = roles?.[0]?.scope?.[0]?.organisationId;
+          if (orgId) userSlug = orgId;
         }
-        // Extract organisation hashTagIds for tags/dims
-        const orgs = profile.organisations as Array<{ hashTagId?: string }> | undefined;
-        if (orgs) {
-          userOrgHashTagIds = _.compact(orgs.map((o) => o.hashTagId));
-        }
+      } catch (error) {
+        console.warn('PlayerContextService: Failed to read local user data:', error);
       }
-    } catch (error) {
-      console.warn('PlayerContextService: Failed to fetch user profile:', error);
+    } else {
+      try {
+        const profileResponse = await userService.userRead(uid);
+        const profile = profileResponse?.data?.response;
+        if (profile) {
+          userData = {
+            firstName: profile.firstName || 'Guest',
+            lastName: profile.lastName || '',
+          };
+          // User's channel acts as slug for org search
+          if (profile.channel) {
+            userSlug = profile.channel;
+          }
+          // Extract organisation hashTagIds for tags/dims
+          const orgs = profile.organisations as Array<{ hashTagId?: string }> | undefined;
+          if (orgs) {
+            userOrgHashTagIds = _.compact(orgs.map((o) => o.hashTagId));
+          }
+        }
+      } catch (error) {
+        console.warn('PlayerContextService: Failed to fetch user profile:', error);
+      }
     }
   }
 
@@ -134,15 +157,13 @@ export async function buildPlayerContext(
     console.warn('PlayerContextService: Failed to fetch organization data:', error);
   }
 
-  // Producer data & host base URL
+  // Producer data
   let producerId = 'sunbird.app';
   let appVersion = '1.0.0';
-  let baseUrl = '';
   try {
     const config = await NativeConfigServiceInstance.load();
     producerId = config.producerId || producerId;
     appVersion = config.appVersion || appVersion;
-    baseUrl = config.baseUrl || '';
   } catch (error) {
     console.warn('PlayerContextService: Failed to fetch native config:', error);
   }
@@ -183,8 +204,12 @@ export async function buildPlayerContext(
     cdata,
     timeDiff,
     objectRollup: overrides?.objectRollup || {},
-    host: baseUrl,
-    endpoint: TELEMETRY_ENDPOINT,
+    // Both host and endpoint are intentionally empty to prevent the player
+    // SDK from making its own direct telemetry HTTP calls. Telemetry events
+    // are captured via telemetryEvent DOM events and routed through
+    // TelemetryService → SyncScheduler instead.
+    host: '',
+    endpoint: '',
     dims,
     app: channel ? [channel] : [],
     partner: [],

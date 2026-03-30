@@ -107,32 +107,51 @@ export const useCollection = (
     queryFn: async (): Promise<CollectionData | null> => {
       if (!collectionId) return null;
 
-      const isOnline = networkService.isConnected();
-
-      // ── Online: fetch from API (primary source) ──
-      if (isOnline) {
-        try {
-          const { getClient } = await import('../lib/http-client');
-          const response = await getClient().get<CourseHierarchyResponse>(
-            `/course/v1/hierarchy/${collectionId}`
-          );
-          const content = response?.data?.content;
-          if (!content) return null;
-
-          // Cache hierarchy locally for offline fallback (fire-and-forget)
-          cacheHierarchyLocally(collectionId, content);
-
-          return mapToCollectionData(content);
-        } catch (err) {
-          console.warn(TAG, 'API fetch failed, trying offline cache:', err);
-          // Fall through to offline fallback
+      try {
+        // ── Online: fetch from API only when fully initialised ──
+        // AppInitializer.isInitialized() is checked here (not in `enabled`) so the
+        // query can always start and reach the offline-cache path even before the
+        // app finishes its async boot sequence.
+        if (AppInitializer.isInitialized() && networkService.isConnected()) {
+          try {
+            const { getClient } = await import('../lib/http-client');
+            const response = await getClient().get<CourseHierarchyResponse>(
+              `/course/v1/hierarchy/${collectionId}`
+            );
+            const content = response?.data?.content;
+            if (content) {
+              // Cache hierarchy locally for offline fallback (fire-and-forget)
+              cacheHierarchyLocally(collectionId, content);
+              return mapToCollectionData(content);
+            }
+          } catch (err) {
+            console.warn(TAG, 'API fetch failed, trying offline cache:', err);
+            // Fall through to offline fallback
+          }
         }
-      }
 
-      // ── Offline fallback: read cached hierarchy from ContentDb ──
-      return readCachedHierarchy(collectionId);
+        // ── Offline / pre-init fallback: read cached hierarchy from ContentDb ──
+        // readCachedHierarchy calls databaseService.initialize() internally so it
+        // works even when AppInitializer hasn't finished yet.
+        return readCachedHierarchy(collectionId);
+      } catch (err) {
+        // Safety net — queryFn must never throw so isError is never shown for a
+        // collection that is simply offline-cached.
+        console.warn(TAG, 'Unexpected error loading collection, retrying from cache:', err);
+        return readCachedHierarchy(collectionId);
+      }
     },
-    enabled: AppInitializer.isInitialized(),
-    retry: 1,
+    // Always enabled when a collectionId is present — the online/offline logic is
+    // handled inside the queryFn itself so there is no startup race with
+    // AppInitializer.isInitialized() being non-reactive.
+    enabled: !!collectionId,
+    // Retries are handled internally (cache fallback); external retries would just
+    // repeat the same failure and delay showing the page.
+    retry: false,
+    // CRITICAL: default networkMode 'online' pauses queries when navigator.onLine
+    // is false — the queryFn is never called and the page shows "not found" offline.
+    // 'offlineFirst' runs the queryFn once regardless of network state, which lets
+    // our internal fallback read the cached hierarchy from SQLite as intended.
+    networkMode: 'offlineFirst',
   });
 };

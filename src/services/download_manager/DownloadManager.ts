@@ -154,9 +154,19 @@ export class DownloadManager {
 
       const existing = await this.downloadDb.getByIdentifier(req.identifier);
       if (existing) {
-        // Already in queue — skip if it's currently active or importing.
-        // We allow re-enqueuing FAILED, CANCELLED, and COMPLETED states
-        // to support retries and "upgrade" from Parent to Default visibility.
+        // Already in queue - if this new request is standalone and the existing one
+        // is parent-bound, "upgrade" the intent immediately (Default visibility + ref_count bump).
+        if (!req.parentIdentifier && existing.parent_identifier) {
+          const contentEntry = await contentDbService.getByIdentifier(req.identifier);
+          if (contentEntry) {
+            await contentDbService.update(req.identifier, {
+              visibility: 'Default',
+              ref_count: contentEntry.ref_count + 1,
+            });
+          }
+        }
+
+        // Skip if currently active or importing. We allow re-enqueuing FAILED/CANCELLED.
         if (
           existing.state !== DownloadState.FAILED &&
           existing.state !== DownloadState.CANCELLED &&
@@ -619,7 +629,9 @@ export class DownloadManager {
                 percent,
               },
             });
-          }
+          },
+          // Parent identifier — tells ImportService this leaf is part of a collection
+          entry.parent_identifier ?? undefined,
         );
 
         switch (result.status) {
@@ -627,6 +639,13 @@ export class DownloadManager {
           case 'ALREADY_EXIST':
             await this.transition(entry.identifier, DownloadState.COMPLETED);
             await this.downloadDb.update(entry.identifier, { progress: 100 });
+
+            // Persist the actual download size (ECAR file bytes) as size_on_device.
+            // This is the value shown during download and is more accurate than
+            // the Filesystem.stat directory size (which returns ~3KB inode size).
+            if (entry.total_bytes > 0) {
+              await contentDbService.updateSizeOnDevice(entry.identifier, entry.total_bytes);
+            }
 
             // If this leaf belongs to a collection, mark it as 'Parent' visibility
             // so it doesn't appear individually in Downloaded Contents page.
@@ -658,9 +677,13 @@ export class DownloadManager {
   private async handleCollectionChildComplete(entry: DownloadQueueEntry): Promise<void> {
     const parentId = entry.parent_identifier!;
 
-    // 1. Mark the imported leaf content as visibility='Parent'
+    // 1. Mark the imported leaf content as visibility='Parent' — but only if
+    //    the content wasn't also downloaded standalone. A ref_count of 1 means
+    //    this collection import is the only reference. ref_count > 1 means the
+    //    content was also downloaded independently (via fast-path or race), so
+    //    keep the existing visibility (likely 'Default').
     const contentEntry = await contentDbService.getByIdentifier(entry.identifier);
-    if (contentEntry && contentEntry.visibility !== 'Parent') {
+    if (contentEntry && contentEntry.visibility !== 'Parent' && contentEntry.ref_count <= 1) {
       await contentDbService.update(entry.identifier, { visibility: 'Parent' });
       console.debug('[DownloadManager] Set visibility=Parent for child:', entry.identifier);
     }
