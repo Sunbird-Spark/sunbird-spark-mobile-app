@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   getLeafContentIds,
+  getLeafNodes,
   getEnrollmentForCollection,
   getContentStatusMap,
   getCourseProgressProps,
@@ -77,6 +78,61 @@ describe('enrollmentMapper', () => {
       };
 
       expect(getLeafContentIds(node)).toEqual([]);
+    });
+  });
+
+  describe('getLeafNodes', () => {
+    it('should return the full node object for a leaf', () => {
+      const node: HierarchyContentNode = {
+        identifier: 'l1',
+        mimeType: 'video/mp4',
+        maxAttempts: 3,
+        name: 'Quiz 1',
+      };
+      const nodes = getLeafNodes(node);
+      expect(nodes).toHaveLength(1);
+      expect(nodes[0].maxAttempts).toBe(3);
+      expect(nodes[0].name).toBe('Quiz 1');
+    });
+
+    it('should recursively extract all leaf nodes from a tree', () => {
+      const tree: HierarchyContentNode = {
+        identifier: 'root',
+        children: [
+          {
+            identifier: 'unit-1',
+            children: [
+              { identifier: 'l1', mimeType: 'video/mp4', maxAttempts: 2 },
+              { identifier: 'l2', mimeType: 'application/pdf' },
+            ],
+          },
+        ],
+      };
+      const nodes = getLeafNodes(tree);
+      expect(nodes).toHaveLength(2);
+      expect(nodes.find((n) => n.identifier === 'l1')?.maxAttempts).toBe(2);
+      expect(nodes.find((n) => n.identifier === 'l2')?.identifier).toBe('l2');
+    });
+
+    it('should skip collection-mime nodes', () => {
+      const node: HierarchyContentNode = {
+        identifier: 'unit',
+        mimeType: 'application/vnd.ekstep.content-collection',
+      };
+      expect(getLeafNodes(node)).toEqual([]);
+    });
+
+    it('IDs from getLeafNodes match IDs from getLeafContentIds', () => {
+      const tree: HierarchyContentNode = {
+        identifier: 'root',
+        children: [
+          { identifier: 'l1', mimeType: 'video/mp4' },
+          { identifier: 'l2', mimeType: 'application/pdf' },
+        ],
+      };
+      const nodeIds = getLeafNodes(tree).map((n) => n.identifier).sort();
+      const leafIds = getLeafContentIds(tree).sort();
+      expect(nodeIds).toEqual(leafIds);
     });
   });
 
@@ -315,6 +371,85 @@ describe('enrollmentMapper', () => {
 
     it('should return empty map for empty array', () => {
       expect(getContentAttemptInfoMap([])).toEqual({});
+    });
+
+    it('should keep all scores when count is within maxAttempts', () => {
+      const contentList: ContentStateItem[] = [
+        {
+          contentId: 'c1',
+          score: [
+            { attemptId: 'a1', totalScore: 3, totalMaxScore: 5 },
+            { attemptId: 'a2', totalScore: 4, totalMaxScore: 5 },
+          ],
+        },
+      ];
+      const result = getContentAttemptInfoMap(contentList, { c1: 4 });
+      expect(result.c1.attemptCount).toBe(2); // under cap, no trimming
+    });
+
+    it('should cap to top-N by totalScore when count exceeds maxAttempts', () => {
+      const contentList: ContentStateItem[] = [
+        {
+          contentId: 'c1',
+          score: [
+            { attemptId: 'a1', totalScore: 1, totalMaxScore: 5 },
+            { attemptId: 'a2', totalScore: 5, totalMaxScore: 5 },
+            { attemptId: 'a3', totalScore: 3, totalMaxScore: 5 },
+            { attemptId: 'a4', totalScore: 4, totalMaxScore: 5 },
+            { attemptId: 'a5', totalScore: 2, totalMaxScore: 5 },
+          ],
+        },
+      ];
+      const result = getContentAttemptInfoMap(contentList, { c1: 3 });
+      // Keep top-3: a2(5), a4(4), a3(3) — a1 and a5 dropped
+      expect(result.c1.attemptCount).toBe(3);
+      expect(result.c1.bestScore?.totalScore).toBe(5);
+    });
+
+    it('local=3 + network=4 scores (6 unique) capped to maxAttempts=4', () => {
+      const mergedScores = [
+        { attemptId: 'local-1',  totalScore: 1, totalMaxScore: 5 },
+        { attemptId: 'local-2',  totalScore: 2, totalMaxScore: 5 },
+        { attemptId: 'local-3',  totalScore: 3, totalMaxScore: 5 },
+        { attemptId: 'server-1', totalScore: 5, totalMaxScore: 5 },
+        { attemptId: 'server-2', totalScore: 4, totalMaxScore: 5 },
+        { attemptId: 'server-3', totalScore: 0, totalMaxScore: 5 },
+      ];
+      const contentList: ContentStateItem[] = [{ contentId: 'c1', score: mergedScores }];
+      const result = getContentAttemptInfoMap(contentList, { c1: 4 });
+      // top-4: server-1(5), server-2(4), local-3(3), local-2(2)
+      expect(result.c1.attemptCount).toBe(4);
+      expect(result.c1.bestScore?.totalScore).toBe(5);
+    });
+
+    it('should not cap when maxAttempts is 0 (unlimited)', () => {
+      const contentList: ContentStateItem[] = [
+        {
+          contentId: 'c1',
+          score: [
+            { attemptId: 'a1', totalScore: 1, totalMaxScore: 5 },
+            { attemptId: 'a2', totalScore: 2, totalMaxScore: 5 },
+          ],
+        },
+      ];
+      const result = getContentAttemptInfoMap(contentList, { c1: 0 });
+      expect(result.c1.attemptCount).toBe(2);
+    });
+
+    it('should not cap content not in maxAttemptsMap', () => {
+      const contentList: ContentStateItem[] = [
+        {
+          contentId: 'c1',
+          score: [
+            { attemptId: 'a1', totalScore: 1, totalMaxScore: 5 },
+            { attemptId: 'a2', totalScore: 2, totalMaxScore: 5 },
+            { attemptId: 'a3', totalScore: 3, totalMaxScore: 5 },
+          ],
+        },
+      ];
+      // c1 is not in the maxAttemptsMap; c2 is but has no scores
+      const result = getContentAttemptInfoMap(contentList, { c2: 2 });
+      expect(result.c1.attemptCount).toBe(3);
     });
 
     it('should handle score entries without totalScore/totalMaxScore', () => {

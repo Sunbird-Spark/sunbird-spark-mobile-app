@@ -2,7 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 interface LanguageContextType {
-  t: (key: string) => string;
+  t: (key: string, options?: Record<string, unknown>) => string;
   dir: 'ltr' | 'rtl';
   changeLanguage: (lang: string) => void;
 }

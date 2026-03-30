@@ -8,9 +8,13 @@ import type {
   ContentStateReadResponse,
   ContentStateUpdateRequest,
 } from '../../types/collectionTypes';
-import { keyValueDbService, KVKey } from '../db/KeyValueDbService';
+import { keyValueDbService } from '../db/KeyValueDbService';
+import { networkQueueDbService } from '../db/NetworkQueueDbService';
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import { networkService } from '../network/networkService';
+import { courseProgressEnqueuer } from '../sync/CourseProgressEnqueuer';
+import { NetworkQueueType } from '../sync/types';
+import { contentStateSyncService } from './ContentStateSyncService';
 
 export class BatchService {
   public batchList(courseId: string): Promise<ApiResponse<BatchListResponse>> {
@@ -35,46 +39,14 @@ export class BatchService {
     });
   }
 
-  public async contentStateRead(
+  public contentStateRead(
     request: ContentStateReadRequest
   ): Promise<ApiResponse<ContentStateReadResponse>> {
-    const key = `cache:content_state_${request.userId}_${request.courseId}`;
-
-    if (!networkService.isConnected()) {
-      return this.readContentStateFromDb(key);
-    }
-
-    try {
-      const body: Record<string, unknown> = {
-        userId: request.userId,
-        courseId: request.courseId,
-        batchId: request.batchId,
-        contentIds: request.contentIds,
-      };
-      if (request.fields?.length) {
-        body.fields = request.fields;
-      }
-      const response = await getClient().post<ContentStateReadResponse>(
-        '/course/v1/content/state/read',
-        { request: body }
-      );
-
-      try {
-        await keyValueDbService.setRaw(key, JSON.stringify(response.data));
-      } catch (err) {
-        console.warn('[BatchService] Failed to cache content state to SQLite:', err);
-      }
-
-      return response;
-    } catch {
-      return this.readContentStateFromDb(key);
-    }
-  }
-
-  private async readContentStateFromDb(key: string): Promise<ApiResponse<ContentStateReadResponse>> {
-    const raw = await keyValueDbService.getRaw(key);
-    const data: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
-    return buildOfflineResponse<ContentStateReadResponse>(data);
+    // Delegates to ContentStateSyncService which handles:
+    //  • offline → local DB read
+    //  • online, no local → fetch + cache
+    //  • online, local exists → fetch + merge + bidirectional update
+    return contentStateSyncService.readContentState(request);
   }
 
   public async contentStateUpdate(
@@ -111,27 +83,55 @@ export class BatchService {
 
   // ── Offline helpers ──────────────────────────────────────────────────────────
 
-  /** Queue the request and immediately apply it to both local caches. */
+  /**
+   * Route the request to the network_queue and immediately apply it to local caches.
+   *
+   * Progress updates go via CourseProgressEnqueuer (COURSE_PROGRESS queue).
+   * Assessment bundles (from SelfAssess sessions) go directly into the
+   * COURSE_ASSESMENT queue — they are already fully aggregated at call time.
+   *
+   * updateLocalContentStateCache and updateLocalCourseProgress must still run
+   * so the UI reflects progress immediately without waiting for sync.
+   */
   private async queueAndApplyLocally(request: ContentStateUpdateRequest): Promise<void> {
-    // addToPendingQueue and updateLocalContentStateCache can run concurrently — they touch
-    // different keys. updateLocalCourseProgress must run AFTER updateLocalContentStateCache
-    // because it reads the cache key that updateLocalContentStateCache writes.
-    await Promise.all([
-      this.addToPendingQueue(request),
-      this.updateLocalContentStateCache(request),
-    ]);
-    await this.updateLocalCourseProgress(request);
-  }
+    const mappedContents = request.contents.map((c) => ({
+      contentId:   c.contentId,
+      status:      c.status,
+      courseId:    request.courseId,
+      batchId:     request.batchId,
+      ...(c.lastAccessTime != null && { lastAccessTime: c.lastAccessTime }),
+    }));
 
-  /** Append the request to the persistent pending queue. */
-  private async addToPendingQueue(request: ContentStateUpdateRequest): Promise<void> {
-    try {
-      const queue = await keyValueDbService.getJSON<Array<ContentStateUpdateRequest & { queuedAt: number; retryCount: number }>>(KVKey.PENDING_CONTENT_STATE_Q) ?? [];
-      queue.push({ ...request, queuedAt: Date.now(), retryCount: 0 });
-      await keyValueDbService.setJSON(KVKey.PENDING_CONTENT_STATE_Q, queue);
-    } catch (err) {
-      console.warn('[BatchService] Failed to enqueue content state update:', err);
+    const ops: Promise<unknown>[] = [
+      courseProgressEnqueuer.enqueue({
+        userId:   request.userId,
+        contents: mappedContents,
+      }),
+      this.updateLocalContentStateCache(request),
+    ];
+
+    // Assessments are already fully assembled here (accumulated by useContentStateUpdate).
+    // Enqueue them directly as a COURSE_ASSESMENT entry so NetworkQueueProcessor drains them.
+    if (request.assessments?.length) {
+      ops.push(
+        networkQueueDbService.insert({
+          type:       NetworkQueueType.COURSE_ASSESMENT,
+          priority:   1,
+          timestamp:  Date.now(),
+          data:       JSON.stringify({
+            request: {
+              userId:      request.userId,
+              contents:    mappedContents,
+              assessments: request.assessments,
+            },
+          }),
+          item_count: request.assessments.length,
+        })
+      );
     }
+
+    await Promise.all(ops);
+    await this.updateLocalCourseProgress(request);
   }
 
   /**
@@ -140,7 +140,7 @@ export class BatchService {
    */
   private async updateLocalContentStateCache(request: ContentStateUpdateRequest): Promise<void> {
     try {
-      const key = `cache:content_state_${request.userId}_${request.courseId}`;
+      const key = `cache:content_state_${request.userId}_${request.courseId}_${request.batchId}`;
       const raw = await keyValueDbService.getRaw(key);
       const cached: ContentStateReadResponse = raw
         ? JSON.parse(raw)
@@ -149,11 +149,16 @@ export class BatchService {
       const contentList: ContentStateItem[] = cached.contentList ?? [];
 
       for (const update of request.contents) {
+        const patch: ContentStateItem = {
+          contentId: update.contentId,
+          status:    update.status,
+          ...(update.lastAccessTime != null && { lastAccessTime: update.lastAccessTime }),
+        };
         const idx = contentList.findIndex(c => c.contentId === update.contentId);
         if (idx >= 0) {
-          contentList[idx] = { ...contentList[idx], status: update.status };
+          contentList[idx] = { ...contentList[idx], ...patch };
         } else {
-          contentList.push({ contentId: update.contentId, status: update.status });
+          contentList.push(patch);
         }
       }
 
@@ -180,7 +185,7 @@ export class BatchService {
       if (leafNodesCount === 0) return;
 
       // Read the freshly-updated content state cache to count completed items
-      const key = `cache:content_state_${request.userId}_${request.courseId}`;
+      const key = `cache:content_state_${request.userId}_${request.courseId}_${request.batchId}`;
       const raw = await keyValueDbService.getRaw(key);
       const cached: ContentStateReadResponse = raw ? JSON.parse(raw) : { contentList: [] };
       const completedCount = (cached.contentList ?? []).filter(c => c.status === 2).length;

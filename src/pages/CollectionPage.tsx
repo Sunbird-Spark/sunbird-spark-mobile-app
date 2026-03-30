@@ -2,6 +2,7 @@ import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import {
   IonPage,
   IonHeader,
+  IonIcon,
   IonToolbar,
   IonContent,
   IonModal,
@@ -12,7 +13,7 @@ import {
 } from '@ionic/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useIonRouter, useIonViewDidEnter, useIonViewWillLeave } from '@ionic/react';
-import { warningOutline, checkmarkCircle, alertCircleOutline } from 'ionicons/icons';
+import { warningOutline, checkmarkCircle, alertCircleOutline, pause, play } from 'ionicons/icons';
 import { userService } from '../services/UserService';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useCollection } from '../hooks/useCollection';
@@ -49,11 +50,10 @@ import { telemetryService } from '../services/TelemetryService';
 // ── Circular Progress Widget ──
 const CircularProgress = ({ value, size = 48 }: { value: number; size?: number }) => {
   const radius = size / 2;
-  const stroke = 5;
+  const stroke = 7;
   const normalizedRadius = radius - stroke;
   const circumference = normalizedRadius * 2 * Math.PI;
   const strokeDashoffset = circumference - (value / 100) * circumference;
-  const isComplete = value >= 100;
 
   return (
     <div className="cp-progress-complete-icon">
@@ -61,17 +61,10 @@ const CircularProgress = ({ value, size = 48 }: { value: number; size?: number }
         {/* Background track */}
         <circle stroke="var(--ion-color-warning-shade, #F0CE94)" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
         {/* Progress arc */}
-        <circle stroke={isComplete ? '#2dd36f' : 'var(--ion-color-primary, #8B5E3C)'} fill="transparent" strokeWidth={stroke}
+        <circle stroke="var(--ion-color-primary, #8B5E3C)" fill="transparent" strokeWidth={stroke}
           strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset }}
           strokeLinecap="round" r={normalizedRadius} cx={radius} cy={radius}
           transform={`rotate(-90 ${radius} ${radius})`} />
-        {/* Small green tick in center when 100% */}
-        {isComplete && (
-          <g transform={`translate(${radius - 7}, ${radius - 6})`}>
-            <circle cx="7" cy="6" r="8" fill="#2dd36f" />
-            <path d="M3.5 6L6 8.5L10.5 3.5" stroke="white" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          </g>
-        )}
       </svg>
     </div>
   );
@@ -101,12 +94,21 @@ const CollectionPage: React.FC = () => {
   // Track whether this Ionic view is currently active (visible).
   // State-based so child components (e.g. CourseCompletionDialog) can react to it.
   const [isViewActive, setIsViewActive] = useState(false);
-  useIonViewDidEnter(() => { setIsViewActive(true); });
+  useIonViewDidEnter(() => {
+    setIsViewActive(true);
+    // Safety net: if the query is still idle (AppInitializer timing race) or
+    // previously errored, re-trigger it now that the view is fully visible.
+    if ((fetchStatus === 'idle' || isError) && !isLoading) {
+      void refetchCollection();
+    }
+  });
   useIonViewWillLeave(() => { setIsViewActive(false); });
 
   // Data fetching
-  const { data: collectionData, isLoading, isError, fetchStatus } = useCollection(collectionId);
-  const isQueryIdle = fetchStatus === 'idle' && !collectionData && !isError;
+  const { data: collectionData, isLoading, isError, fetchStatus, refetch: refetchCollection } = useCollection(collectionId);
+  // 'paused' = TanStack paused the query due to network detection (should not happen
+  // with networkMode:'offlineFirst' on useCollection, but kept as a safety net).
+  const isQueryIdle = (fetchStatus === 'idle' || fetchStatus === 'paused') && !collectionData && !isError;
 
   const isTrackable =
     (collectionData?.trackable?.enabled?.toLowerCase() ?? '') === 'yes';
@@ -139,13 +141,23 @@ const CollectionPage: React.FC = () => {
   const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
   const [selectedBatchId, setSelectedBatchId] = useState('');
 
-  // Toggle for downloaded content filter
-  const [viewDownloadedOnly, setViewDownloadedOnly] = useState(false);
-
   // ── Download infrastructure (all views — trackable enrolled + non-trackable default) ──
   const { isOffline } = useNetwork();
   const [isDownloadStarting, setIsDownloadStarting] = useState(false);
-  const [isDownloadSheetOpen, setIsDownloadSheetOpen] = useState(false);
+
+  // Refetch collection hierarchy the moment device comes back online so the UI
+  // immediately shows server data instead of the stale offline-cached hierarchy.
+  const wasCollectionOfflineRef = useRef(isOffline);
+  useEffect(() => {
+    const wasOffline = wasCollectionOfflineRef.current;
+    wasCollectionOfflineRef.current = isOffline;
+    if (wasOffline && !isOffline) {
+      void refetchCollection();
+    }
+  }, [isOffline]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Toggle for downloaded content filter — ON by default when opened offline
+  const [viewDownloadedOnly, setViewDownloadedOnly] = useState(isOffline);
 
   // Auto-download spine ECAR for offline hierarchy support on first visit
   // Auto-download spine ECAR removed to prevent premature entry in Downloaded Contents list.
@@ -185,8 +197,15 @@ const CollectionPage: React.FC = () => {
   // Download is available for: enrolled trackable courses OR non-trackable collections (all users)
   const canDownload = viewState === 'enrolled' || viewState === 'default';
 
+  const [isDownloadSheetOpen, setIsDownloadSheetOpen] = useState(false);
+
   const handleDownloadAll = useCallback(async () => {
-    if (!collectionData?.children || isOffline) return;
+    setIsDownloadSheetOpen(false);
+    if (!collectionData?.children) return;
+    if (isOffline) {
+      setToastMessage(t('download.noInternet'));
+      return;
+    }
     setIsDownloadStarting(true);
     try {
       // Pass spine download URL from hierarchy root for offline hierarchy support
@@ -199,7 +218,7 @@ const CollectionPage: React.FC = () => {
       if (result.enqueued === 0 && result.skippedLocal > 0) {
         setToastMessage(t('download.allDownloaded'));
       } else if (result.enqueued > 0) {
-        setToastMessage(t('download.downloadingItems'));
+        setToastMessage(t('download.downloadingItems', { count: result.enqueued }));
       }
     } catch {
       setToastMessage(t('download.failedToStart'));
@@ -226,6 +245,8 @@ const CollectionPage: React.FC = () => {
       // disappears from DownloadedContentsPage
       await contentDbService.delete(collectionId);
       downloadManager.notifyContentDeleted(collectionId);
+      // Reset the "success toast shown" flag so it fires again after a fresh download
+      localStorage.removeItem(`dl_toast_shown_${collectionId}`);
       setToastMessage(t('download.deleted'));
     } catch {
       setToastMessage(t('download.deleteFailed'));
@@ -251,13 +272,40 @@ const CollectionPage: React.FC = () => {
     }
   }, [downloadStates]);
 
-  // Check if any items are paused (to show resume vs pause button in sheet)
+  // Check if any items are paused (to show resume vs pause button in header)
   const hasPausedItems = useMemo(() => {
     for (const [, state] of downloadStates) {
       if (state.state === 'PAUSED') return true;
     }
     return false;
   }, [downloadStates]);
+
+  // True when all active items are IMPORTING (extracting) — no pause/resume in that phase
+  const isImporting = useMemo(() => {
+    if (!courseProgress.isDownloading) return false;
+    let hasQueued = false;
+    for (const [, state] of downloadStates) {
+      if (state.state === 'DOWNLOADING' || state.state === 'PAUSED') return false;
+      if (['QUEUED', 'IMPORTING', 'RETRY_WAIT'].includes(state.state)) hasQueued = true;
+    }
+    return hasQueued; // only true when QUEUED/IMPORTING items exist (not when all FAILED)
+  }, [courseProgress.isDownloading, downloadStates]);
+
+  // Collection-level download failure state for the header icon
+  const downloadFailureState = useMemo((): 'none' | 'partial' | 'all_failed' => {
+    if (courseProgress.isDownloading || (courseProgress.allDownloaded && localContentSet.size > 0)) return 'none';
+    let failedCount = 0;
+    for (const id of leafIdentifiers) {
+      if (downloadStates.get(id)?.state === 'FAILED') failedCount++;
+    }
+    if (failedCount === 0) return 'none';
+    return localContentSet.size > 0 ? 'partial' : 'all_failed';
+  }, [courseProgress.isDownloading, courseProgress.allDownloaded, localContentSet, leafIdentifiers, downloadStates]);
+
+  // Pre-compute ring geometry for the header progress indicator
+  const dlRingRadius = 16;
+  const dlRingCirc = 2 * Math.PI * dlRingRadius;
+  const dlRingOffset = dlRingCirc - (courseProgress.overallPercent / 100) * dlRingCirc;
 
   // 3-dot menu state (Completed section)
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -306,9 +354,11 @@ const CollectionPage: React.FC = () => {
         const entries = await contentDbService.getByIdentifiers(identifiers);
         const localCount = entries.filter(e => e.content_state === 2).length;
 
-        // If we have local items and just finished a queue, show summary
-        // (Only if there are at least some items in this collection)
-        if (downloadable.length > 0 && localCount > 0) {
+        // Show aggregate success toast only once per download session.
+        // Resets when the user deletes the content (handleDeleteAll clears the key).
+        const toastKey = `dl_toast_shown_${collectionId}`;
+        if (downloadable.length > 0 && localCount > 0 && !localStorage.getItem(toastKey)) {
+          localStorage.setItem(toastKey, '1');
           setDownloadToast({
             message: `Downloaded (${localCount}/${downloadable.length} items) successfully.`,
             color: 'success',
@@ -316,14 +366,32 @@ const CollectionPage: React.FC = () => {
           });
         }
       } else if (event.type === 'state_change' && event.identifier) {
-        // Individual FAILED messages are still useful
         const entry = await downloadManager.getEntry(event.identifier);
         if (entry?.state === 'FAILED') {
-          setDownloadToast({
-            message: t('download.downloadFailed'),
-            color: 'danger',
-            icon: alertCircleOutline,
-          });
+          // Show failed toast only once per item (until it's retried/deleted)
+          const failKey = `dl_fail_shown_${event.identifier}`;
+          if (!localStorage.getItem(failKey)) {
+            localStorage.setItem(failKey, '1');
+            // Try to get the content name for a descriptive message
+            const contentEntry = await contentDbService.getByIdentifier(event.identifier);
+            const contentName = (() => {
+              try {
+                const server = contentEntry?.server_data ? JSON.parse(contentEntry.server_data) : null;
+                return server?.name || server?.title || null;
+              } catch { return null; }
+            })();
+            setDownloadToast({
+              message: contentName
+                ? `Failed to download "${contentName}"`
+                : t('download.downloadFailed'),
+              color: 'danger',
+              icon: alertCircleOutline,
+            });
+          }
+        }
+        // Clear the fail-shown flag when the item is retried so the toast can fire again
+        if (entry?.state === 'DOWNLOADING' || entry?.state === 'QUEUED') {
+          localStorage.removeItem(`dl_fail_shown_${event.identifier}`);
         }
       }
     });
@@ -332,6 +400,13 @@ const CollectionPage: React.FC = () => {
 
   // Force sync (enrolled only)
   const forceSync = useForceSync(userId, collectionId, enrollment.enrolledBatchId ?? undefined, enrollment.progressProps, enrollment.isBatchEnded);
+
+  // Show force sync errors as a toast instead of inline text
+  useEffect(() => {
+    if (forceSync.forceSyncError) {
+      setDownloadToast({ message: forceSync.forceSyncError, color: 'danger', icon: alertCircleOutline });
+    }
+  }, [forceSync.forceSyncError]);
 
   // Related content search
   const hierarchySuccess = !isError && !!collectionData;
@@ -377,8 +452,9 @@ const CollectionPage: React.FC = () => {
       });
       setShowLeaveConfirm(false);
       setIsMenuOpen(false);
-    } catch {
-      // Error handled by mutation
+    } catch (err) {
+      const msg = (err as Error)?.message?.trim() || 'Failed to unenroll from the course';
+      setDownloadToast({ message: msg, color: 'danger', icon: alertCircleOutline });
     } finally {
       setIsLeaving(false);
     }
@@ -474,7 +550,7 @@ const CollectionPage: React.FC = () => {
               <BackIcon />
             </button>
             <div className="collection-page-header-actions">
-              {/* Download icon — visible for enrolled trackable courses + all non-trackable collections */}
+              {/* Download area — visible for enrolled trackable courses + all non-trackable collections */}
               {canDownload && collectionData && (
                 courseProgress.allDownloaded && localContentSet.size > 0 ? (
                   /* Trash icon — all content downloaded, tap to delete */
@@ -491,14 +567,75 @@ const CollectionPage: React.FC = () => {
                       </svg>
                     )}
                   </button>
-                ) : (
-                  /* Download icon — tap to open download sheet */
+                ) : courseProgress.isDownloading ? (
+                  isImporting ? (
+                    /* Extracting phase — spinner only, no pause/resume */
+                    <span className="collection-page-icon-btn" style={{ cursor: 'default' }}>
+                      <IonSpinner name="crescent" style={{ width: 24, height: 24, color: 'var(--ion-color-primary)' }} />
+                    </span>
+                  ) : (
+                    /* Downloading — circular progress ring with pause/resume */
+                    <button
+                      onClick={hasPausedItems ? handleResumeAll : handlePauseAll}
+                      aria-label={hasPausedItems ? t('download.resumeAll') : t('download.pauseAll')}
+                      style={{
+                        position: 'relative', width: 44, height: 44, padding: 0,
+                        border: 'none', background: 'none', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        WebkitTapHighlightColor: 'transparent',
+                      }}
+                    >
+                      <svg width="44" height="44" viewBox="0 0 44 44" style={{ position: 'absolute', top: 0, left: 0 }}>
+                        <circle cx="22" cy="22" r={dlRingRadius} fill="none" stroke="var(--ion-color-light-shade, #d0d0d0)" strokeWidth="3.5" />
+                        <circle
+                          cx="22" cy="22" r={dlRingRadius} fill="none"
+                          stroke="var(--ion-color-primary)"
+                          strokeWidth="3.5"
+                          strokeDasharray={dlRingCirc}
+                          strokeDashoffset={dlRingOffset}
+                          strokeLinecap="round"
+                          transform="rotate(-90 22 22)"
+                        />
+                      </svg>
+                      <IonIcon
+                        icon={hasPausedItems ? play : pause}
+                        style={{ fontSize: '18px', color: 'var(--ion-color-primary)', position: 'relative', zIndex: 1 }}
+                      />
+                    </button>
+                  )
+                ) : downloadFailureState === 'all_failed' ? (
+                  /* All downloads failed — red error icon, tap to retry via download sheet */
                   <button
                     className="collection-page-icon-btn"
                     onClick={() => setIsDownloadSheetOpen(true)}
+                    aria-label="Download failed — tap to retry"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="1.5" />
+                      <path d="M12 8V12M12 16H12.01" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                ) : downloadFailureState === 'partial' ? (
+                  /* Partial download — yellow warning download icon, tap to retry failures */
+                  <button
+                    className="collection-page-icon-btn"
+                    onClick={() => setIsDownloadSheetOpen(true)}
+                    aria-label="Partial download — tap to retry failed items"
+                  >
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                      <path d="M12 4V16M12 16L7 11M12 16L17 11" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M4 20H20" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                  </button>
+                ) : (
+                  /* Download button — opens download sheet */
+                  <button
+                    className="collection-page-icon-btn"
+                    onClick={() => setIsDownloadSheetOpen(true)}
+                    disabled={isDownloadStarting}
                     aria-label="Download"
                   >
-                    {courseProgress.isDownloading ? (
+                    {isDownloadStarting ? (
                       <IonSpinner name="crescent" style={{ width: 20, height: 20, color: 'var(--ion-color-primary)' }} />
                     ) : (
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -551,19 +688,25 @@ const CollectionPage: React.FC = () => {
               </div>
             )}
 
-            <CollectionAccordion
-              children={viewState === 'default' ? filteredChildren : collectionData.children}
-              collectionId={collectionId}
-              isCourse={isCourse}
-              viewState={viewState}
-              t={t}
-              onContentPlay={openPlayer}
-              localContentSet={viewState === 'default' ? localContentSet : undefined}
-              isOffline={viewState === 'default' ? isOffline : undefined}
-              downloadStates={viewState === 'default' ? downloadStates : undefined}
-              spineDownloadUrl={spineUrl}
-              spinePkgVersion={spinePkgVersion}
-            />
+            {viewDownloadedOnly && filteredChildren.length === 0 ? (
+              <div style={{ background: '#fff', margin: '0.5rem 1rem', borderRadius: '0.75rem', padding: '2rem 1rem', textAlign: 'center', color: 'var(--ion-color-dark-tint, #4a4a4a)' }}>
+                No Downloaded contents found
+              </div>
+            ) : (
+              <CollectionAccordion
+                children={viewState === 'default' ? filteredChildren : collectionData.children}
+                collectionId={collectionId}
+                isCourse={isCourse}
+                viewState={viewState}
+                t={t}
+                onContentPlay={openPlayer}
+                localContentSet={viewState === 'default' ? localContentSet : undefined}
+                isOffline={viewState === 'default' ? isOffline : undefined}
+                downloadStates={viewState === 'default' ? downloadStates : undefined}
+                spineDownloadUrl={spineUrl}
+                spinePkgVersion={spinePkgVersion}
+              />
+            )}
 
             <RelatedContent items={relatedItems} t={t} />
             <FAQSection />
@@ -642,11 +785,6 @@ const CollectionPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              {forceSync.forceSyncError && (
-                <p style={{ fontSize: '0.75rem', color: 'var(--ion-color-danger)', textAlign: 'center', padding: '0 1rem 0.5rem' }}>
-                  {forceSync.forceSyncError}
-                </p>
-              )}
             </CollectionOverview>
 
             {/* View Downloaded Only toggle — inline below progress */}
@@ -662,26 +800,32 @@ const CollectionPage: React.FC = () => {
             )}
 
             {/* Enrolled Curriculum — reuses CollectionAccordion with enrollment data for status icons */}
-            <CollectionAccordion
-              children={filteredChildren}
-              collectionId={collectionId}
-              isCourse={isCourse}
-              viewState={viewState}
-              t={t}
-              onContentPlay={openPlayer}
-              enrollmentData={enrollmentData}
-              hideTitle
-              localContentSet={localContentSet}
-              isOffline={isOffline}
-              downloadStates={downloadStates}
-              spineDownloadUrl={spineUrl}
-              spinePkgVersion={spinePkgVersion}
-            />
+            {viewDownloadedOnly && filteredChildren.length === 0 ? (
+              <div style={{ background: '#fff', margin: '0.5rem 1rem', borderRadius: '0.75rem', padding: '2rem 1rem', textAlign: 'center', color: 'var(--ion-color-dark-tint, #4a4a4a)' }}>
+                No Downloaded contents found
+              </div>
+            ) : (
+              <CollectionAccordion
+                children={filteredChildren}
+                collectionId={collectionId}
+                isCourse={isCourse}
+                viewState={viewState}
+                t={t}
+                onContentPlay={openPlayer}
+                enrollmentData={enrollmentData}
+                hideTitle
+                localContentSet={localContentSet}
+                isOffline={isOffline}
+                downloadStates={downloadStates}
+                spineDownloadUrl={spineUrl}
+                spinePkgVersion={spinePkgVersion}
+              />
+            )}
 
             {/* Info Cards */}
             <div className="info-cards-container">
-              {/* Certificate Card — A3: always shown for enrolled users, A6: not for creator */}
-              {!isCreator && (
+              {/* Certificate Card — A3: always shown for enrolled users, A6: not for creator, hidden offline */}
+              {!isCreator && !isOffline && (
                 <div className="info-card">
                   <div className="info-card-header">
                     <CertificateIcon />
@@ -744,6 +888,7 @@ const CollectionPage: React.FC = () => {
               collectionId={collectionId}
               hasCertificate={enrollment.hasCertificate}
               progressBeforePlayer={progressBeforePlayerRef.current}
+              isOffline={isOffline}
             />
 
             {/* Task 4: Certificate Preview Modal (in-app) */}
@@ -1002,39 +1147,6 @@ const CollectionPage: React.FC = () => {
       >
         <div className="cp-download-sheet-inner">
           <div className="cp-download-sheet-content">
-            {/* Aggregate progress bar with pause/resume (when downloading) */}
-            {courseProgress.isDownloading && (
-              <div className="cp-download-sheet-progress">
-                <div className="cp-download-progress-info">
-                  <span>{hasPausedItems ? t('paused') : t('download.downloading')} {courseProgress.completed}/{courseProgress.total}</span>
-                  <span>{courseProgress.overallPercent}%</span>
-                </div>
-                <div className="cp-download-progress-track">
-                  <div
-                    className="cp-download-progress-fill"
-                    style={{ width: `${courseProgress.overallPercent}%` }}
-                  />
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                  {hasPausedItems ? (
-                    <button className="cp-download-sheet-btn" onClick={handleResumeAll} style={{ flex: 1 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <path d="M8 5V19L19 12L8 5Z" fill="currentColor" />
-                      </svg>
-                      <span>{t('download.resumeAll')}</span>
-                    </button>
-                  ) : (
-                    <button className="cp-download-sheet-btn" onClick={handlePauseAll} style={{ flex: 1 }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                        <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor" />
-                        <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor" />
-                      </svg>
-                      <span>{t('download.pauseAll')}</span>
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
 
             {/* All downloaded — show delete option */}
             {courseProgress.allDownloaded && localContentSet.size > 0 && !courseProgress.isDownloading && (
@@ -1065,7 +1177,7 @@ const CollectionPage: React.FC = () => {
             {!courseProgress.allDownloaded && downloadSizeInfo.downloadableCount > 0 && !courseProgress.isDownloading && (
               <div className="cp-download-sheet-action">
                 <p className="cp-download-sheet-desc">
-                  Download ({downloadSizeInfo.downloadableCount} items) for {isCourse ? 'Course' : 'Collection'} {collectionData?.title}?
+                  Download ({downloadSizeInfo.downloadableCount} items) for {isCourse ? 'Course' : 'Collection'} <strong>{collectionData?.title}</strong>?
                 </p>
 
                 <button
@@ -1112,8 +1224,8 @@ const CollectionPage: React.FC = () => {
       <IonAlert
         isOpen={showDeleteAlert}
         onDidDismiss={() => setShowDeleteAlert(false)}
-        header="Delete Collection"
-        message={t('download.deleteCollectionMessage')}
+        header={`Delete ${isCourse ? 'Course' : 'Collection'}`}
+        message={t('download.deleteCollectionMessage', { title: collectionData?.title ?? '' })}
         buttons={[
           { text: t('cancel'), role: 'cancel' },
           { text: t('download.delete'), role: 'destructive', handler: handleDeleteAll },

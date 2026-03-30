@@ -4,6 +4,7 @@ import type { CourseEnrollmentResponse, TrackableCollection } from '../../types/
 import { enrolledCoursesDbService } from '../db/EnrolledCoursesDbService';
 import type { EnrolledCourse, EnrolledCourseDetails } from '../db/EnrolledCoursesDbService';
 import { networkService } from '../network/networkService';
+import { contentStateSyncService } from '../course/ContentStateSyncService';
 
 const ORG_DETAILS_FIELDS = ['orgName', 'email'] as const;
 const LICENSE_DETAILS_FIELDS = ['name', 'description', 'url'] as const;
@@ -52,8 +53,9 @@ export class EnrollmentService {
             const url = `/course/v1/user/enrollment/list/${userId}?${searchParams.toString()}`;
             const response = await getClient().get<CourseEnrollmentResponse>(url);
 
+            const courses = response.data?.courses ?? [];
+
             try {
-                const courses = response.data?.courses ?? [];
                 if (courses.length > 0) {
                     const rows: EnrolledCourse[] = courses.map(c => this.mapToEnrolledCourse(c, userId));
                     await enrolledCoursesDbService.upsertBatch(rows);
@@ -88,6 +90,26 @@ export class EnrollmentService {
             } : undefined,
         }));
         return buildOfflineResponse<CourseEnrollmentResponse>({ courses });
+    }
+
+    /** Public: enrich courses with locally-cached content state progress. */
+    async enrichWithLocalProgress(
+        courses: TrackableCollection[],
+        userId: string,
+    ): Promise<TrackableCollection[]> {
+        return Promise.all(
+            courses.map(async course => {
+                const courseId       = course.courseId ?? course.contentId ?? '';
+                const batchId        = course.batchId ?? '';
+                const leafNodesCount = course.leafNodesCount ?? 0;
+                if (!courseId || !batchId) return course;
+                const localPct = await contentStateSyncService
+                    .getLocalCompletionPercentage(userId, courseId, batchId, leafNodesCount)
+                    .catch(() => null);
+                if (localPct === null) return course;
+                return { ...course, completionPercentage: localPct, progress: localPct };
+            }),
+        );
     }
 
     private mapToEnrolledCourse(course: TrackableCollection, userId: string): EnrolledCourse {

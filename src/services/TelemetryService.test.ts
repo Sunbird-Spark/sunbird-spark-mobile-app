@@ -416,8 +416,10 @@ describe('TelemetryService', () => {
     it('start calls $t.start without options', async () => {
       await service.start({ type: 'app', mode: '', duration: 0, pageid: '' }, '', '', {});
       expect(mockSdkStart).toHaveBeenCalledWith(
+        {},
+        '', '',
         { type: 'app', mode: '', duration: 0, pageid: '' },
-        '', '', {}, {},
+        {},
       );
     });
 
@@ -428,8 +430,9 @@ describe('TelemetryService', () => {
         { object: { id: 'do_123', type: 'Content', ver: '1' } },
       );
       expect(mockSdkStart).toHaveBeenCalledWith(
+        {},
+        'do_123', '1',
         expect.objectContaining({ type: 'content' }),
-        'do_123', '1', {},
         expect.objectContaining({ object: { id: 'do_123', type: 'Content', ver: '1' } }),
       );
     });
