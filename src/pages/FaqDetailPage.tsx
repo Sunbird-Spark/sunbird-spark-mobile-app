@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
     IonContent,
@@ -36,27 +36,8 @@ const FaqDetailPage: React.FC = () => {
     const { interact } = useInteract();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
 
-    const feedbackStorageKey = `faq-feedback-${category}`;
-    const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>(() => {
-        try {
-            const stored = localStorage.getItem(feedbackStorageKey);
-            return stored ? JSON.parse(stored) : {};
-        } catch {
-            return {};
-        }
-    });
+    const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>({});
     const [feedbackText, setFeedbackText] = useState<Record<number, string>>({});
-
-    useEffect(() => {
-        // Only persist final states (yes/submitted) — skip in-progress 'no' state
-        const toStore: Record<number, 'yes' | 'submitted'> = {};
-        Object.entries(feedback).forEach(([key, val]) => {
-            if (val === 'yes' || val === 'submitted') {
-                toStore[Number(key)] = val;
-            }
-        });
-        localStorage.setItem(feedbackStorageKey, JSON.stringify(toStore));
-    }, [feedback, feedbackStorageKey]);
 
     const toggleFaq = (index: number) => {
         const isOpening = expandedFaq !== index;
