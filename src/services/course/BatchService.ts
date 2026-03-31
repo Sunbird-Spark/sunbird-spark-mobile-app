@@ -40,7 +40,7 @@ export class BatchService {
   }
 
   public contentStateRead(
-    request: ContentStateReadRequest
+    request: ContentStateReadRequest & { maxAttemptsMap?: Record<string, number> }
   ): Promise<ApiResponse<ContentStateReadResponse>> {
     // Delegates to ContentStateSyncService which handles:
     //  • offline → local DB read
@@ -95,16 +95,16 @@ export class BatchService {
    */
   private async queueAndApplyLocally(request: ContentStateUpdateRequest): Promise<void> {
     const mappedContents = request.contents.map((c) => ({
-      contentId:   c.contentId,
-      status:      c.status,
-      courseId:    request.courseId,
-      batchId:     request.batchId,
+      contentId: c.contentId,
+      status: c.status,
+      courseId: request.courseId,
+      batchId: request.batchId,
       ...(c.lastAccessTime != null && { lastAccessTime: c.lastAccessTime }),
     }));
 
     const ops: Promise<unknown>[] = [
       courseProgressEnqueuer.enqueue({
-        userId:   request.userId,
+        userId: request.userId,
         contents: mappedContents,
       }),
       this.updateLocalContentStateCache(request),
@@ -115,13 +115,13 @@ export class BatchService {
     if (request.assessments?.length) {
       ops.push(
         networkQueueDbService.insert({
-          type:       NetworkQueueType.COURSE_ASSESMENT,
-          priority:   1,
-          timestamp:  Date.now(),
-          data:       JSON.stringify({
+          type: NetworkQueueType.COURSE_ASSESMENT,
+          priority: 1,
+          timestamp: Date.now(),
+          data: JSON.stringify({
             request: {
-              userId:      request.userId,
-              contents:    mappedContents,
+              userId: request.userId,
+              contents: mappedContents,
               assessments: request.assessments,
             },
           }),
@@ -151,12 +151,54 @@ export class BatchService {
       for (const update of request.contents) {
         const patch: ContentStateItem = {
           contentId: update.contentId,
-          status:    update.status,
+          status: update.status,
           ...(update.lastAccessTime != null && { lastAccessTime: update.lastAccessTime }),
         };
+
+        // If the request contains assessments for this content, compute and merge the score.
+        const assessment = request.assessments?.find((a) => a.contentId === update.contentId);
+        if (assessment?.events?.length) {
+          const scoresByItem: Record<string, { score: number; max: number }> = {};
+          for (const ev of assessment.events as any[]) {
+            // Check both V3 (eid) and V2 (event) formats
+            const eid = (ev.eid || ev.event || '').toUpperCase();
+            if (eid === 'ASSESS' && ev.edata?.item?.id) {
+              // Group by item ID: last event for the same item wins in this session
+              scoresByItem[ev.edata.item.id] = {
+                score: Number(ev.edata.score ?? 0),
+                max: Number(ev.edata.item.maxscore ?? 0),
+              };
+            }
+          }
+
+          const items = Object.values(scoresByItem);
+          if (items.length > 0) {
+            const totalScore = items.reduce((acc, i) => acc + i.score, 0);
+            const totalMaxScore = items.reduce((acc, i) => acc + i.max, 0);
+            patch.score = [{
+              attemptId: assessment.attemptId,
+              totalScore,
+              totalMaxScore,
+              lastAttemptedOn: assessment.assessmentTs
+                ? new Date(assessment.assessmentTs).toISOString()
+                : new Date().toISOString(),
+            }];
+          }
+        }
+
         const idx = contentList.findIndex(c => c.contentId === update.contentId);
         if (idx >= 0) {
-          contentList[idx] = { ...contentList[idx], ...patch };
+          const existingScore = Array.isArray(contentList[idx].score) ? contentList[idx].score : [];
+          const mergedPatch = { ...patch };
+          if (patch.score) {
+            const newScores = patch.score;
+            // Deduplicate by attemptId: newer attempts in this patch override existing ones with same ID
+            const filteredExisting = existingScore.filter(
+              (es: any) => !newScores.some((ns: any) => ns.attemptId === es.attemptId)
+            );
+            mergedPatch.score = [...filteredExisting, ...newScores];
+          }
+          contentList[idx] = { ...contentList[idx], ...mergedPatch };
         } else {
           contentList.push(patch);
         }

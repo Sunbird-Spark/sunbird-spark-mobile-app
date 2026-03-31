@@ -276,7 +276,11 @@
     "noDownloadableItems": "Aucun élément téléchargeable",
     "skippedTypesWarning": "Le contenu {{types}} ne peut pas être téléchargé",
     "deleteCollectionMessage": "Supprimer tout le contenu téléchargé pour {{title}} ?",
-    "leave": "Quitter"
+    "leave": "Quitter",
+    "deleteDownloadedContent": "Supprimer le contenu téléchargé",
+    "downloadFailedRetry": "Échec du téléchargement — appuyez pour réessayer",
+    "partialDownloadRetry": "Téléchargement partiel — appuyez pour réessayer les éléments échoués",
+    "partialDownloadRemaining": "Téléchargement partiel — appuyez pour télécharger les éléments restants"
   },
   "and": "et",
   "browseCourses": "Parcourir les cours",
@@ -368,5 +372,6 @@
     "deleteUnitDownloads": "Supprimer les téléchargements de l'unité",
     "downloadRemaining": "Télécharger le reste ({{count}} éléments)",
     "downloadUnit": "Télécharger le contenu de l'unité ({{count}} éléments)"
-  }
+  },
+  "assessment_max_attempts_reached": "Vous avez atteint le nombre maximum de tentatives autorisées pour ce contenu."
 }

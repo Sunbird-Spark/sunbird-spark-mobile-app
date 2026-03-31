@@ -1,72 +1,72 @@
 export enum NetworkQueueType {
-  TELEMETRY        = 'telemetry',
-  COURSE_PROGRESS  = 'course_progress',
+  TELEMETRY = 'telemetry',
+  COURSE_PROGRESS = 'course_progress',
   COURSE_ASSESMENT = 'course_assesment',  // intentional misspelling — matches backend
 }
 
 export enum QueueEntryStatus {
-  PENDING     = 'PENDING',
-  PROCESSING  = 'PROCESSING',
-  FAILED      = 'FAILED',
+  PENDING = 'PENDING',
+  PROCESSING = 'PROCESSING',
+  FAILED = 'FAILED',
   DEAD_LETTER = 'DEAD_LETTER',
 }
 
 export enum SyncType {
   TELEMETRY = 'telemetry',
-  COURSE    = 'course',
-  ALL       = 'all',
+  COURSE = 'course',
+  ALL = 'all',
 }
 
 export enum AutoSyncMode {
-  OFF       = 'off',
+  OFF = 'off',
   OVER_WIFI = 'wifi',
   ALWAYS_ON = 'always-on',
 }
 
 export interface NetworkQueueEntry {
-  _id?:          number;
-  msg_id:        string;
-  type:          NetworkQueueType;
-  priority:      number;
-  timestamp:     number;
-  data:          string;
-  item_count:    number;
-  retry_count:   number;
-  max_retries:   number;
+  _id?: number;
+  msg_id: string;
+  type: NetworkQueueType;
+  priority: number;
+  timestamp: number;
+  data: string;
+  item_count: number;
+  retry_count: number;
+  max_retries: number;
   next_retry_at: number;
-  last_error:    string | null;
-  status:        QueueEntryStatus;
+  last_error: string | null;
+  status: QueueEntryStatus;
 }
 
 export interface ContentState {
-  userId?:         string;
-  contentId:       string;
-  courseId:        string;
-  batchId:         string;
-  status?:         number;  // 0=not_started, 1=in_progress, 2=completed
-  progress?:       number;  // 0-100
-  result?:         string;
-  grade?:          string;
-  score?:          string;
+  userId?: string;
+  contentId: string;
+  courseId: string;
+  batchId: string;
+  status?: number;  // 0=not_started, 1=in_progress, 2=completed
+  progress?: number;  // 0-100
+  result?: string;
+  grade?: string;
+  score?: any[];
   lastAccessTime?: string;  // formatted UTC string, e.g. '2026-03-25 10:00:00:000+0000'
 }
 
 export interface UpdateContentStateRequest {
-  userId:   string;
+  userId: string;
   contents: ContentState[];
 }
 
 export interface AssessmentSyncRequest {
-  userId:      string;
-  contents:    ContentState[];
+  userId: string;
+  contents: ContentState[];
   assessments: Array<{
     assessmentTs: number;
-    userId:       string;
-    contentId:    string;
-    courseId:     string;
-    batchId:      string;
-    attemptId:    string;
-    events:       any[];
+    userId: string;
+    contentId: string;
+    courseId: string;
+    batchId: string;
+    attemptId: string;
+    events: any[];
   }>;
 }
 
@@ -82,15 +82,15 @@ export interface SyncResult {
     syncedCount: number;
   };
   errors: Array<{
-    msgId:   string;
-    type:    NetworkQueueType;
-    status:  number;
+    msgId: string;
+    type: NetworkQueueType;
+    status: number;
     message: string;
   }>;
 }
 
 export interface CourseContext {
-  userId:  string;
+  userId: string;
   courseId: string;
-  batchId:  string;
+  batchId: string;
 }

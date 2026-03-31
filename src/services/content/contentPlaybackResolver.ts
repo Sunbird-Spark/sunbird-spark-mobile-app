@@ -73,6 +73,7 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
     const mime = String(resolved.mimeType);
     const isH5pOrHtml = mime === 'application/vnd.ekstep.h5p-archive'
       || mime === 'application/vnd.ekstep.html-archive';
+    const isEcml = mime === 'application/vnd.ekstep.ecml-archive';
 
     if (String(resolved.mimeType).startsWith('video/')) {
       // Video player: set streamingUrl to directory so player appends artifactUrl
@@ -81,6 +82,15 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
       // H5P/HTML: The genie-canvas renderer builds the iframe URL using basePath
       // config, NOT streamingUrl. Set streamingUrl to the content directory (where
       // index.html lives) so any fallback logic still points to the right place.
+      resolved.streamingUrl = toWebviewUrl(basePath);
+    } else if (isEcml) {
+      // ECML: The renderer sets globalConfig.basepath = e.streamingUrl.
+      // The CDN streamingUrl typically points to a versioned subdirectory
+      // (e.g. .../do_xxx-latest) but the local artifact ZIP extracts all files
+      // with absolute paths (e.g. /index.json, /widgets/…) directly to the
+      // content root — NOT into a subdirectory. Set streamingUrl to the content
+      // root so the renderer's initByJSON fetches {contentRoot}/index.json which
+      // is where our jszip extraction places it.
       resolved.streamingUrl = toWebviewUrl(basePath);
     } else if (resolved.streamingUrl) {
       const basename = String(resolved.streamingUrl).split('/').pop();

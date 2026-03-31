@@ -23,7 +23,10 @@ export function isCollectionNode(node: HierarchyContentNode): boolean {
  */
 export function isDownloadable(node: HierarchyContentNode): boolean {
   if (!node.downloadUrl) return false;
-  if (node.mimeType && NON_DOWNLOADABLE_MIME_TYPES.includes(node.mimeType)) return false;
+  if (node.mimeType) {
+    const mime = node.mimeType.toLowerCase();
+    if (NON_DOWNLOADABLE_MIME_TYPES.some(m => m.toLowerCase() === mime)) return false;
+  }
   return true;
 }
 

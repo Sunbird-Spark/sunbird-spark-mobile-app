@@ -47,6 +47,19 @@ export interface EcmlPlayerConfig {
       showReplay?: boolean;
     };
     enableTelemetryValidation: boolean;
+    telemetryConfig?: {
+      origin: string;
+      pdata: { id: string; ver: string; pid: string };
+      env: string;
+      channel: string;
+      did: string;
+      sid: string;
+      uid: string;
+      endpoint: string;
+      host: string;
+      authtoken: string;
+      dispatcher?: string;
+    };
   };
   metadata: EcmlPlayerMetadata;
   data: Record<string, any>;

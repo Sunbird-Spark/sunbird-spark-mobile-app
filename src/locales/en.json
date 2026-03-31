@@ -288,7 +288,11 @@
     "noDownloadableItems": "No downloadable items",
     "skippedTypesWarning": "{{types}} content cannot be downloaded",
     "deleteCollectionMessage": "Delete all downloaded content for {{title}}?",
-    "leave": "Leave"
+    "leave": "Leave",
+    "deleteDownloadedContent": "Delete downloaded content",
+    "downloadFailedRetry": "Download failed — tap to retry",
+    "partialDownloadRetry": "Partial download — tap to retry failed items",
+    "partialDownloadRemaining": "Partial download — tap to download remaining items"
   },
   "untitled": "Untitled",
   "unknown": "Unknown",
@@ -368,5 +372,6 @@
     "deleteUnitDownloads": "Delete unit downloads",
     "downloadRemaining": "Download remaining ({{count}} items)",
     "downloadUnit": "Download unit contents ({{count}} items)"
-  }
+  },
+  "assessment_max_attempts_reached": "You have reached the maximum allowed attempts for this content."
 }

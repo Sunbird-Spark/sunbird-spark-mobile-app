@@ -15,6 +15,7 @@ import {
   type DownloadEvent,
   type DownloadListener,
 } from './types';
+import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
 
 const MAX_RETRIES_DEFAULT = 3;
 const BACKOFF_BASE_MS = 2000;
@@ -47,11 +48,18 @@ export class DownloadManager {
 
     // Listen for network changes
     this.unsubscribeNetwork = this.networkSvc.subscribe((state) => {
-      const wasOffline = !this.networkState.connected;
+      const wasDisconnected = !state.connected;
+      const wasPreviouslyConnected = this.networkState.connected;
       this.networkState = state;
 
+      // Connection lost → pause downloads
+      if (wasPreviouslyConnected && wasDisconnected) {
+        console.debug('[DownloadManager] Signal lost — stopping active downloads');
+        void this.stopDownloadsOnSignalLoss();
+      }
+
       // Back online → process queue
-      if (wasOffline && state.connected) {
+      if (!wasPreviouslyConnected && state.connected) {
         this.processQueue();
       }
     });
@@ -133,6 +141,15 @@ export class DownloadManager {
     const now = Date.now();
 
     for (const req of requests) {
+      // Root Fix: Do not enqueue streaming-only or non-downloadable types (YouTube/External URL)
+      if (req.mimeType) {
+        const mime = req.mimeType.toLowerCase();
+        if (NON_DOWNLOADABLE_MIME_TYPES.some(m => m.toLowerCase() === mime)) {
+          console.warn(`[DownloadManager] Skipping non-downloadable MIME type: ${req.mimeType} (ID: ${req.identifier})`);
+          continue;
+        }
+      }
+
       // Check if user cancelled this before — skip auto-re-queue
       const wasCancelled = await this.downloadDb.wasCancelledByUser(req.identifier);
       if (wasCancelled) continue;
@@ -267,18 +284,29 @@ export class DownloadManager {
 
   async pause(identifier: string): Promise<void> {
     const entry = await this.downloadDb.getByIdentifier(identifier);
-    if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
+    if (!entry) return;
 
-    try {
-      await CapacitorDownloader.pause({ id: identifier });
-    } catch {
-      // Fallback for Android (Native DownloadManager does not support strict pausing)
-      await CapacitorDownloader.stop({ id: identifier }).catch(() => { });
+    if (entry.state === DownloadState.DOWNLOADING) {
+      try {
+        await CapacitorDownloader.pause({ id: identifier });
+      } catch {
+        // Fallback for Android (Native DownloadManager does not support strict pausing)
+        await CapacitorDownloader.stop({ id: identifier }).catch(() => { });
+      }
+      this.activeDownloads.delete(identifier);
+    } else if (
+      entry.state !== DownloadState.QUEUED &&
+      entry.state !== DownloadState.RETRY_WAIT
+    ) {
+      // Only allow pausing if DOWNLOADING, QUEUED, or RETRY_WAIT
+      return;
     }
 
-    this.activeDownloads.delete(identifier);
     await this.transition(identifier, DownloadState.PAUSED);
     this.emit({ type: 'state_change', identifier });
+    // Process queue to fill slots if we paused an active download,
+    // or to stop any pending starts if we paused a queued item.
+    await this.processQueue();
   }
 
   async resume(identifier: string): Promise<void> {
@@ -382,6 +410,15 @@ export class DownloadManager {
     const completed = entries.filter(
       (e) => e.state === DownloadState.COMPLETED
     ).length;
+    const failedCount = entries.filter(
+      (e) => e.state === DownloadState.FAILED
+    ).length;
+    const activeCount = entries.filter(
+      (e) => e.state !== DownloadState.COMPLETED && e.state !== DownloadState.FAILED && e.state !== DownloadState.CANCELLED
+    ).length;
+    const pausedCount = entries.filter(
+      (e) => e.state === DownloadState.PAUSED
+    ).length;
     const total = entries.length;
     const overallPercent =
       total > 0
@@ -390,7 +427,7 @@ export class DownloadManager {
         )
         : 0;
 
-    return { parentIdentifier, completed, total, overallPercent };
+    return { parentIdentifier, completed, total, overallPercent, failedCount, activeCount, pausedCount };
   }
 
   async getEntry(
@@ -824,6 +861,20 @@ export class DownloadManager {
     });
 
     this.emit({ type: 'state_change', identifier });
+  }
+
+  /** Signal lost while downloading → stop and set retry_wait */
+  private async stopDownloadsOnSignalLoss(): Promise<void> {
+    const active = Array.from(this.activeDownloads.entries());
+    for (const [identifier, { nativeId }] of active) {
+      try {
+        await CapacitorDownloader.stop({ id: nativeId });
+        this.activeDownloads.delete(identifier);
+        await this.transition(identifier, DownloadState.RETRY_WAIT);
+      } catch (err) {
+        console.warn(`[DownloadManager] Could not stop ${identifier} on signal loss:`, err);
+      }
+    }
   }
 
   private async recoverCrashedEntries(): Promise<void> {

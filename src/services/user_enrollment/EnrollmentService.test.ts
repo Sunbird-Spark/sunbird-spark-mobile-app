@@ -302,5 +302,18 @@ describe('EnrollmentService', () => {
             const course = result.data.courses[0];
             expect(course.batch).toMatchObject({ identifier: 'batch_001', name: 'Batch 1', status: 1 });
         });
+
+        it('should skip enrichment when courseId is missing', async () => {
+            const courses: any[] = [{ batchId: 'b1', completionPercentage: 10 }];
+            const result = await enrollmentService.enrichWithLocalProgress(courses, 'u1');
+            expect(result[0].completionPercentage).toBe(10);
+        });
+
+        it('should handle errors in getLocalCompletionPercentage gracefully', async () => {
+            (contentStateSyncService.getLocalCompletionPercentage as any).mockRejectedValue(new Error('DB Error'));
+            const courses: any[] = [{ courseId: 'c1', batchId: 'b1', completionPercentage: 10 }];
+            const result = await enrollmentService.enrichWithLocalProgress(courses, 'u1');
+            expect(result[0].completionPercentage).toBe(10);
+        });
     });
 });
