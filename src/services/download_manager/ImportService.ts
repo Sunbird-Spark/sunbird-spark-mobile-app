@@ -1,7 +1,6 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Zip } from 'capa-zip';
 import { CapacitorHttp } from '@capacitor/core';
-import * as fflate from 'fflate';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';

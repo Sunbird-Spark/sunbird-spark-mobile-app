@@ -284,19 +284,28 @@ export class DownloadManager {
 
   async pause(identifier: string): Promise<void> {
     const entry = await this.downloadDb.getByIdentifier(identifier);
-    if (!entry || entry.state !== DownloadState.DOWNLOADING) return;
+    if (!entry) return;
 
-    try {
-      await CapacitorDownloader.pause({ id: identifier });
-    } catch {
-      // Fallback for Android (Native DownloadManager does not support strict pausing)
-      await CapacitorDownloader.stop({ id: identifier }).catch(() => { });
+    if (entry.state === DownloadState.DOWNLOADING) {
+      try {
+        await CapacitorDownloader.pause({ id: identifier });
+      } catch {
+        // Fallback for Android (Native DownloadManager does not support strict pausing)
+        await CapacitorDownloader.stop({ id: identifier }).catch(() => { });
+      }
+      this.activeDownloads.delete(identifier);
+    } else if (
+      entry.state !== DownloadState.QUEUED &&
+      entry.state !== DownloadState.RETRY_WAIT
+    ) {
+      // Only allow pausing if DOWNLOADING, QUEUED, or RETRY_WAIT
+      return;
     }
 
-    this.activeDownloads.delete(identifier);
     await this.transition(identifier, DownloadState.PAUSED);
     this.emit({ type: 'state_change', identifier });
-    // If we paused a queued item, we should process the queue to start any other pending items
+    // Process queue to fill slots if we paused an active download,
+    // or to stop any pending starts if we paused a queued item.
     await this.processQueue();
   }
 

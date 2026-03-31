@@ -13,7 +13,7 @@ export enum DownloadState {
 }
 
 export const VALID_TRANSITIONS: Record<DownloadState, DownloadState[]> = {
-  [DownloadState.QUEUED]: [DownloadState.DOWNLOADING, DownloadState.CANCELLED],
+  [DownloadState.QUEUED]: [DownloadState.DOWNLOADING, DownloadState.CANCELLED, DownloadState.PAUSED],
   [DownloadState.DOWNLOADING]: [
     DownloadState.PAUSED,
     DownloadState.DOWNLOADED,
@@ -27,7 +27,7 @@ export const VALID_TRANSITIONS: Record<DownloadState, DownloadState[]> = {
   [DownloadState.COMPLETED]: [],
   [DownloadState.FAILED]: [DownloadState.QUEUED],
   [DownloadState.CANCELLED]: [DownloadState.QUEUED],
-  [DownloadState.RETRY_WAIT]: [DownloadState.QUEUED, DownloadState.CANCELLED],
+  [DownloadState.RETRY_WAIT]: [DownloadState.QUEUED, DownloadState.CANCELLED, DownloadState.PAUSED],
 };
 
 // ── Download Queue ──

@@ -562,7 +562,7 @@ const CollectionPage: React.FC = () => {
                   <button
                     className="collection-page-icon-btn"
                     onClick={() => setShowDeleteAlert(true)}
-                    aria-label="Delete downloaded content"
+                    aria-label={t('download.deleteDownloadedContent')}
                   >
                     {isDeleting ? (
                       <IonSpinner name="crescent" style={{ width: 20, height: 20, color: 'var(--ion-color-primary)' }} />
@@ -613,7 +613,7 @@ const CollectionPage: React.FC = () => {
                   <button
                     className="collection-page-icon-btn"
                     onClick={() => setIsDownloadSheetOpen(true)}
-                    aria-label="Download failed — tap to retry"
+                    aria-label={t('download.downloadFailedRetry')}
                   >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                       <circle cx="12" cy="12" r="10" stroke="var(--ion-color-danger, #eb445a)" strokeWidth="1.5" />
@@ -625,7 +625,11 @@ const CollectionPage: React.FC = () => {
                   <button
                     className="collection-page-icon-btn"
                     onClick={() => setIsDownloadSheetOpen(true)}
-                    aria-label={collectionDownloadStatus === 'partial_error' ? "Partial download — tap to retry failed items" : "Partial download — tap to download remaining items"}
+                    aria-label={
+                      collectionDownloadStatus === 'partial_error'
+                        ? t('download.partialDownloadRetry')
+                        : t('download.partialDownloadRemaining')
+                    }
                     style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
                   >
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
@@ -639,7 +643,7 @@ const CollectionPage: React.FC = () => {
                     className="collection-page-icon-btn"
                     onClick={() => setIsDownloadSheetOpen(true)}
                     disabled={isDownloadStarting}
-                    aria-label="Download"
+                    aria-label={t('download.download')}
                   >
                     {isDownloadStarting ? (
                       <IonSpinner name="crescent" style={{ width: 20, height: 20, color: 'var(--ion-color-primary)' }} />

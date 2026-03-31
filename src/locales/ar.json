@@ -278,7 +278,11 @@
     "noDownloadableItems": "لا توجد عناصر قابلة للتنزيل",
     "skippedTypesWarning": "لا يمكن تنزيل محتوى {{types}}",
     "deleteCollectionMessage": "حذف كافة المحتويات المنزّلة لـ {{title}}؟",
-    "leave": "مغادرة"
+    "leave": "مغادرة",
+    "deleteDownloadedContent": "حذف المحتوى المنزّل",
+    "downloadFailedRetry": "فشل التنزيل — انقر لإعادة المحاولة",
+    "partialDownloadRetry": "تنزيل جزئي — انقر لإعادة محاولة العناصر الفاشلة",
+    "partialDownloadRemaining": "تنزيل جزئي — انقر لتنزيل العناصر المتبقية"
   },
   "and": "و",
   "browseCourses": "تصفح الدورات",
