@@ -62,6 +62,12 @@ vi.mock('../db/NetworkQueueDbService', () => ({
   },
 }));
 
+vi.mock('../db/CourseAssessmentDbService', () => ({
+  courseAssessmentDbService: {
+    getCountByUser: vi.fn().mockResolvedValue(0),
+  },
+}));
+
 vi.mock('./NetworkQueueProcessor', () => ({
   networkQueueProcessor: {
     execute: vi.fn().mockResolvedValue({
@@ -90,6 +96,7 @@ import { courseAssessmentEnqueuer } from './CourseAssessmentEnqueuer';
 import { networkQueueProcessor } from './NetworkQueueProcessor';
 import { keyValueDbService, KVKey } from '../db/KeyValueDbService';
 import { networkQueueDbService } from '../db/NetworkQueueDbService';
+import { courseAssessmentDbService } from '../db/CourseAssessmentDbService';
 import { userService } from '../UserService';
 
 // ── Tests ──────────────────────────────────────────────────────────────────
@@ -299,6 +306,47 @@ describe('SyncService', () => {
       const request = { userId: 'u1', contents: [] };
       await syncService.enqueueCourseProgress(request as any);
       expect(courseProgressEnqueuer.enqueue).toHaveBeenCalledWith(request);
+    });
+  });
+
+  // ── hasPendingCourseData ──────────────────────────────────────────────────
+
+  describe('hasPendingCourseData', () => {
+    beforeEach(() => {
+      (networkQueueDbService.getPendingCount as any).mockResolvedValue(0);
+      (courseAssessmentDbService.getCountByUser as any).mockResolvedValue(0);
+    });
+
+    it('returns false when network_queue and staging table are both empty', async () => {
+      const result = await syncService.hasPendingCourseData('u1');
+      expect(result).toBe(false);
+    });
+
+    it('returns true when network_queue has pending course_progress rows', async () => {
+      (networkQueueDbService.getPendingCount as any).mockImplementation((type: NetworkQueueType) =>
+        type === NetworkQueueType.COURSE_PROGRESS ? 1 : 0
+      );
+      const result = await syncService.hasPendingCourseData('u1');
+      expect(result).toBe(true);
+    });
+
+    it('returns true when network_queue has pending course_assesment rows', async () => {
+      (networkQueueDbService.getPendingCount as any).mockImplementation((type: NetworkQueueType) =>
+        type === NetworkQueueType.COURSE_ASSESMENT ? 2 : 0
+      );
+      const result = await syncService.hasPendingCourseData('u1');
+      expect(result).toBe(true);
+    });
+
+    it('returns true when course_assessment staging table has rows for user', async () => {
+      (courseAssessmentDbService.getCountByUser as any).mockResolvedValue(3);
+      const result = await syncService.hasPendingCourseData('u1');
+      expect(result).toBe(true);
+    });
+
+    it('passes userId to courseAssessmentDbService.getCountByUser', async () => {
+      await syncService.hasPendingCourseData('user-xyz');
+      expect(courseAssessmentDbService.getCountByUser).toHaveBeenCalledWith('user-xyz');
     });
   });
 

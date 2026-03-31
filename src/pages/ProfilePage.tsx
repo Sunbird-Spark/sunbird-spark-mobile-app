@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import {
   IonContent,
   IonPage,
@@ -9,6 +9,7 @@ import {
   IonGrid,
   IonRow,
   IonCol,
+  IonAlert,
 } from '@ionic/react';
 import {
   timeOutline,
@@ -24,6 +25,8 @@ import Avatar from 'react-avatar';
 import { useUser } from '../hooks/useUser';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
 import useImpression from '../hooks/useImpression';
+import { networkService } from '../services/network/networkService';
+import { syncService } from '../services/sync/SyncService';
 
 const ProfilePage: React.FC = () => {
   useImpression({ pageid: 'ProfilePage', env: 'profile' });
@@ -55,6 +58,18 @@ const ProfilePage: React.FC = () => {
     return Array.from(roleSet);
   }, [profile]);
 
+  const [showSyncWarning, setShowSyncWarning] = useState(false);
+  const [isCheckingSync, setIsCheckingSync] = useState(false);
+
+  // Ref-based guard so rapid taps are blocked synchronously before React
+  // batches the state update — state alone has a render-cycle delay.
+  const isCheckingRef = useRef(false);
+
+  // Prevents setIsCheckingSync from firing on an unmounted component if the
+  // user navigates away while the DB check is still in flight.
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
+
   const totalCourses = courses.length;
 
   const inProgressCount = useMemo(
@@ -73,6 +88,38 @@ const ProfilePage: React.FC = () => {
   );
 
   const handleLogout = async () => {
+    // Use a ref guard (not state) so rapid taps are blocked synchronously —
+    // React state updates are async and a second tap can slip through before
+    // the first re-render disables the button.
+    if (isCheckingRef.current) return;
+
+    // Only check for pending data when offline. When online, enqueueCourseProgress
+    // fires an immediate background sync so data is already on its way to the server.
+    if (!networkService.isConnected()) {
+      isCheckingRef.current = true;
+      if (mountedRef.current) setIsCheckingSync(true);
+      try {
+        // Race the DB check against a 3-second timeout so a frozen DB cannot
+        // leave the logout button permanently disabled.
+        const timeoutPromise = new Promise<boolean>((_, reject) =>
+          setTimeout(() => reject(new Error('timeout')), 3000)
+        );
+        const hasPending = await Promise.race([
+          syncService.hasPendingCourseData(userId ?? ''),
+          timeoutPromise,
+        ]);
+        if (hasPending && mountedRef.current) {
+          setShowSyncWarning(true);
+          return;
+        }
+      } catch {
+        // DB error or timeout — fail open so the user is never locked out
+      } finally {
+        isCheckingRef.current = false;
+        if (mountedRef.current) setIsCheckingSync(false);
+      }
+    }
+
     await logout();
   };
 
@@ -239,13 +286,34 @@ const ProfilePage: React.FC = () => {
             <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
           </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} onClick={handleLogout}>
+          <IonItem className="profile-action-item" button detail={false} onClick={handleLogout} disabled={isCheckingSync}>
             <IonIcon icon={logOutOutline} slot="start" className="profile-action-chevron" />
             <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
           </IonItem>
         </IonList>
 
         <div className="profile-bottom-spacer"></div>
+
+        <IonAlert
+          isOpen={showSyncWarning}
+          header={t('logoutSyncWarning.header')}
+          message={t('logoutSyncWarning.message')}
+          buttons={[
+            {
+              text: t('logoutSyncWarning.cancel'),
+              role: 'cancel',
+              handler: () => setShowSyncWarning(false),
+            },
+            {
+              text: t('logoutSyncWarning.confirm'),
+              handler: async () => {
+                setShowSyncWarning(false);
+                await logout();
+              },
+            },
+          ]}
+          onDidDismiss={() => setShowSyncWarning(false)}
+        />
       </IonContent>
 
       <BottomNavigation />
