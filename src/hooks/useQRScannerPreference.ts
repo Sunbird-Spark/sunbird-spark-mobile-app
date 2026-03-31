@@ -1,5 +1,13 @@
 import { useFormRead } from './useFormRead';
 
+interface QRScannerFormData {
+  form?: {
+    data?: {
+      isEnabled?: boolean;
+    };
+  };
+}
+
 export function useQRScannerPreference() {
   const { data: formApiData, isLoading } = useFormRead({
     request: {
@@ -10,7 +18,8 @@ export function useQRScannerPreference() {
     },
   });
 
-  const isEnabled = (formApiData?.data as any)?.form?.data?.isEnabled ?? false;
+  const formData = formApiData?.data as QRScannerFormData | undefined;
+  const isEnabled = formData?.form?.data?.isEnabled ?? false;
 
   return { isEnabled, isLoading };
 }

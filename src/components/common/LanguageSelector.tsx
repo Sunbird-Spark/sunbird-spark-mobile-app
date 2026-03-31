@@ -1,14 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IonPopover } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGE_CONFIG } from '../../config/languages';
 import './LanguageSelector.css';
 
 export const LanguageSelector: React.FC = () => {
-    const popoverRef = useRef<HTMLIonPopoverElement>(null);
     const { i18n } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>();
+    const popoverRef = React.useRef<HTMLIonPopoverElement>(null);
 
     const currentLang = LANGUAGE_CONFIG.find(l => l.code === i18n.language) ?? LANGUAGE_CONFIG[0];
 

@@ -28,7 +28,15 @@ const FaqDetailPage: React.FC = () => {
     const { faqData, isLoading, isError } = useFaqData();
 
     const categoryIndex = parseInt(category, 10);
-    const categoryData = !isNaN(categoryIndex) ? faqData?.categories[categoryIndex] : undefined;
+    let categoryData = !isNaN(categoryIndex) && faqData?.categories 
+        ? faqData.categories[categoryIndex] 
+        : undefined;
+    
+    // Fallback: support slug-based URLs like /support/<slug>
+    if (!categoryData && faqData?.categories) {
+        categoryData = faqData.categories.find(c => c.slug === category);
+    }
+    
     const data = categoryData
         ? { title: `${categoryData.title} FAQ's`, faqs: categoryData.faqs }
         : { title: "FAQ's", faqs: [] };
