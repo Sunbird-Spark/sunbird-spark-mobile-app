@@ -24,7 +24,10 @@ vi.mock('../db/KeyValueDbService', () => ({
 }));
 
 vi.mock('../UserService', () => ({
-  userService: { getUserId: vi.fn().mockReturnValue('user-1') },
+  userService: {
+    getUserId: vi.fn().mockReturnValue('user-1'),
+    getChannelId: vi.fn().mockResolvedValue(null),
+  },
 }));
 
 vi.mock('../network/networkService', () => ({
