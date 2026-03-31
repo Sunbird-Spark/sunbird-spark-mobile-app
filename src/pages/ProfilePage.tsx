@@ -101,8 +101,8 @@ const ProfilePage: React.FC = () => {
       try {
         // Race the DB check against a 3-second timeout so a frozen DB cannot
         // leave the logout button permanently disabled.
-        const timeoutPromise = new Promise<boolean>((_, reject) =>
-          setTimeout(() => reject(new Error('timeout')), 3000)
+        const timeoutPromise = new Promise<boolean>((resolve) =>
+          setTimeout(() => resolve(false), 3000)
         );
         const hasPending = await Promise.race([
           syncService.hasPendingCourseData(userId ?? ''),
