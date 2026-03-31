@@ -350,7 +350,21 @@
     "buildVersion": "إصدار البناء",
     "off": "إيقاف",
     "wifi": "واي فاي",
-    "always": "دائماً"
+    "always": "دائماً",
+    "qrScanner": "QR Scanner",
+    "qrScannerDesc": "Scan QR codes to discover content",
+    "enabled": "ENABLED",
+    "disabled": "DISABLED"
+  },
+  "scanPage": {
+    "preferenceTitle": "Enable QR Code Scanner?",
+    "preferenceSubtitle": "Scan QR codes to quickly find content. You can change this later in Settings.",
+    "yesEnable": "Yes, enable it",
+    "noThanks": "No thanks",
+    "skip": "Skip",
+    "scannerDisabled": "QR Scanner is disabled. You can enable it in Settings.",
+    "goToSettings": "Go to Settings",
+    "startScanning": "Start Scanning"
   },
   "scanQRCode": "مسح رمز QR",
   "cameraDeniedTitle": "تم رفض الوصول إلى الكاميرا",

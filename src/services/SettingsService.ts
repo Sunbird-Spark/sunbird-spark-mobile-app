@@ -20,6 +20,13 @@ export const DOWNLOAD_CONTENT_OPTIONS = [
 export type SyncDataValue = typeof SYNC_DATA_OPTIONS[number]['value'];
 export type DownloadContentValue = typeof DOWNLOAD_CONTENT_OPTIONS[number]['value'];
 
+export type QRScannerPreference = 'enabled' | 'disabled';
+
+export const QR_SCANNER_OPTIONS = [
+  { label: 'ENABLED',  value: 'enabled'  as QRScannerPreference },
+  { label: 'DISABLED', value: 'disabled' as QRScannerPreference },
+] as const;
+
 const SYNC_DATA_DEFAULT: SyncDataValue = 'wifi';
 const DOWNLOAD_CONTENT_DEFAULT: DownloadContentValue = 'always';
 
@@ -42,6 +49,16 @@ export class SettingsService {
 
   async setDownloadContent(value: DownloadContentValue): Promise<void> {
     await this.kv.set(KVKey.CONTENT_DOWNLOAD_NETWORK_TYPE, value);
+  }
+
+  async getQRScannerPreference(): Promise<QRScannerPreference | null> {
+    const stored = await this.kv.get(KVKey.QR_SCANNER_PREFERENCE);
+    if (stored === 'enabled' || stored === 'disabled') return stored;
+    return null;
+  }
+
+  async setQRScannerPreference(value: QRScannerPreference): Promise<void> {
+    await this.kv.set(KVKey.QR_SCANNER_PREFERENCE, value);
   }
 
   async getAppVersion(): Promise<{ version: string; build: string }> {

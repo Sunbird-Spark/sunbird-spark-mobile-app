@@ -10,6 +10,7 @@ export enum KVKey {
   TELEMETRY_SYNC_NETWORK_TYPE  = 'telemetry_sync_network_type',  // User preference: off | wifi | always
   CONTENT_DOWNLOAD_NETWORK_TYPE = 'content_download_network_type', // User preference: wifi | always
   TELEMETRY_CLOCK_OFFSET       = 'telemetry_clock_offset',        // Persisted server-client clock skew (ms)
+  QR_SCANNER_PREFERENCE        = 'qr_scanner_preference',         // User preference: enabled | disabled
 }
 
 export class KeyValueDbService {

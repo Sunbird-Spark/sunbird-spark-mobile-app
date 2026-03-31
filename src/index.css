@@ -1468,6 +1468,20 @@ ion-tab-button:hover {
     box-shadow: 0 0.25rem 0.75rem rgba(var(--ion-color-tertiary-rgb), 0.25);
 }
 
+.profile-settings-icon-qr {
+    background: rgba(var(--ion-color-secondary-rgb), 0.1);
+}
+
+.profile-settings-icon-qr ion-icon {
+    color: var(--ion-color-secondary);
+}
+
+.profile-settings-option-btn.active-qr {
+    background: var(--ion-color-secondary);
+    color: var(--ion-color-secondary-contrast);
+    box-shadow: 0 0.25rem 0.75rem rgba(var(--ion-color-secondary-rgb), 0.25);
+}
+
 .profile-settings-icon-system {
     background: rgba(var(--ion-color-success-rgb), 0.1);
 }
