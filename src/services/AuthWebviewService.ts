@@ -61,7 +61,7 @@ class AuthWebviewService {
    * If callbackPath is provided, watches for URL navigation to that path
    * and auto-closes the browser when detected.
    */
-  private openInBrowser(url: string, callbackPath?: string): Promise<void> {
+  private openInBrowser(url: string, callbackPath?: string, redirectUri?: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       let settled = false;
       const listeners: any[] = [];
@@ -76,7 +76,7 @@ class AuthWebviewService {
           if (settled || !event.url) return;
           try {
             const eventUrl = new URL(event.url);
-            if (eventUrl.pathname === callbackPath) {
+            if (eventUrl.pathname === callbackPath || (redirectUri && event.url.startsWith(redirectUri))) {
               settled = true;
               cleanup();
               InAppBrowser.close().catch(() => {});
@@ -144,7 +144,8 @@ class AuthWebviewService {
   async openRegistration(): Promise<void> {
     const config = await this.getAuthConfig('register');
     const redirectUri = this.getRedirectUri(config.target);
-    const url = this.buildUrl(config.target);
+    let url = this.buildUrl(config.target);
+    url += (url.includes('?') ? '&' : '?') + 'client=mobileApp';
 
     // Extract the callback path from redirect_uri (e.g., /oauth2callback)
     let callbackPath: string | undefined;
@@ -154,7 +155,7 @@ class AuthWebviewService {
       // No valid redirect_uri — just open without watching
     }
 
-    await this.openInBrowser(url, callbackPath);
+    await this.openInBrowser(url, callbackPath, redirectUri || undefined);
   }
 
   /**
@@ -167,10 +168,11 @@ class AuthWebviewService {
     const host = config.target.host;
     const redirectUri = this.getRedirectUri(config.target);
 
-    // Build forgot password URL with redirect_uri param
+    // Build forgot password URL with redirect_uri and client params
     let url = `${host}/forgot-password`;
+    url += `?client=mobileApp`;
     if (redirectUri) {
-      url += `?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      url += `&redirect_uri=${encodeURIComponent(redirectUri)}`;
     }
 
     // Extract the callback path from redirect_uri
@@ -181,7 +183,7 @@ class AuthWebviewService {
       // No valid redirect_uri
     }
 
-    await this.openInBrowser(url, callbackPath);
+    await this.openInBrowser(url, callbackPath, redirectUri || undefined);
   }
 }
 
