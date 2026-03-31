@@ -176,7 +176,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
           )}
           {maxExceeded && (
             <div style={{ fontSize: '0.7rem', color: 'var(--ion-color-danger, #eb445a)', marginTop: 2 }}>
-              Max attempts reached
+              {t('assessment_max_attempts_reached')}
             </div>
           )}
           {dimmed && (
@@ -728,11 +728,10 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
         color="warning"
       />
 
-      {/* Toast for exceeded max attempts on SelfAssess */}
       <IonToast
         isOpen={showMaxAttemptsToast}
         onDidDismiss={() => setShowMaxAttemptsToast(false)}
-        message="You have reached the maximum allowed attempts for this content."
+        message={t('assessment_max_attempts_reached')}
         duration={2500}
         position="bottom"
         color="warning"

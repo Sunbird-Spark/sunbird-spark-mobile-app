@@ -362,5 +362,6 @@
     "deleteUnitDownloads": "Excluir downloads da unidade",
     "downloadRemaining": "Baixar restante ({{count}} itens)",
     "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)"
-  }
+  },
+  "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo."
 }

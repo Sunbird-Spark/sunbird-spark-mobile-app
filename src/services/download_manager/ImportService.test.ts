@@ -11,7 +11,8 @@ vi.mock('@capacitor/filesystem', () => ({
     getUri: vi.fn().mockResolvedValue({ uri: 'file:///tmp/test' }),
     rmdir: vi.fn().mockResolvedValue(undefined),
     deleteFile: vi.fn().mockResolvedValue(undefined),
-    readFile: vi.fn().mockResolvedValue({ data: '{}' }),
+    // Use valid empty object base64 to avoid atob errors in tests that reach it
+    readFile: vi.fn().mockResolvedValue({ data: 'e30=' }),
     copy: vi.fn().mockResolvedValue(undefined),
     stat: vi.fn().mockResolvedValue({ size: 1024 }),
     readdir: vi.fn().mockResolvedValue({ files: [] }),
@@ -31,24 +32,28 @@ vi.mock('capa-zip', () => ({
 vi.mock('../db/DatabaseService', () => ({ DatabaseService: vi.fn(), databaseService: {} }));
 vi.mock('../db/ContentDbService', () => ({ ContentDbService: vi.fn(), contentDbService: {} }));
 // Mock Web Workers
-const mockWorker = {
-  postMessage: vi.fn().mockImplementation(function (this: any) {
-    // Simulate a successful extraction message from the worker
+class MockWorker {
+  onmessage: ((e: any) => void) | null = null;
+  onerror: ((e: any) => void) | null = null;
+  terminate = vi.fn();
+  postMessage = vi.fn().mockImplementation(function (this: MockWorker, data: any) {
+    // Simulate async response
     setTimeout(() => {
-      this.onmessage?.({
-        data: {
-          status: 'success',
-          files: { 'index.ecml': new Uint8Array([1, 2, 3]) }
-        }
-      });
+      if (this.onmessage) {
+        this.onmessage({
+          data: {
+            status: 'success',
+            files: { 'index.ecml': new Uint8Array([1, 2, 3]) }
+          }
+        });
+      }
     }, 0);
-  }),
-  terminate: vi.fn(),
-  onmessage: null as any,
-  onerror: null as any,
-};
+  });
+}
 
-vi.stubGlobal('Worker', vi.fn().mockImplementation(() => mockWorker));
+vi.stubGlobal('Worker', vi.fn().mockImplementation(function () {
+  return new MockWorker();
+}));
 
 function makeMockDb() {
   return {
@@ -255,9 +260,8 @@ describe('ImportService', () => {
       const { Filesystem } = await import('@capacitor/filesystem');
       const { Zip } = await import('capa-zip');
 
+      // Fail on the very first unzip (.ecar stage)
       vi.mocked(Zip.unzip).mockRejectedValueOnce(new Error('unzip failed'));
-      // Ensure it doesn't match the fallback condition
-      vi.mocked(Zip.unzip).mockRejectedValueOnce(new Error('general failure'));
 
       const result = await svc.import('do_123', '/path/to/file.ecar');
       expect(result.status).toBe('FAILED');
@@ -418,29 +422,39 @@ describe('ImportService', () => {
       const { Filesystem } = await import('@capacitor/filesystem');
       const { Zip } = await import('capa-zip');
 
-      // 1. Mock capa-zip to fail with a path safety error
-      vi.mocked(Zip.unzip).mockRejectedValueOnce(new Error('Invalid zip entry path: /assets/index.html'));
+      // 1. Mock capa-zip: 
+      // First call (ECAR unzip) -> Success
+      // Second call (ECML item unzip) -> Fail with path error
+      vi.mocked(Zip.unzip)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Invalid zip entry path: /assets/index.html'));
 
-      // 2. Mock manifest read
-      vi.mocked(Filesystem.readFile).mockResolvedValue({
-        data: JSON.stringify({
-          ver: '1.1',
-          archive: {
-            items: [{
-              identifier: 'do_ecml',
-              mimeType: 'application/vnd.ekstep.ecml-archive',
-              artifactUrl: 'do_ecml/artifact.zip',
-              visibility: 'Default'
-            }]
-          }
-        })
-      } as any);
+      // 2. Mock manifest read + artifact read
+      // First call (manifest.json) -> JSON string
+      // Subsequent calls (artifact or others) -> valid Base64
+      vi.mocked(Filesystem.readFile).mockImplementation(async (options) => {
+        if (options.path.endsWith('manifest.json')) {
+          return {
+            data: JSON.stringify({
+              ver: '1.1',
+              archive: {
+                items: [{
+                  identifier: 'do_ecml',
+                  mimeType: 'application/vnd.ekstep.ecml-archive',
+                  artifactUrl: 'do_ecml/artifact.zip',
+                  visibility: 'Default'
+                }]
+              }
+            })
+          } as any;
+        }
+        return { data: 'e30=' } as any; // valid base64 for {}
+      });
 
       const result = await svc.import('do_ecml', '/p.ecar');
-
       expect(result.status).toBe('SUCCESS');
       // Verify worker was "instantiated" (via global Worker stub)
-      expect(vi.mocked(global.Worker)).toHaveBeenCalled();
+      expect(vi.mocked(Worker)).toHaveBeenCalled();
     });
   });
 

@@ -55,7 +55,7 @@ export class DownloadManager {
       // Connection lost → pause downloads
       if (wasPreviouslyConnected && wasDisconnected) {
         console.debug('[DownloadManager] Signal lost — stopping active downloads');
-        this.stopDownloadsOnSignalLoss();
+        void this.stopDownloadsOnSignalLoss();
       }
 
       // Back online → process queue

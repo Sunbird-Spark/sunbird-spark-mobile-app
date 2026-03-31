@@ -370,5 +370,6 @@
     "deleteUnitDownloads": "حذف تنزيلات الوحدة",
     "downloadRemaining": "تنزيل المتبقي ({{count}} عناصر)",
     "downloadUnit": "تنزيل محتويات الوحدة ({{count}} عناصر)"
-  }
+  },
+  "assessment_max_attempts_reached": "لقد وصلت إلى الحد الأقصى للمحاولات المسموح بها لهذا المحتوى."
 }

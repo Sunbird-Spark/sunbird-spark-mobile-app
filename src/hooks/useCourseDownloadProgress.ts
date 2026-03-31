@@ -17,7 +17,7 @@ export interface CourseDownloadProgress {
   isPaused: boolean;
   /** True if all downloadable items have completed. */
   allDownloaded: boolean;
-  /** True if EVERY single leaf node is local (including non-downloadable ones). */
+  /** True if every downloadable leaf node is local. */
   isFullyLocal: boolean;
   /** Number of failed items. */
   failedCount: number;
@@ -144,7 +144,6 @@ export function useCourseDownloadProgress(
 
     const allLeaves = children ? flattenLeafNodes(children).filter(isDownloadable) : [];
     const totalLeavesCount = allLeaves.length;
-    const downloadableCountLeaves = totalLeavesCount; // They are the same after filtering
 
     // Fully local = EVERY downloadable item is in local DB
     const isFullyLocal = totalLeavesCount > 0 && allLeaves.every(l => localIdentifiers.has(l.identifier));

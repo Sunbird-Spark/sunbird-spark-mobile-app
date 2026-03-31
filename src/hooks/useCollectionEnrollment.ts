@@ -113,7 +113,7 @@ export function useCollectionEnrollment(
     for (const node of leafNodes) {
       if (node.contentType === 'SelfAssess') {
         const attempts = typeof node.maxAttempts === 'number' && node.maxAttempts;
-        map[node.identifier] = attempts;
+        if (attempts) map[node.identifier] = attempts;
       }
     }
     return map;

@@ -43,15 +43,13 @@ describe('unzipWorker', () => {
         });
     });
 
-    describe('fflate Integration (Mocked)', () => {
-        it('successfully processes zip data and returns mapping', async () => {
+    describe('fflate Integration (Mocked Pattern)', () => {
+        it('successfully processes zip data mapping with sanitizer', async () => {
             // Create a mock zip data object
             const mockUnzipped = {
                 '/content.ecml': new Uint8Array([1, 2, 3]),
                 'assets/img.png': new Uint8Array([4, 5, 6]),
             };
-
-            vi.spyOn(fflate, 'unzipSync').mockReturnValue(mockUnzipped);
 
             // Emulate the loop in the worker
             const sanitizedFiles: Record<string, Uint8Array> = {};

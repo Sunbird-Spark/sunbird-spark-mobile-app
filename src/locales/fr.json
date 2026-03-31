@@ -362,5 +362,6 @@
     "deleteUnitDownloads": "Supprimer les téléchargements de l'unité",
     "downloadRemaining": "Télécharger le reste ({{count}} éléments)",
     "downloadUnit": "Télécharger le contenu de l'unité ({{count}} éléments)"
-  }
+  },
+  "assessment_max_attempts_reached": "Vous avez atteint le nombre maximum de tentatives autorisées pour ce contenu."
 }

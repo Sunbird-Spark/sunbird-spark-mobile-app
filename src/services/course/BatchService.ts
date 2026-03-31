@@ -176,9 +176,12 @@ export class BatchService {
             const totalScore = items.reduce((acc, i) => acc + i.score, 0);
             const totalMaxScore = items.reduce((acc, i) => acc + i.max, 0);
             patch.score = [{
+              attemptId: assessment.attemptId,
               totalScore,
               totalMaxScore,
-              lastAccessTime: patch.lastAccessTime ?? new Date().toISOString(),
+              lastAttemptedOn: assessment.assessmentTs
+                ? new Date(assessment.assessmentTs).toISOString()
+                : new Date().toISOString(),
             }];
           }
         }
@@ -188,7 +191,12 @@ export class BatchService {
           const existingScore = Array.isArray(contentList[idx].score) ? contentList[idx].score : [];
           const mergedPatch = { ...patch };
           if (patch.score) {
-            mergedPatch.score = [...existingScore, ...patch.score];
+            const newScores = patch.score;
+            // Deduplicate by attemptId: newer attempts in this patch override existing ones with same ID
+            const filteredExisting = existingScore.filter(
+              (es: any) => !newScores.some((ns: any) => ns.attemptId === es.attemptId)
+            );
+            mergedPatch.score = [...filteredExisting, ...newScores];
           }
           contentList[idx] = { ...contentList[idx], ...mergedPatch };
         } else {
