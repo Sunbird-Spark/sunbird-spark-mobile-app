@@ -169,7 +169,6 @@ class UserService {
               ...profile,
               displayName: [profile.firstName, profile.lastName].filter(Boolean).join(' ') || undefined,
               imageUrl: profile.avatar,
-              created_on: createdOn,
             },
             user_type: userType,
             created_on: createdOn,

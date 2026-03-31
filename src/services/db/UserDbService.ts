@@ -60,10 +60,10 @@ export class UserDbService {
     await this.db.delete('users', { eq: { id } });
   }
 
-  private rowToUser(row: { id: string; details: UserDetails; user_type: string; created_on: number }): User {
+  private rowToUser(row: { id: string; details: string; user_type: string; created_on: number }): User {
     let details: UserDetails = {};
     try {
-      details = typeof row.details === 'string' ? JSON.parse(row.details as unknown as string) : row.details;
+      details = JSON.parse(row.details);
     } catch {
       details = {};
     }

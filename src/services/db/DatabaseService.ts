@@ -480,6 +480,12 @@ export class DatabaseService {
         });
       }
 
+      if (currentVersion < 5) {
+        // v5: No DDL change. UserService now stores the full profile object
+        // (including organisations[]) in users.details instead of select fields only.
+        // Version bump documents the behavioural change.
+      }
+
       const now = Date.now();
       await db.run(
         'INSERT OR REPLACE INTO key_value (key, value, updated_at) VALUES (?, ?, ?)',
