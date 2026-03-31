@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { IonPopover } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { LANGUAGE_CONFIG } from '../../config/languages';
@@ -7,8 +7,8 @@ import './LanguageSelector.css';
 export const LanguageSelector: React.FC = () => {
     const popoverRef = useRef<HTMLIonPopoverElement>(null);
     const { i18n } = useTranslation();
-    const uid = useId();
-    const triggerId = `language-selector-trigger-${uid}`;
+    const [isOpen, setIsOpen] = useState(false);
+    const [popoverEvent, setPopoverEvent] = useState<MouseEvent | undefined>();
 
     const currentLang = LANGUAGE_CONFIG.find(l => l.code === i18n.language) ?? LANGUAGE_CONFIG[0];
 
@@ -17,16 +17,21 @@ export const LanguageSelector: React.FC = () => {
         document.documentElement.style.setProperty('--ion-font-family', currentLang.font);
     }, [currentLang.dir, currentLang.font]);
 
+    const handleOpen = (e: React.MouseEvent) => {
+        setPopoverEvent(e.nativeEvent);
+        setIsOpen(true);
+    };
+
     const handleLanguageChange = (lang: typeof LANGUAGE_CONFIG[0]) => {
         i18n.changeLanguage(lang.code);
         localStorage.setItem('appLanguage', lang.code);
-        popoverRef.current?.dismiss();
+        setIsOpen(false);
     };
 
     return (
         <>
             <button
-                id={triggerId}
+                onClick={handleOpen}
                 style={{
                     background: 'none',
                     border: 'none',
@@ -46,8 +51,9 @@ export const LanguageSelector: React.FC = () => {
 
             <IonPopover
                 ref={popoverRef}
-                trigger={triggerId}
-                triggerAction="click"
+                isOpen={isOpen}
+                event={popoverEvent}
+                onDidDismiss={() => setIsOpen(false)}
                 side="bottom"
                 alignment="end"
                 className="language-selector-popover"

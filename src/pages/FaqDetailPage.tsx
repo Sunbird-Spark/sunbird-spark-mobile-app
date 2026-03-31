@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import {
     IonContent,
@@ -27,15 +27,36 @@ const FaqDetailPage: React.FC = () => {
     const { t } = useTranslation();
     const { faqData, isLoading, isError } = useFaqData();
 
-    const categoryData = faqData?.categories.find(c => c.slug === category);
+    const categoryIndex = parseInt(category, 10);
+    const categoryData = !isNaN(categoryIndex) ? faqData?.categories[categoryIndex] : undefined;
     const data = categoryData
         ? { title: `${categoryData.title} FAQ's`, faqs: categoryData.faqs }
         : { title: "FAQ's", faqs: [] };
 
     const { interact } = useInteract();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
-    const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>({});
+
+    const feedbackStorageKey = `faq-feedback-${category}`;
+    const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>(() => {
+        try {
+            const stored = localStorage.getItem(feedbackStorageKey);
+            return stored ? JSON.parse(stored) : {};
+        } catch {
+            return {};
+        }
+    });
     const [feedbackText, setFeedbackText] = useState<Record<number, string>>({});
+
+    useEffect(() => {
+        // Only persist final states (yes/submitted) — skip in-progress 'no' state
+        const toStore: Record<number, 'yes' | 'submitted'> = {};
+        Object.entries(feedback).forEach(([key, val]) => {
+            if (val === 'yes' || val === 'submitted') {
+                toStore[Number(key)] = val;
+            }
+        });
+        localStorage.setItem(feedbackStorageKey, JSON.stringify(toStore));
+    }, [feedback, feedbackStorageKey]);
 
     const toggleFaq = (index: number) => {
         const isOpening = expandedFaq !== index;

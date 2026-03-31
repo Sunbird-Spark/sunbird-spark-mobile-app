@@ -114,7 +114,7 @@ const HelpAndSupportPage: React.FC = () => {
                                 <div
                                     className="hs-category-card"
                                     key={idx}
-                                    onClick={() => router.push(`/support/${cat.slug}`, 'forward', 'push')}
+                                    onClick={() => router.push(`/support/${idx}`, 'forward', 'push')}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <div className="hs-accent-bar" />
