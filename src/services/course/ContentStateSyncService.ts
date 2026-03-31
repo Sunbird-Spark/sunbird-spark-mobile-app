@@ -232,10 +232,16 @@ export function hasChanged(
     // Progress — compare numerically (0 if absent)
     if (getNum(orig, 'progress') !== getNum(item, 'progress')) return true;
 
-    // Score count — more scores = un-synced attempts exist
-    const origLen = Array.isArray(orig.score) ? orig.score.length : 0;
-    const itemLen = Array.isArray(item.score) ? item.score.length : 0;
-    if (origLen !== itemLen) return true;
+    // Score details — compare contents (ID, score, and timestamp)
+    const scoreA = Array.isArray(orig.score) ? (orig.score as any[]) : [];
+    const scoreB = Array.isArray(item.score) ? (item.score as any[]) : [];
+    if (scoreA.length !== scoreB.length) return true;
+
+    for (let i = 0; i < scoreA.length; i++) {
+      if (scoreA[i].attemptId !== scoreB[i].attemptId) return true;
+      if (scoreA[i].totalScore !== scoreB[i].totalScore) return true;
+      if (scoreA[i].lastAttemptedOn !== scoreB[i].lastAttemptedOn) return true;
+    }
   }
 
   return false;
@@ -408,6 +414,7 @@ export class ContentStateSyncService {
         ...(getField(item, 'lastAccessTime') != null && {
           lastAccessTime: String(getField(item, 'lastAccessTime')),
         }),
+        ...(item.score && { score: item.score }),
       }));
 
       await getClient().patch<unknown>('/course/v1/content/state/update', {

@@ -1,7 +1,7 @@
 import { Filesystem, Directory, Encoding } from '@capacitor/filesystem';
 import { Zip } from 'capa-zip';
 import { CapacitorHttp } from '@capacitor/core';
-import JSZip from 'jszip';
+import * as fflate from 'fflate';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
@@ -236,23 +236,17 @@ export class ImportService {
     ) {
       // EPUB → copy directly
       await this.copyAsset(itemSourcePath, destUri);
-    } else if (disposition === 'inline' && encoding === 'identity') {
-      // Uncompressed (PDF, MP4, WebM) → copy directly
-      await this.copyAsset(itemSourcePath, destUri);
     } else if (mimeType === 'application/vnd.ekstep.ecml-archive') {
       // ECML archives: attempt normal unzip first.
-      // Older ECML ECARs contain a content-plugins inner ZIP with absolute entry
-      // paths (e.g. /assets/content-plugins/…). capa-zip enforces path safety
-      // and throws "Invalid zip entry path" for any entry starting with '/'.
-      // Fall back to jszip which sanitizes absolute paths and normalises
-      // assets/content-plugins/ → content-plugins/ so the renderer finds them.
+      // Older ECML ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
+      // Fall back to our multi-threaded fflate worker to sanitize and extract.
       try {
         await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
       } catch (err) {
         const msg = String((err as Error)?.message ?? err);
         if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
-          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with jszip:', msg);
-          await this.extractWithJszip(itemSourcePath, destUri);
+          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with worker:', msg);
+          await this.extractWithWorker(itemSourcePath, destUri);
         } else {
           throw err;
         }
@@ -270,37 +264,68 @@ export class ImportService {
   }
 
   /**
-   * Extract a ZIP using jszip, sanitizing absolute entry paths.
-   * Paths starting with '/' have the leading slash stripped.
-   * Entries at 'assets/content-plugins/' are remapped to 'content-plugins/'
-   * so the ECML renderer finds them at the expected root-relative location.
+   * Extract a ZIP using fflate in a multi-threaded Web Worker.
+   * Repairs absolute entries (stripping leading slashes) while remaining non-blocking to the main UI thread.
    */
-  private async extractWithJszip(sourceFile: string, destDir: string): Promise<void> {
+  private async extractWithWorker(sourceFile: string, destDir: string): Promise<void> {
     const fileResult = await Filesystem.readFile({ path: sourceFile });
-    const zip = await JSZip.loadAsync(fileResult.data as string, { base64: true });
 
-    let count = 0;
-    for (const [rawPath, zipEntry] of Object.entries(zip.files)) {
-      if (zipEntry.dir) continue;
-
-      // Strip leading slash; reject path traversal segments
-      const safePath = rawPath.startsWith('/') ? rawPath.slice(1) : rawPath;
-      if (safePath.split('/').some((part) => part === '..')) continue;
-      if (!safePath) continue;
-
-      // Preserve original paths; do not force-remap assets/content-plugins/ to the root.
-      // The renderer's repo configuration will handle searching both locations.
-
-      const fullPath = `${destDir}/${safePath}`;
-      const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));
-      await Filesystem.mkdir({ path: parentDir, recursive: true }).catch(() => { });
-
-      const fileData = await zipEntry.async('base64');
-      await Filesystem.writeFile({ path: fullPath, data: fileData });
-      count++;
+    // Capacitor/Filesystem.readFile returns Base64 by default.
+    // Convert Base64 string to Uint8Array buffer for fflate.
+    const binaryString = atob(fileResult.data as string);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
+    const buffer = bytes.buffer;
 
-    console.debug('[ImportService] jszip extracted', count, 'entries to:', destDir);
+    // In Capacitor/Vite environments, we load the worker as a separate asset.
+    const worker = new Worker(new URL('./unzipWorker.ts', import.meta.url), { type: 'module' });
+
+    return new Promise((resolve, reject) => {
+      worker.onmessage = async (e) => {
+        const { status, files, error } = e.data;
+        if (status === 'error') {
+          worker.terminate();
+          reject(new Error(error));
+          return;
+        }
+
+        // Iteratively write each sanitized file back to the filesystem
+        let count = 0;
+        for (const [path, data] of Object.entries(files as Record<string, Uint8Array>)) {
+          const fullPath = `${destDir}/${path}`;
+          const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));
+          await Filesystem.mkdir({ path: parentDir, recursive: true }).catch(() => { });
+
+          // Fast conversion: Use chunked fromCharCode to avoid stack limits and slowness.
+          let binary = '';
+          const chunkSize = 8192;
+          for (let i = 0; i < data.length; i += chunkSize) {
+            binary += String.fromCharCode(...data.subarray(i, i + chunkSize));
+          }
+
+          await Filesystem.writeFile({
+            path: fullPath,
+            data: btoa(binary),
+          });
+          count++;
+        }
+
+        console.debug('[ImportService] Multi-threaded worker extracted', count, 'entries to:', destDir);
+        worker.terminate();
+        resolve();
+      };
+
+      worker.onerror = (err) => {
+        worker.terminate();
+        reject(err);
+      };
+
+      // Send the compressed binary payload to the background thread
+      worker.postMessage({ zipData: buffer }, [buffer as ArrayBuffer]);
+    });
   }
 
   // ══════════════════════════════════════════════════
