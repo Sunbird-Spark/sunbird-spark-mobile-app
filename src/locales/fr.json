@@ -342,21 +342,11 @@
     "buildVersion": "Version de build",
     "off": "DÉSACTIVÉ",
     "wifi": "WIFI",
-    "always": "TOUJOURS",
-    "qrScanner": "QR Scanner",
-    "qrScannerDesc": "Scan QR codes to discover content",
-    "enabled": "ENABLED",
-    "disabled": "DISABLED"
+    "always": "TOUJOURS"
   },
   "scanPage": {
-    "preferenceTitle": "Enable QR Code Scanner?",
-    "preferenceSubtitle": "Scan QR codes to quickly find content. You can change this later in Settings.",
-    "yesEnable": "Yes, enable it",
-    "noThanks": "No thanks",
-    "skip": "Skip",
-    "scannerDisabled": "QR Scanner is disabled. You can enable it in Settings.",
-    "goToSettings": "Go to Settings",
-    "startScanning": "Start Scanning"
+    "scannerDisabled": "Le scanner QR est désactivé",
+    "startScanning": "Commencer la numérisation"
   },
   "scanQRCode": "Scanner le code QR",
   "cameraDeniedTitle": "Accès à la caméra refusé",

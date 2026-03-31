@@ -232,21 +232,11 @@
     "buildVersion": "बिल्ड संस्करण",
     "off": "बंद",
     "wifi": "वाईफाई",
-    "always": "हमेशा",
-    "qrScanner": "QR Scanner",
-    "qrScannerDesc": "Scan QR codes to discover content",
-    "enabled": "ENABLED",
-    "disabled": "DISABLED"
+    "always": "हमेशा"
   },
   "scanPage": {
-    "preferenceTitle": "Enable QR Code Scanner?",
-    "preferenceSubtitle": "Scan QR codes to quickly find content. You can change this later in Settings.",
-    "yesEnable": "Yes, enable it",
-    "noThanks": "No thanks",
-    "skip": "Skip",
-    "scannerDisabled": "QR Scanner is disabled. You can enable it in Settings.",
-    "goToSettings": "Go to Settings",
-    "startScanning": "Start Scanning"
+    "scannerDisabled": "QR स्कैनर अक्षम है",
+    "startScanning": "स्कैनिंग शुरू करें"
   },
   "scanQRCode": "QR कोड स्कैन करें",
   "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",
