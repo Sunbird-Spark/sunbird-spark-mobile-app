@@ -30,17 +30,25 @@ vi.mock('capa-zip', () => ({
 
 vi.mock('../db/DatabaseService', () => ({ DatabaseService: vi.fn(), databaseService: {} }));
 vi.mock('../db/ContentDbService', () => ({ ContentDbService: vi.fn(), contentDbService: {} }));
-vi.mock('jszip', () => {
-  return {
-    default: {
-      loadAsync: vi.fn().mockResolvedValue({
-        files: {
-          'index.ecml': { dir: false, async: vi.fn().mockResolvedValue('base64data') },
-        },
-      }),
-    },
-  };
-});
+// Mock Web Workers
+const mockWorker = {
+  postMessage: vi.fn().mockImplementation(function (this: any) {
+    // Simulate a successful extraction message from the worker
+    setTimeout(() => {
+      this.onmessage?.({
+        data: {
+          status: 'success',
+          files: { 'index.ecml': new Uint8Array([1, 2, 3]) }
+        }
+      });
+    }, 0);
+  }),
+  terminate: vi.fn(),
+  onmessage: null as any,
+  onerror: null as any,
+};
+
+vi.stubGlobal('Worker', vi.fn().mockImplementation(() => mockWorker));
 
 function makeMockDb() {
   return {
@@ -248,6 +256,8 @@ describe('ImportService', () => {
       const { Zip } = await import('capa-zip');
 
       vi.mocked(Zip.unzip).mockRejectedValueOnce(new Error('unzip failed'));
+      // Ensure it doesn't match the fallback condition
+      vi.mocked(Zip.unzip).mockRejectedValueOnce(new Error('general failure'));
 
       const result = await svc.import('do_123', '/path/to/file.ecar');
       expect(result.status).toBe('FAILED');
@@ -401,7 +411,40 @@ describe('ImportService', () => {
     });
   });
 
-  // ── Visibility upgrade (standalone import) ──
+  // ── import — ECML fallback ──
+
+  describe('import — ECML fallback', () => {
+    it('falls back to worker extraction when capa-zip throws path errors', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      const { Zip } = await import('capa-zip');
+
+      // 1. Mock capa-zip to fail with a path safety error
+      vi.mocked(Zip.unzip).mockRejectedValueOnce(new Error('Invalid zip entry path: /assets/index.html'));
+
+      // 2. Mock manifest read
+      vi.mocked(Filesystem.readFile).mockResolvedValue({
+        data: JSON.stringify({
+          ver: '1.1',
+          archive: {
+            items: [{
+              identifier: 'do_ecml',
+              mimeType: 'application/vnd.ekstep.ecml-archive',
+              artifactUrl: 'do_ecml/artifact.zip',
+              visibility: 'Default'
+            }]
+          }
+        })
+      } as any);
+
+      const result = await svc.import('do_ecml', '/p.ecar');
+
+      expect(result.status).toBe('SUCCESS');
+      // Verify worker was "instantiated" (via global Worker stub)
+      expect(vi.mocked(global.Worker)).toHaveBeenCalled();
+    });
+  });
+
+  // ── import — visibility upgrade (standalone import) ──
 
   describe('import — visibility upgrade', () => {
     it('upgrades visibility from Parent to Default for standalone imports', async () => {
