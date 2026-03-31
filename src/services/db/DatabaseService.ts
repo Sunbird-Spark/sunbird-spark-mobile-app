@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
 const DB_NAME = 'sunbird_spark';
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 // ── Allowlisted identifiers (guards against SQL injection via identifiers) ────
 

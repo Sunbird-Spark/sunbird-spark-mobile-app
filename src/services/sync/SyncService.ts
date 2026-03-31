@@ -31,9 +31,12 @@ class SyncService {
     // Track current network state without accessing private properties
     networkService.subscribe((state) => { this._lastNetworkState = state; });
 
-    // Restore channel ID so sync requests include the correct X-Channel-Id header
-    const savedChannelId = await keyValueDbService.get(KVKey.ACTIVE_CHANNEL_ID).catch(() => null);
-    if (savedChannelId) syncConfig.setChannelId(savedChannelId);
+    // Restore channel ID so sync requests include the correct X-Channel-Id header.
+    // Logged-in users: derive from cached organisations[0].hashTagId in the users table.
+    // Guests: fall back to the key_value store (written during onboarding org search).
+    const channelId = await userService.getChannelId().catch(() => null)
+      ?? await keyValueDbService.get(KVKey.ACTIVE_CHANNEL_ID).catch(() => null);
+    if (channelId) syncConfig.setChannelId(channelId);
 
     // Crash recovery: any row left in PROCESSING was mid-flight when the app died
     await networkQueueDbService.resetProcessing();
