@@ -381,5 +381,11 @@
     "downloadRemaining": "تنزيل المتبقي ({{count}} عناصر)",
     "downloadUnit": "تنزيل محتويات الوحدة ({{count}} عناصر)"
   },
-  "assessment_max_attempts_reached": "لقد وصلت إلى الحد الأقصى للمحاولات المسموح بها لهذا المحتوى."
+  "assessment_max_attempts_reached": "لقد وصلت إلى الحد الأقصى للمحاولات المسموح بها لهذا المحتوى.",
+  "logoutSyncWarning": {
+    "header": "Unsaved Progress",
+    "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
+    "cancel": "Cancel",
+    "confirm": "Logout Anyway"
+  }
 }

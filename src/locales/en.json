@@ -366,6 +366,7 @@
   "pageLoader": {
     "somethingWentWrong": "Something went wrong"
   },
+  "assessment_max_attempts_reached": "You have reached the maximum allowed attempts for this content.",
   "collectionAccordion": {
     "deleteUnit": "Delete Unit",
     "deleteUnitMessage": "Delete all downloaded contents for Unit {{unitName}}?",
