@@ -120,13 +120,16 @@ class UserService {
         enrolledCoursesDbService.deleteAllForUser(userId),
         userDbService.delete(userId),
         keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
-        // active_channel_id is resolved from the user's org on login — must be
-        // cleared so a different user logging in next gets their own channel resolved.
-        keyValueDbService.delete(KVKey.ACTIVE_CHANNEL_ID),
-        networkQueueDbService.clearCourseData(),
         courseAssessmentDbService.clearAllForUser(userId),
       ]);
     }
+
+    // These have no user-id dependency — clear even when userId is null so
+    // stale cross-session state never persists across logins.
+    await Promise.allSettled([
+      keyValueDbService.delete(KVKey.ACTIVE_CHANNEL_ID),
+      networkQueueDbService.clearCourseData(),
+    ]);
 
     try {
       await SecureStoragePlugin.remove({ key: STORAGE_KEY });

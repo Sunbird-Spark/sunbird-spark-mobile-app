@@ -152,10 +152,17 @@ describe('UserService', () => {
         expect(kvDb.delete).toHaveBeenCalledWith(KVKey.ACTIVE_CHANNEL_ID);
     });
 
-    it('still clears secure storage when userId is missing', async () => {
+    it('still clears cross-session data even when userId is missing', async () => {
+        const { networkQueueDbService } = await import('./db/NetworkQueueDbService');
+        const { keyValueDbService: kvDb, KVKey } = await import('./db/KeyValueDbService');
+
         (userService as any).account = null;
         await userService.clearAccount();
+
         expect(SecureStoragePlugin.remove).toHaveBeenCalled();
+        // These must be cleared even without a userId — e.g. token refresh failure during init
+        expect(networkQueueDbService.clearCourseData).toHaveBeenCalled();
+        expect(kvDb.delete).toHaveBeenCalledWith(KVKey.ACTIVE_CHANNEL_ID);
     });
 
     it('gets display name correctly', () => {
