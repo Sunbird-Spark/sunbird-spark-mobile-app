@@ -11,6 +11,7 @@ import {
   IonToast,
   IonToolbar,
   useIonRouter,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
@@ -173,6 +174,11 @@ const ProfileLearningPage: React.FC = () => {
   const [pendingCourse, setPendingCourse] = useState<TrackableCollection | null>(null);
 
   const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmentList(userId);
+
+  useIonViewDidEnter(() => {
+    refetch();
+  });
+
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 
   const filteredCourses = useMemo(() => {
@@ -292,20 +298,6 @@ const ProfileLearningPage: React.FC = () => {
           </div>
         )}
 
-        {/* Download error banner */}
-        {downloadError && (
-          <div style={{
-            margin: '1rem',
-            padding: '0.75rem 1rem',
-            background: 'var(--ion-color-danger-tint)',
-            borderRadius: '0.5rem',
-            fontSize: '0.875rem',
-            color: 'var(--ion-color-danger-shade)',
-          }}>
-            {downloadError}
-          </div>
-        )}
-
         {/* Course list */}
         {!isLoading && !isError && (
           <div className="pl-cards-container">
@@ -350,6 +342,16 @@ const ProfileLearningPage: React.FC = () => {
             role: 'cancel',
           },
         ]}
+      />
+
+      {/* Error toast */}
+      <IonToast
+        isOpen={downloadError !== null}
+        onDidDismiss={() => setDownloadError(null)}
+        message={downloadError ?? ''}
+        duration={3000}
+        position="bottom"
+        color="danger"
       />
 
       {/* Success toast */}

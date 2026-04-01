@@ -1,5 +1,6 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App';
 
 // Mock Ionic components
@@ -32,6 +33,28 @@ vi.mock('@ionic/react', () => ({
   IonImg: ({ src, alt }: any) => <img data-testid="ion-img" src={src} alt={alt} />,
   IonBadge: ({ children }: any) => <span data-testid="ion-badge">{children}</span>,
   IonToast: () => null,
+  IonActionSheet: ({ isOpen, header, buttons = [], onDidDismiss }: any) => {
+    if (!isOpen) return null;
+    const handleButtonClick = (btn: any) => {
+      if (typeof btn?.handler === 'function') btn.handler();
+      if (typeof onDidDismiss === 'function') onDidDismiss();
+    };
+    return (
+      <div data-testid="app-update-sheet">
+        <span>{header}</span>
+        {Array.isArray(buttons) && buttons.map((btn: any, index: number) => (
+          <button
+            key={index}
+            type="button"
+            data-testid={`action-sheet-btn-${index}`}
+            onClick={() => handleButtonClick(btn)}
+          >
+            {btn.text}
+          </button>
+        ))}
+      </div>
+    );
+  },
   setupIonicReact: vi.fn(),
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
 }));
@@ -242,6 +265,24 @@ vi.mock('./services/push/notificationRouter', () => ({
   routeNotification: vi.fn(),
 }));
 
+// Mock AppUpdateService
+const { mockIsUpdateAvailable, mockOpenAppStore } = vi.hoisted(() => ({
+  mockIsUpdateAvailable: vi.fn().mockResolvedValue(false),
+  mockOpenAppStore: vi.fn().mockResolvedValue(undefined),
+}));
+vi.mock('./services/AppUpdateService', () => ({
+  appUpdateService: {
+    isUpdateAvailable: mockIsUpdateAvailable,
+    openAppStore: mockOpenAppStore,
+  },
+}));
+
+// Mock useInteract
+const mockInteract = vi.fn();
+vi.mock('./hooks/useInteract', () => ({
+  default: () => ({ interact: mockInteract }),
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
   useAuth: () => ({
@@ -274,6 +315,12 @@ vi.mock('./hooks/useUser', () => ({
 }));
 
 describe('App', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockIsUpdateAvailable.mockResolvedValue(false);
+    mockOpenAppStore.mockResolvedValue(undefined);
+  });
+
   it('renders without crashing', () => {
     render(<App />);
     expect(screen.getByTestId('ion-app')).toBeInTheDocument();
@@ -308,5 +355,62 @@ describe('App', () => {
     render(<App />);
     // The app renders the home page by default
     expect(screen.getByTestId('home-page')).toBeInTheDocument();
+  });
+
+  it('checks for app update on startup', async () => {
+    render(<App />);
+    await waitFor(() => {
+      expect(mockIsUpdateAvailable).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it('does not open app store when no update is available', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(false);
+    render(<App />);
+    await waitFor(() => {
+      expect(mockIsUpdateAvailable).toHaveBeenCalled();
+    });
+    expect(mockOpenAppStore).not.toHaveBeenCalled();
+  });
+
+  it('shows update action sheet when update is available', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(true);
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
+  });
+
+  it('calls openAppStore and tracks interact when Update Now is tapped', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(true);
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByTestId('action-sheet-btn-0'));
+    expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
+    expect(mockInteract).toHaveBeenCalledWith({ id: 'app-update-now', pageid: 'AppUpdate' });
+  });
+
+  it('dismisses the sheet and tracks interact when Later is tapped', async () => {
+    mockIsUpdateAvailable.mockResolvedValue(true);
+    render(<App />);
+    await waitFor(() => {
+      expect(screen.getByTestId('app-update-sheet')).toBeInTheDocument();
+    });
+    await userEvent.click(screen.getByTestId('action-sheet-btn-1'));
+    await waitFor(() => {
+      expect(screen.queryByTestId('app-update-sheet')).not.toBeInTheDocument();
+    });
+    expect(mockInteract).toHaveBeenCalledWith({ id: 'app-update-later', pageid: 'AppUpdate' });
+  });
+
+  it('tracks interact and opens app store when push:update-app event is dispatched', async () => {
+    render(<App />);
+    window.dispatchEvent(new CustomEvent('push:update-app'));
+    await waitFor(() => {
+      expect(mockInteract).toHaveBeenCalledWith({ id: 'push-notification-update-app', pageid: 'AppUpdate' });
+    });
+    expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
   });
 });

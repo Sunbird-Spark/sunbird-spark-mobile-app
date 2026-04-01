@@ -13,6 +13,7 @@ vi.mock('@ionic/react', () => ({
   IonToolbar: ({ children }: any) => <div data-testid="ion-toolbar">{children}</div>,
   IonSpinner: () => <div data-testid="ion-spinner">Loading...</div>,
   useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn(), canGoBack: () => true }),
+  useIonViewDidEnter: (cb: () => void) => {},
 }));
 
 // Mock react-router-dom

@@ -1,4 +1,10 @@
 {
+  "appUpdate": {
+    "header": "Mise à jour disponible",
+    "subHeader": "Une nouvelle version de l'application est disponible. Mettez à jour maintenant pour profiter des dernières fonctionnalités et améliorations.",
+    "updateNow": "Mettre à jour",
+    "later": "Plus tard"
+  },
   "home": "Accueil",
   "explore": "Explorer",
   "myLearning": "Mon apprentissage",

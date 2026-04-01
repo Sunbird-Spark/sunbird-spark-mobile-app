@@ -5,6 +5,7 @@ import {
   IonHeader,
   IonPage,
   IonSpinner,
+  useIonViewDidEnter,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
@@ -159,6 +160,10 @@ const HomePage: React.FC = () => {
     error: enrollmentsError,
     refetch,
   } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+
+  useIonViewDidEnter(() => {
+    refetch();
+  });
 
   const enrolledCourses = _.get(enrollmentData, 'data.courses', []);
   const enrolledCount = _.size(enrolledCourses);

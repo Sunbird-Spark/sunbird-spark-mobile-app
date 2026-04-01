@@ -18,7 +18,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
 import './SignInPage.css';
 import useImpression from '../hooks/useImpression';
-import { Trans, useTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 
 const GoogleIcon: React.FC = () => (
   <svg width="20" height="20" viewBox="0 0 48 48">
@@ -331,22 +331,19 @@ const SignInPage: React.FC = () => {
               {loading ? <IonSpinner name="crescent" /> : t('signInPage.login')}
             </button>
 
-            {/* Register Link */}
-            <p className="sign-in-register-text">
-              <Trans
-                i18nKey="signInPage.registerPrompt"
-                components={{
-                  link: (
-                    <button
-                      type="button"
-                      onClick={handleRegister}
-                      disabled={loading}
-                      className="sign-in-register-link"
-                    />
-                  ),
-                }}
-              />
-            </p>
+          {/* Register Link */}
+          <p className="sign-in-register-text">
+            {t('signInPage.newUser')}{' '}
+            <button
+              type="button"
+              onClick={handleRegister}
+              disabled={loading}
+              className="sign-in-register-link"
+            >
+              {t('signInPage.createAccount')}
+            </button>{' '}
+            {t('signInPage.toContinue')}
+          </p>
           </form>
         </div>
       </IonContent>
