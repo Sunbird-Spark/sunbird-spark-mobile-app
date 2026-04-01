@@ -128,6 +128,14 @@ export class NetworkQueueDbService {
     );
   }
 
+  /** Removes course_progress and course_assesment rows on logout. Telemetry
+   *  rows are left intact — they are device-level events, not user-session data. */
+  async clearCourseData(): Promise<void> {
+    await databaseService.delete('network_queue', {
+      in: { type: [NetworkQueueType.COURSE_PROGRESS, NetworkQueueType.COURSE_ASSESMENT] },
+    });
+  }
+
   /** On init: reset any PROCESSING rows back to PENDING (crash recovery). */
   async resetProcessing(): Promise<void> {
     await databaseService.update(

@@ -34,6 +34,22 @@ vi.mock('./db/EnrolledCoursesDbService', () => ({
 vi.mock('./db/KeyValueDbService', () => ({
     keyValueDbService: {
         deleteByPrefix: vi.fn(),
+        delete: vi.fn(),
+    },
+    KVKey: {
+        ACTIVE_CHANNEL_ID: 'active_channel_id',
+    },
+}));
+
+vi.mock('./db/NetworkQueueDbService', () => ({
+    networkQueueDbService: {
+        clearCourseData: vi.fn().mockResolvedValue(undefined),
+    },
+}));
+
+vi.mock('./db/CourseAssessmentDbService', () => ({
+    courseAssessmentDbService: {
+        clearAllForUser: vi.fn().mockResolvedValue(undefined),
     },
 }));
 
@@ -120,12 +136,33 @@ describe('UserService', () => {
     });
 
     it('clears account and associated data on logout', async () => {
+        const { networkQueueDbService } = await import('./db/NetworkQueueDbService');
+        const { courseAssessmentDbService } = await import('./db/CourseAssessmentDbService');
+        const { keyValueDbService: kvDb, KVKey } = await import('./db/KeyValueDbService');
+
         (userService as any).account = { userId: 'u1' };
         await userService.clearAccount();
 
         expect(SecureStoragePlugin.remove).toHaveBeenCalled();
         expect(userDbService.delete).toHaveBeenCalledWith('u1');
         expect(userService.isLoggedIn()).toBe(false);
+        expect(networkQueueDbService.clearCourseData).toHaveBeenCalled();
+        expect(courseAssessmentDbService.clearAllForUser).toHaveBeenCalledWith('u1');
+        // active_channel_id must be cleared so the next user gets their own channel resolved
+        expect(kvDb.delete).toHaveBeenCalledWith(KVKey.ACTIVE_CHANNEL_ID);
+    });
+
+    it('still clears cross-session data even when userId is missing', async () => {
+        const { networkQueueDbService } = await import('./db/NetworkQueueDbService');
+        const { keyValueDbService: kvDb, KVKey } = await import('./db/KeyValueDbService');
+
+        (userService as any).account = null;
+        await userService.clearAccount();
+
+        expect(SecureStoragePlugin.remove).toHaveBeenCalled();
+        // These must be cleared even without a userId — e.g. token refresh failure during init
+        expect(networkQueueDbService.clearCourseData).toHaveBeenCalled();
+        expect(kvDb.delete).toHaveBeenCalledWith(KVKey.ACTIVE_CHANNEL_ID);
     });
 
     it('gets display name correctly', () => {

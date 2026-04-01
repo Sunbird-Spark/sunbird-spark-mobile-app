@@ -14,8 +14,9 @@ vi.mock('@capacitor/filesystem', () => ({
     deleteFile: vi.fn().mockResolvedValue(undefined),
     stat: vi.fn().mockResolvedValue({ size: 1024 }),
     getUri: vi.fn().mockResolvedValue({ uri: 'file:///mock/path/file.ecar' }),
+    mkdir: vi.fn().mockResolvedValue(undefined),
   },
-  Directory: { Data: 'DATA' },
+  Directory: { Data: 'DATA', External: 'EXTERNAL' },
 }));
 vi.mock('@capgo/capacitor-downloader', () => ({
   CapacitorDownloader: {
@@ -136,13 +137,97 @@ describe('DownloadManager', () => {
 
     it('recovers crashed entries on init', async () => {
       const crashingEntry = makeEntry({ identifier: 'crash_1', state: DownloadState.DOWNLOADING });
-      vi.mocked(dlDb.getByState).mockResolvedValue([crashingEntry]);
+      vi.mocked(dlDb.getByState).mockImplementation(async (s: any) =>
+        s === DownloadState.DOWNLOADING ? [crashingEntry] : []
+      );
 
       await (manager as any).recoverCrashedEntries();
       expect(dlDb.update).toHaveBeenCalledWith('crash_1', expect.objectContaining({
         state: DownloadState.QUEUED,
         progress: 0
       }));
+    });
+  });
+
+  // ── network subscriber ──
+
+  describe('network subscriber', () => {
+    // Helper: after init(), returns the callback passed to networkSvc.subscribe
+    function captureSubscriber(): (state: any) => void {
+      return vi.mocked(networkSvc.subscribe).mock.calls[0][0];
+    }
+
+    // Drain the microtask queue so fire-and-forget promise chains complete
+    const flushPromises = () => new Promise<void>(r => setTimeout(r, 0));
+
+    it('reconnect from offline triggers requeueRetryWaitEntries then processQueue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+      const processSpy = vi.spyOn(manager as any, 'processQueue').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: false, connectionType: 'unknown' };
+      captureSubscriber()({ connected: true, connectionType: 'cellular' });
+
+      await flushPromises();
+      expect(requeueSpy).toHaveBeenCalledOnce();
+      expect(processSpy).toHaveBeenCalledOnce();
+    });
+
+    it('cellular → WiFi triggers requeueRetryWaitEntries then processQueue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+      const processSpy = vi.spyOn(manager as any, 'processQueue').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'cellular' };
+      captureSubscriber()({ connected: true, connectionType: 'wifi' });
+
+      await flushPromises();
+      expect(requeueSpy).toHaveBeenCalledOnce();
+      expect(processSpy).toHaveBeenCalledOnce();
+    });
+
+    it('WiFi → WiFi does NOT trigger requeue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'wifi' };
+      captureSubscriber()({ connected: true, connectionType: 'wifi' });
+
+      await flushPromises();
+      expect(requeueSpy).not.toHaveBeenCalled();
+    });
+
+    it('cellular → cellular does NOT trigger requeue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'cellular' };
+      captureSubscriber()({ connected: true, connectionType: 'cellular' });
+
+      await flushPromises();
+      expect(requeueSpy).not.toHaveBeenCalled();
+    });
+
+    it('signal lost triggers stopDownloadsOnSignalLoss', async () => {
+      await manager.init();
+      const stopSpy = vi.spyOn(manager as any, 'stopDownloadsOnSignalLoss').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'wifi' };
+      captureSubscriber()({ connected: false, connectionType: 'unknown' });
+
+      await flushPromises();
+      expect(stopSpy).toHaveBeenCalledOnce();
+    });
+
+    it('signal lost does NOT trigger requeue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'wifi' };
+      captureSubscriber()({ connected: false, connectionType: 'unknown' });
+
+      await flushPromises();
+      expect(requeueSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -497,26 +582,15 @@ describe('DownloadManager', () => {
       expect((manager as any).maxConcurrent).toBe(1);
     });
 
-    it('setWifiOnly pauses active downloads if not on wifi', async () => {
-      // Mock being on cellular
-      (networkSvc as any).connectionType = 'cellular';
-      (manager as any).networkState = { connectionType: 'cellular' };
-
-      const pauseSpy = vi.spyOn(manager, 'pause').mockResolvedValue(undefined);
-      (manager as any).activeDownloads.set('do_1', {} as any);
-
-      await manager.setWifiOnly(true);
-      expect(pauseSpy).toHaveBeenCalledWith('do_1');
+    it('setWifiOnly sets wifiOnly flag to true', () => {
+      manager.setWifiOnly(true);
+      expect((manager as any).wifiOnly).toBe(true);
     });
 
-    it('setWifiOnly triggers processQueue when switched off or on wifi', async () => {
-      (networkSvc as any).connectionType = 'wifi';
-      (manager as any).networkState = { connectionType: 'wifi' };
-
-      const processSpy = vi.spyOn(manager as any, 'processQueue').mockResolvedValue(undefined);
-
-      await manager.setWifiOnly(false);
-      expect(processSpy).toHaveBeenCalled();
+    it('setWifiOnly sets wifiOnly flag to false', () => {
+      (manager as any).wifiOnly = true;
+      manager.setWifiOnly(false);
+      expect((manager as any).wifiOnly).toBe(false);
     });
   });
 
@@ -579,12 +653,13 @@ describe('DownloadManager', () => {
       vi.mocked(dlDb.getByState).mockImplementation(async (s: any) =>
         s === DownloadState.RETRY_WAIT ? [entry] : []
       );
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
 
       await (manager as any).recoverCrashedEntries();
 
-      expect(dlDb.update).toHaveBeenCalledWith('do_123', {
+      expect(dlDb.update).toHaveBeenCalledWith('do_123', expect.objectContaining({
         state: DownloadState.QUEUED,
-      });
+      }));
     });
   });
 
@@ -768,15 +843,19 @@ describe('DownloadManager', () => {
       expect(dlDb.getByIdentifier).not.toHaveBeenCalled();
     });
 
-    it('returns early if wifi-only and on cellular', async () => {
+    it('starts download with wifi-only network constraint when on cellular', async () => {
+      // Per design (scenario 1): processQueue runs with no network guard — the OS-level
+      // wifi-only constraint is passed to CapGo, which queues the download until WiFi is available.
       const entry = makeEntry({ state: DownloadState.QUEUED });
       vi.mocked(dlDb.getNextQueued).mockResolvedValue([entry]);
-      (networkSvc as any).connectionType = 'cellular';
+      vi.mocked(dlDb.getByIdentifier).mockResolvedValue(entry);
       (manager as any).networkState = { connectionType: 'cellular' };
       (manager as any).wifiOnly = true;
 
       await (manager as any).processQueue();
-      expect(dlDb.getByIdentifier).not.toHaveBeenCalled();
+      expect(CapacitorDownloader.download).toHaveBeenCalledWith(
+        expect.objectContaining({ network: 'wifi-only' })
+      );
     });
 
     it('skips if identifier is already in activeDownloads', async () => {
