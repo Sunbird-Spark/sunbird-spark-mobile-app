@@ -90,7 +90,7 @@ export class ImportService {
       const existingMap = new Map(existingEntries.map(e => [e.identifier, e]));
 
       // Filter: skip expired, already-imported same/newer version
-      const itemsToImport = this.filterItems(allItems, existingMap);
+      const itemsToImport = await this.filterItems(allItems, existingMap);
       if (itemsToImport.length === 0) {
         return { status: 'ALREADY_EXIST', identifiers: [] };
       }
@@ -250,11 +250,35 @@ export class ImportService {
           throw err;
         }
       }
+    } else if (this.isRawMediaArtifact(mimeType, artifactUrl)) {
+      // Video, audio, and PDF artifacts are stored as raw media files within the
+      // outer ECAR zip. Java's ZipInputStream silently returns no entries when
+      // given a non-ZIP source, so calling Zip.unzip here would succeed but
+      // extract nothing. Copy the file directly instead.
+      await this.copyAsset(itemSourcePath, destUri);
     } else {
-      // Default (inline + gzip) → unzip
+      // Archive types (H5P, HTML) — unzip the inner artifact ZIP
       await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
     }
     return 2; // ARTIFACT_AVAILABLE
+  }
+
+  /**
+   * Returns true when the ECAR artifact is the raw media file itself (not a
+   * nested ZIP archive). For video, audio, and PDF content the outer ECAR zip
+   * stores the file directly — its artifact URL retains the media extension.
+   * Calling Zip.unzip on such a file produces no entries (Java's ZipInputStream
+   * silently returns null for non-ZIP sources), so we must copy instead.
+   */
+  private isRawMediaArtifact(mimeType: string, artifactUrl: string): boolean {
+    const mime = mimeType.toLowerCase();
+    const url = artifactUrl.toLowerCase();
+    if (url.endsWith('.zip')) return false; // explicit ZIP wrapper → unzip
+    return (
+      mime.startsWith('video/') ||
+      mime.startsWith('audio/') ||
+      mime === 'application/pdf'
+    );
   }
 
   private async copyAsset(source: string, destDir: string): Promise<void> {
@@ -394,37 +418,54 @@ export class ImportService {
   //  Helpers
   // ══════════════════════════════════════════════════
 
-  private filterItems(
+  private async filterItems(
     items: ManifestItem[],
     existingMap: Map<string, ContentEntry>
-  ): ManifestItem[] {
-    return items.filter((item) => {
-      // Skip expired drafts
-      if (item.status === 'Draft' && this.isExpired(item.expires)) return false;
-
-      const existing = existingMap.get(item.identifier);
-      if (!existing) return true; // new content
-
-      // Allow re-import if existing entry is spine-only (no artifact extracted yet).
-      // Spine ECARs create entries with content_state=0 for leaf content; the
-      // individual leaf ECAR must still be imported to extract the actual file.
-      if (existing.content_state < 2) return true;
-
-      // Allow re-import if visibility is being upgraded from 'Parent' to 'Default'.
-      // This happens when a content item previously imported as part of a collection
-      // (Parent visibility) is now being imported standalone.
-      if (this.readVisibility(item) === 'Default' && existing.visibility === 'Parent') {
-        return true;
+  ): Promise<ManifestItem[]> {
+    const results: ManifestItem[] = [];
+    for (const item of items) {
+      if (await this.shouldImportItem(item, existingMap.get(item.identifier))) {
+        results.push(item);
       }
+    }
+    return results;
+  }
 
-      // Skip same/newer version already fully imported
-      try {
-        const existingData = JSON.parse(existing.local_data) as { pkgVersion?: number };
-        return (item.pkgVersion ?? 0) > (existingData.pkgVersion || 0);
-      } catch {
-        return true;
+  private async shouldImportItem(item: ManifestItem, existing: ContentEntry | undefined): Promise<boolean> {
+    // Skip expired drafts
+    if (item.status === 'Draft' && this.isExpired(item.expires)) return false;
+
+    if (!existing) return true; // new content
+
+    // Allow re-import if existing entry is spine-only (no artifact extracted yet).
+    if (existing.content_state < 2) return true;
+
+    // Allow re-import if the artifact file is missing on disk. This heals imports
+    // that recorded content_state=2 but never extracted the media file (e.g. due
+    // to the silent Zip.unzip no-op when given a raw video/PDF file).
+    if (existing.path && item.artifactUrl && !item.artifactUrl.toLowerCase().startsWith('http')) {
+      const mimeType = (item.mimeType || '').toLowerCase();
+      const isMediaOrPdf = mimeType.startsWith('video/') || mimeType.startsWith('audio/') || mimeType === 'application/pdf';
+      if (isMediaOrPdf) {
+        const filename = item.artifactUrl.split('/').pop() || item.artifactUrl;
+        const expectedPath = `${existing.path.replace(/\/$/, '')}/${filename}`;
+        const fileExists = await Filesystem.stat({ path: expectedPath }).then(() => true).catch(() => false);
+        if (!fileExists) return true; // artifact missing — re-import
       }
-    });
+    }
+
+    // Allow re-import if visibility is being upgraded from 'Parent' to 'Default'.
+    if (this.readVisibility(item) === 'Default' && existing.visibility === 'Parent') {
+      return true;
+    }
+
+    // Skip same/newer version already fully imported
+    try {
+      const existingData = JSON.parse(existing.local_data) as { pkgVersion?: number };
+      return (item.pkgVersion ?? 0) > (existingData.pkgVersion || 0);
+    } catch {
+      return true;
+    }
   }
 
   private isExpired(expires?: string): boolean {

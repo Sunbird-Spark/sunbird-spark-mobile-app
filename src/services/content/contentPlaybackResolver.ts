@@ -65,12 +65,26 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
       }
     }
 
+    // The CDN artifactUrl basename (e.g. "do_xxx_timestamp_video.mp4") often differs
+    // from the actual extracted filename (e.g. "video.mp4") because ECAR artifact zips
+    // store the file under its original name without the content-ID prefix.
+    // Verify the file exists; if not, scan the directory for a file with the same
+    // extension so the player can locate it.
+    const mime = String(resolved.mimeType);
+    const needsFileResolution = mime.startsWith('video/')
+      || mime === 'application/pdf'
+      || mime === 'application/epub'
+      || mime === 'application/epub+zip';
+    if (localBasename && needsFileResolution) {
+      localBasename = await resolveActualFilename(basePath, localBasename);
+      resolved.artifactUrl = localBasename;
+    }
+
     // Resolve streamingUrl for local playback.
     // IMPORTANT: The sunbird-video-player, when isAvailableLocally=true, constructs
     // the final URL as `streamingUrl + '/' + artifactUrl`. So streamingUrl must be
     // the DIRECTORY path, not the full file URL — otherwise the filename gets doubled
     // (e.g. .../bunny.webm/bunny.webm).
-    const mime = String(resolved.mimeType);
     const isH5pOrHtml = mime === 'application/vnd.ekstep.h5p-archive'
       || mime === 'application/vnd.ekstep.html-archive';
     const isEcml = mime === 'application/vnd.ekstep.ecml-archive';
@@ -141,6 +155,36 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
     );
     // If resolution fails, return original metadata (online playback still works)
     return metadata;
+  }
+}
+
+/**
+ * Verify the expected filename exists in the content directory.
+ * If not found, scan the directory for a file with the same extension.
+ *
+ * This handles the common case where the CDN artifactUrl has an ID-prefixed
+ * name (e.g. "do_xxx_timestamp_video.mp4") but the ECAR artifact zip stores
+ * the file under its original name (e.g. "video.mp4").
+ */
+async function resolveActualFilename(dirPath: string, expectedName: string): Promise<string> {
+  try {
+    await Filesystem.stat({ path: `${dirPath}/${expectedName}` });
+    return expectedName;
+  } catch {
+    // Expected file not found — scan directory for a file with the same extension
+    try {
+      const ext = expectedName.split('.').pop()?.toLowerCase();
+      if (!ext) return expectedName;
+      const { files } = await Filesystem.readdir({ path: dirPath });
+      const match = files.find(
+        (f) => f.type === 'file' && f.name.toLowerCase().endsWith(`.${ext}`),
+      );
+      if (match) {
+        console.debug(TAG, `Filename remapped: ${expectedName} → ${match.name}`);
+        return match.name;
+      }
+    } catch { /* readdir failed — fall through */ }
+    return expectedName;
   }
 }
 

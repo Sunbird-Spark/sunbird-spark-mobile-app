@@ -50,6 +50,7 @@ export class DownloadManager {
     this.unsubscribeNetwork = this.networkSvc.subscribe((state) => {
       const wasDisconnected = !state.connected;
       const wasPreviouslyConnected = this.networkState.connected;
+      const wasConnectionType = this.networkState.connectionType;
       this.networkState = state;
 
       // Connection lost → pause downloads
@@ -58,9 +59,9 @@ export class DownloadManager {
         void this.stopDownloadsOnSignalLoss();
       }
 
-      // Back online → process queue
-      if (!wasPreviouslyConnected && state.connected) {
-        this.processQueue();
+      // Back online OR switched to WiFi → re-queue RETRY_WAIT entries then process
+      if (state.connected && (!wasPreviouslyConnected || (wasConnectionType !== 'wifi' && state.connectionType === 'wifi'))) {
+        void this.requeueRetryWaitEntries().then(() => this.processQueue());
       }
     });
 
@@ -458,15 +459,6 @@ export class DownloadManager {
 
   setWifiOnly(enabled: boolean): void {
     this.wifiOnly = enabled;
-    if (enabled && this.networkState.connectionType !== 'wifi') {
-      // Pause all active downloads if switched to wifi-only while on cellular
-      for (const [id] of this.activeDownloads.entries()) {
-        this.pause(id).catch(console.error);
-      }
-    } else if (!enabled || this.networkState.connectionType === 'wifi') {
-      // Resume or process queue if conditions are met again
-      this.processQueue().catch(console.error);
-    }
   }
 
   setMaxConcurrent(count: number): void {
@@ -498,10 +490,6 @@ export class DownloadManager {
     try {
       do {
         this.needsProcessing = false;
-
-        // Check network state
-        if (!this.networkState.connected) break;
-        if (this.wifiOnly && this.networkState.connectionType !== 'wifi') break;
 
         // Fill download slots
         const activeCount = this.activeDownloads.size;
@@ -553,6 +541,7 @@ export class DownloadManager {
         id: entry.identifier,
         url: entry.download_url,
         destination: destinationPath,
+        network: this.wifiOnly ? 'wifi-only' : 'cellular',
       });
 
       this.activeDownloads.set(entry.identifier, { nativeId: entry.identifier });
@@ -582,8 +571,7 @@ export class DownloadManager {
         BACKOFF_MAX_MS
       );
 
-      await this.downloadDb.update(identifier, {
-        state: DownloadState.RETRY_WAIT,
+      await this.transition(identifier, DownloadState.RETRY_WAIT, {
         retry_count: nextRetry,
         last_error: error.message,
       });
@@ -603,9 +591,7 @@ export class DownloadManager {
       setTimeout(async () => {
         const current = await this.downloadDb.getByIdentifier(identifier);
         if (current?.state === DownloadState.RETRY_WAIT) {
-          await this.downloadDb.update(identifier, {
-            state: DownloadState.QUEUED,
-          });
+          await this.transition(identifier, DownloadState.QUEUED);
           await this.processQueue();
         }
       }, backoff);
@@ -792,8 +778,7 @@ export class DownloadManager {
         }
       }
 
-      await this.downloadDb.update(entry.identifier, {
-        state: DownloadState.RETRY_WAIT,
+      await this.transition(entry.identifier, DownloadState.RETRY_WAIT, {
         retry_count: nextRetry,
         last_error: errorMessage,
       });
@@ -812,9 +797,7 @@ export class DownloadManager {
       setTimeout(async () => {
         const current = await this.downloadDb.getByIdentifier(entry.identifier);
         if (current?.state === DownloadState.RETRY_WAIT) {
-          await this.downloadDb.update(entry.identifier, {
-            state: retryState,
-          });
+          await this.transition(entry.identifier, retryState);
           await this.processQueue();
         }
       }, backoff);
@@ -861,6 +844,16 @@ export class DownloadManager {
     });
 
     this.emit({ type: 'state_change', identifier });
+  }
+
+  /** Network reconnected → immediately re-queue all RETRY_WAIT entries so processQueue picks them up. */
+  private async requeueRetryWaitEntries(): Promise<void> {
+    const retryWait = await this.downloadDb.getByState(DownloadState.RETRY_WAIT);
+    await Promise.allSettled(
+      retryWait.map(entry => this.transition(entry.identifier, DownloadState.QUEUED).catch(err =>
+        console.warn(`[DownloadManager] Failed to requeue ${entry.identifier}:`, err))
+      )
+    );
   }
 
   /** Signal lost while downloading → stop and set retry_wait */
@@ -918,9 +911,7 @@ export class DownloadManager {
     // RETRY_WAIT entries → reset to QUEUED
     const retryWait = await this.downloadDb.getByState(DownloadState.RETRY_WAIT);
     for (const entry of retryWait) {
-      await this.downloadDb.update(entry.identifier, {
-        state: DownloadState.QUEUED,
-      });
+      await this.transition(entry.identifier, DownloadState.QUEUED);
     }
 
     // PAUSED entries → leave as-is (user resumes manually)
