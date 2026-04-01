@@ -172,16 +172,16 @@ class UserService {
         if (profile) {
           const provider = this.getLoginProvider();
           const userType: UserType = provider === 'google' ? 'GOOGLE' : 'KEYCLOAK';
+          const createdOn = profile.createdDate ? new Date(profile.createdDate).getTime() : Date.now();
           await userDbService.upsert({
             id: userId,
             details: {
+              ...profile,
               displayName: [profile.firstName, profile.lastName].filter(Boolean).join(' ') || undefined,
-              email: profile.email,
               imageUrl: profile.avatar,
-              roles: Array.isArray(profile.roles) ? profile.roles : undefined,
             },
             user_type: userType,
-            created_on: profile.createdDate ? new Date(profile.createdDate).getTime() : Date.now(),
+            created_on: createdOn,
           });
         }
       } catch (err) {
@@ -192,6 +192,15 @@ class UserService {
     } catch {
       return this.readUserFromDb(userId);
     }
+  }
+
+  /** Read organisations[0].hashTagId from the cached user profile in SQLite. */
+  async getChannelId(): Promise<string | null> {
+    const userId = this.getUserId();
+    if (!userId) return null;
+    const user = await userDbService.getById(userId);
+    const orgs = user?.details?.organisations;
+    return Array.isArray(orgs) && orgs.length > 0 ? (orgs[0].hashTagId ?? null) : null;
   }
 
   private async readUserFromDb(userId: string): Promise<ApiResponse<any>> {

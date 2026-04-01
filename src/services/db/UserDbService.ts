@@ -3,18 +3,7 @@ import { KeyValueDbService, KVKey, keyValueDbService } from './KeyValueDbService
 
 export type UserType = 'GUEST' | 'GOOGLE' | 'KEYCLOAK';
 
-export interface UserDetails {
-  displayName?: string;
-  email?: string;
-  imageUrl?: string;
-  givenName?: string;
-  familyName?: string;
-  mobileNumber?: string;
-  alternateEmail?: string;
-  district?: string;
-  state?: string;
-  roles?: string[];
-}
+export type UserDetails = Record<string, any>;
 
 export interface User {
   id: string;
@@ -43,7 +32,7 @@ export class UserDbService {
   }
 
   async getById(id: string): Promise<User | null> {
-    interface UserRow { id: string; details: UserDetails; user_type: string; created_on: number; }
+    interface UserRow { id: string; details: string; user_type: string; created_on: number; }
     const rows = await this.db.select<UserRow>('users', {
       where: { eq: { id } },
     });
@@ -56,7 +45,7 @@ export class UserDbService {
     return this.getById(userId);
   }
 
-  async updateDetails(id: string, patch: Partial<UserDetails>): Promise<void> {
+  async updateDetails(id: string, patch: Record<string, any>): Promise<void> {
     const existing = await this.getById(id);
     if (!existing) return;
     const merged: UserDetails = { ...existing.details, ...patch };
@@ -71,10 +60,10 @@ export class UserDbService {
     await this.db.delete('users', { eq: { id } });
   }
 
-  private rowToUser(row: { id: string; details: UserDetails; user_type: string; created_on: number }): User {
+  private rowToUser(row: { id: string; details: string; user_type: string; created_on: number }): User {
     let details: UserDetails = {};
     try {
-      details = typeof row.details === 'string' ? JSON.parse(row.details as unknown as string) : row.details;
+      details = JSON.parse(row.details);
     } catch {
       details = {};
     }

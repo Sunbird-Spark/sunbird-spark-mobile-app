@@ -1,6 +1,7 @@
 import { getClient } from '../lib/http-client';
 import { syncConfig } from './sync/SyncConfig';
 import { keyValueDbService, KVKey } from './db/KeyValueDbService';
+import { userService } from './UserService';
 
 /**
  * ChannelManager handles dynamic channel ID management
@@ -19,7 +20,11 @@ export class ChannelManager {
       { key: 'x-channel-id', value: channelId, action: 'add' },
     ]);
     syncConfig.setChannelId(channelId);
-    keyValueDbService.set(KVKey.ACTIVE_CHANNEL_ID, channelId).catch(() => {});
+    // Only persist to key_value for guest sessions — logged-in users derive channel
+    // from organisations[0].hashTagId stored in the users table.
+    if (!userService.isLoggedIn()) {
+      keyValueDbService.set(KVKey.ACTIVE_CHANNEL_ID, channelId).catch(() => {});
+    }
   }
 
   /**

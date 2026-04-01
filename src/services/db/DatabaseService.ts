@@ -2,7 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { CapacitorSQLite, SQLiteConnection, SQLiteDBConnection } from '@capacitor-community/sqlite';
 
 const DB_NAME = 'sunbird_spark';
-const SCHEMA_VERSION = 4;
+const SCHEMA_VERSION = 5;
 
 // ── Allowlisted identifiers (guards against SQL injection via identifiers) ────
 
@@ -478,6 +478,12 @@ export class DatabaseService {
           // Column already exists (e.g. fresh install that created the table with the
           // new schema from SCHEMA_STATEMENTS above). Safe to ignore.
         });
+      }
+
+      if (currentVersion < 5) {
+        // v5: No DDL change. UserService now stores the full profile object
+        // (including organisations[]) in users.details instead of select fields only.
+        // Version bump documents the behavioural change.
       }
 
       const now = Date.now();
