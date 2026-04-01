@@ -149,6 +149,88 @@ describe('DownloadManager', () => {
     });
   });
 
+  // ── network subscriber ──
+
+  describe('network subscriber', () => {
+    // Helper: after init(), returns the callback passed to networkSvc.subscribe
+    function captureSubscriber(): (state: any) => void {
+      return vi.mocked(networkSvc.subscribe).mock.calls[0][0];
+    }
+
+    // Drain the microtask queue so fire-and-forget promise chains complete
+    const flushPromises = () => new Promise<void>(r => setTimeout(r, 0));
+
+    it('reconnect from offline triggers requeueRetryWaitEntries then processQueue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+      const processSpy = vi.spyOn(manager as any, 'processQueue').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: false, connectionType: 'unknown' };
+      captureSubscriber()({ connected: true, connectionType: 'cellular' });
+
+      await flushPromises();
+      expect(requeueSpy).toHaveBeenCalledOnce();
+      expect(processSpy).toHaveBeenCalledOnce();
+    });
+
+    it('cellular → WiFi triggers requeueRetryWaitEntries then processQueue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+      const processSpy = vi.spyOn(manager as any, 'processQueue').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'cellular' };
+      captureSubscriber()({ connected: true, connectionType: 'wifi' });
+
+      await flushPromises();
+      expect(requeueSpy).toHaveBeenCalledOnce();
+      expect(processSpy).toHaveBeenCalledOnce();
+    });
+
+    it('WiFi → WiFi does NOT trigger requeue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'wifi' };
+      captureSubscriber()({ connected: true, connectionType: 'wifi' });
+
+      await flushPromises();
+      expect(requeueSpy).not.toHaveBeenCalled();
+    });
+
+    it('cellular → cellular does NOT trigger requeue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'cellular' };
+      captureSubscriber()({ connected: true, connectionType: 'cellular' });
+
+      await flushPromises();
+      expect(requeueSpy).not.toHaveBeenCalled();
+    });
+
+    it('signal lost triggers stopDownloadsOnSignalLoss', async () => {
+      await manager.init();
+      const stopSpy = vi.spyOn(manager as any, 'stopDownloadsOnSignalLoss').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'wifi' };
+      captureSubscriber()({ connected: false, connectionType: 'unknown' });
+
+      await flushPromises();
+      expect(stopSpy).toHaveBeenCalledOnce();
+    });
+
+    it('signal lost does NOT trigger requeue', async () => {
+      await manager.init();
+      const requeueSpy = vi.spyOn(manager as any, 'requeueRetryWaitEntries').mockResolvedValue(undefined);
+
+      (manager as any).networkState = { connected: true, connectionType: 'wifi' };
+      captureSubscriber()({ connected: false, connectionType: 'unknown' });
+
+      await flushPromises();
+      expect(requeueSpy).not.toHaveBeenCalled();
+    });
+  });
+
   // ── enqueue ──
 
   describe('enqueue', () => {

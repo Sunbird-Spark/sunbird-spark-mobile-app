@@ -849,9 +849,11 @@ export class DownloadManager {
   /** Network reconnected → immediately re-queue all RETRY_WAIT entries so processQueue picks them up. */
   private async requeueRetryWaitEntries(): Promise<void> {
     const retryWait = await this.downloadDb.getByState(DownloadState.RETRY_WAIT);
-    for (const entry of retryWait) {
-      await this.transition(entry.identifier, DownloadState.QUEUED);
-    }
+    await Promise.allSettled(
+      retryWait.map(entry => this.transition(entry.identifier, DownloadState.QUEUED).catch(err =>
+        console.warn(`[DownloadManager] Failed to requeue ${entry.identifier}:`, err))
+      )
+    );
   }
 
   /** Signal lost while downloading → stop and set retry_wait */
