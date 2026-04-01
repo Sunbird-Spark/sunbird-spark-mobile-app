@@ -106,27 +106,6 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
 
         iframe.onload = () => {
           if (cancelled) return;
-
-          // Inject CSS to fix gc-menu blocking the left navigation button.
-          // overlay.js (post-install generated, cannot be modified) hardcodes
-          // marginLeft: "-35%" for the closed state via jQuery inline style.
-          // Since the iframe is same-origin we can inject a style that:
-          //   1. Overrides the base CSS class initial position (-35% → -45%)
-          //   2. Catches the post-animation inline style via attribute selector
-          //      and forces -45% !important (the snap is off-screen, not visible).
-          // jQuery's animate() reads getComputedStyle which returns -45% when
-          // our !important rule is active, so openMenu() animates correctly from -45% → 0%.
-          try {
-            const doc = iframe.contentDocument;
-            if (doc?.head) {
-              const style = doc.createElement('style');
-              style.textContent =
-                '.gc-menu { margin-left: -45%; }\n' +
-                '.gc-menu[style*="-35%"] { margin-left: -45% !important; }';
-              doc.head.appendChild(style);
-            }
-          } catch { /* sandboxed iframe — best effort */ }
-
           // Send config to the iframe via postMessage.
           // The custom preview.html listens for this and calls initializePreview.
           // This avoids cross-origin contentWindow access issues in Capacitor.
