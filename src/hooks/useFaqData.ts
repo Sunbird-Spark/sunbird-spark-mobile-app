@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { CapacitorHttp } from '@capacitor/core';
 import { useTranslation } from 'react-i18next';
 import { useSystemSetting } from './useSystemSetting';
@@ -175,6 +175,7 @@ export const useFaqData = (): UseFaqDataResult => {
     enabled: !!faqUrl,
     staleTime: Infinity,
     gcTime: 60 * 60 * 1000,
+    placeholderData: keepPreviousData,
   });
 
   return {

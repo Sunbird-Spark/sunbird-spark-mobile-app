@@ -240,6 +240,10 @@
     "wifi": "वाईफाई",
     "always": "हमेशा"
   },
+  "scanPage": {
+    "scannerDisabled": "QR स्कैनर अक्षम है",
+    "startScanning": "स्कैनिंग शुरू करें"
+  },
   "scanQRCode": "QR कोड स्कैन करें",
   "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",
   "cameraDeniedMessage": "QR कोड स्कैन करने के लिए कृपया कैमरा एक्सेस की अनुमति दें।",
@@ -310,5 +314,11 @@
     "partialDownloadRetry": "आंशिक डाउनलोड - विफल वस्तुओं का पुनः प्रयास करने के लिए टैप करें",
     "partialDownloadRemaining": "आंशिक डाउनलोड - शेष वस्तुओं को डाउनलोड करने के लिए टैप करें"
   },
-  "assessment_max_attempts_reached": "आप इस सामग्री के लिए अधिकतम अनुमत प्रयासों तक पहुँच चुके हैं।"
+  "assessment_max_attempts_reached": "आप इस सामग्री के लिए अधिकतम अनुमत प्रयासों तक पहुँच चुके हैं।",
+  "logoutSyncWarning": {
+    "header": "Unsaved Progress",
+    "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
+    "cancel": "Cancel",
+    "confirm": "Logout Anyway"
+  }
 }

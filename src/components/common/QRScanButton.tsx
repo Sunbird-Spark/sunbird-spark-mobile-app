@@ -2,6 +2,7 @@ import React from 'react';
 import { IonAlert } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useDIALScanner } from '../../hooks/useDIALScanner';
+import { useQRScannerPreference } from '../../hooks/useQRScannerPreference';
 
 const QRIcon = () => (
   <svg
@@ -49,16 +50,23 @@ const QRIcon = () => (
 export const QRScanButton: React.FC = () => {
   const { t } = useTranslation();
   const { alertType, startScan, dismissAlert } = useDIALScanner();
+  const { isEnabled, isLoading } = useQRScannerPreference();
+
+  if (isLoading || !isEnabled) return null;
+
+  const handleClick = () => {
+    startScan();
+  };
 
   return (
     <>
       <button
-        onClick={startScan}
+        onClick={handleClick}
         aria-label={t('scanQRCode')}
         style={{
           background: 'none',
           border: 'none',
-          padding: '4px',
+          padding: '0.25rem',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',

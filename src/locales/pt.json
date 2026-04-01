@@ -354,6 +354,10 @@
     "wifi": "WIFI",
     "always": "SEMPRE"
   },
+  "scanPage": {
+    "scannerDisabled": "O scanner QR está desativado",
+    "startScanning": "Iniciar digitalização"
+  },
   "scanQRCode": "Digitalizar código QR",
   "cameraDeniedTitle": "Acesso à câmera negado",
   "cameraDeniedMessage": "Por favor, permita o acesso à câmera para digitalizar códigos QR.",
@@ -379,5 +383,11 @@
     "downloadRemaining": "Baixar restante ({{count}} itens)",
     "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)"
   },
-  "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo."
+  "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo.",
+  "logoutSyncWarning": {
+    "header": "Unsaved Progress",
+    "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
+    "cancel": "Cancel",
+    "confirm": "Logout Anyway"
+  }
 }

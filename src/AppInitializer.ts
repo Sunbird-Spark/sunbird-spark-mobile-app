@@ -79,26 +79,28 @@ export class AppInitializer {
         ]);
       }
 
-      // Resolve channel hashTagId from org API on every startup so KV never stays stale.
-      // KV is updated as a side-effect of ChannelManager.setChannelId().
+      // Resolve channel hashTagId on every startup and set it in HTTP headers.
+      // For logged-in users: read organisations[0].hashTagId directly from the cached
+      // user profile — no extra API call needed.
+      // For guests: fall back to org search using the default_channel system setting.
       try {
-        let slug = '';
+        let channelId: string | null = null;
         if (userService.isLoggedIn()) {
           const uid = userService.getUserId();
           if (uid) {
             const profileResponse = await userService.userRead(uid);
-            slug = profileResponse?.data?.response?.channel ?? '';
+            channelId = profileResponse?.data?.response?.organisations?.[0]?.hashTagId ?? null;
           }
         }
-        if (!slug) {
+        if (!channelId) {
           const systemSettings = new SystemSettingService();
           const setting = await systemSettings.read<any>('default_channel').catch(() => null);
-          slug = setting?.data?.response?.value || 'sunbird';
+          const slug = setting?.data?.response?.value || 'sunbird';
+          const orgResponse = await new OrganizationService().search({
+            request: { filters: { isTenant: true, slug } },
+          }).catch(() => null);
+          channelId = orgResponse?.data?.response?.content?.[0]?.hashTagId ?? null;
         }
-        const orgResponse = await new OrganizationService().search({
-          request: { filters: { isTenant: true, slug } },
-        }).catch(() => null);
-        const channelId = orgResponse?.data?.response?.content?.[0]?.hashTagId ?? null;
         if (channelId) {
           ChannelManager.setChannelId(channelId);
         }

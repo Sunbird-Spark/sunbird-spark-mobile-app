@@ -6,8 +6,10 @@ import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import { userDbService } from './db/UserDbService';
 import type { UserType } from './db/UserDbService';
 import { enrolledCoursesDbService } from './db/EnrolledCoursesDbService';
-import { keyValueDbService } from './db/KeyValueDbService';
+import { keyValueDbService, KVKey } from './db/KeyValueDbService';
 import { networkService } from './network/networkService';
+import { networkQueueDbService } from './db/NetworkQueueDbService';
+import { courseAssessmentDbService } from './db/CourseAssessmentDbService';
 
 const STORAGE_KEY = 'USER_ACCOUNT';
 
@@ -118,8 +120,16 @@ class UserService {
         enrolledCoursesDbService.deleteAllForUser(userId),
         userDbService.delete(userId),
         keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
+        courseAssessmentDbService.clearAllForUser(userId),
       ]);
     }
+
+    // These have no user-id dependency — clear even when userId is null so
+    // stale cross-session state never persists across logins.
+    await Promise.allSettled([
+      keyValueDbService.delete(KVKey.ACTIVE_CHANNEL_ID),
+      networkQueueDbService.clearCourseData(),
+    ]);
 
     try {
       await SecureStoragePlugin.remove({ key: STORAGE_KEY });
@@ -162,16 +172,16 @@ class UserService {
         if (profile) {
           const provider = this.getLoginProvider();
           const userType: UserType = provider === 'google' ? 'GOOGLE' : 'KEYCLOAK';
+          const createdOn = profile.createdDate ? new Date(profile.createdDate).getTime() : Date.now();
           await userDbService.upsert({
             id: userId,
             details: {
+              ...profile,
               displayName: [profile.firstName, profile.lastName].filter(Boolean).join(' ') || undefined,
-              email: profile.email,
               imageUrl: profile.avatar,
-              roles: Array.isArray(profile.roles) ? profile.roles : undefined,
             },
             user_type: userType,
-            created_on: profile.createdDate ? new Date(profile.createdDate).getTime() : Date.now(),
+            created_on: createdOn,
           });
         }
       } catch (err) {
@@ -182,6 +192,15 @@ class UserService {
     } catch {
       return this.readUserFromDb(userId);
     }
+  }
+
+  /** Read organisations[0].hashTagId from the cached user profile in SQLite. */
+  async getChannelId(): Promise<string | null> {
+    const userId = this.getUserId();
+    if (!userId) return null;
+    const user = await userDbService.getById(userId);
+    const orgs = user?.details?.organisations;
+    return Array.isArray(orgs) && orgs.length > 0 ? (orgs[0].hashTagId ?? null) : null;
   }
 
   private async readUserFromDb(userId: string): Promise<ApiResponse<any>> {
