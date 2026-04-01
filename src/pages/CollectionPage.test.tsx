@@ -235,11 +235,12 @@ describe('CollectionPage', () => {
       isLoading: false,
       isError: false,
       fetchStatus: 'idle',
+      status: 'pending',
     });
 
     render(<CollectionPage />);
     expect(screen.getByTestId('ion-spinner')).toBeInTheDocument();
-    expect(screen.getByText('Initializing…')).toBeInTheDocument();
+    expect(screen.getByText('loading')).toBeInTheDocument();
   });
 
   it('shows loading spinner during data fetch', () => {

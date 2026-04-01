@@ -425,13 +425,13 @@ const CollectionPage: React.FC = () => {
     [searchData, collectionData?.id],
   );
 
-  const handleBack = useCallback(() => {
+  const handleBack = () => {
     if (location.state?.parentRoute) {
       router.push(location.state.parentRoute, 'back', 'pop');
     } else {
       router.goBack();
     }
-  }, [location.state?.parentRoute, router]);
+  };
 
 
   const handleJoinCourse = async () => {
