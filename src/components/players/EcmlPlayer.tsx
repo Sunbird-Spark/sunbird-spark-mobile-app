@@ -42,23 +42,28 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
       if (event.origin !== window.location.origin) return;
       if (!event.data) return;
 
-      const eventData = typeof event.data === 'string'
+      const rawData = typeof event.data === 'string'
         ? (() => { try { return JSON.parse(event.data); } catch { return null; } })()
         : event.data;
-      if (!eventData) return;
+      if (!rawData) return;
+
+      // Intelligent un-nesting: some renderer versions/dispatchers wrap events in 'target', 'detail' or 'eventData'
+      const eventData = (rawData.eid || rawData.event)
+        ? rawData
+        : (rawData.target || rawData.detail || rawData.eventData || rawData);
+
+      const eid = eventData.eid || eventData.event;
+      if (!eid) return;
 
       const playerEvent: EcmlPlayerEvent = {
-        type: eventData.eid || eventData.event || 'unknown',
+        type: eid,
         data: eventData,
         playerId: metadata.identifier,
         timestamp: Date.now(),
       };
 
       onPlayerEventRef.current?.(playerEvent);
-
-      if (eventData.eid) {
-        onTelemetryEventRef.current?.(eventData);
-      }
+      onTelemetryEventRef.current?.(eventData);
     };
 
     const telemetryCustomEventHandler = (event: Event) => {
@@ -126,7 +131,7 @@ export const EcmlPlayer: React.FC<EcmlPlayerProps> = ({
         iframe.onload = null;
       }
     };
-  }, [metadata]);
+  }, [metadata.identifier, metadata.isAvailableLocally]);
 
   return (
     <iframe

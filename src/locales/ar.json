@@ -284,7 +284,11 @@
     "noDownloadableItems": "لا توجد عناصر قابلة للتنزيل",
     "skippedTypesWarning": "لا يمكن تنزيل محتوى {{types}}",
     "deleteCollectionMessage": "حذف كافة المحتويات المنزّلة لـ {{title}}؟",
-    "leave": "مغادرة"
+    "leave": "مغادرة",
+    "deleteDownloadedContent": "حذف المحتوى المنزّل",
+    "downloadFailedRetry": "فشل التنزيل — انقر لإعادة المحاولة",
+    "partialDownloadRetry": "تنزيل جزئي — انقر لإعادة محاولة العناصر الفاشلة",
+    "partialDownloadRemaining": "تنزيل جزئي — انقر لتنزيل العناصر المتبقية"
   },
   "and": "و",
   "browseCourses": "تصفح الدورات",
@@ -352,6 +356,10 @@
     "wifi": "واي فاي",
     "always": "دائماً"
   },
+  "scanPage": {
+    "scannerDisabled": "ماسح QR معطل",
+    "startScanning": "ابدأ المسح"
+  },
   "scanQRCode": "مسح رمز QR",
   "cameraDeniedTitle": "تم رفض الوصول إلى الكاميرا",
   "cameraDeniedMessage": "يرجى السماح بالوصول إلى الكاميرا لمسح رموز QR.",
@@ -376,5 +384,6 @@
     "deleteUnitDownloads": "حذف تنزيلات الوحدة",
     "downloadRemaining": "تنزيل المتبقي ({{count}} عناصر)",
     "downloadUnit": "تنزيل محتويات الوحدة ({{count}} عناصر)"
-  }
+  },
+  "assessment_max_attempts_reached": "لقد وصلت إلى الحد الأقصى للمحاولات المسموح بها لهذا المحتوى."
 }

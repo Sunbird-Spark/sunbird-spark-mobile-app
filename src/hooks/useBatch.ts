@@ -50,7 +50,7 @@ export function useBatchRead(
 
 // ─── useContentState ─────────────────────────────────────────────────────────
 export function useContentState(
-  request: ContentStateReadRequest | null,
+  request: (ContentStateReadRequest & { maxAttemptsMap?: Record<string, number> }) | null,
   options?: { enabled?: boolean }
 ): UseQueryResult<ApiResponse<ContentStateReadResponse>, Error> {
   const enabled = (options?.enabled ?? true) && AppInitializer.isInitialized();
@@ -83,6 +83,8 @@ export function useEnrol(): UseMutationResult<ApiResponse<unknown>, Error, Enrol
     mutationFn: ({ courseId, userId, batchId }: EnrolParams) =>
       batchService.enrol(courseId, userId, batchId),
     onSuccess: (_data, variables) => {
+      // Invalidate both base and enriched enrollment queries
+      queryClient.invalidateQueries({ queryKey: ['userEnrollments', 'base', variables.userId] });
       queryClient.invalidateQueries({ queryKey: ['userEnrollments', variables.userId] });
       queryClient.invalidateQueries({ queryKey: ['batchList', variables.courseId] });
     },
@@ -96,6 +98,7 @@ export function useUnenrol(): UseMutationResult<ApiResponse<unknown>, Error, Enr
     mutationFn: ({ courseId, userId, batchId }: EnrolParams) =>
       batchService.unenrol(courseId, userId, batchId),
     onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['userEnrollments', 'base', variables.userId] });
       queryClient.invalidateQueries({ queryKey: ['userEnrollments', variables.userId] });
       queryClient.invalidateQueries({ queryKey: ['contentState'] });
     },

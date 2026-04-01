@@ -331,19 +331,19 @@ const SignInPage: React.FC = () => {
               {loading ? <IonSpinner name="crescent" /> : t('signInPage.login')}
             </button>
 
-          {/* Register Link */}
-          <p className="sign-in-register-text">
-            {t('signInPage.newUser')}{' '}
-            <button
-              type="button"
-              onClick={handleRegister}
-              disabled={loading}
-              className="sign-in-register-link"
-            >
-              {t('signInPage.createAccount')}
-            </button>{' '}
-            {t('signInPage.toContinue')}
-          </p>
+            {/* Register Link */}
+            <p className="sign-in-register-text">
+              {t('signInPage.newUser')}{' '}
+              <button
+                type="button"
+                onClick={handleRegister}
+                disabled={loading}
+                className="sign-in-register-link"
+              >
+                {t('signInPage.createAccount')}
+              </button>{' '}
+              {t('signInPage.toContinue')}
+            </p>
           </form>
         </div>
       </IonContent>

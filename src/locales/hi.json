@@ -234,6 +234,10 @@
     "wifi": "वाईफाई",
     "always": "हमेशा"
   },
+  "scanPage": {
+    "scannerDisabled": "QR स्कैनर अक्षम है",
+    "startScanning": "स्कैनिंग शुरू करें"
+  },
   "scanQRCode": "QR कोड स्कैन करें",
   "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",
   "cameraDeniedMessage": "QR कोड स्कैन करने के लिए कृपया कैमरा एक्सेस की अनुमति दें।",
@@ -280,6 +284,29 @@
     "deleteMessage": "{{name}} हटाएं? इससे डाउनलोड की गई सामग्री हट जाएगी।",
     "delete": "हटाएं",
     "deleteFailed": "सामग्री हटाने में विफल",
-    "downloadFailed": "सामग्री डाउनलोड करने में विफल।"
-  }
+    "downloadFailed": "सामग्री डाउनलोड करने में विफल।",
+    "allDownloaded": "सभी सामग्री पहले से डाउनलोड की जा चुकी है",
+    "failedToStart": "डाउनलोड शुरू करने में विफल",
+    "downloadingItems": "{{count}} आइटम डाउनलोड हो रहा है...",
+    "downloadingItems_plural": "{{count}} आइटम डाउनलोड हो रहे हैं...",
+    "viewDownloadedOnly": "केवल डाउनलोड की गई सामग्री देखें",
+    "syncProgress": "प्रगति सिंक करें",
+    "leaveCourse": "कोर्स छोड़ें",
+    "leaveCourseConfirm": "क्या आप वाकई यह कोर्स छोड़ना चाहते हैं? आपकी प्रगति खो जाएगी।",
+    "previewCertificate": "प्रमाणपत्र का पूर्वावलोकन करें",
+    "resumeAll": "सभी फिर से शुरू करें",
+    "pauseAll": "सभी रोकें",
+    "allContentDownloaded": "सभी सामग्री डाउनलोड की गई",
+    "deleteAllDownloads": "सभी डाउनलोड हटाएं",
+    "downloadAllConfirm": "{{type}} <strong>{{title}}</strong> के लिए सभी ({{count}} आइटम) डाउनलोड करें?",
+    "noDownloadableItems": "कोई डाउनलोड करने योग्य आइटम नहीं",
+    "skippedTypesWarning": "{{types}} सामग्री डाउनलोड नहीं की जा सकती",
+    "deleteCollectionMessage": "{{title}} के लिए सभी डाउनलोड की गई सामग्री हटाएं?",
+    "leave": "छोड़ें",
+    "deleteDownloadedContent": "डाउनलोड की गई सामग्री हटाएं",
+    "downloadFailedRetry": "डाउनलोड विफल - पुनः प्रयास करने के लिए टैप करें",
+    "partialDownloadRetry": "आंशिक डाउनलोड - विफल वस्तुओं का पुनः प्रयास करने के लिए टैप करें",
+    "partialDownloadRemaining": "आंशिक डाउनलोड - शेष वस्तुओं को डाउनलोड करने के लिए टैप करें"
+  },
+  "assessment_max_attempts_reached": "आप इस सामग्री के लिए अधिकतम अनुमत प्रयासों तक पहुँच चुके हैं।"
 }

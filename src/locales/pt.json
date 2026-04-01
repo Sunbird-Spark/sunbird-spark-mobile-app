@@ -276,7 +276,11 @@
     "noDownloadableItems": "Nenhum item disponível para download",
     "skippedTypesWarning": "O conteúdo {{types}} não pode ser baixado",
     "deleteCollectionMessage": "Excluir todo o conteúdo baixado para {{title}}?",
-    "leave": "Sair"
+    "leave": "Sair",
+    "deleteDownloadedContent": "Excluir conteúdo baixado",
+    "downloadFailedRetry": "Falha no download — toque para tentar novamente",
+    "partialDownloadRetry": "Download parcial — toque para tentar novamente os itens que falharam",
+    "partialDownloadRemaining": "Download parcial — toque para baixar os itens restantes"
   },
   "and": "e",
   "browseCourses": "Explorar cursos",
@@ -344,6 +348,10 @@
     "wifi": "WIFI",
     "always": "SEMPRE"
   },
+  "scanPage": {
+    "scannerDisabled": "O scanner QR está desativado",
+    "startScanning": "Iniciar digitalização"
+  },
   "scanQRCode": "Digitalizar código QR",
   "cameraDeniedTitle": "Acesso à câmera negado",
   "cameraDeniedMessage": "Por favor, permita o acesso à câmera para digitalizar códigos QR.",
@@ -368,5 +376,6 @@
     "deleteUnitDownloads": "Excluir downloads da unidade",
     "downloadRemaining": "Baixar restante ({{count}} itens)",
     "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)"
-  }
+  },
+  "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo."
 }

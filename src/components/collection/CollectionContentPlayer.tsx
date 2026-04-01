@@ -101,6 +101,8 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
         const parsed = JSON.parse(entry.local_data);
         parsed.identifier = entry.identifier;
         if (!parsed.mimeType && entry.mime_type) parsed.mimeType = entry.mime_type;
+        if (!parsed.contentType && entry.content_type) parsed.contentType = entry.content_type;
+        if (!parsed.primaryCategory && entry.primary_category) parsed.primaryCategory = entry.primary_category;
         if (!cancelled) setLocalFallbackMeta(parsed);
       } catch (e) {
         console.error('[CollectionContentPlayer] Failed to parse local_data for', contentId, e);
@@ -190,7 +192,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     mimeType,
     currentContentStatus,
     skipContentStateUpdate,
-    contentType: contentData?.contentType,
+    contentType: playerMetadata?.contentType
   });
 
   const handlePlayerEvent = useCallback((event: any) => {

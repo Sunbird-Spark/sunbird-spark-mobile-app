@@ -27,13 +27,23 @@ const FaqDetailPage: React.FC = () => {
     const { t } = useTranslation();
     const { faqData, isLoading, isError } = useFaqData();
 
-    const categoryData = faqData?.categories.find(c => c.slug === category);
+    const categoryIndex = parseInt(category, 10);
+    let categoryData = !isNaN(categoryIndex) && faqData?.categories 
+        ? faqData.categories[categoryIndex] 
+        : undefined;
+    
+    // Fallback: support slug-based URLs like /support/<slug>
+    if (!categoryData && faqData?.categories) {
+        categoryData = faqData.categories.find(c => c.slug === category);
+    }
+    
     const data = categoryData
         ? { title: `${categoryData.title} FAQ's`, faqs: categoryData.faqs }
         : { title: "FAQ's", faqs: [] };
 
     const { interact } = useInteract();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
+
     const [feedback, setFeedback] = useState<Record<number, 'yes' | 'no' | 'submitted' | null>>({});
     const [feedbackText, setFeedbackText] = useState<Record<number, string>>({});
 

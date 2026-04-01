@@ -142,9 +142,9 @@ describe('BatchService', () => {
       (contentStateSyncService.readContentState as any).mockResolvedValue(mockResponse);
 
       const request: ContentStateReadRequest = {
-        userId:     'user-1',
-        courseId:   'course-1',
-        batchId:    'batch-1',
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
         contentIds: ['c1'],
       };
 
@@ -161,9 +161,9 @@ describe('BatchService', () => {
       (contentStateSyncService.readContentState as any).mockResolvedValue(offlineResponse);
 
       const request: ContentStateReadRequest = {
-        userId:     'user-1',
-        courseId:   'course-1',
-        batchId:    'batch-1',
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
         contentIds: [],
       };
 
@@ -243,6 +243,7 @@ describe('BatchService', () => {
       const callArgs = mockHttpClient.patch.mock.calls[0][1];
       expect(callArgs.request.assessments).toBeUndefined();
     });
+
   });
 
   describe('forceSyncActivityAgg', () => {
@@ -371,6 +372,53 @@ describe('BatchService', () => {
       expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
         'course-1', 'user-1', 100, 'completed'
       );
+    });
+
+    it('should skip local progress update if course entry not found in DB', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      vi.mocked(enrolledCoursesDbService.getByUser).mockResolvedValue([]);
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'user-1',
+        courseId: 'course-1',
+        batchId: 'batch-1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      await service.contentStateUpdate(request);
+      expect(enrolledCoursesDbService.updateProgress).not.toHaveBeenCalled();
+    });
+
+    it('should handle JSON parse errors in local progress update', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      vi.mocked(enrolledCoursesDbService.getByUser).mockResolvedValue([{ course_id: 'c1', details: {} } as any]);
+      vi.mocked(keyValueDbService.getRaw).mockResolvedValue('invalid-json');
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'u1',
+        courseId: 'c1',
+        batchId: 'b1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      await service.contentStateUpdate(request);
+      expect(enrolledCoursesDbService.updateProgress).not.toHaveBeenCalled();
+    });
+
+    it('should skip local progress update if leafNodesCount is 0', async () => {
+      (networkService.isConnected as any).mockReturnValue(false);
+      vi.mocked(enrolledCoursesDbService.getByUser).mockResolvedValue([{
+        course_id: 'c1',
+        details: { leafNodesCount: 0 }
+      } as any]);
+
+      const request: ContentStateUpdateRequest = {
+        userId: 'u1', courseId: 'c1', batchId: 'b1',
+        contents: [{ contentId: 'c1', status: 2 }],
+      };
+
+      await service.contentStateUpdate(request);
+      expect(enrolledCoursesDbService.updateProgress).not.toHaveBeenCalled();
     });
   });
 });

@@ -3,6 +3,7 @@ import { Zip } from 'capa-zip';
 import { CapacitorHttp } from '@capacitor/core';
 import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
+import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
 import type { ImportResult, ImportPhase, ContentEntry } from './types';
 
 type ProgressCallback = (phase: ImportPhase, percent: number) => void;
@@ -122,9 +123,6 @@ export class ImportService {
         // Extract/copy payload based on contentDisposition + contentEncoding
         const contentState = await this.extractPayload(item, tmpUri, destUri);
 
-        // Flatten: move contents of "widgets/" to root if they exist.
-        // Legacy renderers/plugins often expect a flat structure relative to content root.
-        await this.flattenDirectory(destUri);
 
         // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
         // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
@@ -214,20 +212,20 @@ export class ImportService {
     const disposition = item.contentDisposition || 'inline';
     const encoding = item.contentEncoding || 'gzip';
     const mimeType = item.mimeType || '';
-    const isCollection = mimeType.includes('collection');
-    const isQuestionSet = mimeType.includes('questionset');
+    const isCollection = mimeType.toLowerCase().includes('collection');
+    const isQuestionSet = mimeType.toLowerCase().includes('questionset');
+    const isNonDownloadable = NON_DOWNLOADABLE_MIME_TYPES.some(m => m.toLowerCase() === mimeType.toLowerCase());
 
-    // Collections / question sets → metadata only (hierarchy, no playable artifact)
+    // Collections / question sets → metadata available (hierarchy), no playable binary component
     if (isCollection || isQuestionSet) return 2;
 
-    // Online-only content (YouTube, external URLs) → never needs a local artifact
-    if (disposition === 'online') return 2;
+    // Online-only content (YouTube, external URLs) → metadata only, no artifact
+    if (isNonDownloadable || disposition === 'online') return 0;
 
     // No artifact URL, or artifact URL is a remote server path (https://...).
     // This happens in spine ECARs where leaf items list the CDN URL but the
-    // actual file is delivered in the individual leaf ECAR. Return 0 (ONLY_SPINE)
-    // so that filterItems allows the leaf ECAR to import later and extract the file.
-    if (!artifactUrl || artifactUrl.startsWith('https:')) return 0;
+    // actual file is delivered in the individual leaf ECAR.
+    if (!artifactUrl || artifactUrl.toLowerCase().startsWith('http')) return 0;
 
     const itemSourcePath = `${tmpUri}/${artifactUrl}`;
 
@@ -237,9 +235,21 @@ export class ImportService {
     ) {
       // EPUB → copy directly
       await this.copyAsset(itemSourcePath, destUri);
-    } else if (disposition === 'inline' && encoding === 'identity') {
-      // Uncompressed (PDF, MP4, WebM) → copy directly
-      await this.copyAsset(itemSourcePath, destUri);
+    } else if (mimeType === 'application/vnd.ekstep.ecml-archive') {
+      // ECML archives: attempt normal unzip first.
+      // Older ECML ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
+      // Fall back to our multi-threaded fflate worker to sanitize and extract.
+      try {
+        await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
+      } catch (err) {
+        const msg = String((err as Error)?.message ?? err);
+        if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
+          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with worker:', msg);
+          await this.extractWithWorker(itemSourcePath, destUri);
+        } else {
+          throw err;
+        }
+      }
     } else {
       // Default (inline + gzip) → unzip
       await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
@@ -250,6 +260,71 @@ export class ImportService {
   private async copyAsset(source: string, destDir: string): Promise<void> {
     const filename = source.split('/').pop() || 'artifact';
     await Filesystem.copy({ from: source, to: `${destDir}/${filename}` });
+  }
+
+  /**
+   * Extract a ZIP using fflate in a multi-threaded Web Worker.
+   * Repairs absolute entries (stripping leading slashes) while remaining non-blocking to the main UI thread.
+   */
+  private async extractWithWorker(sourceFile: string, destDir: string): Promise<void> {
+    const fileResult = await Filesystem.readFile({ path: sourceFile });
+
+    // Capacitor/Filesystem.readFile returns Base64 by default.
+    // Convert Base64 string to Uint8Array buffer for fflate.
+    const binaryString = atob(fileResult.data as string);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const buffer = bytes.buffer;
+
+    // In Capacitor/Vite environments, we load the worker as a separate asset.
+    const worker = new Worker(new URL('./unzipWorker.ts', import.meta.url), { type: 'module' });
+
+    return new Promise((resolve, reject) => {
+      worker.onmessage = async (e) => {
+        const { status, files, error } = e.data;
+        if (status === 'error') {
+          worker.terminate();
+          reject(new Error(error));
+          return;
+        }
+
+        // Iteratively write each sanitized file back to the filesystem
+        let count = 0;
+        for (const [path, data] of Object.entries(files as Record<string, Uint8Array>)) {
+          const fullPath = `${destDir}/${path}`;
+          const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));
+          await Filesystem.mkdir({ path: parentDir, recursive: true }).catch(() => { });
+
+          // Fast conversion: Use chunked fromCharCode to avoid stack limits and slowness.
+          let binary = '';
+          const chunkSize = 8192;
+          for (let i = 0; i < data.length; i += chunkSize) {
+            binary += String.fromCharCode(...data.subarray(i, i + chunkSize));
+          }
+
+          await Filesystem.writeFile({
+            path: fullPath,
+            data: btoa(binary),
+          });
+          count++;
+        }
+
+        console.debug('[ImportService] Multi-threaded worker extracted', count, 'entries to:', destDir);
+        worker.terminate();
+        resolve();
+      };
+
+      worker.onerror = (err) => {
+        worker.terminate();
+        reject(err);
+      };
+
+      // Send the compressed binary payload to the background thread
+      worker.postMessage({ zipData: buffer }, [buffer as ArrayBuffer]);
+    });
   }
 
   // ══════════════════════════════════════════════════
@@ -541,40 +616,6 @@ export class ImportService {
       console.debug('[ImportService] Restructured for renderer:', subDir);
     } catch (err) {
       console.warn('[ImportService] restructureForRenderer failed:', err);
-    }
-  }
-
-  /**
-   * Move everything inside [destUri]/widgets/ to [destUri] root.
-   * This prepares the directory structure for legacy renderer compatibility.
-   */
-  private async flattenDirectory(destUri: string): Promise<void> {
-    try {
-      const widgetsUri = `${destUri}/widgets`;
-
-      // Check if widgets directory exists
-      const stat = await Filesystem.stat({ path: widgetsUri }).catch(() => null);
-      if (!stat || stat.type !== 'directory') return;
-
-      const result = await Filesystem.readdir({ path: widgetsUri });
-      for (const entry of result.files) {
-        const oldPath = `${widgetsUri}/${entry.name}`;
-        const newPath = `${destUri}/${entry.name}`;
-
-        // Move to root. Failure may occur if naming collisions exist (e.g. nested assets folder).
-        await Filesystem.rename({
-          from: oldPath,
-          to: newPath
-        }).catch((err) => {
-          console.warn(`[ImportService] Could not move ${entry.name} from widgets (exists at root?):`, err);
-        });
-      }
-
-      // Cleanup the now-empty widgets folder
-      await Filesystem.rmdir({ path: widgetsUri }).catch(() => { });
-      console.debug('[ImportService] Flattened widgets structure for:', destUri);
-    } catch (err) {
-      console.warn('[ImportService] Flattening failed:', err);
     }
   }
 }

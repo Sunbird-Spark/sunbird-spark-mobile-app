@@ -13,11 +13,15 @@ export class EcmlPlayerService {
     const context = await buildEcmlPlayerContext(metadata.identifier, contextProps);
 
     const isLocal = !!metadata.isAvailableLocally && !!metadata.basePath;
-    const rawBasePath = isLocal ? metadata.basePath || '' : '';
-    const basePath = rawBasePath ? (rawBasePath.endsWith('/') ? rawBasePath : `${rawBasePath}/`) : '';
+    const rawBasePath = (isLocal ? metadata.basePath || '' : '').trim();
+
+    // Extreme sanitation: ensure exactly one trailing slash and no surrounding whitespace
+    const safeBaseDir = rawBasePath ? (rawBasePath.replace(/\/+$/, '') + '/') : '';
+    const basePath = safeBaseDir;
 
     // Standard core plugins directory relative to the app origin.
-    const repos: string[] = ['/content-player/coreplugins/'];
+    const corePluginsRepo = '/content-player/coreplugins';
+    const repos: string[] = [corePluginsRepo];
 
     const config: EcmlPlayerConfig["config"] = {
       showEndPage: false,
@@ -42,39 +46,60 @@ export class EcmlPlayerService {
         showPrint: false,
         showReplay: true,
       },
-      enableTelemetryValidation: false
+      enableTelemetryValidation: false,
+      telemetryConfig: {
+        origin: 'sunbird-portal',
+        pdata: context.pdata,
+        env: 'contentplayer',
+        channel: context.channel,
+        did: context.did,
+        sid: context.sid,
+        uid: context.uid,
+        endpoint: '',
+        host: '',
+        authtoken: '',
+        dispatcher: 'postMessage'
+      }
     };
 
     if (isLocal && basePath) {
       // --- LOCAL (OFFLINE) CONFIGURATION ---
-      // Standardized Root Structure: ImportService now moves all widgets/content-plugins to the root.
-      // This allows a single, clean baseURL for both plugins and archive artifacts.
-      const cleanBasePath = basePath.endsWith('/') ? basePath.slice(0, -1) : basePath;
-
-      config.host = cleanBasePath;
-      config.baseURL = cleanBasePath;
+      config.host = basePath;
+      config.baseURL = basePath;
 
       // Use asset-path to keep standard stage assets pointing to the root assets folder
-      config['asset-path'] = `${cleanBasePath}/assets/`;
-      // Suppress cache-buster query parameters (?BUILD_NUMBER) causing 404s on local file paths
-      config.build_number = '';
-      config.version = '';
+      config['asset-path'] = `${basePath}assets/`;
 
-      // With the flat structure, plugins are found at the content root
-      const localPluginsPath = `${cleanBasePath}/content-plugins/`;
-      config.devicePluginspath = localPluginsPath;
-      config.previewPluginspath = localPluginsPath;
+      // Use numeric dummy values to prevent 'BUILD_NUMBER' fallback string in query params
+      config.build_number = '1.0';
+      config.version = '1.0';
 
-      // Ensure plugin discovery repos use absolute URLs
-      repos.unshift(localPluginsPath);
+      // Use '/widgets/content-plugins' for device plugins to match the legacy mobile ECAR structure
+      config.devicePluginspath = '/widgets/content-plugins';
+      config.previewPluginspath = '/content-plugins';
+
+      // Order: 1. Content-specific plugins, 2. Legacy assets/content-plugins, 3. Content Root, ...
+      repos.unshift(`${basePath}content-plugins`);
+      repos.unshift(`${basePath}assets/content-plugins`);
+      repos.unshift(`${basePath}widgets/content-plugins`);
+      repos.push(basePath);
+
+      try {
+        const parts = basePath.trim().replace(/\/+$/, '').split('/');
+        if (parts.length > 2) {
+          const sharedRepo = parts.slice(0, -1).join('/') + '/';
+          repos.push(sharedRepo);
+        }
+      } catch (e) {
+        console.warn('[EcmlPlayerService] Could not resolve shared content repo:', e);
+      }
     } else {
       // --- ONLINE (STREAMING) CONFIGURATION ---
       config.host = '';
       config.baseURL = '';
-      // Let the renderer use its default plugin paths and cache behavior for remote content
     }
 
-    config.repos = repos;
+    config.repos = _.uniq(repos);
 
     // Flatten metadata at the root level for the renderer's GlobalContext
     const wrappedMetadata: Record<string, unknown> = {
@@ -84,6 +109,7 @@ export class EcmlPlayerService {
         build_number: '',
         version: '',
       },
+      path: basePath, // <--- CRITICAL: Overwrite path as renderer uses t.path for e.path local resolution
       basePath: basePath,
       baseDir: basePath,
       isAvailableLocally: isLocal,
@@ -103,7 +129,11 @@ export class EcmlPlayerService {
       context,
       config,
       metadata: wrappedMetadata,
-      data: !_.isEmpty(metadata.body) ? metadata.body : {},
+      // Pass null (not {}) when body is absent so the renderer falls back to
+      // fetching index.json/index.ecml from globalConfig.basepath (streamingUrl).
+      // An empty object {} is truthy and causes the renderer to render blank content
+      // instead of triggering the initByJSON fallback.
+      data: !_.isEmpty(metadata.body) ? metadata.body : null,
     };
   }
 

@@ -181,7 +181,7 @@ export function useContentStateUpdate({
         if (assessmentTsRef.current != null && !sendingAssessmentRef.current) {
           sendingAssessmentRef.current = true;
           void sendAssessmentAndInvalidate();
-          lastSentStatusRef.current = null;
+          lastSentStatusRef.current = 2;
           return;
         }
       }
@@ -232,19 +232,19 @@ export function useContentStateUpdate({
           ) {
             sendingAssessmentRef.current = true;
             void sendAssessmentAndInvalidate();
-            lastSentStatusRef.current = null;
+            lastSentStatusRef.current = 2; // Mark as 2 so fallback updates in this session are blocked
             return;
           }
 
           // Completion criteria not met; do not regress an already-completed content.
-          if (currentContentStatusRef.current === 2) return;
+          if (currentContentStatusRef.current === 2 || lastSentStatusRef.current === 2) return;
           const effectiveProgress = calculateContentProgress(summary as ConsumptionSummary[], mimeType ?? '');
           const statusFromProgress = progressToStatus(effectiveProgress);
           const status = Math.min(statusFromProgress, 1); // Cap at 1 for SelfAssess without score
           if (status === 0 && lastSentStatusRef.current === 1) {
             void handleContentStateUpdate(1, true);
           } else {
-            lastSentStatusRef.current = null;
+            lastSentStatusRef.current = status > 0 ? status : lastSentStatusRef.current;
             void handleContentStateUpdate(status, true);
           }
           return;
