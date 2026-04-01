@@ -214,6 +214,8 @@
   "fieldUpdatedSuccessfully": "{{field}} सफलतापूर्वक अपडेट किया गया",
   "profileOfflineEditMessage": "प्रोफ़ाइल अपडेट के लिए इंटरनेट कनेक्शन आवश्यक है।",
   "syncNoInternet": "इंटरनेट से कनेक्ट करने में विफल",
+  "forceSyncCooldown": "फ़ोर्स सिंक कूलडाउन पर है। कृपया बाद में पुन: प्रयास करें।",
+  "forceSyncFailed": "फ़ोर्स सिंक विफल रहा",
   "onboarding": {
     "subtitle": "हम आपके अनुभव को व्यक्तिगत बनाने में आपकी मदद करना चाहेंगे!",
     "saveAndProceed": "सहेजें और आगे बढ़ें",

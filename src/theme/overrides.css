@@ -12,7 +12,7 @@
 ion-app {
   top: var(--offline-banner-height) !important;
   /* Clamp to 0 so normal safe-area still works when banner is hidden */
-  --ion-safe-area-top: max(0px, calc(env(safe-area-inset-top, 0px) - var(--offline-banner-height, 0px)));
+  --ion-safe-area-top: max(0px, calc(var(--safe-area-top) - var(--offline-banner-height, 0px)));
   transition: top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -22,12 +22,12 @@ ion-app {
 .categories-header,
 .resources-masonry-header,
 .resource-center-label-row {
-    margin-left: 0.9375rem;
+  margin-left: 0.9375rem;
 }
 
 .content-carousel-scroll,
 .categories-scroll,
 .resource-center-scroll,
 .resources-masonry-grid {
-    margin-left: 0.9375rem;
+  margin-left: 0.9375rem;
 }

@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BatchService } from '../services/course/BatchService';
 import { canUseForceSync, markForceSyncUsed } from '../services/forceSyncStorage';
 import { networkService } from '../services/network/networkService';
@@ -12,6 +13,7 @@ export function useForceSync(
   courseProgressProps: { total: number; completed: number; percentage: number } | null | undefined,
   isBatchEnded?: boolean,
 ) {
+  const { t } = useTranslation();
   const [, setForceSyncRefresh] = useState(0);
   const [isForceSyncing, setIsForceSyncing] = useState(false);
   const [forceSyncError, setForceSyncError] = useState<string | null>(null);
@@ -30,14 +32,14 @@ export function useForceSync(
   const handleForceSync = useCallback(async () => {
     if (!userId || !collectionId || !batchId) return;
     if (!canUseForceSync(userId, collectionId, batchId)) {
-      setForceSyncError('Force sync is on cooldown. Please try again later.');
+      setForceSyncError(t('forceSyncCooldown'));
       return;
     }
     setIsForceSyncing(true);
     setForceSyncError(null);
     try {
       if (!networkService.isConnected()) {
-        setForceSyncError('Failed to connect to Internet');
+        setForceSyncError(t('syncNoInternet'));
         return;
       }
       await batchService.forceSyncActivityAgg({
@@ -49,15 +51,15 @@ export function useForceSync(
       setForceSyncRefresh((r) => r + 1);
     } catch (err) {
       if (!networkService.isConnected()) {
-        setForceSyncError('Failed to connect to Internet');
+        setForceSyncError(t('syncNoInternet'));
       } else {
         const message = (err as Error).message;
-        setForceSyncError(message && message.trim() ? message : 'Force sync failed');
+        setForceSyncError(message && message.trim() ? message : t('forceSyncFailed'));
       }
     } finally {
       setIsForceSyncing(false);
     }
-  }, [userId, collectionId, batchId]);
+  }, [userId, collectionId, batchId, t]);
 
   return { showForceSyncButton, handleForceSync, isForceSyncing, forceSyncError };
 }

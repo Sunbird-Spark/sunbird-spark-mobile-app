@@ -220,6 +220,8 @@
   "fieldUpdatedSuccessfully": "{{field}} atualizado com sucesso",
   "profileOfflineEditMessage": "Atualizações de perfil requerem uma conexão com a Internet.",
   "syncNoInternet": "Falha ao conectar à Internet",
+  "forceSyncCooldown": "A sincronização forçada está em resfriamento. Tente novamente mais tarde.",
+  "forceSyncFailed": "A sincronização forçada falhou",
   "onboarding": {
     "subtitle": "Gostaríamos de ajudá-lo a personalizar sua experiência!",
     "saveAndProceed": "Salvar e continuar",

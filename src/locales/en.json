@@ -232,6 +232,8 @@
   "fieldUpdatedSuccessfully": "{{field}} updated successfully",
   "profileOfflineEditMessage": "Profile updates require an internet connection.",
   "syncNoInternet": "Failed to connect to Internet",
+  "forceSyncCooldown": "Force sync is on cooldown. Please try again later.",
+  "forceSyncFailed": "Force sync failed",
   "onboarding": {
     "subtitle": "We would love to help you personalize your experience!",
     "saveAndProceed": "Save and Proceed",

@@ -241,6 +241,8 @@
   "fieldUpdatedSuccessfully": "تم تحديث {{field}} بنجاح",
   "profileOfflineEditMessage": "تحديث الملف الشخصي يتطلب اتصالاً بالإنترنت.",
   "syncNoInternet": "فشل الاتصال بالإنترنت",
+  "forceSyncCooldown": "توجد فترة انتظار للمزامنة الإجبارية. يرجى المحاولة مرة أخرى لاحقاً.",
+  "forceSyncFailed": "فشلت المزامنة الإجبارية",
   "download": {
     "download": "تنزيل",
     "resume": "استئناف التنزيل",
