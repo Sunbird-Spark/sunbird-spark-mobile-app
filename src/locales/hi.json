@@ -234,6 +234,10 @@
     "wifi": "वाईफाई",
     "always": "हमेशा"
   },
+  "scanPage": {
+    "scannerDisabled": "QR स्कैनर अक्षम है",
+    "startScanning": "स्कैनिंग शुरू करें"
+  },
   "scanQRCode": "QR कोड स्कैन करें",
   "cameraDeniedTitle": "कैमरा एक्सेस अस्वीकृत",
   "cameraDeniedMessage": "QR कोड स्कैन करने के लिए कृपया कैमरा एक्सेस की अनुमति दें।",

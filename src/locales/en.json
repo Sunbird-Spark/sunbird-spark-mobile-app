@@ -348,6 +348,10 @@
     "wifi": "WIFI",
     "always": "ALWAYS"
   },
+  "scanPage": {
+    "scannerDisabled": "QR Scanner is disabled",
+    "startScanning": "Start Scanning"
+  },
   "scanQRCode": "Scan QR Code",
   "cameraDeniedTitle": "Camera Access Denied",
   "cameraDeniedMessage": "Please allow camera access to scan QR codes.",

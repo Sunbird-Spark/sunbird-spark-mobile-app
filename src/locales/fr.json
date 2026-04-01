@@ -348,6 +348,10 @@
     "wifi": "WIFI",
     "always": "TOUJOURS"
   },
+  "scanPage": {
+    "scannerDisabled": "Le scanner QR est désactivé",
+    "startScanning": "Commencer la numérisation"
+  },
   "scanQRCode": "Scanner le code QR",
   "cameraDeniedTitle": "Accès à la caméra refusé",
   "cameraDeniedMessage": "Veuillez autoriser l'accès à la caméra pour scanner les codes QR.",
