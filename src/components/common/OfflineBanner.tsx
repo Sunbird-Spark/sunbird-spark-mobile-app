@@ -24,18 +24,23 @@ const OfflineBanner: React.FC = () => {
     prevOfflineRef.current = isOffline;
 
     if (wasOffline && !isOffline) {
-      setBackOnline(true);
-      backOnlineTimerRef.current = setTimeout(() => {
-        setBackOnline(false);
-      }, BACK_ONLINE_DURATION_MS);
+      setTimeout(() => {
+        setBackOnline(true);
+        if (backOnlineTimerRef.current) clearTimeout(backOnlineTimerRef.current);
+        backOnlineTimerRef.current = setTimeout(() => {
+          setBackOnline(false);
+        }, BACK_ONLINE_DURATION_MS);
+      }, 0);
     }
 
     if (isOffline) {
-      if (backOnlineTimerRef.current) {
-        clearTimeout(backOnlineTimerRef.current);
-        backOnlineTimerRef.current = null;
-      }
-      setBackOnline(false);
+      setTimeout(() => {
+        if (backOnlineTimerRef.current) {
+          clearTimeout(backOnlineTimerRef.current);
+          backOnlineTimerRef.current = null;
+        }
+        setBackOnline(false);
+      }, 0);
     }
 
     return () => {
