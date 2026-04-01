@@ -59,13 +59,11 @@ describe('OfflineBanner', () => {
 
   it('shows "Back online" when transitioning from offline to online', () => {
     // Start offline
+    (useNetwork as any).mockReturnValue({ isOffline: true });
     const { rerender } = render(<OfflineBanner />);
     
-    act(() => {
-      (useNetwork as any).mockReturnValue({ isOffline: true });
-    });
-    rerender(<OfflineBanner />);
-    
+    // Flush setTimeout(..., 0) from the effect
+    act(() => { vi.advanceTimersByTime(0); });
     expect(screen.getByText('offlineBanner.noInternet')).toBeDefined();
 
     // Go online
@@ -74,10 +72,13 @@ describe('OfflineBanner', () => {
     });
     rerender(<OfflineBanner />);
     
+    // Flush the setTimeout(..., 0) that sets backOnline to true
+    act(() => { vi.advanceTimersByTime(0); });
+    
     expect(screen.getByText('offlineBanner.backOnline')).toBeDefined();
     expect(document.documentElement.classList.contains('has-offline-banner')).toBe(true);
 
-    // Wait for the timer
+    // Wait for the transition timer
     act(() => {
       vi.advanceTimersByTime(2500);
     });
@@ -94,13 +95,16 @@ describe('OfflineBanner', () => {
     // Offline -> Online -> Offline
     act(() => { (useNetwork as any).mockReturnValue({ isOffline: true }); });
     rerender(<OfflineBanner />);
+    act(() => { vi.advanceTimersByTime(0); });
     
     act(() => { (useNetwork as any).mockReturnValue({ isOffline: false }); });
     rerender(<OfflineBanner />);
+    act(() => { vi.advanceTimersByTime(0); });
     expect(screen.getByText('offlineBanner.backOnline')).toBeDefined();
 
     act(() => { (useNetwork as any).mockReturnValue({ isOffline: true }); });
     rerender(<OfflineBanner />);
+    act(() => { vi.advanceTimersByTime(0); });
     
     // Should show "No internet" again, and timer should be cleared
     expect(screen.getByText('offlineBanner.noInternet')).toBeDefined();
