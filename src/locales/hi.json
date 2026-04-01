@@ -320,5 +320,9 @@
     "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
     "cancel": "Cancel",
     "confirm": "Logout Anyway"
+  },
+  "offlineBanner": {
+    "noInternet": "इंटरनेट कनेक्शन नहीं है",
+    "backOnline": "वापस ऑनलाइन"
   }
 }

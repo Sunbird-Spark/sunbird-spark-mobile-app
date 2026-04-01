@@ -1,3 +1,21 @@
+/* Offline banner push-down — slides ion-app below the banner when offline.
+ *
+ * Two things happen together:
+ *  1. ion-app shifts down by the total banner height (safe-area + visible strip).
+ *  2. --ion-safe-area-top is reduced by the same amount so Ionic toolbars
+ *     don't double-count the status bar — result: header sits flush below the banner.
+ */
+:root {
+  --offline-banner-height: 0px;
+}
+
+ion-app {
+  top: var(--offline-banner-height) !important;
+  /* Clamp to 0 so normal safe-area still works when banner is hidden */
+  --ion-safe-area-top: max(0px, calc(env(safe-area-inset-top, 0px) - var(--offline-banner-height, 0px)));
+  transition: top 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 /* Section alignment overrides — must load after Ionic CSS */
 
 .content-carousel-header,

@@ -397,5 +397,9 @@
     "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
     "cancel": "Cancel",
     "confirm": "Logout Anyway"
+  },
+  "offlineBanner": {
+    "noInternet": "لا يوجد اتصال بالإنترنت",
+    "backOnline": "متصل الآن"
   }
 }

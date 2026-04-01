@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { EpubPlayer } from './EpubPlayer';
 import { VideoPlayer } from './VideoPlayer';
 import { PdfPlayer } from './PdfPlayer';
@@ -46,6 +46,14 @@ export const ContentPlayer: React.FC<ContentPlayerProps> = ({
   onTelemetryEvent,
   contentMeta,
 }) => {
+  // Toggle global class to hide the offline banner during playback
+  useEffect(() => {
+    document.documentElement.classList.add('is-playing-content');
+    return () => {
+      document.documentElement.classList.remove('is-playing-content');
+    };
+  }, []);
+
   const [ratingOpen, setRatingOpen] = useState(false);
   const openRating = useCallback(() => {
     // Only open rating dialog if contentMeta is provided for telemetry

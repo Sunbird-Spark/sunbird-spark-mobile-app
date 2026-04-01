@@ -1012,10 +1012,18 @@ const CollectionPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                     <button
                       onClick={async () => {
-                        await consent.updateConsent('REVOKED');
-                        setIsConsentModalOpen(false);
-                        setConsentToastMessage('Profile data sharing preference updated.');
-                        consent.refetch();
+                        if (isOffline) {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
+                          return;
+                        }
+                        try {
+                          await consent.updateConsent('REVOKED');
+                          setIsConsentModalOpen(false);
+                          setConsentToastMessage('Profile data sharing preference updated.');
+                          consent.refetch();
+                        } catch {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
+                        }
                       }}
                       style={{ padding: '0.6rem 1rem', border: '1px solid var(--ion-color-medium-tint)', borderRadius: '8px', background: 'transparent', color: 'var(--ion-color-dark)', fontWeight: 500 }}
                     >
@@ -1023,11 +1031,18 @@ const CollectionPage: React.FC = () => {
                     </button>
                     <button
                       onClick={async () => {
-                        if (consentChecked) {
+                        if (!consentChecked) return;
+                        if (isOffline) {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
+                          return;
+                        }
+                        try {
                           await consent.updateConsent('ACTIVE');
                           setIsConsentModalOpen(false);
                           setConsentToastMessage('Profile data sharing preference updated.');
                           consent.refetch();
+                        } catch {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
                         }
                       }}
                       disabled={!consentChecked || consent.isUpdating}
