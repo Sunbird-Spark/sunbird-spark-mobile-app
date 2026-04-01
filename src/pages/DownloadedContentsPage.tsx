@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
 import {
   IonContent,
   IonHeader,
@@ -10,6 +9,7 @@ import {
   IonBackButton,
   IonAlert,
   IonImg,
+  useIonRouter,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
@@ -174,7 +174,7 @@ const SwipeableCard: React.FC<{
 const DownloadedContentsPage: React.FC = () => {
   useImpression({ pageid: 'DownloadedContentsPage', env: 'profile' });
   const { t } = useTranslation();
-  const history = useHistory();
+  const router = useIonRouter();
   const [items, setItems] = useState<ContentEntry[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<ContentEntry | null>(null);
   const [showAlert, setShowAlert] = useState(false);
@@ -251,7 +251,7 @@ const DownloadedContentsPage: React.FC = () => {
                   const path = e.mime_type?.includes('collection')
                     ? `/collection/${e.identifier}`
                     : `/content/${e.identifier}`;
-                  history.push(path, { parentRoute: '/profile/downloaded-contents' });
+                  router.push(path, 'forward', 'push');
                 }}
               />
             ))}

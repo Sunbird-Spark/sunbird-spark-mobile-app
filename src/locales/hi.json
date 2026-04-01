@@ -140,7 +140,11 @@
     "courseProgress": "कोर्स प्रगति",
     "batchStartedOn": "बैच शुरू हुआ",
     "notFound": "संग्रह नहीं मिला।",
-    "errorLoading": "संग्रह लोड करने में विफल।"
+    "errorLoading": "संग्रह लोड करने में विफल।",
+    "offlineNotAvailable": "कनेक्ट करने में असमर्थ। यह संग्रह ऑफ़लाइन उपलब्ध नहीं है।",
+    "leaveCourseOffline": "कोर्स छोड़ने के लिए सक्रिय इंटरनेट कनेक्शन आवश्यक है।",
+    "leaveCourseTitle": "कोर्स छोड़ें",
+    "leaveCourseMessage": "क्या आप वाकई यह कोर्स छोड़ना चाहते हैं?"
   },
   "heroSection": {
     "title": "वह ज्ञान जो आपको आगे बढ़ाए।",
@@ -208,6 +212,8 @@
   "verifying": "सत्यापित हो रहा है…",
   "submit": "सबमिट करें",
   "fieldUpdatedSuccessfully": "{{field}} सफलतापूर्वक अपडेट किया गया",
+  "profileOfflineEditMessage": "प्रोफ़ाइल अपडेट के लिए इंटरनेट कनेक्शन आवश्यक है।",
+  "syncNoInternet": "इंटरनेट से कनेक्ट करने में विफल",
   "onboarding": {
     "subtitle": "हम आपके अनुभव को व्यक्तिगत बनाने में आपकी मदद करना चाहेंगे!",
     "saveAndProceed": "सहेजें और आगे बढ़ें",

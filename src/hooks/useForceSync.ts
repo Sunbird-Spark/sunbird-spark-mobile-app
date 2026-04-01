@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { BatchService } from '../services/course/BatchService';
 import { canUseForceSync, markForceSyncUsed } from '../services/forceSyncStorage';
+import { networkService } from '../services/network/networkService';
 
 const batchService = new BatchService();
 
@@ -35,6 +36,10 @@ export function useForceSync(
     setIsForceSyncing(true);
     setForceSyncError(null);
     try {
+      if (!networkService.isConnected()) {
+        setForceSyncError('Failed to connect to Internet');
+        return;
+      }
       await batchService.forceSyncActivityAgg({
         userId,
         courseId: collectionId,
@@ -43,8 +48,12 @@ export function useForceSync(
       markForceSyncUsed(userId, collectionId, batchId);
       setForceSyncRefresh((r) => r + 1);
     } catch (err) {
-      const message = (err as Error).message;
-      setForceSyncError(message && message.trim() ? message : 'Force sync failed');
+      if (!networkService.isConnected()) {
+        setForceSyncError('Failed to connect to Internet');
+      } else {
+        const message = (err as Error).message;
+        setForceSyncError(message && message.trim() ? message : 'Force sync failed');
+      }
     } finally {
       setIsForceSyncing(false);
     }

@@ -18,6 +18,7 @@ import { useUser } from '../hooks/useUser';
 import { useEditProfile, TriggerCaptcha } from '../hooks/useEditProfile';
 import { useSystemSetting } from '../hooks/useSystemSetting';
 import { useTelemetry } from '../hooks/useTelemetry';
+import { useNetwork } from '../providers/NetworkProvider';
 import './PersonalDetailsPage.css';
 import useImpression from '../hooks/useImpression';
 
@@ -30,6 +31,7 @@ const PersonalDetailsBody: React.FC = () => {
     const { t } = useTranslation();
     const { userId } = useAuth();
     const { data: profile } = useUser(userId);
+    const { isOffline } = useNetwork();
     const { executeRecaptcha } = useGoogleReCaptcha();
 
     const triggerCaptcha = useCallback<TriggerCaptcha>((callback) => {
@@ -80,6 +82,10 @@ const PersonalDetailsBody: React.FC = () => {
     };
 
     const openEdit = () => {
+        if (isOffline) {
+            setToastMessage(t('profileOfflineEditMessage'));
+            return;
+        }
         resetEditData();
         setIsEditOpen(true);
     };
@@ -117,6 +123,10 @@ const PersonalDetailsBody: React.FC = () => {
     };
 
     const handleVerifyClick = async () => {
+        if (isOffline) {
+            setToastMessage(t('profileOfflineEditMessage'));
+            return;
+        }
         const shouldOpenOtp = await handleVerifyDetails();
         if (shouldOpenOtp) {
             transitioningToOtp.current = true;
