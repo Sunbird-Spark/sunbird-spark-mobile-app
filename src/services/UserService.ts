@@ -6,8 +6,10 @@ import { buildOfflineResponse } from '../lib/http-client/offlineResponse';
 import { userDbService } from './db/UserDbService';
 import type { UserType } from './db/UserDbService';
 import { enrolledCoursesDbService } from './db/EnrolledCoursesDbService';
-import { keyValueDbService } from './db/KeyValueDbService';
+import { keyValueDbService, KVKey } from './db/KeyValueDbService';
 import { networkService } from './network/networkService';
+import { networkQueueDbService } from './db/NetworkQueueDbService';
+import { courseAssessmentDbService } from './db/CourseAssessmentDbService';
 
 const STORAGE_KEY = 'USER_ACCOUNT';
 
@@ -118,8 +120,16 @@ class UserService {
         enrolledCoursesDbService.deleteAllForUser(userId),
         userDbService.delete(userId),
         keyValueDbService.deleteByPrefix(`cache:content_state_${userId}_`),
+        courseAssessmentDbService.clearAllForUser(userId),
       ]);
     }
+
+    // These have no user-id dependency — clear even when userId is null so
+    // stale cross-session state never persists across logins.
+    await Promise.allSettled([
+      keyValueDbService.delete(KVKey.ACTIVE_CHANNEL_ID),
+      networkQueueDbService.clearCourseData(),
+    ]);
 
     try {
       await SecureStoragePlugin.remove({ key: STORAGE_KEY });

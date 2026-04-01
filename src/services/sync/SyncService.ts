@@ -17,6 +17,7 @@ import {
   SyncType,
   UpdateContentStateRequest,
 } from './types';
+import { courseAssessmentDbService } from '../db/CourseAssessmentDbService';
 
 class SyncService {
   private isSyncing = false;
@@ -163,6 +164,30 @@ class SyncService {
 
   async getPendingCount(type?: NetworkQueueType): Promise<number> {
     return networkQueueDbService.getPendingCount(type);
+  }
+
+  /**
+   * Returns true if there is any unsynced course data for the given user.
+   *
+   * Checks two places:
+   * 1. network_queue — progress/assessment rows already batched and waiting to be sent
+   * 2. course_assessment staging table — ASSESS events that have been captured during
+   *    a play session but not yet moved to network_queue (aggregateAndEnqueue runs at
+   *    sync time, so these can exist between sessions). Both are deleted on logout via
+   *    userService.clearAccount(), so both must be checked to avoid showing no warning
+   *    when data would actually be lost.
+   */
+  async hasPendingCourseData(userId: string): Promise<boolean> {
+    const [progressCount, assessmentQueueCount, stagingCount] = await Promise.all([
+      // Rows already batched in network_queue waiting to be sent to the server
+      networkQueueDbService.getPendingCount(NetworkQueueType.COURSE_PROGRESS),
+      networkQueueDbService.getPendingCount(NetworkQueueType.COURSE_ASSESMENT),
+      // ASSESS events still in the staging table — not yet moved to network_queue
+      // because aggregateAndEnqueue() only runs at sync time. These are also deleted
+      // on logout so must be included in the check.
+      courseAssessmentDbService.getCountByUser(userId),
+    ]);
+    return (progressCount + assessmentQueueCount + stagingCount) > 0;
   }
 
   async getLastSyncTime(): Promise<number | null> {

@@ -87,6 +87,19 @@ export class CourseAssessmentDbService {
   async getCount(): Promise<number> {
     return databaseService.count('course_assessment');
   }
+
+  /** Removes all staging rows for a user on logout so they are not picked up
+   *  by a subsequent sync that could run under a different user's session. */
+  async clearAllForUser(userId: string): Promise<void> {
+    await databaseService.delete('course_assessment', { eq: { uid: userId } });
+  }
+
+  /** Returns the number of unsent assessment events still in the staging table
+   *  for a user. Staging rows haven't been moved to network_queue yet so
+   *  getPendingCount alone would miss them when checking for data loss on logout. */
+  async getCountByUser(userId: string): Promise<number> {
+    return databaseService.count('course_assessment', { eq: { uid: userId } });
+  }
 }
 
 export const courseAssessmentDbService = new CourseAssessmentDbService();

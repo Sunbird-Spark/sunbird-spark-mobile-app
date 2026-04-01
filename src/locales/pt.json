@@ -377,5 +377,11 @@
     "downloadRemaining": "Baixar restante ({{count}} itens)",
     "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)"
   },
-  "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo."
+  "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo.",
+  "logoutSyncWarning": {
+    "header": "Unsaved Progress",
+    "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
+    "cancel": "Cancel",
+    "confirm": "Logout Anyway"
+  }
 }
