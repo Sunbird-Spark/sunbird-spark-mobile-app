@@ -23,11 +23,11 @@ export const VALID_TRANSITIONS: Record<DownloadState, DownloadState[]> = {
   ],
   [DownloadState.PAUSED]: [DownloadState.DOWNLOADING, DownloadState.CANCELLED, DownloadState.QUEUED],
   [DownloadState.DOWNLOADED]: [DownloadState.IMPORTING, DownloadState.CANCELLED],
-  [DownloadState.IMPORTING]: [DownloadState.COMPLETED, DownloadState.FAILED, DownloadState.CANCELLED],
+  [DownloadState.IMPORTING]: [DownloadState.COMPLETED, DownloadState.FAILED, DownloadState.CANCELLED, DownloadState.RETRY_WAIT],
   [DownloadState.COMPLETED]: [],
   [DownloadState.FAILED]: [DownloadState.QUEUED],
   [DownloadState.CANCELLED]: [DownloadState.QUEUED],
-  [DownloadState.RETRY_WAIT]: [DownloadState.QUEUED, DownloadState.CANCELLED, DownloadState.PAUSED],
+  [DownloadState.RETRY_WAIT]: [DownloadState.QUEUED, DownloadState.CANCELLED, DownloadState.PAUSED, DownloadState.DOWNLOADED],
 };
 
 // ── Download Queue ──

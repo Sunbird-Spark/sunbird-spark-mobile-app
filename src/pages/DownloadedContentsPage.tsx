@@ -186,7 +186,11 @@ const DownloadedContentsPage: React.FC = () => {
   useEffect(() => {
     loadItems();
     const unsub = downloadManager.subscribe((event) => {
-      if (event.type === 'state_change' || event.type === 'all_done') {
+      if (
+        event.type === 'state_change' ||
+        event.type === 'all_done' ||
+        event.type === 'content_deleted'
+      ) {
         loadItems();
       }
     });
