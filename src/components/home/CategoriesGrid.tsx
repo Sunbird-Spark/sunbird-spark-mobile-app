@@ -94,6 +94,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 {categories.map((cat, i) => (
                     <IonCard
                         key={cat.name}
+                        button
                         className="category-tile"
                         onClick={() => router.push('/explore', 'root', 'replace')}
                         style={{ '--background': cat.gradient, margin: 0 } as React.CSSProperties}
