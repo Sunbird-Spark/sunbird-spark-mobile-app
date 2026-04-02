@@ -92,6 +92,7 @@ const SearchPage: React.FC = () => {
                                 placeholder={t('searchPlaceholder')}
                                 value={searchQuery}
                                 onIonInput={(e) => setSearchQuery(e.detail.value || '')}
+                                // eslint-disable-next-line jsx-a11y/no-autofocus
                                 autoFocus
                             />
                             {searchQuery && (

@@ -226,8 +226,11 @@ const CourseDetailsPage: React.FC = () => {
                         {relatedItems.map(item => (
                             <div
                                 key={item.id}
+                                role="button"
+                                tabIndex={0}
                                 className="content-card standard-card related-card"
                                 onClick={() => history.push(`/video/${item.id}`)}
+                                onKeyDown={(e) => { if (e.key === 'Enter') history.push(`/video/${item.id}`); if (e.key === ' ') { e.preventDefault(); history.push(`/video/${item.id}`); } }}
                             >
                                 <IonImg src={item.thumbnail} alt={item.title} className="card-img"  />
                                 <div className="card-badge bg-yellow-badge">{item.type}</div>

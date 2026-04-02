@@ -132,6 +132,7 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
       </div>
 
       {isCompleted && (
+        // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
         <div className="pl-card-footer" onClick={(e) => e.stopPropagation()}>
           {hasCertificate ? (
             <button
@@ -258,6 +259,7 @@ const ProfileLearningPage: React.FC = () => {
 
         {/* Filter dropdown */}
         {filterOpen && (
+          // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
           <div className="pl-filter-dropdown" onClick={e => e.stopPropagation()}>
             {filterOptions.map(opt => (
               <button

@@ -7,8 +7,11 @@ import { Course } from '../../data/mockData';
 vi.mock('@ionic/react', () => ({
   IonCard: ({ children, button, onClick, className, style }: any) => (
     <div
+      role="button"
+      tabIndex={0}
       data-testid="ion-card"
       onClick={onClick}
+      onKeyDown={(e: any) => { if ((e.key === 'Enter' || e.key === ' ') && onClick) onClick(e); }}
       className={className}
       style={style}
       data-button={button}

@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import RelatedContent from './RelatedContent';
 import type { RelatedContentItem } from '../../types/contentTypes';
 
@@ -90,5 +90,63 @@ describe('RelatedContent', () => {
     render(<RelatedContent items={singleItem} t={mockT} />);
     expect(screen.getByTestId('resource-card')).toBeInTheDocument();
     expect(screen.queryByTestId('collection-card')).not.toBeInTheDocument();
+  });
+
+  it('navigates to collection path on click', () => {
+    const item: RelatedContentItem[] = [
+      { identifier: 'do_1', name: 'Course A', appIcon: '', posterImage: '', cardType: 'collection', creator: 'X' },
+    ];
+    render(<RelatedContent items={item} t={mockT} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockPush).toHaveBeenCalledWith('/collection/do_1', 'forward', 'push');
+  });
+
+  it('navigates to content path on click for resource', () => {
+    const item: RelatedContentItem[] = [
+      { identifier: 'do_2', name: 'PDF', appIcon: '', posterImage: '', cardType: 'resource', creator: 'X' },
+    ];
+    render(<RelatedContent items={item} t={mockT} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockPush).toHaveBeenCalledWith('/content/do_2', 'forward', 'push');
+  });
+
+  it('navigates to collection on Enter key', () => {
+    const item: RelatedContentItem[] = [
+      { identifier: 'do_1', name: 'Course A', appIcon: '', posterImage: '', cardType: 'collection', creator: 'X' },
+    ];
+    render(<RelatedContent items={item} t={mockT} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: 'Enter' });
+    expect(mockPush).toHaveBeenCalledWith('/collection/do_1', 'forward', 'push');
+  });
+
+  it('navigates to collection on Space key', () => {
+    const item: RelatedContentItem[] = [
+      { identifier: 'do_1', name: 'Course A', appIcon: '', posterImage: '', cardType: 'collection', creator: 'X' },
+    ];
+    render(<RelatedContent items={item} t={mockT} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: ' ' });
+    expect(mockPush).toHaveBeenCalledWith('/collection/do_1', 'forward', 'push');
+  });
+
+  it('navigates to resource on Enter key', () => {
+    const item: RelatedContentItem[] = [
+      { identifier: 'do_2', name: 'PDF', appIcon: '', posterImage: '', cardType: 'resource', creator: 'X' },
+    ];
+    render(<RelatedContent items={item} t={mockT} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: 'Enter' });
+    expect(mockPush).toHaveBeenCalledWith('/content/do_2', 'forward', 'push');
+  });
+
+  it('does not navigate on other key press', () => {
+    render(<RelatedContent items={mockItems} t={mockT} />);
+    const buttons = screen.getAllByRole('button');
+    fireEvent.keyDown(buttons[0], { key: 'Tab' });
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('card wrappers have role="button" and tabIndex=0', () => {
+    render(<RelatedContent items={mockItems} t={mockT} />);
+    const buttons = screen.getAllByRole('button');
+    buttons.forEach(btn => expect(btn).toHaveAttribute('tabindex', '0'));
   });
 });
