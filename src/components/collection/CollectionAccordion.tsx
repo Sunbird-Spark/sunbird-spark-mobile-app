@@ -78,7 +78,7 @@ const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOW
       aria-label={state === 'PAUSED' ? 'Resume download' : 'Pause download'}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(e as unknown as React.MouseEvent); } : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(e as unknown as React.MouseEvent); if (e.key === ' ') { e.preventDefault(); onClick(e as unknown as React.MouseEvent); } } : undefined}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', top: 0, left: 0 }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-light, #e0e0e0)" strokeWidth="2" />
@@ -161,7 +161,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
       aria-label={node.name}
       aria-disabled={blocked}
       onClick={handleItemActivation}
-      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleItemActivation()}
+      onKeyDown={(e) => { if (e.key === 'Enter') handleItemActivation(); if (e.key === ' ') { e.preventDefault(); handleItemActivation(); } }}
       style={dimmed || contentBlocked ? { opacity: dimmed ? 0.4 : 0.6 } : undefined}
     >
       <div className="cp-curriculum-item-left">

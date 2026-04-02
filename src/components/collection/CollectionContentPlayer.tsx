@@ -274,7 +274,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
           aria-label="Close player"
           className="cp-close-button-wrapper"
           onClick={handleClose}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClose(); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleClose(); if (e.key === ' ') { e.preventDefault(); handleClose(); } }}
           style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 100, padding: '10px' }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

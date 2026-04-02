@@ -117,7 +117,7 @@ const HelpAndSupportPage: React.FC = () => {
                                     className="hs-category-card"
                                     key={idx}
                                     onClick={() => router.push(`/support/${cat.slug}`, 'forward', 'push')}
-                                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push(`/support/${cat.slug}`, 'forward', 'push'); }}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/support/${cat.slug}`, 'forward', 'push'); if (e.key === ' ') { e.preventDefault(); router.push(`/support/${cat.slug}`, 'forward', 'push'); } }}
                                     style={{ cursor: 'pointer' }}
                                 >
                                     <div className="hs-accent-bar" />

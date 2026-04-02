@@ -1080,7 +1080,7 @@ const CollectionPage: React.FC = () => {
           tabIndex={0}
           className="cp-bottom-cta"
           onClick={() => { router.push('/sign-in', 'forward', 'push'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push('/sign-in', 'forward', 'push'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') router.push('/sign-in', 'forward', 'push'); if (e.key === ' ') { e.preventDefault(); router.push('/sign-in', 'forward', 'push'); } }}
         >
           <span className="cp-bottom-cta-text">{t('collection.letsGetStarted')}</span>
           <RightArrowIcon />
@@ -1103,6 +1103,7 @@ const CollectionPage: React.FC = () => {
             }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === ' ') e.preventDefault();
                 if (isCreator) {
                   setToastMessage({ message: t('collection.creatorCannotEnrol'), color: 'warning', icon: warningOutline });
                 } else {
@@ -1176,7 +1177,7 @@ const CollectionPage: React.FC = () => {
                   tabIndex={0}
                   className="cp-batch-modal-cta"
                   onClick={handleJoinCourse}
-                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleJoinCourse(); }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCourse(); if (e.key === ' ') { e.preventDefault(); handleJoinCourse(); } }}
                   style={{ opacity: (!selectedBatchId || enrollment.joinLoading) ? 0.5 : 1 }}
                 >
                   {enrollment.joinLoading ? (

@@ -59,7 +59,7 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
             tabIndex={0}
             className="resource-card"
             onClick={handleNavigate}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNavigate(e); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleNavigate(e); if (e.key === ' ') { e.preventDefault(); handleNavigate(e); } }}
         >
             {/* Image with overlay — mirrors CollectionCard structure */}
             <div className="resource-card-image-inner">

@@ -111,7 +111,7 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 <div
                     className="category-browse-all"
                     onClick={() => router.push('/explore', 'root', 'replace')}
-                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/explore', 'root', 'replace')}
+                    onKeyDown={(e) => { if (e.key === 'Enter') router.push('/explore', 'root', 'replace'); if (e.key === ' ') { e.preventDefault(); router.push('/explore', 'root', 'replace'); } }}
                     role="button"
                     tabIndex={0}
                     aria-label={t('browseAll')}

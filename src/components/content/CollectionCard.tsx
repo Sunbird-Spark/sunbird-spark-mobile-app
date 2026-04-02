@@ -40,7 +40,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
             tabIndex={0}
             className="collection-card"
             onClick={handleNavigate}
-            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNavigate(e); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleNavigate(e); if (e.key === ' ') { e.preventDefault(); handleNavigate(e); } }}
         >
             {/* Image */}
             <div className="collection-card-image-wrapper">
