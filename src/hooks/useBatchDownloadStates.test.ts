@@ -79,4 +79,57 @@ describe('useBatchDownloadStates', () => {
     unmount();
     expect(unsubMock).toHaveBeenCalled();
   });
+
+  it('refreshes on all_done event', async () => {
+    vi.mocked(downloadManager.getBatchProgress).mockResolvedValue(
+      new Map([['a', { identifier: 'a', state: 'COMPLETED' as any, progress: 100 } as any]])
+    );
+
+    const { result } = renderHook(() => useBatchDownloadStates(['a']));
+    await act(async () => {
+      capturedListener?.({ type: 'all_done' } as any);
+    });
+
+    expect(result.current.get('a')?.state).toBe('COMPLETED');
+  });
+
+  it('refreshes on queue_changed event', async () => {
+    const { result } = renderHook(() => useBatchDownloadStates(['a']));
+    await act(async () => { });
+
+    vi.mocked(downloadManager.getBatchProgress).mockResolvedValue(
+      new Map([['a', { identifier: 'a', state: 'QUEUED' as any, progress: 0 } as any]])
+    );
+
+    await act(async () => {
+      capturedListener?.({ type: 'queue_changed' } as any);
+    });
+
+    expect(result.current.get('a')?.state).toBe('QUEUED');
+  });
+
+  it('refreshes on content_deleted event', async () => {
+    const { result } = renderHook(() => useBatchDownloadStates(['a']));
+    await act(async () => { });
+
+    await act(async () => {
+      capturedListener?.({ type: 'content_deleted', identifier: 'a' } as any);
+    });
+
+    expect(downloadManager.getBatchProgress).toHaveBeenCalled();
+    expect(result.current.size).toBe(0);
+  });
+
+  it('does not refresh on unrelated event types', async () => {
+    renderHook(() => useBatchDownloadStates(['a']));
+    await act(async () => { });
+
+    const callCount = vi.mocked(downloadManager.getBatchProgress).mock.calls.length;
+
+    await act(async () => {
+      capturedListener?.({ type: 'unknown_event' } as any);
+    });
+
+    expect(vi.mocked(downloadManager.getBatchProgress).mock.calls.length).toBe(callCount);
+  });
 });

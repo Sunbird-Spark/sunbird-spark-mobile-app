@@ -63,4 +63,46 @@ describe('useStorageInfo', () => {
     unmount();
     expect(unsubMock).toHaveBeenCalled();
   });
+
+  it('treats missing size_on_device as 0', async () => {
+    vi.mocked(contentDbService.getDownloadedContent).mockResolvedValue([
+      { identifier: 'do_1', size_on_device: undefined },
+      { identifier: 'do_2', size_on_device: 2000 },
+    ] as any);
+
+    const { result } = renderHook(() => useStorageInfo());
+    await act(async () => {});
+
+    expect(result.current).toEqual({ totalBytes: 2000, itemCount: 2 });
+  });
+
+  it('refreshes on all_done event', async () => {
+    vi.mocked(contentDbService.getDownloadedContent)
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ identifier: 'do_1', size_on_device: 500 }] as any);
+
+    const { result } = renderHook(() => useStorageInfo());
+    await act(async () => {});
+    expect(result.current.itemCount).toBe(0);
+
+    await act(async () => {
+      capturedListener?.({ type: 'all_done' } as any);
+    });
+
+    expect(result.current.itemCount).toBe(1);
+  });
+
+  it('does not refresh on unrelated event types', async () => {
+    vi.mocked(contentDbService.getDownloadedContent).mockResolvedValue([]);
+
+    const { result } = renderHook(() => useStorageInfo());
+    await act(async () => {});
+
+    await act(async () => {
+      capturedListener?.({ type: 'progress', identifier: 'do_1' } as any);
+    });
+
+    expect(contentDbService.getDownloadedContent).toHaveBeenCalledTimes(1);
+    expect(result.current.itemCount).toBe(0);
+  });
 });
