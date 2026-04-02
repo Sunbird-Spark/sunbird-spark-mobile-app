@@ -155,7 +155,7 @@ class AuthWebviewService {
       // No valid redirect_uri — just open without watching
     }
 
-    await this.openInBrowser(url, callbackPath, redirectUri || undefined);
+    await this.openInBrowser(url, callbackPath, redirectUri);
   }
 
   /**
@@ -178,12 +178,14 @@ class AuthWebviewService {
     // Extract the callback path from redirect_uri
     let callbackPath: string | undefined;
     try {
-      callbackPath = new URL(redirectUri).pathname;
+      if (redirectUri) {
+        callbackPath = new URL(redirectUri).pathname;
+      }
     } catch {
       // No valid redirect_uri
     }
 
-    await this.openInBrowser(url, callbackPath, redirectUri || undefined);
+    await this.openInBrowser(url, callbackPath, redirectUri);
   }
 }
 
