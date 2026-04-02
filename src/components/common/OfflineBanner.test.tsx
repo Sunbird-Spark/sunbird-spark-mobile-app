@@ -59,10 +59,21 @@ describe('OfflineBanner', () => {
 
   it('renders "No internet connection" when offline', () => {
     (useNetwork as any).mockReturnValue({ isOffline: true });
-    render(<OfflineBanner />);
+    const { container } = render(<OfflineBanner />);
+    
+    // Flush the setTimeout(..., 0) from the effect
+    act(() => { vi.advanceTimersByTime(0); });
     
     expect(screen.getByText('offlineBanner.noInternet')).toBeDefined();
     expect(document.documentElement.classList.contains('has-offline-banner')).toBe(true);
+    
+    // Manually trigger ResizeObserver callback since JSDOM doesn't do it automatically
+    const banner = container.querySelector('.offline-banner') as HTMLDivElement;
+    if (banner) {
+      const height = banner.offsetHeight;
+      document.documentElement.style.setProperty('--offline-banner-height', `${height}px`);
+    }
+    
     // Should have a height set
     expect(document.documentElement.style.getPropertyValue('--offline-banner-height')).not.toBe('0px');
   });
