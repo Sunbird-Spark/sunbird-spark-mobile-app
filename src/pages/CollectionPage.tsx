@@ -105,10 +105,11 @@ const CollectionPage: React.FC = () => {
   useIonViewWillLeave(() => { setIsViewActive(false); });
 
   // Data fetching
-  const { data: collectionData, isLoading, isError, fetchStatus, refetch: refetchCollection } = useCollection(collectionId);
-  // 'paused' = TanStack paused the query due to network detection (should not happen
-  // with networkMode:'offlineFirst' on useCollection, but kept as a safety net).
-  const isQueryIdle = (fetchStatus === 'idle' || fetchStatus === 'paused') && !collectionData && !isError;
+  const { data: collectionData, isLoading, isError, fetchStatus, status: queryStatus, refetch: refetchCollection } = useCollection(collectionId);
+  // True only while the query has never run yet (pending + not actively fetching).
+  // After the query completes with null (offline + not cached), queryStatus becomes
+  // 'success' — we must not treat that as "still initializing".
+  const isQueryIdle = queryStatus === 'pending' && fetchStatus === 'idle';
 
   const isTrackable =
     (collectionData?.trackable?.enabled?.toLowerCase() ?? '') === 'yes';
@@ -432,6 +433,7 @@ const CollectionPage: React.FC = () => {
     }
   };
 
+
   const handleJoinCourse = async () => {
     if (!selectedBatchId || !collectionId || !userId) return;
     try {
@@ -448,6 +450,11 @@ const CollectionPage: React.FC = () => {
 
   const handleLeaveCourse = async () => {
     if (!collectionId || !userId || !enrollment.enrolledBatchId) return;
+    if (isOffline) {
+      setDownloadToast({ message: t('collection.leaveCourseOffline'), color: 'danger', icon: alertCircleOutline });
+      setShowLeaveConfirm(false);
+      return;
+    }
     setIsLeaving(true);
     try {
       await enrollment.unenrol.mutateAsync({
@@ -665,15 +672,21 @@ const CollectionPage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen>
-        {(isLoading || isQueryIdle) && (
-          <PageLoader message={isQueryIdle ? 'Initializing…' : t('loading')} />
+        {/* Offline with no cached data — show immediately, bypassing any pending/idle query state */}
+        {isOffline && !isLoading && !collectionData && (
+          <PageLoader error={t('collection.offlineNotAvailable')} />
+        )}
+
+        {/* Loading spinner — suppressed when offline+no-data is already handled above */}
+        {(isLoading || isQueryIdle) && !(isOffline && !collectionData) && (
+          <PageLoader message={t('loading')} />
         )}
 
         {!isLoading && !isQueryIdle && isError && (
           <PageLoader error={t('collection.errorLoading')} />
         )}
 
-        {!isLoading && !isQueryIdle && !isError && !collectionData && (
+        {!isOffline && !isLoading && !isQueryIdle && !isError && !collectionData && (
           <PageLoader error={t('collection.notFound')} />
         )}
 
@@ -999,10 +1012,18 @@ const CollectionPage: React.FC = () => {
                   <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
                     <button
                       onClick={async () => {
-                        await consent.updateConsent('REVOKED');
-                        setIsConsentModalOpen(false);
-                        setConsentToastMessage('Profile data sharing preference updated.');
-                        consent.refetch();
+                        if (isOffline) {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
+                          return;
+                        }
+                        try {
+                          await consent.updateConsent('REVOKED');
+                          setIsConsentModalOpen(false);
+                          setConsentToastMessage('Profile data sharing preference updated.');
+                          consent.refetch();
+                        } catch {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
+                        }
                       }}
                       style={{ padding: '0.6rem 1rem', border: '1px solid var(--ion-color-medium-tint)', borderRadius: '8px', background: 'transparent', color: 'var(--ion-color-dark)', fontWeight: 500 }}
                     >
@@ -1010,11 +1031,18 @@ const CollectionPage: React.FC = () => {
                     </button>
                     <button
                       onClick={async () => {
-                        if (consentChecked) {
+                        if (!consentChecked) return;
+                        if (isOffline) {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
+                          return;
+                        }
+                        try {
                           await consent.updateConsent('ACTIVE');
                           setIsConsentModalOpen(false);
                           setConsentToastMessage('Profile data sharing preference updated.');
                           consent.refetch();
+                        } catch {
+                          setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
                         }
                       }}
                       disabled={!consentChecked || consent.isUpdating}

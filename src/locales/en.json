@@ -135,7 +135,11 @@
     "courseProgress": "Course Progress",
     "batchStartedOn": "Batch started on",
     "notFound": "Collection not found.",
-    "errorLoading": "Failed to load collection."
+    "errorLoading": "Failed to load collection.",
+    "offlineNotAvailable": "Not able to connect. This collection is not available offline.",
+    "leaveCourseOffline": "Leaving a course requires an active internet connection.",
+    "leaveCourseTitle": "Leave Course",
+    "leaveCourseMessage": "Are you sure you want to leave this course?"
   },
   "faqSection": {
     "heading": "Frequently Asked Questions",
@@ -226,6 +230,10 @@
   "verifying": "Verifying…",
   "submit": "Submit",
   "fieldUpdatedSuccessfully": "{{field}} updated successfully",
+  "profileOfflineEditMessage": "Profile updates require an internet connection.",
+  "syncNoInternet": "Failed to connect to Internet",
+  "forceSyncCooldown": "Force sync is on cooldown. Please try again later.",
+  "forceSyncFailed": "Force sync failed",
   "onboarding": {
     "subtitle": "We would love to help you personalize your experience!",
     "saveAndProceed": "Save and Proceed",
@@ -383,5 +391,9 @@
     "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
     "cancel": "Cancel",
     "confirm": "Logout Anyway"
+  },
+  "offlineBanner": {
+    "noInternet": "No internet connection",
+    "backOnline": "Back online"
   }
 }

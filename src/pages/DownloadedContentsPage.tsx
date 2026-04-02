@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useHistory } from 'react-router-dom';
 import {
   IonContent,
   IonHeader,
@@ -10,6 +9,7 @@ import {
   IonBackButton,
   IonAlert,
   IonImg,
+  useIonRouter,
 } from '@ionic/react';
 import { chevronBackOutline } from 'ionicons/icons';
 import { Capacitor } from '@capacitor/core';
@@ -21,6 +21,7 @@ import type { ContentEntry } from '../services/download_manager/types';
 import { getPlaceholderImage } from '../utils/placeholderImages';
 import './DownloadedContentsPage.css';
 import useImpression from '../hooks/useImpression';
+import { useHistory } from 'react-router';
 
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B';

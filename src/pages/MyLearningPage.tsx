@@ -235,8 +235,14 @@ const MyLearningPage: React.FC = () => {
   });
 
   // Progress metrics
-  const lessonsVisited = _.sumBy(enrolledCourses, c => c.progress || 0);
-  const totalLessons = _.sumBy(enrolledCourses, c => c.leafNodesCount || 0);
+  // c.progress is a raw server counter that can exceed leafNodesCount (counts interactions,
+  // not unique content items). Derive visited count from completionPercentage × leafNodesCount
+  // so it is always consistent and never exceeds the total.
+  const lessonsVisited = _.sumBy(enrolledCourses, c => {
+    const pct = _.clamp(c.completionPercentage ?? 0, 0, 100) / 100;
+    return Math.round((c.leafNodesCount ?? 0) * pct);
+  });
+  const totalLessons = _.sumBy(enrolledCourses, c => c.leafNodesCount ?? 0);
   const coursesCompleted = _.filter(enrolledCourses, c => c.completionPercentage === 100).length;
   const totalCourses = _.size(enrolledCourses);
 

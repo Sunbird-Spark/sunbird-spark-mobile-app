@@ -146,7 +146,11 @@
     "courseProgress": "Progresso do curso",
     "batchStartedOn": "Turma iniciada em",
     "notFound": "Coleção não encontrada.",
-    "errorLoading": "Falha ao carregar a coleção."
+    "errorLoading": "Falha ao carregar a coleção.",
+    "offlineNotAvailable": "Não foi possível conectar. Esta coleção não está disponível offline.",
+    "leaveCourseOffline": "Sair de um curso requer uma conexão ativa com a Internet.",
+    "leaveCourseTitle": "Sair do curso",
+    "leaveCourseMessage": "Tem certeza que deseja sair deste curso?"
   },
   "heroSection": {
     "title": "O conhecimento que te faz avançar.",
@@ -214,6 +218,10 @@
   "verifying": "Verificando…",
   "submit": "Enviar",
   "fieldUpdatedSuccessfully": "{{field}} atualizado com sucesso",
+  "profileOfflineEditMessage": "Atualizações de perfil requerem uma conexão com a Internet.",
+  "syncNoInternet": "Falha ao conectar à Internet",
+  "forceSyncCooldown": "A sincronização forçada está em resfriamento. Tente novamente mais tarde.",
+  "forceSyncFailed": "A sincronização forçada falhou",
   "onboarding": {
     "subtitle": "Gostaríamos de ajudá-lo a personalizar sua experiência!",
     "saveAndProceed": "Salvar e continuar",
@@ -383,5 +391,9 @@
     "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
     "cancel": "Cancel",
     "confirm": "Logout Anyway"
+  },
+  "offlineBanner": {
+    "noInternet": "Sem conexão à Internet",
+    "backOnline": "De volta online"
   }
 }

@@ -236,13 +236,15 @@ describe('MyLearningPage', () => {
   it('renders learning progress section', () => {
     mockAuthContext.isAuthenticated = true;
     mockAuthContext.userId = 'user-1';
+    // lessonsVisited = Math.round(leafNodesCount * completionPercentage/100)
+    // = Math.round(30 * 50/100) = Math.round(15) = 15 → renders "15/30"
     mockEnrollmentData = {
-      data: { data: { courses: [makeCourse({ progress: 10, leafNodesCount: 30 })] } },
+      data: { data: { courses: [makeCourse({ leafNodesCount: 30, completionPercentage: 50 })] } },
       isLoading: false, error: null, refetch: vi.fn(),
     };
     renderPage();
     expect(screen.getByText('Learning Progress')).toBeInTheDocument();
-    expect(screen.getByText('10/30')).toBeInTheDocument();
+    expect(screen.getByText('15/30')).toBeInTheDocument();
     expect(screen.getByText('Lessons visited')).toBeInTheDocument();
   });
 
