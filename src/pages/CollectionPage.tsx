@@ -1174,10 +1174,15 @@ const CollectionPage: React.FC = () => {
               <div className="cp-batch-modal-cta-wrap">
                 <div
                   role="button"
-                  tabIndex={0}
+                  tabIndex={(!selectedBatchId || enrollment.joinLoading) ? -1 : 0}
+                  aria-disabled={!selectedBatchId || enrollment.joinLoading}
                   className="cp-batch-modal-cta"
-                  onClick={handleJoinCourse}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleJoinCourse(); if (e.key === ' ') { e.preventDefault(); handleJoinCourse(); } }}
+                  onClick={() => { if (!selectedBatchId || enrollment.joinLoading) return; handleJoinCourse(); }}
+                  onKeyDown={(e) => {
+                    if (!selectedBatchId || enrollment.joinLoading) return;
+                    if (e.key === 'Enter') handleJoinCourse();
+                    if (e.key === ' ') { e.preventDefault(); handleJoinCourse(); }
+                  }}
                   style={{ opacity: (!selectedBatchId || enrollment.joinLoading) ? 0.5 : 1 }}
                 >
                   {enrollment.joinLoading ? (

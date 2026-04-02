@@ -157,9 +157,9 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
     <div
       className="cp-curriculum-item"
       role="button"
-      tabIndex={blocked ? -1 : 0}
+      tabIndex={dimmed ? -1 : 0}
       aria-label={node.name}
-      aria-disabled={blocked}
+      aria-disabled={dimmed}
       onClick={handleItemActivation}
       onKeyDown={(e) => { if (e.key === 'Enter') handleItemActivation(); if (e.key === ' ') { e.preventDefault(); handleItemActivation(); } }}
       style={dimmed || contentBlocked ? { opacity: dimmed ? 0.4 : 0.6 } : undefined}
