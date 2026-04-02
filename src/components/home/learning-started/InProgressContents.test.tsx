@@ -15,6 +15,7 @@ vi.mock('react-i18next', () => ({
         inProgressCourses: 'In Progress Courses',
         completedCourses: 'Completed Courses',
         course: 'Course',
+        untitled: 'untitled',
       };
       return map[key] || key;
     },
@@ -140,5 +141,24 @@ describe('InProgressContents', () => {
     render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: 'course-99' })]} />);
     fireEvent.click(screen.getByRole('button'));
     expect(mockRouterPush).toHaveBeenCalledWith('/collection/course-99', 'forward', 'push');
+  });
+
+  it('treats undefined completionPercentage as 0 (in-progress)', () => {
+    const course = makeCourse({ completionPercentage: undefined as any });
+    render(<InProgressContents courses={[course]} />);
+    expect(screen.getByText('In Progress Courses')).toBeInTheDocument();
+    expect(screen.getByText('0%')).toBeInTheDocument();
+  });
+
+  it('uses content.name when courseName is missing', () => {
+    const course = makeCourse({ courseName: undefined as any, content: { name: 'Content Title' } } as any);
+    render(<InProgressContents courses={[course]} />);
+    expect(screen.getByText('Content Title')).toBeInTheDocument();
+  });
+
+  it('falls back to untitled when both courseName and content.name are missing', () => {
+    const course = makeCourse({ courseName: undefined as any } as any);
+    render(<InProgressContents courses={[course]} />);
+    expect(screen.getByText('untitled')).toBeInTheDocument();
   });
 });
