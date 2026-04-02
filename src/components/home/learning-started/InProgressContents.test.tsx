@@ -1,10 +1,11 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { InProgressContents } from './InProgressContents';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 
+const mockRouterPush = vi.fn();
 vi.mock('@ionic/react', () => ({
-  useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn(), canGoBack: () => true }),
+  useIonRouter: () => ({ push: mockRouterPush, goBack: vi.fn(), canGoBack: () => true }),
 }));
 
 vi.mock('react-i18next', () => ({
@@ -32,6 +33,10 @@ const makeCourse = (overrides: Partial<TrackableCollection> = {}): TrackableColl
 });
 
 describe('InProgressContents', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it('renders in-progress courses when available', () => {
     const courses = [
       makeCourse({ courseName: 'Course A', completionPercentage: 30 }),
@@ -86,5 +91,53 @@ describe('InProgressContents', () => {
   it('displays progress percentage', () => {
     render(<InProgressContents courses={[makeCourse({ completionPercentage: 45 })]} />);
     expect(screen.getByText('45%')).toBeInTheDocument();
+  });
+
+  it('card has role="button" and tabIndex=0', () => {
+    render(<InProgressContents courses={[makeCourse()]} />);
+    const card = screen.getAllByRole('button')[0];
+    expect(card).toHaveAttribute('tabindex', '0');
+  });
+
+  it('navigates to collection on card click', () => {
+    render(<InProgressContents courses={[makeCourse({ collectionId: 'col-1' })]} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockRouterPush).toHaveBeenCalledWith('/collection/col-1', 'forward', 'push');
+  });
+
+  it('does not navigate on click when both collectionId and courseId are missing', () => {
+    render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it('navigates on Enter key press', () => {
+    render(<InProgressContents courses={[makeCourse({ collectionId: 'col-2' })]} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: 'Enter' });
+    expect(mockRouterPush).toHaveBeenCalledWith('/collection/col-2', 'forward', 'push');
+  });
+
+  it('navigates on Space key press', () => {
+    render(<InProgressContents courses={[makeCourse({ collectionId: 'col-3' })]} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: ' ' });
+    expect(mockRouterPush).toHaveBeenCalledWith('/collection/col-3', 'forward', 'push');
+  });
+
+  it('does not navigate on other key press', () => {
+    render(<InProgressContents courses={[makeCourse()]} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: 'Tab' });
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it('does not navigate on Enter when collectionId is missing', () => {
+    render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
+    fireEvent.keyDown(screen.getByRole('button'), { key: 'Enter' });
+    expect(mockRouterPush).not.toHaveBeenCalled();
+  });
+
+  it('uses courseId when collectionId is missing', () => {
+    render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: 'course-99' })]} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockRouterPush).toHaveBeenCalledWith('/collection/course-99', 'forward', 'push');
   });
 });
