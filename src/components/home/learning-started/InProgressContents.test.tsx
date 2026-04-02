@@ -105,9 +105,9 @@ describe('InProgressContents', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/collection/col-1', 'forward', 'push');
   });
 
-  it('does not navigate on click when both collectionId and courseId are missing', () => {
-    render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
-    fireEvent.click(screen.getByRole('button'));
+  it('does not have role="button" when collectionId and courseId are missing', () => {
+    const { container } = render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
+    expect(container.querySelector('.in-progress__card')).not.toHaveAttribute('role', 'button');
     expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
@@ -129,9 +129,10 @@ describe('InProgressContents', () => {
     expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
-  it('does not navigate on Enter when collectionId is missing', () => {
-    render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
-    fireEvent.keyDown(screen.getByRole('button'), { key: 'Enter' });
+  it('does not have keyboard handler when collectionId is missing', () => {
+    const { container } = render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
+    const card = container.querySelector('.in-progress__card')!;
+    fireEvent.keyDown(card, { key: 'Enter' });
     expect(mockRouterPush).not.toHaveBeenCalled();
   });
 
