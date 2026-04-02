@@ -9,6 +9,8 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { TelemetryProvider } from './providers/TelemetryProvider';
 
+import OfflineBanner from './components/common/OfflineBanner';
+
 const container = document.getElementById('root');
 const root = createRoot(container!);
 root.render(
@@ -18,6 +20,7 @@ root.render(
         <AuthProvider>
           <TelemetryProvider>
             <LanguageProvider>
+              <OfflineBanner />
               <App />
             </LanguageProvider>
           </TelemetryProvider>
