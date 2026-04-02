@@ -84,6 +84,7 @@
   "star": "نجمة",
   "stars": "نجوم",
   "notifications": "الإشعارات",
+  "notificationsUnread": "الإشعارات، {{count}} غير مقروءة",
   "today": "اليوم",
   "yesterday": "أمس",
   "older": "أقدم",

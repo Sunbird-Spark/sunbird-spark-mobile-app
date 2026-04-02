@@ -63,7 +63,7 @@ interface EnrollmentData {
 }
 
 // ── Tiny inline progress ring for per-item indicators ──
-const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOWNLOADING' | 'PAUSED'; onClick?: (e: React.MouseEvent) => void }> = ({ progress, size = 18, state, onClick }) => {
+const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOWNLOADING' | 'PAUSED'; onClick?: (e: React.SyntheticEvent) => void }> = ({ progress, size = 18, state, onClick }) => {
   const r = (size - 3) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (progress / 100) * circ;
@@ -78,7 +78,7 @@ const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOW
       aria-label={state === 'PAUSED' ? 'Resume download' : 'Pause download'}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
-      onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(e as unknown as React.MouseEvent); if (e.key === ' ') { e.preventDefault(); onClick(e as unknown as React.MouseEvent); } } : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(e); if (e.key === ' ') { e.preventDefault(); onClick(e); } } : undefined}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', top: 0, left: 0 }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-light, #e0e0e0)" strokeWidth="2" />
@@ -415,7 +415,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
     }
   };
 
-  const handleUnitPause = async (e: React.MouseEvent) => {
+  const handleUnitPause = async (e: React.SyntheticEvent) => {
     e.stopPropagation();
     for (const l of downloadableLeaves) {
       const s = downloadStates?.get(l.identifier);
@@ -425,7 +425,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
     }
   };
 
-  const handleUnitResume = async (e: React.MouseEvent) => {
+  const handleUnitResume = async (e: React.SyntheticEvent) => {
     e.stopPropagation();
     for (const l of downloadableLeaves) {
       const s = downloadStates?.get(l.identifier);

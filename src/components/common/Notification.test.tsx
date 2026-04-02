@@ -6,6 +6,13 @@ vi.mock('@ionic/react', () => ({
   useIonRouter: () => ({ push: vi.fn() }),
 }));
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string, opts?: { count?: number }) =>
+      key === 'notificationsUnread' ? `Notifications, ${opts?.count} unread` : 'Notifications',
+  }),
+}));
+
 vi.mock('../../contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }));

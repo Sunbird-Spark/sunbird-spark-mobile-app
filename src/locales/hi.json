@@ -86,6 +86,7 @@
   "star": "स्टार",
   "stars": "स्टार",
   "notifications": "सूचनाएं",
+  "notificationsUnread": "सूचनाएं, {{count}} अपठित",
   "today": "आज",
   "yesterday": "कल",
   "older": "पुराने",

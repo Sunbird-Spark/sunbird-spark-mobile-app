@@ -92,6 +92,7 @@
   "star": "étoile",
   "stars": "étoiles",
   "notifications": "Notifications",
+  "notificationsUnread": "Notifications, {{count}} non lues",
   "today": "Aujourd'hui",
   "yesterday": "Hier",
   "older": "Plus ancien",
