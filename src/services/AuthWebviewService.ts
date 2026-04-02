@@ -57,6 +57,30 @@ class AuthWebviewService {
   }
 
   /**
+   * Safely compares if the event URL matches the expected redirect URI.
+   * Prevents false positives from path traversal (e.g., /callback vs /callback.evil).
+   * 
+   * @param eventUrl - The URL from the navigation event
+   * @param redirectUri - The expected redirect URI
+   * @returns true if URLs match (scheme, host, pathname)
+   */
+  private isRedirectMatch(eventUrl: URL, redirectUri: string): boolean {
+    try {
+      const expectedUrl = new URL(redirectUri);
+      
+      // Compare scheme, host, and pathname
+      if (eventUrl.protocol !== expectedUrl.protocol) return false;
+      if (eventUrl.host !== expectedUrl.host) return false;
+      if (eventUrl.pathname !== expectedUrl.pathname) return false;
+      
+      return true;
+    } catch {
+      // Invalid redirect URI
+      return false;
+    }
+  }
+
+  /**
    * Opens a URL in InAppBrowser and resolves when the browser is closed.
    * If callbackPath is provided, watches for URL navigation to that path
    * and auto-closes the browser when detected.
@@ -71,12 +95,19 @@ class AuthWebviewService {
       };
 
       // Watch for redirect URL if callbackPath is provided
-      if (callbackPath) {
+      if (callbackPath || redirectUri) {
         const navListener = InAppBrowser.addListener('browserPageNavigationCompleted', (event) => {
           if (settled || !event.url) return;
           try {
             const eventUrl = new URL(event.url);
-            if (eventUrl.pathname === callbackPath || (redirectUri && event.url.startsWith(redirectUri))) {
+            
+            // Check if pathname matches the callback path
+            const pathMatches = callbackPath && eventUrl.pathname === callbackPath;
+            
+            // Check if full URL matches the redirect URI (scheme + host + pathname)
+            const redirectMatches = redirectUri && this.isRedirectMatch(eventUrl, redirectUri);
+            
+            if (pathMatches || redirectMatches) {
               settled = true;
               cleanup();
               InAppBrowser.close().catch(() => {});
@@ -144,8 +175,12 @@ class AuthWebviewService {
   async openRegistration(): Promise<void> {
     const config = await this.getAuthConfig('register');
     const redirectUri = this.getRedirectUri(config.target);
-    let url = this.buildUrl(config.target);
-    url += (url.includes('?') ? '&' : '?') + 'client=mobileApp';
+    
+    // Build URL using proper URL manipulation to avoid param duplication
+    const baseUrl = this.buildUrl(config.target);
+    const url = new URL(baseUrl);
+    url.searchParams.set('client', 'mobileApp');
+    const finalUrl = url.toString();
 
     // Extract the callback path from redirect_uri (e.g., /oauth2callback)
     let callbackPath: string | undefined;
@@ -155,7 +190,7 @@ class AuthWebviewService {
       // No valid redirect_uri — just open without watching
     }
 
-    await this.openInBrowser(url, callbackPath, redirectUri);
+    await this.openInBrowser(finalUrl, callbackPath, redirectUri);
   }
 
   /**
@@ -168,12 +203,13 @@ class AuthWebviewService {
     const host = config.target.host;
     const redirectUri = this.getRedirectUri(config.target);
 
-    // Build forgot password URL with redirect_uri and client params
-    let url = `${host}/forgot-password`;
-    url += `?client=mobileApp`;
+    // Build forgot password URL using proper URL manipulation
+    const url = new URL('/forgot-password', host);
+    url.searchParams.set('client', 'mobileApp');
     if (redirectUri) {
-      url += `&redirect_uri=${encodeURIComponent(redirectUri)}`;
+      url.searchParams.set('redirect_uri', redirectUri);
     }
+    const finalUrl = url.toString();
 
     // Extract the callback path from redirect_uri
     let callbackPath: string | undefined;
@@ -185,7 +221,7 @@ class AuthWebviewService {
       // No valid redirect_uri
     }
 
-    await this.openInBrowser(url, callbackPath, redirectUri);
+    await this.openInBrowser(finalUrl, callbackPath, redirectUri);
   }
 }
 

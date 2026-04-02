@@ -335,4 +335,144 @@ describe('AuthWebviewService', () => {
       await expect(authWebviewService.openRegistration()).rejects.toThrow('Browser failed');
     });
   });
+
+  describe('URL matching security', () => {
+    it('should NOT match path traversal attack (callback.evil)', async () => {
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Attacker tries to match /oauth2callback with /oauth2callback.evil
+      navigationCallback?.({ url: 'https://test.sunbirded.org/oauth2callback.evil' });
+
+      // Should NOT auto-close
+      expect(InAppBrowser.close).not.toHaveBeenCalled();
+
+      browserClosedCallback?.();
+      await promise;
+    });
+
+    it('should NOT match subdirectory attack (callback/evil)', async () => {
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Attacker tries to match /oauth2callback with /oauth2callback/evil
+      navigationCallback?.({ url: 'https://test.sunbirded.org/oauth2callback/evil' });
+
+      // Should NOT auto-close
+      expect(InAppBrowser.close).not.toHaveBeenCalled();
+
+      browserClosedCallback?.();
+      await promise;
+    });
+
+    it('should NOT match different host (phishing)', async () => {
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Attacker tries to match with different host
+      navigationCallback?.({ url: 'https://evil.com/oauth2callback' });
+
+      // Should NOT auto-close
+      expect(InAppBrowser.close).not.toHaveBeenCalled();
+
+      browserClosedCallback?.();
+      await promise;
+    });
+
+    it('should NOT match different scheme (downgrade attack)', async () => {
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Attacker tries to downgrade to HTTP
+      navigationCallback?.({ url: 'http://test.sunbirded.org/oauth2callback' });
+
+      // Should NOT auto-close
+      expect(InAppBrowser.close).not.toHaveBeenCalled();
+
+      browserClosedCallback?.();
+      await promise;
+    });
+
+    it('should match exact callback URL with query params', async () => {
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Valid callback with query params — should match
+      navigationCallback?.({ url: 'https://test.sunbirded.org/oauth2callback?code=abc123&state=xyz' });
+
+      // Should auto-close
+      expect(InAppBrowser.close).toHaveBeenCalled();
+
+      await promise;
+    });
+
+    it('should match exact callback URL with hash fragment', async () => {
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Valid callback with hash — should match
+      navigationCallback?.({ url: 'https://test.sunbirded.org/oauth2callback#token=abc' });
+
+      // Should auto-close
+      expect(InAppBrowser.close).toHaveBeenCalled();
+
+      await promise;
+    });
+
+    it('should handle invalid redirect_uri gracefully', async () => {
+      const configWithInvalidRedirect = {
+        context: 'register',
+        target: {
+          host: 'https://test.sunbirded.org',
+          path: '/signup',
+          params: [
+            { key: 'redirect_uri', value: 'not-a-valid-url' },
+          ],
+        },
+      };
+
+      mockFormRead.mockResolvedValue(mockFormResponse([configWithInvalidRedirect]));
+
+      const promise = authWebviewService.openRegistration();
+
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+
+      // Should not crash — just open without callback watching
+      browserClosedCallback?.();
+
+      await expect(promise).resolves.toBeUndefined();
+    });
+  });
 });
