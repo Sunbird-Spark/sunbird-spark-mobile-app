@@ -772,6 +772,7 @@ const CollectionPage: React.FC = () => {
                     </button>
                     {isMenuOpen && (
                       <>
+                        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
                         <div className="cp-menu-backdrop" onClick={() => setIsMenuOpen(false)} />
                         <div className="cp-menu-dropdown">
                           {enrollment.progressProps.percentage >= 100 ? (
@@ -1075,10 +1076,11 @@ const CollectionPage: React.FC = () => {
       {/* Anonymous: "Let's Get Started" → login */}
       {viewState === 'anonymous' && !isLoading && collectionData && (
         <div
+          role="button"
+          tabIndex={0}
           className="cp-bottom-cta"
-          onClick={() => {
-            router.push('/sign-in', 'forward', 'push');
-          }}
+          onClick={() => { router.push('/sign-in', 'forward', 'push'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') router.push('/sign-in', 'forward', 'push'); }}
         >
           <span className="cp-bottom-cta-text">{t('collection.letsGetStarted')}</span>
           <RightArrowIcon />
@@ -1089,12 +1091,23 @@ const CollectionPage: React.FC = () => {
       {viewState === 'unenrolled' && isTrackable && !isLoading && collectionData && (
         <>
           <div
+            role="button"
+            tabIndex={0}
             className="cp-bottom-cta"
             onClick={() => {
               if (isCreator) {
                 setToastMessage({ message: t('collection.creatorCannotEnrol'), color: 'warning', icon: warningOutline });
               } else {
                 setIsBatchModalOpen(true);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                if (isCreator) {
+                  setToastMessage({ message: t('collection.creatorCannotEnrol'), color: 'warning', icon: warningOutline });
+                } else {
+                  setIsBatchModalOpen(true);
+                }
               }
             }}
           >
@@ -1159,8 +1172,11 @@ const CollectionPage: React.FC = () => {
               </div>
               <div className="cp-batch-modal-cta-wrap">
                 <div
+                  role="button"
+                  tabIndex={0}
                   className="cp-batch-modal-cta"
                   onClick={handleJoinCourse}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleJoinCourse(); }}
                   style={{ opacity: (!selectedBatchId || enrollment.joinLoading) ? 0.5 : 1 }}
                 >
                   {enrollment.joinLoading ? (

@@ -270,9 +270,11 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
       <IonPage className="cp-fullscreen">
         <div
           role="button"
+          tabIndex={0}
           aria-label="Close player"
           className="cp-close-button-wrapper"
           onClick={handleClose}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleClose(); }}
           style={{ position: 'absolute', top: '10px', left: '10px', zIndex: 100, padding: '10px' }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

@@ -33,16 +33,22 @@ const RelatedContent: React.FC<RelatedContentProps> = ({ items, t }) => {
           item.cardType === 'collection' ? (
             <div
               key={item.identifier}
+              role="button"
+              tabIndex={0}
               className="cp-related-card-wrapper"
               onClick={() => navigateTo(`/collection/${item.identifier}`)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigateTo(`/collection/${item.identifier}`); }}
             >
               <CollectionCard item={item} />
             </div>
           ) : (
             <div
               key={item.identifier}
+              role="button"
+              tabIndex={0}
               className="cp-related-card-wrapper"
               onClick={() => navigateTo(`/content/${item.identifier}`)}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') navigateTo(`/content/${item.identifier}`); }}
             >
               <ResourceCard item={item} />
             </div>

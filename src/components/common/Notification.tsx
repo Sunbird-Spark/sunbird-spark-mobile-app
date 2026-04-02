@@ -18,7 +18,7 @@ const Notification: React.FC = () => {
     <button
       className="app-header__notification-btn"
       onClick={() => router.push('/notifications')}
-      aria-label="Notifications"
+      aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
     >
       <img src={unreadCount > 0 ? bellUnreadIcon : bellIcon} alt="" width="17" height="19" />
     </button>

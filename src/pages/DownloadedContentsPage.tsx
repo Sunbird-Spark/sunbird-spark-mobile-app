@@ -126,9 +126,10 @@ const SwipeableCard: React.FC<{
 
   return (
     <div className="dc-swipe-wrapper">
-      <div className="dc-delete-action" onClick={() => onDelete(entry)}>
+      <div role="button" tabIndex={0} className="dc-delete-action" onClick={() => onDelete(entry)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onDelete(entry); }}>
         <TrashIcon />
       </div>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         className="dc-card"
         style={{
@@ -144,12 +145,11 @@ const SwipeableCard: React.FC<{
         onMouseLeave={onMouseLeave}
       >
         <div
+          role="button"
+          tabIndex={0}
           className="dc-card-body"
-          onClick={() => {
-            if (offset === 0 && !isSwiping) {
-              onNavigate(entry);
-            }
-          }}
+          onClick={() => { if (offset === 0 && !isSwiping) onNavigate(entry); }}
+          onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && offset === 0) onNavigate(entry); }}
         >
           <div className="dc-card-info">
             <span className="dc-badge dc-badge-ongoing">{entry.primary_category || entry.content_type || 'Content'}</span>

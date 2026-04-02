@@ -38,8 +38,11 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
           return (
             <div
               key={collectionId || course.batchId}
+              role="button"
+              tabIndex={0}
               className="in-progress__card"
               onClick={() => collectionId && router.push(`/collection/${collectionId}`, 'forward', 'push')}
+              onKeyDown={(e) => { if ((e.key === 'Enter' || e.key === ' ') && collectionId) router.push(`/collection/${collectionId}`, 'forward', 'push'); }}
             >
               <div className="in-progress__card-content">
                 <span className="in-progress__badge">{badge}</span>

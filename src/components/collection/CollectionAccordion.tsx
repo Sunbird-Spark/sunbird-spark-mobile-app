@@ -77,6 +77,8 @@ const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOW
       }}
       aria-label={state === 'PAUSED' ? 'Resume download' : 'Pause download'}
       role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') onClick(e as unknown as React.MouseEvent); } : undefined}
     >
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ position: 'absolute', top: 0, left: 0 }}>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--ion-color-light, #e0e0e0)" strokeWidth="2" />
@@ -138,21 +140,28 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
   const isFailed = downloadState?.state === 'FAILED';
   const downloadable = isDownloadable(node);
 
+  const handleItemActivation = () => {
+    if (dimmed) return;
+    if (contentBlocked) {
+      onContentClick(node.identifier);
+      return;
+    }
+    if (maxExceeded) {
+      onMaxAttemptsClick?.();
+      return;
+    }
+    onContentClick(node.identifier);
+  };
+
   return (
     <div
       className="cp-curriculum-item"
-      onClick={() => {
-        if (dimmed) return;
-        if (contentBlocked) {
-          onContentClick(node.identifier); // let it bubble to show Join toast
-          return;
-        }
-        if (maxExceeded) {
-          onMaxAttemptsClick?.();
-          return;
-        }
-        onContentClick(node.identifier);
-      }}
+      role="button"
+      tabIndex={blocked ? -1 : 0}
+      aria-label={node.name}
+      aria-disabled={blocked}
+      onClick={handleItemActivation}
+      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && handleItemActivation()}
       style={dimmed || contentBlocked ? { opacity: dimmed ? 0.4 : 0.6 } : undefined}
     >
       <div className="cp-curriculum-item-left">
@@ -202,6 +211,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
               }}
             />
           ) : (
+            // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
             <div
               style={{ display: 'flex' }}
               onClick={(e) => {
@@ -463,6 +473,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
   if (activeCount > 0) {
     const parentState = anyActive ? 'DOWNLOADING' : (anyPaused ? 'PAUSED' : undefined);
     return (
+      // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
       <div
         style={{
           display: 'flex',
@@ -698,9 +709,10 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
         initialBreakpoint={0.25}
         breakpoints={[0, 0.25]}
         className="cp-login-prompt-modal"
+        aria-labelledby="cp-login-prompt-title"
       >
         <div className="cp-login-prompt-inner">
-          <h2 className="cp-login-prompt-title">
+          <h2 id="cp-login-prompt-title" className="cp-login-prompt-title">
             Unlock your learning.
           </h2>
           <p className="cp-login-prompt-subtitle">

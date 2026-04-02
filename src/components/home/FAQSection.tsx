@@ -50,17 +50,18 @@ export const FAQSection: React.FC = () => {
               className="faq-question-button"
               onClick={() => toggleItem(index)}
               aria-expanded={expandedIndex === index}
+              aria-controls={`faq-answer-${index}`}
             >
               <span className="faq-question-text">{item.title}</span>
               <ChevronIcon expanded={expandedIndex === index} />
             </button>
-            {expandedIndex === index && (
-              <div
-                className="faq-answer faq-answer-html"
-                // Content is sanitized by useFaqData before reaching here.
-                dangerouslySetInnerHTML={{ __html: item.description }}
-              />
-            )}
+            <div
+              id={`faq-answer-${index}`}
+              className="faq-answer faq-answer-html"
+              hidden={expandedIndex !== index}
+              // Content is sanitized by useFaqData before reaching here.
+              dangerouslySetInnerHTML={{ __html: item.description }}
+            />
           </div>
         ))}
       </div>

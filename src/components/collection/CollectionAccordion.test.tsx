@@ -24,10 +24,14 @@ vi.mock('@ionic/react', () => ({
   IonLabel: ({ children, className }: any) => (
     <div data-testid="ion-label" className={className}>{children}</div>
   ),
-  IonModal: ({ children, isOpen, onDidDismiss }: any) => {
+  // aria-labelledby is forwarded so accessibility tests can assert the modal is correctly labelled
+  IonModal: ({ children, isOpen, onDidDismiss, 'aria-labelledby': ariaLabelledby }: any) => {
     if (!isOpen) return null;
-    return <div data-testid="ion-modal">{children}</div>;
+    return <div data-testid="ion-modal" aria-labelledby={ariaLabelledby}>{children}</div>;
   },
+  // IonAlert and IonSpinner are used by UnitDownloadButton rendered inside the accordion
+  IonAlert: ({ isOpen }: any) => (isOpen ? <div data-testid="ion-alert" /> : null),
+  IonSpinner: () => <div data-testid="ion-spinner" />,
   IonToast: ({ isOpen, message }: any) => {
     if (!isOpen) return null;
     return <div data-testid="ion-toast">{message}</div>;
@@ -257,6 +261,81 @@ describe('CollectionAccordion', () => {
       );
       fireEvent.click(screen.getByText('Direct Leaf'));
       expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-direct');
+    });
+  });
+
+  describe('accessibility', () => {
+    it('leaf content items have role="button"', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      const items = screen.getAllByRole('button');
+      // At least the leaf items should be buttons
+      expect(items.length).toBeGreaterThan(0);
+    });
+
+    it('leaf content items have aria-label matching their name', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      expect(screen.getByRole('button', { name: 'Introduction' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Overview PDF' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Deep Dive' })).toBeInTheDocument();
+    });
+
+    it('enrolled leaf items are keyboard focusable (tabIndex=0)', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      expect(introItem).toHaveAttribute('tabindex', '0');
+    });
+
+    it('calls onContentPlay when Enter key is pressed on a leaf item', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      fireEvent.keyDown(introItem, { key: 'Enter' });
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+    });
+
+    it('calls onContentPlay when Space key is pressed on a leaf item', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      fireEvent.keyDown(introItem, { key: ' ' });
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+    });
+
+    it('does not call onContentPlay on other key presses', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      fireEvent.keyDown(introItem, { key: 'Tab' });
+      expect(mockOnContentPlay).not.toHaveBeenCalled();
+    });
+
+    it('login prompt modal has aria-labelledby pointing to the title', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+
+      const modal = screen.getByTestId('ion-modal');
+      expect(modal).toHaveAttribute('aria-labelledby', 'cp-login-prompt-title');
+    });
+
+    it('login prompt title has the id referenced by aria-labelledby', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+
+      expect(document.getElementById('cp-login-prompt-title')).toBeInTheDocument();
+      expect(document.getElementById('cp-login-prompt-title')).toHaveTextContent('Unlock your learning.');
     });
   });
 });

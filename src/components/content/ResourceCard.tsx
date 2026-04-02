@@ -45,16 +45,21 @@ const ResourceCard: React.FC<ResourceCardProps> = ({ item }) => {
     const imageUrl = item.posterImage || item.appIcon || item.thumbnail || getPlaceholderImage(item.identifier);
     const viewLabel = t(getMimeTypeKey(item.mimeType));
 
+    const handleNavigate = (e: React.MouseEvent | React.KeyboardEvent) => {
+        e.stopPropagation();
+        history.push({
+            pathname: `/content/${item.identifier}`,
+            state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
+        });
+    };
+
     return (
         <div
+            role="button"
+            tabIndex={0}
             className="resource-card"
-            onClick={(e) => {
-                e.stopPropagation();
-                history.push({
-                    pathname: `/content/${item.identifier}`,
-                    state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
-                });
-            }}
+            onClick={handleNavigate}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleNavigate(e); }}
         >
             {/* Image with overlay — mirrors CollectionCard structure */}
             <div className="resource-card-image-inner">

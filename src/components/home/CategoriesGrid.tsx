@@ -98,7 +98,8 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                         onClick={() => router.push('/explore', 'root', 'replace')}
                         style={{ '--background': cat.gradient, margin: 0 } as React.CSSProperties}
                     >
-                        <div className="category-tile-overlay-gradient">
+                        <span className="sr-only">{cat.name}</span>
+                        <div className="category-tile-overlay-gradient" aria-hidden="true">
                             <div className="category-tile-icon-wrap">
                                 <WhiteBar />
                                 {getCategoryIcon(cat.name, i)}
@@ -110,8 +111,10 @@ export const CategoriesGrid: React.FC<CategoriesGridProps> = ({ categories, titl
                 <div
                     className="category-browse-all"
                     onClick={() => router.push('/explore', 'root', 'replace')}
+                    onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && router.push('/explore', 'root', 'replace')}
                     role="button"
                     tabIndex={0}
+                    aria-label={t('browseAll')}
                 >
                     <div className="category-browse-all-circle">
                         <svg width="23" height="14" viewBox="0 0 23 14" fill="white" xmlns="http://www.w3.org/2000/svg">

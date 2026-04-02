@@ -195,7 +195,8 @@ export const BottomNavigation: React.FC = () => {
   const activeNavId = getActiveNavId(location.pathname);
 
   return (
-    <div
+    <nav
+      aria-label={t('mainNavigation')}
       style={{
         position: 'fixed',
         bottom: 0,
@@ -219,6 +220,8 @@ export const BottomNavigation: React.FC = () => {
           <button
             key={item.id}
             onClick={() => router.push(item.path, 'root', 'replace')}
+            aria-label={t(item.labelKey)}
+            aria-current={isActive ? 'page' : undefined}
             style={{
               display: 'flex',
               flexDirection: 'column',
@@ -249,6 +252,6 @@ export const BottomNavigation: React.FC = () => {
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 };

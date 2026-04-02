@@ -238,7 +238,7 @@ const SignInPage: React.FC = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="sign-in-error">{error}</div>
+            <div className="sign-in-error" role="alert" aria-live="assertive">{error}</div>
           )}
 
           {/* Google Sign In Button */}
