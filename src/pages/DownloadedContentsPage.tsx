@@ -149,7 +149,7 @@ const SwipeableCard: React.FC<{
           tabIndex={0}
           className="dc-card-body"
           onClick={() => { if (offset === 0 && !isSwiping) onNavigate(entry); }}
-          onKeyDown={(e) => { if (e.key === 'Enter' && offset === 0) onNavigate(entry); if (e.key === ' ' && offset === 0) { e.preventDefault(); onNavigate(entry); } }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && offset === 0 && !isSwiping) onNavigate(entry); if (e.key === ' ' && offset === 0 && !isSwiping) { e.preventDefault(); onNavigate(entry); } }}
         >
           <div className="dc-card-info">
             <span className="dc-badge dc-badge-ongoing">{entry.primary_category || entry.content_type || 'Content'}</span>
