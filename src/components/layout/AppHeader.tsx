@@ -5,6 +5,7 @@ import { LanguageSelector } from '../common/LanguageSelector';
 import Notification from '../common/Notification';
 import { QRScanButton } from '../common/QRScanButton';
 import { useTranslation } from 'react-i18next';
+import './AppHeader.css';
 
 interface AppHeaderProps {
   title: string;
@@ -23,7 +24,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
   const { t } = useTranslation();
 
   return (
-    <IonHeader className="ion-no-border">
+    <IonHeader className="ion-no-border" role="banner">
+      <a href="#main-content" className="skip-link">{t('skipToMainContent')}</a>
       <div className="page-header">
         <div className="page-header__start">
           {showBack && (

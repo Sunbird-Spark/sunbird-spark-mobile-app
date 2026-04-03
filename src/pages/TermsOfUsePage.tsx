@@ -112,9 +112,10 @@ const TermsOfUsePage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen className="tnc-content">
+        <main id="main-content">
         {loading && <PageLoader message={t('loading')} />}
         {!loading && !termsUrl && (
-          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ion-color-medium)' }}>
+          <div style={{ padding: '20px', textAlign: 'center', color: 'var(--ion-color-medium)' }} role="status" aria-live="polite">
             <p>{t('tnc.notAvailable', 'Terms of Use not available')}</p>
           </div>
         )}
@@ -129,6 +130,7 @@ const TermsOfUsePage: React.FC = () => {
             referrerPolicy="no-referrer"
           />
         )}
+        </main>
       </IonContent>
     </IonPage>
   );

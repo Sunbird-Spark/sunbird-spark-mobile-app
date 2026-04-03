@@ -6,9 +6,9 @@ import type { HierarchyContentNode } from '../../types/collectionTypes';
 // Mock Ionic components
 let accordionGroupValue: string[] = [];
 vi.mock('@ionic/react', () => ({
-  IonAccordionGroup: ({ children, multiple, value }: any) => {
+  IonAccordionGroup: ({ children, multiple, value, 'aria-label': ariaLabel }: any) => {
     accordionGroupValue = value ?? [];
-    return <div data-testid="accordion-group">{children}</div>;
+    return <div data-testid="accordion-group" aria-label={ariaLabel}>{children}</div>;
   },
   IonAccordion: ({ children, value, className }: any) => {
     const isExpanded = accordionGroupValue.includes(value);
@@ -24,10 +24,14 @@ vi.mock('@ionic/react', () => ({
   IonLabel: ({ children, className }: any) => (
     <div data-testid="ion-label" className={className}>{children}</div>
   ),
-  IonModal: ({ children, isOpen, onDidDismiss }: any) => {
+  // aria-labelledby is forwarded so accessibility tests can assert the modal is correctly labelled
+  IonModal: ({ children, isOpen, onDidDismiss, 'aria-labelledby': ariaLabelledby }: any) => {
     if (!isOpen) return null;
-    return <div data-testid="ion-modal">{children}</div>;
+    return <div data-testid="ion-modal" aria-labelledby={ariaLabelledby}>{children}</div>;
   },
+  // IonAlert and IonSpinner are used by UnitDownloadButton rendered inside the accordion
+  IonAlert: ({ isOpen }: any) => (isOpen ? <div data-testid="ion-alert" /> : null),
+  IonSpinner: () => <div data-testid="ion-spinner" />,
   IonToast: ({ isOpen, message }: any) => {
     if (!isOpen) return null;
     return <div data-testid="ion-toast">{message}</div>;
@@ -198,7 +202,7 @@ describe('CollectionAccordion', () => {
 
       expect(mockOnContentPlay).not.toHaveBeenCalled();
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
-      expect(screen.getByText('Unlock your learning.')).toBeInTheDocument();
+      expect(screen.getByText('collection.unlockYourLearning')).toBeInTheDocument();
     });
 
     it('shows login button in anonymous login prompt', () => {
@@ -207,7 +211,7 @@ describe('CollectionAccordion', () => {
       );
       fireEvent.click(screen.getByText('Introduction'));
 
-      expect(screen.getByText('Login')).toBeInTheDocument();
+      expect(screen.getByText('login')).toBeInTheDocument();
     });
   });
 
@@ -257,6 +261,170 @@ describe('CollectionAccordion', () => {
       );
       fireEvent.click(screen.getByText('Direct Leaf'));
       expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-direct');
+    });
+  });
+
+  describe('accessibility', () => {
+    it('leaf content items have role="button"', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      const items = screen.getAllByRole('button');
+      // At least the leaf items should be buttons
+      expect(items.length).toBeGreaterThan(0);
+    });
+
+    it('leaf content items have aria-label matching their name', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      expect(screen.getByRole('button', { name: 'Introduction' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Overview PDF' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Deep Dive' })).toBeInTheDocument();
+    });
+
+    it('enrolled leaf items are keyboard focusable (tabIndex=0)', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      expect(introItem).toHaveAttribute('tabindex', '0');
+    });
+
+    it('calls onContentPlay when Enter key is pressed on a leaf item', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      fireEvent.keyDown(introItem, { key: 'Enter' });
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+    });
+
+    it('calls onContentPlay when Space key is pressed on a leaf item', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      fireEvent.keyDown(introItem, { key: ' ' });
+      expect(mockOnContentPlay).toHaveBeenCalledWith('leaf-1');
+    });
+
+    it('does not call onContentPlay on other key presses', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      const introItem = screen.getByRole('button', { name: 'Introduction' });
+      fireEvent.keyDown(introItem, { key: 'Tab' });
+      expect(mockOnContentPlay).not.toHaveBeenCalled();
+    });
+
+    it('login prompt modal has aria-labelledby pointing to the title', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+
+      const modal = screen.getByTestId('ion-modal');
+      expect(modal).toHaveAttribute('aria-labelledby', 'cp-login-prompt-title');
+    });
+
+    it('login prompt title has the id referenced by aria-labelledby', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+
+      expect(document.getElementById('cp-login-prompt-title')).toBeInTheDocument();
+      expect(document.getElementById('cp-login-prompt-title')).toHaveTextContent('collection.unlockYourLearning');
+    });
+
+    it('accordion group has aria-label for course curriculum', () => {
+      const { container } = render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="enrolled" t={mockT} />
+      );
+      const group = container.querySelector('[data-testid="accordion-group"]');
+      expect(group).toHaveAttribute('aria-label', 'Course Curriculum');
+    });
+
+    it('accordion group has aria-label for collection curriculum', () => {
+      const { container } = render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={false} viewState="enrolled" t={mockT} />
+      );
+      const group = container.querySelector('[data-testid="accordion-group"]');
+      expect(group).toHaveAttribute('aria-label', 'Collection Curriculum');
+    });
+
+    it('status icons have role="img"', () => {
+      const enrollmentData = {
+        contentStatusMap: { 'leaf-1': 2, 'leaf-2': 1, 'leaf-3': 0 },
+        contentAttemptInfoMap: {},
+      };
+      const { container } = render(
+        <CollectionAccordion
+          children={mockChildren}
+          collectionId="do_1"
+          isCourse={true}
+          viewState="enrolled"
+          t={mockT}
+          enrollmentData={enrollmentData}
+        />
+      );
+      const statusIcons = container.querySelectorAll('svg[role="img"]');
+      expect(statusIcons.length).toBeGreaterThan(0);
+    });
+
+    it('completed status icon has aria-label for completed key', () => {
+      const enrollmentData = {
+        contentStatusMap: { 'leaf-1': 2 },
+        contentAttemptInfoMap: {},
+      };
+      const { container } = render(
+        <CollectionAccordion
+          children={[{ identifier: 'unit-1', name: 'Unit 1', children: [{ identifier: 'leaf-1', name: 'Lesson', mimeType: 'application/pdf' }] }]}
+          collectionId="do_1"
+          isCourse={true}
+          viewState="enrolled"
+          t={mockT}
+          enrollmentData={enrollmentData}
+        />
+      );
+      expect(container.querySelector('svg[aria-label="completed"]')).toBeInTheDocument();
+    });
+
+    it('in-progress status icon has aria-label for inProgress key', () => {
+      const enrollmentData = {
+        contentStatusMap: { 'leaf-1': 1 },
+        contentAttemptInfoMap: {},
+      };
+      const { container } = render(
+        <CollectionAccordion
+          children={[{ identifier: 'unit-1', name: 'Unit 1', children: [{ identifier: 'leaf-1', name: 'Lesson', mimeType: 'application/pdf' }] }]}
+          collectionId="do_1"
+          isCourse={true}
+          viewState="enrolled"
+          t={mockT}
+          enrollmentData={enrollmentData}
+        />
+      );
+      expect(container.querySelector('svg[aria-label="inProgress"]')).toBeInTheDocument();
+    });
+
+    it('not-started status icon has aria-label for notStarted key', () => {
+      const enrollmentData = {
+        contentStatusMap: {},
+        contentAttemptInfoMap: {},
+      };
+      const { container } = render(
+        <CollectionAccordion
+          children={[{ identifier: 'unit-1', name: 'Unit 1', children: [{ identifier: 'leaf-1', name: 'Lesson', mimeType: 'application/pdf' }] }]}
+          collectionId="do_1"
+          isCourse={true}
+          viewState="enrolled"
+          t={mockT}
+          enrollmentData={enrollmentData}
+        />
+      );
+      expect(container.querySelector('svg[aria-label="notStarted"]')).toBeInTheDocument();
     });
   });
 });

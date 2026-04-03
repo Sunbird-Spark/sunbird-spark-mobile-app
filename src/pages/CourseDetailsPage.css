@@ -294,3 +294,60 @@
     color: var(--ion-color-primary);
     font-size: 0.75rem;
 }
+/* ── CourseDetailsPage inline styles moved to CSS ── */
+
+.cd-toolbar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.cd-icon-btn {
+    background: none;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.cd-toolbar-actions {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.cd-check-icon {
+    margin-top: 2px;
+}
+
+.cd-section-curriculum {
+    padding-bottom: 8px;
+}
+
+.cd-related-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.cd-section-title-no-margin {
+    margin: 0;
+}
+
+.cd-faq-label {
+    white-space: normal;
+}
+
+.cd-faq-label-padded {
+    padding-right: 12px;
+}
+
+.cd-section-faq {
+    padding-bottom: 32px;
+}
+
+.cd-cta-spacer {
+    height: 80px;
+}

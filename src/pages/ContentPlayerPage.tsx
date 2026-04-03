@@ -287,7 +287,7 @@ const ContentPlayerPage: React.FC = () => {
       return (
         <IonPage className="cp-fullscreen">
           <IonContent scrollY={false}>
-            <PageLoader message="Loading content..." />
+            <PageLoader message={t('loading')} />
           </IonContent>
         </IonPage>
       );
@@ -378,6 +378,7 @@ const ContentPlayerPage: React.FC = () => {
       </IonHeader>
 
       <IonContent>
+        <main id="main-content">
         {playerIsLoading || isLocalFallbackPending || isResolving ? (
           <PageLoader message="Loading content..." />
         ) : playerError || !playerMetadata || !mimeType ? (
@@ -401,7 +402,7 @@ const ContentPlayerPage: React.FC = () => {
                 type="button"
                 className="cp-player-area"
                 onClick={handlePlay}
-                aria-label={`Play ${playerMetadata.name}`}
+                aria-label={t('playItem', { name: playerMetadata.name })}
               >
                 {(playerMetadata.posterImage || playerMetadata.appIcon) && (
                   <IonImg
@@ -411,7 +412,7 @@ const ContentPlayerPage: React.FC = () => {
                   />
                 )}
                 <div className="cp-play-button">
-                  <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <svg width="12" height="14" viewBox="0 0 12 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M12 7L0.75 13.4952L0.75 0.504809L12 7Z" fill="var(--ion-color-primary)" />
                   </svg>
                 </div>
@@ -421,6 +422,7 @@ const ContentPlayerPage: React.FC = () => {
             <RelatedContent items={relatedItems} t={t} />
           </div>
         )}
+        </main>
       </IonContent>
 
       <IonToast

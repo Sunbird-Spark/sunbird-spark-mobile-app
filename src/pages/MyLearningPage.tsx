@@ -42,6 +42,7 @@ interface DonutChartProps {
 }
 
 const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, coursesCompleted, totalCourses }) => {
+  const { t } = useTranslation();
   const size = 133;
   const cx = size / 2;
   const cy = size / 2;
@@ -61,7 +62,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, c
   const innerOffset = innerCirc * (1 - innerRatio);
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }} role="img" aria-label={t('donutChartLabel', { visited: lessonsVisited, total: totalLessons })}>
       {/* Outer track */}
       <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={outerStroke} />
       {/* Outer fill — lessons */}
@@ -282,6 +283,7 @@ const MyLearningPage: React.FC = () => {
           </div>
         </IonHeader>
         <IonContent className="my-learning__content" style={{ '--background': 'var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4))' } as React.CSSProperties}>
+          <main id="main-content">
           <div className="my-learning__sign-in">
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
             <button
@@ -291,6 +293,7 @@ const MyLearningPage: React.FC = () => {
               {t('signIn')}
             </button>
           </div>
+          </main>
         </IonContent>
         <BottomNavigation />
       </IonPage>
@@ -304,7 +307,7 @@ const MyLearningPage: React.FC = () => {
           <span className="my-learning__header-title">{t('myLearning')}</span>
           <div className="my-learning__header-actions">
             <button className="my-learning__icon-btn" aria-label={t('notifications')} disabled>
-              <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg">
+              <svg width="16" height="16" viewBox="0 0 16 20" fill="none" stroke="var(--ion-color-primary)" strokeWidth="2" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M8 20C9.1 20 10 19.1 10 18H6C6 19.1 6.9 20 8 20ZM14 14V9C14 5.93 12.37 3.36 9.5 2.68V2C9.5 1.17 8.83 0.5 8 0.5C7.17 0.5 6.5 1.17 6.5 2V2.68C3.64 3.36 2 5.92 2 9V14L0 16V17H16V16L14 14Z" />
               </svg>
             </button>
@@ -322,12 +325,14 @@ const MyLearningPage: React.FC = () => {
         </div>
 
         {/* Tab bar */}
-        <div className="my-learning__tab-bar">
+        <div className="my-learning__tab-bar" role="tablist" aria-label={t('courses')}>
           {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`my-learning__tab ${activeTab === tab ? 'my-learning__tab--active' : ''}`}
+              role="tab"
+              aria-selected={activeTab === tab}
             >
               {t(tab)}
             </button>
@@ -336,6 +341,7 @@ const MyLearningPage: React.FC = () => {
       </IonHeader>
 
       <IonContent className="my-learning__content" style={{ '--background': 'var(--ion-color-step-50, var(--color-f4f4f4, #f4f4f4))' } as React.CSSProperties}>
+        <main id="main-content">
         {isLoading ? (
           <PageLoader message={t('loading')} />
         ) : error ? (
@@ -402,6 +408,7 @@ const MyLearningPage: React.FC = () => {
         )}
 
         <div className="my-learning__bottom-spacer" />
+        </main>
       </IonContent>
 
       <BottomNavigation />

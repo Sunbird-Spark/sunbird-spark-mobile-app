@@ -9,6 +9,7 @@
   "explore": "एक्सप्लोर",
   "myLearning": "मेरी शिक्षा",
   "profile": "प्रोफ़ाइल",
+  "mainNavigation": "मुख्य नेविगेशन",
   "dashboard": "डैशबोर्ड",
   "scan": "स्कैन",
   "loading": "लोड हो रहा है...",
@@ -17,6 +18,19 @@
   "viewAll": "सभी देखें",
   "close": "बंद करें",
   "back": "वापस",
+  "closeSearch": "खोज बंद करें",
+  "share": "साझा करें",
+  "moreOptions": "अधिक विकल्प",
+  "resumeDownload": "डाउनलोड फिर शुरू करें",
+  "pauseDownload": "डाउनलोड रोकें",
+  "downloadToPlayOfflineHint": "ऑफलाइन चलाने के लिए डाउनलोड करें",
+  "bestScore": "सर्वश्रेष्ठ अंक",
+  "playItem": "{{name}} चलाएं",
+  "deleteItem": "{{name}} हटाएं",
+  "openItem": "{{name}} खोलें",
+  "digit": "अंक",
+  "skipToMainContent": "मुख्य सामग्री पर जाएं",
+  "notStarted": "शुरू नहीं हुआ",
   "search": "खोजें",
   "cancel": "रद्द करें",
   "ok": "ठीक है",
@@ -85,6 +99,7 @@
   "star": "स्टार",
   "stars": "स्टार",
   "notifications": "सूचनाएं",
+  "notificationsUnread": "सूचनाएं, {{count}} अपठित",
   "today": "आज",
   "yesterday": "कल",
   "older": "पुराने",
@@ -144,7 +159,10 @@
     "offlineNotAvailable": "कनेक्ट करने में असमर्थ। यह संग्रह ऑफ़लाइन उपलब्ध नहीं है।",
     "leaveCourseOffline": "कोर्स छोड़ने के लिए सक्रिय इंटरनेट कनेक्शन आवश्यक है।",
     "leaveCourseTitle": "कोर्स छोड़ें",
-    "leaveCourseMessage": "क्या आप वाकई यह कोर्स छोड़ना चाहते हैं?"
+    "leaveCourseMessage": "क्या आप वाकई यह कोर्स छोड़ना चाहते हैं?",
+    "unlockYourLearning": "अपनी सीख को अनलॉक करें।",
+    "loginToBeginJourney": "अपनी सीखने की यात्रा शुरू करने के लिए लॉग इन करें।",
+    "joinCourseToAccess": "सामग्री तक पहुंचने के लिए कोर्स में शामिल हों।"
   },
   "heroSection": {
     "title": "वह ज्ञान जो आपको आगे बढ़ाए।",
@@ -322,6 +340,14 @@
     "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
     "cancel": "Cancel",
     "confirm": "Logout Anyway"
+  },
+  "collectionAccordion": {
+    "deleteUnit": "यूनिट हटाएं",
+    "deleteUnitMessage": "यूनिट {{unitName}} की सभी डाउनलोड की गई सामग्री हटाएं?",
+    "deleteUnitDownloads": "यूनिट डाउनलोड हटाएं",
+    "downloadRemaining": "शेष डाउनलोड करें ({{count}} आइटम)",
+    "downloadUnit": "यूनिट सामग्री डाउनलोड करें ({{count}} आइटम)",
+    "retryFailed": "आंशिक डाउनलोड — {{count}} विफल आइटम पुनः प्रयास करें"
   },
   "offlineBanner": {
     "noInternet": "इंटरनेट कनेक्शन नहीं है",

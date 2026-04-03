@@ -361,6 +361,34 @@ describe('CollectionPage', () => {
     });
   });
 
+  // --- Accessibility ---
+
+  describe('accessibility', () => {
+    it('renders main landmark inside content when data is loaded', () => {
+      (useCollection as any).mockReturnValue({
+        data: mockCollectionData,
+        isLoading: false,
+        isError: false,
+        fetchStatus: 'idle',
+      });
+      render(<CollectionPage />);
+      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+    });
+
+    it('back button has aria-label', () => {
+      render(<CollectionPage />);
+      const backBtn = screen.getByLabelText('back');
+      expect(backBtn).toBeInTheDocument();
+    });
+
+    it('search button has aria-label', () => {
+      render(<CollectionPage />);
+      const searchBtn = screen.getByLabelText('search');
+      expect(searchBtn).toBeInTheDocument();
+    });
+  });
+
   describe('view state', () => {
     it('shows default viewState for non-trackable collections', () => {
       (useCollection as any).mockReturnValue({

@@ -171,5 +171,26 @@ describe('CollectionCard', () => {
       fireEvent.click(card);
       expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/collection/do_99999' }));
     });
+
+    it('navigates on Enter key press', () => {
+      render(<CollectionCard item={mockItem} />);
+      const card = document.querySelector('.collection-card')!;
+      fireEvent.keyDown(card, { key: 'Enter' });
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/collection/do_12345' }));
+    });
+
+    it('navigates on Space key press', () => {
+      render(<CollectionCard item={mockItem} />);
+      const card = document.querySelector('.collection-card')!;
+      fireEvent.keyDown(card, { key: ' ' });
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/collection/do_12345' }));
+    });
+
+    it('does not navigate on other key press', () => {
+      render(<CollectionCard item={mockItem} />);
+      const card = document.querySelector('.collection-card')!;
+      fireEvent.keyDown(card, { key: 'Tab' });
+      expect(mockPush).not.toHaveBeenCalled();
+    });
   });
 });

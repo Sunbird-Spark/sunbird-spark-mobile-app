@@ -74,6 +74,7 @@ const SwipeableCard: React.FC<{
   onDelete: (entry: ContentEntry) => void;
   onNavigate: (entry: ContentEntry) => void;
 }> = ({ entry, onDelete, onNavigate }) => {
+  const { t } = useTranslation();
   const startX = useRef(0);
   const currentX = useRef(0);
   const [offset, setOffset] = useState(0);
@@ -126,9 +127,10 @@ const SwipeableCard: React.FC<{
 
   return (
     <div className="dc-swipe-wrapper">
-      <div className="dc-delete-action" onClick={() => onDelete(entry)}>
+      <div role="button" tabIndex={0} className="dc-delete-action" onClick={() => onDelete(entry)} onKeyDown={(e) => { if (e.key === 'Enter') onDelete(entry); if (e.key === ' ') { e.preventDefault(); onDelete(entry); } }} aria-label={t('deleteItem', { name: meta.name })}>
         <TrashIcon />
       </div>
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         className="dc-card"
         style={{
@@ -144,12 +146,12 @@ const SwipeableCard: React.FC<{
         onMouseLeave={onMouseLeave}
       >
         <div
+          role="button"
+          tabIndex={0}
           className="dc-card-body"
-          onClick={() => {
-            if (offset === 0 && !isSwiping) {
-              onNavigate(entry);
-            }
-          }}
+          aria-label={t('openItem', { name: meta.name })}
+          onClick={() => { if (offset === 0 && !isSwiping) onNavigate(entry); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && offset === 0 && !isSwiping) onNavigate(entry); if (e.key === ' ' && offset === 0 && !isSwiping) { e.preventDefault(); onNavigate(entry); } }}
         >
           <div className="dc-card-info">
             <span className="dc-badge dc-badge-ongoing">{entry.primary_category || entry.content_type || 'Content'}</span>
@@ -237,8 +239,9 @@ const DownloadedContentsPage: React.FC = () => {
       </IonHeader>
 
       <IonContent className="dc-content">
+        <main id="main-content">
         {items.length === 0 ? (
-          <div className="dc-empty">
+          <div className="dc-empty" role="status" aria-live="polite">
             <p>{t('download.noDownloadedContent')}</p>
           </div>
         ) : (
@@ -258,6 +261,7 @@ const DownloadedContentsPage: React.FC = () => {
             ))}
           </div>
         )}
+        </main>
       </IonContent>
 
       <IonAlert

@@ -11,10 +11,12 @@ const CoursesPage: React.FC = () => {
     <IonPage>
       <AppHeader title={t('courses')} />
       <IonContent fullscreen>
-        <div className="ion-padding">
-          <h1>Courses Page</h1>
-          <p>This is the courses page content.</p>
-        </div>
+        <main id="main-content">
+          <div className="ion-padding">
+            <h1>Courses Page</h1>
+            <p>This is the courses page content.</p>
+          </div>
+        </main>
       </IonContent>
     </IonPage>
   );

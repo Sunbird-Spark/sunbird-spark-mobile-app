@@ -178,8 +178,8 @@ const PersonalDetailsBody: React.FC = () => {
                     </IonButtons>
                     <IonTitle className="pd-title">{t('personalDetails')}</IonTitle>
                     <IonButtons slot="end">
-                        <button className="pd-edit-btn" onClick={openEdit}>
-                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <button className="pd-edit-btn" onClick={openEdit} aria-label={t('editProfile', 'Edit profile')}>
+                            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path d="M10.5472 1.00861C10.9092 1.0474 11.2023 1.21546 11.435 1.39214C11.6763 1.57916 11.9435 1.8446 12.2106 2.11435L12.3572 2.26259C12.633 2.53234 12.8915 2.79521 13.0811 3.03997C13.2879 3.30541 13.4775 3.64756 13.4775 4.09054C13.4775 4.53353 13.2879 4.87567 13.0811 5.14112C12.8915 5.38588 12.633 5.64874 12.3572 5.9185L6.16053 12.1185C6.02264 12.2547 5.85027 12.4409 5.61757 12.5693C5.39349 12.6977 5.14355 12.7529 4.96257 12.7985L2.71319 13.3604L2.70456 13.3613L2.67016 13.3708C2.54089 13.4027 2.35123 13.4527 2.18748 13.469C2.0065 13.4863 1.61865 13.4923 1.29977 13.1743C0.980886 12.8563 0.989534 12.4667 1.00677 12.2892C1.02401 12.1211 1.07571 11.9307 1.10156 11.8031L1.67903 9.5158C1.72212 9.32964 1.77384 9.07971 1.90311 8.85218C2.03239 8.62552 2.22201 8.44971 2.35129 8.3144L8.55646 2.11435C8.82363 1.8446 9.09082 1.57916 9.33213 1.39214C9.5993 1.19047 9.94401 1 10.3835 1L10.5472 1.00861Z" stroke="var(--color-a14f34, #A14F34)" strokeWidth="2" />
                                 <path d="M8.229 2.79765L10.8145 1.07397L13.4 3.65948L11.6763 6.24499L8.229 2.79765Z" fill="var(--color-a14f34, #A14F34)" />
                             </svg>
@@ -190,6 +190,7 @@ const PersonalDetailsBody: React.FC = () => {
 
             {/* ── Read-only content ── */}
             <IonContent className="pd-content">
+                <main id="main-content">
                 <div className="pd-form-container">
                     {fields.map((f, i) => (
                         <div className="pd-form-group" key={i}>
@@ -198,6 +199,7 @@ const PersonalDetailsBody: React.FC = () => {
                         </div>
                     ))}
                 </div>
+                </main>
             </IonContent>
 
             {/* ── Edit bottom-sheet modal ── */}
@@ -205,11 +207,13 @@ const PersonalDetailsBody: React.FC = () => {
                 isOpen={isEditOpen}
                 onDidDismiss={closeEdit}
                 className="pd-edit-modal"
+                aria-labelledby="pd-edit-modal-title"
             >
                 <div className="pd-modal-root">
                     <div className="pd-modal-header">
-                        <button className="pd-modal-close-btn" onClick={closeEdit}>
-                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <span id="pd-edit-modal-title" className="sr-only">{t('editProfile', 'Edit profile')}</span>
+                        <button className="pd-modal-close-btn" onClick={closeEdit} aria-label={t('close')}>
+                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
                                 <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
                             </svg>
@@ -220,8 +224,9 @@ const PersonalDetailsBody: React.FC = () => {
                         <div className="pd-modal-form">
                             {fields.map(f => (
                                 <div className="pd-form-group" key={f.key}>
-                                    <label className="pd-label">{f.label}</label>
+                                    <label htmlFor={`pd-field-${f.key}`} className="pd-label">{f.label}</label>
                                     <input
+                                        id={`pd-field-${f.key}`}
                                         type={f.type}
                                         className="pd-input"
                                         value={editData[f.key] ?? ''}
@@ -230,7 +235,7 @@ const PersonalDetailsBody: React.FC = () => {
                                 </div>
                             ))}
                             {otpStatus === 'error' && otpError && (
-                                <p className="pd-error">{otpError}</p>
+                                <p className="pd-error" role="alert">{otpError}</p>
                             )}
                         </div>
                     </IonContent>
@@ -252,11 +257,12 @@ const PersonalDetailsBody: React.FC = () => {
                 isOpen={isOtpOpen}
                 onDidDismiss={closeOtp}
                 className="pd-otp-modal"
+                aria-labelledby="pd-otp-modal-title"
             >
                 <div className="pd-modal-root">
                     <div className="pd-modal-header">
-                        <button className="pd-modal-close-btn" onClick={closeOtp}>
-                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <button className="pd-modal-close-btn" onClick={closeOtp} aria-label={t('close')}>
+                            <svg width="12" height="12" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                                 <path d="M1 1L9 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
                                 <path d="M9 1L1 9" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
                             </svg>
@@ -265,14 +271,14 @@ const PersonalDetailsBody: React.FC = () => {
 
                     <IonContent className="pd-modal-content">
                         <div className="otp-body">
-                            <h2 className="otp-title">{t('enterTheCode')}</h2>
+                            <h2 className="otp-title" id="pd-otp-modal-title">{t('enterTheCode')}</h2>
                             <p className="otp-subtitle">
                                 {t('otpSubtitle')}
                             </p>
 
                             <p className="otp-validity">{t('otpValidity')}</p>
 
-                            <div className="otp-inputs">
+                            <div className="otp-inputs" role="group" aria-label={t('enterTheCode')}>
                                 {otpValue.map((digit, idx) => (
                                     <input
                                         key={idx}
@@ -282,6 +288,7 @@ const PersonalDetailsBody: React.FC = () => {
                                         maxLength={1}
                                         className="otp-box"
                                         value={digit}
+                                        aria-label={`${t('digit')} ${idx + 1}`}
                                         onChange={e => handleOtpInputChange(idx, e.target.value)}
                                         onKeyDown={e => handleOtpKeyDown(idx, e)}
                                     />
@@ -289,7 +296,7 @@ const PersonalDetailsBody: React.FC = () => {
                             </div>
 
                             {otpStatus === 'error' && otpError && (
-                                <p className="pd-error">{otpError}</p>
+                                <p className="pd-error" role="alert">{otpError}</p>
                             )}
 
                             <div className="otp-timer-row">

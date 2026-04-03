@@ -23,19 +23,19 @@ import useImpression from '../hooks/useImpression';
 
 // ── Icons ──
 const FilterIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M2 2H16V0H2V2ZM2 3.58997V2H0V3.58997H2ZM6.41003 8L2 3.58997L0.589966 5L5 9.41003L6.41003 8ZM5 9.41003V16.3101H7V9.41003H5ZM5 16.3101C5 17.3301 5.99997 18.05 6.96997 17.73L6.33997 15.83C6.66997 15.72 7 15.9701 7 16.3101H5ZM6.96997 17.73L11.97 16.0601L11.34 14.17L6.33997 15.83L6.96997 17.73ZM11.97 16.0601C12.59 15.8601 13 15.29 13 14.64H11C11 14.42 11.14 14.23 11.34 14.17L11.97 16.0601ZM13 14.64V9.41003H11V14.64H13ZM16 3.58997L11.59 8L13 9.41003L17.41 5L16 3.58997ZM16 2V3.58997H18V2H16ZM17.41 5C17.79 4.62 18 4.11997 18 3.58997H16L17.41 5ZM13 9.41003L11.59 8C11.21 8.38 11 8.88003 11 9.41003H13ZM5 9.41003H7C7 8.88003 6.79003 8.38 6.41003 8L5 9.41003ZM0 3.58997C0 4.11997 0.209966 4.62 0.589966 5L2 3.58997H0ZM16 2H18C18 0.9 17.1 0 16 0V2ZM2 0C0.9 0 0 0.9 0 2H2V0Z" fill="var(--ion-color-primary)" />
     </svg>
 );
 
 const SearchIcon = () => (
-    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
+    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
     </svg>
 );
 
 const CloseIcon = () => (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M1 1L13 13M13 1L1 13" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" />
     </svg>
 );
@@ -267,7 +267,7 @@ const ExplorePage: React.FC = () => {
             <IonHeader className="ion-no-border">
                 <div className="page-header">
                     {showSearch ? (
-                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--color-f0f0f0, #f0f0f0)', borderRadius: '0.5rem', padding: '0.375rem 0.625rem' }}>
+                        <div className="explore-search-bar">
                             <SearchIcon />
                             <input
                                 ref={searchInputRef}
@@ -275,30 +275,31 @@ const ExplorePage: React.FC = () => {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t('searchContentPlaceholder')}
-                                style={{ flex: 1, border: 'none', background: 'transparent', outline: 'none', fontSize: '0.9375rem', color: 'var(--ion-color-dark, var(--color-222222, #222222))' }}
+                                aria-label={t('searchContentPlaceholder')}
+                                className="explore-search-input"
                             />
-                            <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '0.125rem', cursor: 'pointer', display: 'flex' }}>
+                            <button onClick={handleSearchToggle} className="explore-search-close-btn" aria-label={t('closeSearch')}>
                                 <CloseIcon />
                             </button>
                         </div>
                     ) : (
                         <>
-                            <h1 style={{ fontSize: '1.125rem', fontWeight: 600, color: 'var(--ion-color-dark, var(--color-222222, #222222))', margin: 0 }}>
+                            <h1 className="explore-page-title">
                                 {t('exploreTitle')}
                             </h1>
                             <div className="page-header__actions">
-                                <button onClick={handleSearchToggle} style={{ background: 'none', border: 'none', padding: '0.25rem', cursor: 'pointer' }}>
+                                <button onClick={handleSearchToggle} className="explore-icon-btn" aria-label={t('search')}>
                                     <SearchIcon />
                                 </button>
                                 <QRScanButton />
                                 <button
                                     onClick={handleOpenFilter}
                                     aria-label={t('filters')}
-                                    style={{ background: 'none', border: 'none', padding: '0.25rem', cursor: 'pointer', position: 'relative' }}
+                                    className="explore-filter-btn"
                                 >
                                     <FilterIcon />
                                     {activeFilterCount > 0 && (
-                                        <span style={{ position: 'absolute', top: 0, right: 0, background: 'var(--ion-color-primary)', color: 'var(--color-white)', borderRadius: '50%', width: '0.875rem', height: '0.875rem', fontSize: '0.5625rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}>
+                                        <span className="explore-filter-badge">
                                             {activeFilterCount}
                                         </span>
                                     )}
@@ -310,65 +311,61 @@ const ExplorePage: React.FC = () => {
                 </div>
             </IonHeader>
 
-            <IonContent fullscreen style={{ '--background': 'var(--color-f4f4f4, #f4f4f4)' }}>
-                {urlDialCode && (
-                    <div style={{
-                        background: 'var(--ion-color-primary)',
-                        color: '#ffffff',
-                        padding: '8px 16px',
-                        fontSize: '14px',
-                        fontWeight: 500,
-                    }}>
-                        {t('dialCodeResults')}: {urlDialCode}
-                    </div>
-                )}
-
+            <IonContent fullscreen className="explore-content">
                 <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
                     <IonRefresherContent />
                 </IonRefresher>
 
-                {isInitialLoading && (
-                    <PageLoader message="Loading..." />
-                )}
-
-                {queryError && pagination.displayItems.length === 0 && (
-                    <PageLoader error="Failed to load content" onRetry={() => refetch()} />
-                )}
-
-                {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '48px 24px', color: 'var(--ion-color-medium, #757575)' }}>
-                        <p>{t('noContentFound')}</p>
-                    </div>
-                )}
-
-                {pagination.displayItems.length > 0 && (
-                    <div className="masonry-grid">
-                        <div className="masonry-col">
-                            {leftCol.map((item) =>
-                                item.mimeType === COLLECTION_MIME_TYPE
-                                    ? <CollectionCard key={item.identifier} item={item} />
-                                    : <ResourceCard key={item.identifier} item={item} />
-                            )}
+                <main id="main-content">
+                    {urlDialCode && (
+                        <div className="explore-dial-banner">
+                            {t('dialCodeResults')}: {urlDialCode}
                         </div>
-                        <div className="masonry-col">
-                            {rightCol.map((item) =>
-                                item.mimeType === COLLECTION_MIME_TYPE
-                                    ? <CollectionCard key={item.identifier} item={item} />
-                                    : <ResourceCard key={item.identifier} item={item} />
-                            )}
+                    )}
+
+                    {isInitialLoading && (
+                        <PageLoader message={t('loading')} />
+                    )}
+
+                    {queryError && pagination.displayItems.length === 0 && (
+                        <PageLoader error={t('failedToLoad')} onRetry={() => refetch()} />
+                    )}
+
+                    {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (
+                        <div className="explore-empty-state" role="status" aria-live="polite">
+                            <p>{t('noContentFound')}</p>
                         </div>
-                    </div>
-                )}
+                    )}
 
-                <div style={{ height: '100px' }} />
+                    {pagination.displayItems.length > 0 && (
+                        <div className="masonry-grid">
+                            <div className="masonry-col">
+                                {leftCol.map((item) =>
+                                    item.mimeType === COLLECTION_MIME_TYPE
+                                        ? <CollectionCard key={item.identifier} item={item} />
+                                        : <ResourceCard key={item.identifier} item={item} />
+                                )}
+                            </div>
+                            <div className="masonry-col">
+                                {rightCol.map((item) =>
+                                    item.mimeType === COLLECTION_MIME_TYPE
+                                        ? <CollectionCard key={item.identifier} item={item} />
+                                        : <ResourceCard key={item.identifier} item={item} />
+                                )}
+                            </div>
+                        </div>
+                    )}
 
-                <IonInfiniteScroll
-                    ref={infiniteScrollRef}
-                    onIonInfinite={handleLoadMore}
-                    disabled={!pagination.hasMore || isInitialLoading}
-                >
-                    <IonInfiniteScrollContent loadingSpinner="bubbles" />
-                </IonInfiniteScroll>
+                    <div className="explore-bottom-spacer" />
+
+                    <IonInfiniteScroll
+                        ref={infiniteScrollRef}
+                        onIonInfinite={handleLoadMore}
+                        disabled={!pagination.hasMore || isInitialLoading}
+                    >
+                        <IonInfiniteScrollContent loadingSpinner="bubbles" />
+                    </IonInfiniteScroll>
+                </main>
             </IonContent>
 
             <BottomNavigation />
@@ -380,12 +377,13 @@ const ExplorePage: React.FC = () => {
                 breakpoints={[0, 0.75, 1]}
                 initialBreakpoint={0.75}
                 className="filter-modal"
+                aria-labelledby="filter-modal-title"
             >
                 <div className="filter-sheet-container">
                     {/* Header */}
                     <div className="filter-sheet-header">
-                        <h2>{t('filters')}</h2>
-                        <button onClick={() => setShowFilter(false)} className="close-btn">
+                        <h2 id="filter-modal-title">{t('filters')}</h2>
+                        <button onClick={() => setShowFilter(false)} className="close-btn" aria-label={t('close')}>
                             <CloseIcon />
                         </button>
                     </div>
@@ -393,16 +391,18 @@ const ExplorePage: React.FC = () => {
                     {/* Body */}
                     <div className="filter-sheet-body">
                         {/* Sidebar */}
-                        <div className="filter-sidebar">
+                        <div className="filter-sidebar" role="tablist" aria-label={t('filters')}>
                             {isFormLoading
                                 ? [1, 2, 3].map((n) => (
-                                    <div key={n} style={{ margin: '12px', height: '20px', background: '#e0e0e0', borderRadius: '4px', animationName: 'pulse', animationDuration: '1.5s', animationIterationCount: 'infinite' }} />
+                                    <div key={n} className="explore-filter-skeleton" aria-hidden="true" />
                                 ))
                                 : sidebarTabs.map((tab) => (
                                     <button
                                         key={tab.id}
                                         className={`filter-tab ${effectiveActiveTab === tab.id ? 'active' : ''}`}
                                         onClick={() => setActiveTab(tab.id)}
+                                        role="tab"
+                                        aria-selected={effectiveActiveTab === tab.id}
                                     >
                                         {tab.label}
                                     </button>
@@ -448,7 +448,7 @@ const ExplorePage: React.FC = () => {
                             )}
 
                             {!isSortTab && !activeGroup && !isFormLoading && (
-                                <p style={{ color: 'var(--ion-color-medium, #757575)', fontSize: '14px', margin: '4px 0' }}>
+                                <p className="explore-filter-no-results">
                                     {t('noResults')}
                                 </p>
                             )}

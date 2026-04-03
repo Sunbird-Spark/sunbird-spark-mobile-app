@@ -197,6 +197,7 @@ const HomePage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen>
+        <main id="main-content">
         {isAuthenticated ? (
           <>
             <LearningGreeting enrolledCount={enrolledCount} />
@@ -256,6 +257,7 @@ const HomePage: React.FC = () => {
         )}
 
         <div style={{ height: '100px' }} />
+        </main>
       </IonContent>
 
       <BottomNavigation />

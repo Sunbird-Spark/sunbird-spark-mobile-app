@@ -272,4 +272,61 @@ describe('MyLearningPage', () => {
     fireEvent.click(screen.getByText('View More Courses'));
     expect(mockPush).toHaveBeenCalledWith('/explore', 'forward', 'push');
   });
+
+  // ── Accessibility Tests ──
+
+  describe('accessibility', () => {
+    it('tab bar has role="tablist"', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      renderPage();
+      const tablist = screen.getByRole('tablist');
+      expect(tablist).toBeInTheDocument();
+    });
+
+    it('tabs have role="tab" and aria-selected', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      renderPage();
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs).toHaveLength(3);
+
+      // Active Courses tab is selected by default
+      expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+      expect(tabs[1]).toHaveAttribute('aria-selected', 'false');
+      expect(tabs[2]).toHaveAttribute('aria-selected', 'false');
+    });
+
+    it('switching tabs updates aria-selected', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      renderPage();
+      const tabs = screen.getAllByRole('tab');
+
+      fireEvent.click(tabs[1]); // Click Completed tab
+      expect(tabs[0]).toHaveAttribute('aria-selected', 'false');
+      expect(tabs[1]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('notification bell button has aria-label', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      renderPage();
+      const bellBtn = screen.getByLabelText('notifications');
+      expect(bellBtn).toBeInTheDocument();
+    });
+
+    it('renders main landmark in authenticated view', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      renderPage();
+      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+    });
+
+    it('renders main landmark in unauthenticated view', () => {
+      renderPage();
+      expect(screen.getByRole('main')).toBeInTheDocument();
+    });
+  });
 });

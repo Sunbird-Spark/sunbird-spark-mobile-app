@@ -39,6 +39,7 @@ vi.mock('@ionic/react', () => ({
       value={value}
       placeholder={placeholder}
       onChange={(e) => onIonInput?.({ detail: { value: e.target.value } })}
+      {...rest}
     />
   ),
   IonSpinner: () => <div data-testid="ion-spinner" />,
@@ -161,7 +162,7 @@ describe('SearchPage', () => {
     const input = screen.getByPlaceholderText('Search courses, textbooks...');
     fireEvent.change(input, { target: { value: 'test' } });
 
-    expect(screen.getByText('Search failed: Network error')).toBeInTheDocument();
+    expect(screen.getByText('failedToLoad')).toBeInTheDocument();
   });
 
   it('shows "No results" when search returns empty', () => {
@@ -244,5 +245,80 @@ describe('SearchPage', () => {
 
     fireEvent.click(screen.getByText(/View All Results/));
     expect(mockPush).toHaveBeenCalledWith('/explore?query=data%20science', 'forward', 'push');
+  });
+
+  // ── Accessibility Tests ──
+
+  describe('accessibility', () => {
+    it('search input has aria-label', () => {
+      render(<SearchPage />);
+      const input = screen.getByPlaceholderText('Search courses, textbooks...');
+      expect(input).toHaveAttribute('aria-label', 'Search courses, textbooks...');
+    });
+
+    it('loading state has role="status" and aria-live', () => {
+      (useContentSearch as any).mockReturnValue({
+        ...defaultSearchReturn,
+        isLoading: true,
+      });
+
+      render(<SearchPage />);
+      const input = screen.getByPlaceholderText('Search courses, textbooks...');
+      fireEvent.change(input, { target: { value: 'test' } });
+
+      const loadingDiv = screen.getByText('Searching...').closest('[role="status"]');
+      expect(loadingDiv).toBeInTheDocument();
+      expect(loadingDiv).toHaveAttribute('aria-live', 'polite');
+    });
+
+    it('error state has role="alert"', () => {
+      (useContentSearch as any).mockReturnValue({
+        ...defaultSearchReturn,
+        error: new Error('Network error'),
+      });
+
+      render(<SearchPage />);
+      const input = screen.getByPlaceholderText('Search courses, textbooks...');
+      fireEvent.change(input, { target: { value: 'test' } });
+
+      const errorDiv = screen.getByText('failedToLoad').closest('[role="alert"]');
+      expect(errorDiv).toBeInTheDocument();
+    });
+
+    it('no-results message has role="status" and aria-live', () => {
+      (useContentSearch as any).mockReturnValue({
+        ...defaultSearchReturn,
+        data: { data: { content: [], count: 0 } },
+      });
+
+      render(<SearchPage />);
+      const input = screen.getByPlaceholderText('Search courses, textbooks...');
+      fireEvent.change(input, { target: { value: 'xyz' } });
+
+      const noResults = screen.getByText(/No results for/);
+      expect(noResults).toHaveAttribute('role', 'status');
+      expect(noResults).toHaveAttribute('aria-live', 'polite');
+    });
+
+    it('search results section has aria-live for screen reader announcement', () => {
+      (useContentSearch as any).mockReturnValue({
+        ...defaultSearchReturn,
+        data: { data: { content: makeItems(2), count: 2 } },
+      });
+
+      render(<SearchPage />);
+      const input = screen.getByPlaceholderText('Search courses, textbooks...');
+      fireEvent.change(input, { target: { value: 'data' } });
+
+      const resultsSection = screen.getByText(/Results for/).closest('[aria-live="polite"]');
+      expect(resultsSection).toBeInTheDocument();
+    });
+
+    it('clear button has aria-label for screen readers', () => {
+      render(<SearchPage />);
+      const input = screen.getByPlaceholderText('Search courses, textbooks...');
+      fireEvent.change(input, { target: { value: 'test' } });
+      expect(screen.getByLabelText('Close')).toBeInTheDocument();
+    });
   });
 });

@@ -21,17 +21,27 @@ describe('OfflineBanner', () => {
     (useTranslation as any).mockReturnValue({ t: mockT });
     // Default to online
     (useNetwork as any).mockReturnValue({ isOffline: false });
-    
+
     // JSDOM has offsetHeight 0 by default, mock it for the banner
     Object.defineProperty(HTMLDivElement.prototype, 'offsetHeight', {
       configurable: true,
       value: 50,
     });
-    
+
+    // happy-dom does not fire ResizeObserver callbacks — mock it as a class
+    // that invokes the callback immediately on observe() so height tracking works in tests
+    global.ResizeObserver = class {
+      private cb: ResizeObserverCallback;
+      constructor(cb: ResizeObserverCallback) { this.cb = cb; }
+      observe(target: Element) { this.cb([{ target } as ResizeObserverEntry], this as unknown as ResizeObserver); }
+      disconnect() {}
+      unobserve() {}
+    } as unknown as typeof ResizeObserver;
+
     // Reset document state
     document.documentElement.className = '';
     document.documentElement.style.setProperty('--offline-banner-height', '0px');
-    
+
     vi.useFakeTimers();
   });
 

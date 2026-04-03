@@ -103,9 +103,10 @@ const FaqDetailPage: React.FC = () => {
 
             {/* ── Content ── */}
             <IonContent className="fd-content">
+                <main id="main-content">
                 <div className="fd-container">
-                    {isLoading && <p className="fd-status-text">{t('faqSection.loading')}</p>}
-                    {isError && <p className="fd-status-text">{t('faqSection.error')}</p>}
+                    {isLoading && <p className="fd-status-text" role="status" aria-live="polite">{t('faqSection.loading')}</p>}
+                    {isError && <p className="fd-status-text" role="alert">{t('faqSection.error')}</p>}
 
                     <h1 className="fd-section-title">{data.title}</h1>
 
@@ -116,14 +117,15 @@ const FaqDetailPage: React.FC = () => {
                                     className="fd-faq-question"
                                     onClick={() => toggleFaq(idx)}
                                     aria-expanded={expandedFaq === idx}
+                                    aria-controls={`faq-answer-${idx}`}
                                 >
                                     <span className="fd-faq-question-text">{faq.question}</span>
-                                    <span className={`fd-faq-chevron ${expandedFaq === idx ? 'expanded' : ''}`}>
+                                    <span className={`fd-faq-chevron ${expandedFaq === idx ? 'expanded' : ''}`} aria-hidden="true">
                                         <ChevronDownIcon />
                                     </span>
                                 </button>
                                 {expandedFaq === idx && (
-                                    <div className="fd-faq-answer">
+                                    <div className="fd-faq-answer" id={`faq-answer-${idx}`}>
                                         {/* Content is sanitized by useFaqData before reaching here. */}
                         <div
                           className="fd-faq-answer-text"
@@ -141,6 +143,7 @@ const FaqDetailPage: React.FC = () => {
                                                 <textarea
                                                     className="fd-feedback-textarea"
                                                     placeholder={t('reportIssue')}
+                                                    aria-label={t('whatCouldImprove')}
                                                     value={feedbackText[idx] || ''}
                                                     onChange={(e) =>
                                                         setFeedbackText(prev => ({ ...prev, [idx]: e.target.value }))
@@ -194,6 +197,7 @@ const FaqDetailPage: React.FC = () => {
                         ))}
                     </div>
                 </div>
+                </main>
             </IonContent>
         </IonPage>
     );

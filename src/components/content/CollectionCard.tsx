@@ -26,16 +26,21 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     const lessons = item.leafNodesCount ?? 0;
     const badge = item.primaryCategory || t('collectionLabel');
 
+    const handleNavigate = (e: React.MouseEvent | React.KeyboardEvent) => {
+        e.stopPropagation();
+        history.push({
+            pathname: `/collection/${item.identifier}`,
+            state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
+        });
+    };
+
     return (
         <div
+            role="button"
+            tabIndex={0}
             className="collection-card"
-            onClick={(e) => {
-                e.stopPropagation();
-                history.push({
-                    pathname: `/collection/${item.identifier}`,
-                    state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
-                });
-            }}
+            onClick={handleNavigate}
+            onKeyDown={(e) => { if (e.key === 'Enter') handleNavigate(e); if (e.key === ' ') { e.preventDefault(); handleNavigate(e); } }}
         >
             {/* Image */}
             <div className="collection-card-image-wrapper">

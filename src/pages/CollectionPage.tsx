@@ -518,13 +518,14 @@ const CollectionPage: React.FC = () => {
         <IonHeader className="ion-no-border">
           <IonToolbar className="collection-page-header">
             <div className="collection-page-header-inner">
-              <button onClick={handleBack} className="collection-page-icon-btn">
+              <button onClick={handleBack} className="collection-page-icon-btn" aria-label={t('back')}>
                 <BackIcon />
               </button>
             </div>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding ion-text-center">
+          <main id="main-content">
           <div style={{ marginTop: '4rem' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>{collectionData.title}</h2>
             <p style={{ color: 'var(--ion-color-medium)', fontSize: '0.9rem', lineHeight: 1.5 }}>
@@ -533,6 +534,7 @@ const CollectionPage: React.FC = () => {
               You can access the content once the batch begins.
             </p>
           </div>
+          </main>
         </IonContent>
       </IonPage>
     );
@@ -558,7 +560,7 @@ const CollectionPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="collection-page-header">
           <div className="collection-page-header-inner">
-            <button onClick={handleBack} className="collection-page-icon-btn">
+            <button onClick={handleBack} className="collection-page-icon-btn" aria-label={t('back')}>
               <BackIcon />
             </button>
             <div className="collection-page-header-actions">
@@ -663,7 +665,7 @@ const CollectionPage: React.FC = () => {
                   </button>
                 )
               )}
-              <button className="collection-page-icon-btn" onClick={() => router.push('/search', 'forward', 'push')}>
+              <button className="collection-page-icon-btn" onClick={() => router.push('/search', 'forward', 'push')} aria-label={t('search')}>
                 <SearchIcon />
               </button>
             </div>
@@ -672,6 +674,7 @@ const CollectionPage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen>
+        <main id="main-content">
         {/* Offline with no cached data — show immediately, bypassing any pending/idle query state */}
         {isOffline && !isLoading && !collectionData && (
           <PageLoader error={t('collection.offlineNotAvailable')} />
@@ -762,7 +765,7 @@ const CollectionPage: React.FC = () => {
                     <button
                       className="cp-menu-trigger"
                       onClick={() => setIsMenuOpen((prev) => !prev)}
-                      aria-label="More options"
+                      aria-label={t('moreOptions')}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="5" r="2" fill="var(--ion-color-dark, #333)" />
@@ -772,6 +775,7 @@ const CollectionPage: React.FC = () => {
                     </button>
                     {isMenuOpen && (
                       <>
+                        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
                         <div className="cp-menu-backdrop" onClick={() => setIsMenuOpen(false)} />
                         <div className="cp-menu-dropdown">
                           {enrollment.progressProps.percentage >= 100 ? (
@@ -1070,15 +1074,17 @@ const CollectionPage: React.FC = () => {
             <div style={{ height: '40px' }} />
           </>
         )}
+        </main>
       </IonContent>
 
       {/* Anonymous: "Let's Get Started" → login */}
       {viewState === 'anonymous' && !isLoading && collectionData && (
         <div
+          role="button"
+          tabIndex={0}
           className="cp-bottom-cta"
-          onClick={() => {
-            router.push('/sign-in', 'forward', 'push');
-          }}
+          onClick={() => { router.push('/sign-in', 'forward', 'push'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') router.push('/sign-in', 'forward', 'push'); if (e.key === ' ') { e.preventDefault(); router.push('/sign-in', 'forward', 'push'); } }}
         >
           <span className="cp-bottom-cta-text">{t('collection.letsGetStarted')}</span>
           <RightArrowIcon />
@@ -1089,12 +1095,24 @@ const CollectionPage: React.FC = () => {
       {viewState === 'unenrolled' && isTrackable && !isLoading && collectionData && (
         <>
           <div
+            role="button"
+            tabIndex={0}
             className="cp-bottom-cta"
             onClick={() => {
               if (isCreator) {
                 setToastMessage({ message: t('collection.creatorCannotEnrol'), color: 'warning', icon: warningOutline });
               } else {
                 setIsBatchModalOpen(true);
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === ' ') e.preventDefault();
+                if (isCreator) {
+                  setToastMessage({ message: t('collection.creatorCannotEnrol'), color: 'warning', icon: warningOutline });
+                } else {
+                  setIsBatchModalOpen(true);
+                }
               }
             }}
           >
@@ -1159,8 +1177,16 @@ const CollectionPage: React.FC = () => {
               </div>
               <div className="cp-batch-modal-cta-wrap">
                 <div
+                  role="button"
+                  tabIndex={(!selectedBatchId || enrollment.joinLoading) ? -1 : 0}
+                  aria-disabled={!selectedBatchId || enrollment.joinLoading}
                   className="cp-batch-modal-cta"
-                  onClick={handleJoinCourse}
+                  onClick={() => { if (!selectedBatchId || enrollment.joinLoading) return; handleJoinCourse(); }}
+                  onKeyDown={(e) => {
+                    if (!selectedBatchId || enrollment.joinLoading) return;
+                    if (e.key === 'Enter') handleJoinCourse();
+                    if (e.key === ' ') { e.preventDefault(); handleJoinCourse(); }
+                  }}
                   style={{ opacity: (!selectedBatchId || enrollment.joinLoading) ? 0.5 : 1 }}
                 >
                   {enrollment.joinLoading ? (

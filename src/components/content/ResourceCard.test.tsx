@@ -142,6 +142,27 @@ describe('ResourceCard', () => {
       fireEvent.click(card);
       expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/content/do_99999' }));
     });
+
+    it('navigates on Enter key press', () => {
+      render(<ResourceCard item={mockItem} />);
+      const card = document.querySelector('.resource-card')!;
+      fireEvent.keyDown(card, { key: 'Enter' });
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/content/do_12345' }));
+    });
+
+    it('navigates on Space key press', () => {
+      render(<ResourceCard item={mockItem} />);
+      const card = document.querySelector('.resource-card')!;
+      fireEvent.keyDown(card, { key: ' ' });
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/content/do_12345' }));
+    });
+
+    it('does not navigate on other key press', () => {
+      render(<ResourceCard item={mockItem} />);
+      const card = document.querySelector('.resource-card')!;
+      fireEvent.keyDown(card, { key: 'Tab' });
+      expect(mockPush).not.toHaveBeenCalled();
+    });
   });
 
   describe('Badge and action', () => {

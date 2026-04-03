@@ -17,19 +17,19 @@ const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
 // ── Icons ──
 const SearchInputIcon = () => (
-    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
+    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
     </svg>
 );
 
 const ClearIcon = () => (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="var(--ion-color-medium, #757575)" />
     </svg>
 );
 
 const ArrowRightIcon = () => (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
         <line x1="5" y1="12" x2="19" y2="12" />
         <polyline points="12 5 19 12 12 19" />
     </svg>
@@ -90,8 +90,10 @@ const SearchPage: React.FC = () => {
                                 type="text"
                                 className="search-text-input"
                                 placeholder={t('searchPlaceholder')}
+                                aria-label={t('searchPlaceholder')}
                                 value={searchQuery}
                                 onIonInput={(e) => setSearchQuery(e.detail.value || '')}
+                                // eslint-disable-next-line jsx-a11y/no-autofocus
                                 autoFocus
                             />
                             {searchQuery && (
@@ -108,10 +110,11 @@ const SearchPage: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen style={{ '--background': 'var(--ion-color-light)' }}>
+                <main id="main-content">
                 <div className="search-container">
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="search-loading">
+                        <div className="search-loading" role="status" aria-live="polite">
                             <IonSpinner name="crescent" />
                             <span>{t('searching')}</span>
                         </div>
@@ -119,14 +122,14 @@ const SearchPage: React.FC = () => {
 
                     {/* Error State */}
                     {error && (
-                        <div className="search-error">
-                            <p>Search failed: {error.message}</p>
+                        <div className="search-error" role="alert">
+                            <p>{t('failedToLoad')}</p>
                         </div>
                     )}
 
                     {/* Search Results */}
                     {debouncedQuery && !isLoading && !error && results.length > 0 && (
-                        <div className="search-results-section">
+                        <div className="search-results-section" aria-live="polite">
                             <h2 className="search-results-heading">
                                 {t('searchResultsFor')} &quot;{debouncedQuery}&quot;
                             </h2>
@@ -143,7 +146,7 @@ const SearchPage: React.FC = () => {
 
                     {/* No Results */}
                     {debouncedQuery && !isLoading && !error && results.length === 0 && (
-                        <p className="search-no-results">{t('noResultsFor')} &quot;{debouncedQuery}&quot;</p>
+                        <p className="search-no-results" role="status" aria-live="polite">{t('noResultsFor')} &quot;{debouncedQuery}&quot;</p>
                     )}
 
                     {/* Default State */}
@@ -153,6 +156,7 @@ const SearchPage: React.FC = () => {
                         </div>
                     )}
                 </div>
+                </main>
             </IonContent>
         </IonPage>
     );
