@@ -24,7 +24,8 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     const imageUrl = item.posterImage || item.appIcon || item.thumbnail || getPlaceholderImage(item.identifier);
     const creator = item.creator ?? item.createdBy ?? t('unknown');
     const lessons = item.leafNodesCount ?? 0;
-    const badge = item.primaryCategory || t('collectionLabel');
+    const rawBadge = item.primaryCategory || 'Collection';
+    const badge = t(`contentBadge.${rawBadge}`, rawBadge);
 
     const handleNavigate = (e: React.MouseEvent | React.KeyboardEvent) => {
         e.stopPropagation();
