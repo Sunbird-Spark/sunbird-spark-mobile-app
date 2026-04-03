@@ -46,6 +46,11 @@ vi.mock('../components/layout/BottomNavigation', () => ({
   BottomNavigation: () => <div data-testid="bottom-navigation">Bottom Navigation</div>,
 }));
 
+// Mock MobileLayout
+vi.mock('../components/layout/MobileLayout', () => ({
+  MobileLayout: ({ children }: any) => <div data-testid="mobile-layout">{children}</div>,
+}));
+
 // Mock ionicons
 vi.mock('ionicons/icons', () => ({
   home: 'home-icon',
@@ -163,5 +168,11 @@ describe('Dashboard Component', () => {
     render(<Dashboard />);
     const content = screen.getByTestId('ion-content');
     expect(content).toBeInTheDocument();
+  });
+
+  it('has a <main id="main-content"> landmark inside content', () => {
+    const { container } = render(<Dashboard />);
+    const main = container.querySelector('main#main-content');
+    expect(main).toBeInTheDocument();
   });
 });

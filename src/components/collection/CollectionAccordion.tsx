@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal, IonToast, IonSpinner, useIonRouter, IonAlert } from '@ionic/react';
 import { chevronDownOutline } from 'ionicons/icons';
-import { useTranslation } from 'react-i18next';
+import { useTranslation, type TFunction } from 'react-i18next';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import type { DownloadProgress } from '../../services/download_manager/types';
 import { VideoIcon, DocumentIcon } from '../icons/CollectionIcons';
@@ -30,30 +30,30 @@ function formatDuration(seconds?: number): string {
 }
 
 // ── Status Icons (enrolled view only) ──
-const StatusNotStarted = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+const StatusNotStarted: React.FC<{ t: TFunction }> = ({ t }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" role="img" aria-label={t('notStarted')}>
     <circle cx="8" cy="8" r="7" stroke="var(--ion-color-medium, #92949c)" strokeWidth="1.5" />
   </svg>
 );
 
-const StatusInProgress = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+const StatusInProgress: React.FC<{ t: TFunction }> = ({ t }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" role="img" aria-label={t('inProgress')}>
     <circle cx="8" cy="8" r="7" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="1.5" />
     <path d="M8 4V8L10.5 10.5" stroke="var(--ion-color-warning, #ffc409)" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
-const StatusCompleted = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+const StatusCompleted: React.FC<{ t: TFunction }> = ({ t }) => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" role="img" aria-label={t('completed')}>
     <circle cx="8" cy="8" r="8" fill="var(--ion-color-success, #2dd36f)" />
     <path d="M5 8L7 10L11 6" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-function getStatusIcon(status: number | undefined) {
-  if (status === 2) return <StatusCompleted />;
-  if (status === 1) return <StatusInProgress />;
-  return <StatusNotStarted />;
+function getStatusIcon(status: number | undefined, t: TFunction) {
+  if (status === 2) return <StatusCompleted t={t} />;
+  if (status === 1) return <StatusInProgress t={t} />;
+  return <StatusNotStarted t={t} />;
 }
 
 // ── Enrollment data passed to accordion for enrolled view ──
@@ -64,6 +64,7 @@ interface EnrollmentData {
 
 // ── Tiny inline progress ring for per-item indicators ──
 const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOWNLOADING' | 'PAUSED'; onClick?: (e: React.SyntheticEvent) => void }> = ({ progress, size = 18, state, onClick }) => {
+  const { t } = useTranslation();
   const r = (size - 3) / 2;
   const circ = 2 * Math.PI * r;
   const offset = circ - (progress / 100) * circ;
@@ -75,7 +76,7 @@ const ItemProgressRing: React.FC<{ progress: number; size?: number; state?: 'DOW
         cursor: onClick ? 'pointer' : 'default',
         display: 'flex', alignItems: 'center', justifyContent: 'center'
       }}
-      aria-label={state === 'PAUSED' ? 'Resume download' : 'Pause download'}
+      aria-label={state === 'PAUSED' ? t('resumeDownload') : t('pauseDownload')}
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
       onKeyDown={onClick ? (e) => { if (e.key === 'Enter') onClick(e); if (e.key === ' ') { e.preventDefault(); onClick(e); } } : undefined}
@@ -165,7 +166,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
       style={dimmed || contentBlocked ? { opacity: dimmed ? 0.4 : 0.6 } : undefined}
     >
       <div className="cp-curriculum-item-left">
-        {enrollmentData && getStatusIcon(status)}
+        {enrollmentData && getStatusIcon(status, t)}
         <span className="cp-curriculum-item-icon">
           {isVideoMime(node.mimeType) ? <VideoIcon size={22} /> : <DocumentIcon size={22} />}
         </span>
@@ -180,7 +181,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
           </div>
           {selfAssess && attemptInfo?.bestScore && (
             <div style={{ fontSize: '0.7rem', color: 'var(--ion-color-medium)', marginTop: 2 }}>
-              Best Score: {attemptInfo.bestScore.totalScore}/{attemptInfo.bestScore.totalMaxScore}
+              {t('bestScore')}: {attemptInfo.bestScore.totalScore}/{attemptInfo.bestScore.totalMaxScore}
             </div>
           )}
           {maxExceeded && (
@@ -190,7 +191,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
           )}
           {dimmed && (
             <div style={{ fontSize: '0.7rem', color: 'var(--ion-color-medium)', marginTop: 2 }}>
-              Download to play offline
+              {t('downloadToPlayOfflineHint')}
             </div>
           )}
         </div>
@@ -508,7 +509,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
           opacity: isOffline ? 0.4 : 1, flexShrink: 0,
           display: 'flex', alignItems: 'center', gap: '4px',
         }}
-        aria-label={`Partial download — retry ${failedCount} failed item(s)`}
+        aria-label={t('collectionAccordion.retryFailed', { count: failedCount })}
       >
         {loading ? (
           <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
@@ -538,7 +539,7 @@ const UnitDownloadButton: React.FC<UnitDownloadButtonProps> = ({
           cursor: isOffline ? 'default' : 'pointer',
           opacity: isOffline ? 0.4 : 1, flexShrink: 0,
         }}
-        aria-label="Download failed — tap to retry"
+        aria-label={t('download.downloadFailedRetry')}
       >
         {loading ? (
           <IonSpinner name="crescent" style={{ width: 16, height: 16 }} />
@@ -645,11 +646,16 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
     <div className="cp-curriculum-section">
       {!hideTitle && (
         <h2 className="cp-curriculum-title">
-          {isCourse ? 'Course' : 'Collection'} Curriculum
+          {t(isCourse ? 'collection.courseCurriculum' : 'collection.collectionCurriculum')}
         </h2>
       )}
 
-      <IonAccordionGroup multiple={true} value={expandedValues} onIonChange={(event) => setExpandedValues(event.detail.value as string[])}>
+      <IonAccordionGroup
+        multiple={true}
+        value={expandedValues}
+        onIonChange={(event) => setExpandedValues(event.detail.value as string[])}
+        aria-label={isCourse ? t('collection.courseCurriculum') : t('collection.collectionCurriculum')}
+      >
         {(children ?? []).map((unit, unitIndex) => (
           <IonAccordion
             key={unit.identifier}
@@ -713,10 +719,10 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
       >
         <div className="cp-login-prompt-inner">
           <h2 id="cp-login-prompt-title" className="cp-login-prompt-title">
-            Unlock your learning.
+            {t('collection.unlockYourLearning')}
           </h2>
           <p className="cp-login-prompt-subtitle">
-            Log in to begin your learning journey with us.
+            {t('collection.loginToBeginJourney')}
           </p>
           <button
             className="cp-login-prompt-btn"
@@ -725,7 +731,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
               router.push('/sign-in', 'forward', 'push');
             }}
           >
-            Login
+            {t('login')}
           </button>
         </div>
       </IonModal>
@@ -734,7 +740,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
       <IonToast
         isOpen={showJoinToast}
         onDidDismiss={() => setShowJoinToast(false)}
-        message="Join the course to access content."
+        message={t('collection.joinCourseToAccess')}
         duration={2500}
         position="bottom"
         color="warning"

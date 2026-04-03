@@ -1,0 +1,15 @@
+.profile-signin-prompt {
+  text-align: center;
+  padding: 1.5rem 2rem 1rem;
+}
+
+.profile-signin-message {
+  color: var(--ion-color-medium);
+  margin-bottom: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.profile-guest-actions {
+  margin-top: 1rem;
+}

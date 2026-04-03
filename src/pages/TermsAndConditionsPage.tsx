@@ -82,7 +82,7 @@ const TermsAndConditionsPage: React.FC = () => {
         <IonToolbar className="tnc-toolbar">
           <IonTitle className="tnc-title">{t('tnc.title')}</IonTitle>
           <IonButtons slot="end">
-            <IonButton onClick={handleClose} className="tnc-close-btn" aria-label="Close">
+            <IonButton onClick={handleClose} className="tnc-close-btn" aria-label={t('close')}>
               <IonIcon slot="icon-only" icon={close} />
             </IonButton>
           </IonButtons>
@@ -90,22 +90,24 @@ const TermsAndConditionsPage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen className="tnc-content">
+        <main id="main-content">
         {loading && (
           <PageLoader message={t('loading')} />
         )}
 
         <iframe
-          title="Terms and Conditions"
+          title={t('tnc.title')}
           src={tncData.url}
           className={`tnc-iframe ${loading ? 'tnc-iframe--hidden' : ''}`}
           onLoad={handleIframeLoad}
         />
+        </main>
       </IonContent>
 
       {!loading && (
         <IonFooter className="tnc-footer ion-no-border">
           <div className="tnc-footer-inner">
-            <label className="tnc-checkbox-row">
+            <label className="tnc-checkbox-row" id="tnc-agree-label">
               <input
                 type="checkbox"
                 checked={termsAgreed}
@@ -121,6 +123,7 @@ const TermsAndConditionsPage: React.FC = () => {
               className="tnc-accept-btn"
               disabled={!termsAgreed || acceptTnC.isPending}
               onClick={handleAccept}
+              aria-describedby="tnc-agree-label"
             >
               {acceptTnC.isPending ? <IonSpinner name="crescent" /> : t('tnc.continue')}
             </button>

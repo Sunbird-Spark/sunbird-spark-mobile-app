@@ -18,6 +18,19 @@
   "viewAll": "عرض الكل",
   "close": "إغلاق",
   "back": "رجوع",
+  "closeSearch": "إغلاق البحث",
+  "share": "مشاركة",
+  "moreOptions": "المزيد من الخيارات",
+  "resumeDownload": "استئناف التنزيل",
+  "pauseDownload": "إيقاف التنزيل مؤقتًا",
+  "downloadToPlayOfflineHint": "نزّل للتشغيل بدون إنترنت",
+  "bestScore": "أفضل نتيجة",
+  "playItem": "تشغيل {{name}}",
+  "deleteItem": "حذف {{name}}",
+  "openItem": "فتح {{name}}",
+  "digit": "رقم",
+  "skipToMainContent": "تخطي إلى المحتوى الرئيسي",
+  "notStarted": "لم يبدأ",
   "search": "بحث",
   "cancel": "إلغاء",
   "ok": "موافق",
@@ -144,7 +157,10 @@
     "offlineNotAvailable": "تعذّر الاتصال. هذه المجموعة غير متاحة دون اتصال.",
     "leaveCourseOffline": "مغادرة الدورة تتطلب اتصالاً نشطاً بالإنترنت.",
     "leaveCourseTitle": "مغادرة الدورة",
-    "leaveCourseMessage": "هل أنت متأكد أنك تريد مغادرة هذه الدورة؟"
+    "leaveCourseMessage": "هل أنت متأكد أنك تريد مغادرة هذه الدورة؟",
+    "unlockYourLearning": "افتح إمكاناتك التعليمية.",
+    "loginToBeginJourney": "سجّل دخولك لبدء رحلتك التعليمية.",
+    "joinCourseToAccess": "انضم إلى الدورة للوصول إلى المحتوى."
   },
   "heroSection": {
     "title": "المعرفة التي تدفعك إلى الأمام.",
@@ -393,7 +409,8 @@
     "deleteUnitMessage": "حذف جميع المحتويات المحملة للوحدة {{unitName}}؟",
     "deleteUnitDownloads": "حذف تنزيلات الوحدة",
     "downloadRemaining": "تنزيل المتبقي ({{count}} عناصر)",
-    "downloadUnit": "تنزيل محتويات الوحدة ({{count}} عناصر)"
+    "downloadUnit": "تنزيل محتويات الوحدة ({{count}} عناصر)",
+    "retryFailed": "تنزيل جزئي — إعادة المحاولة لـ {{count}} عنصر فاشل"
   },
   "assessment_max_attempts_reached": "لقد وصلت إلى الحد الأقصى للمحاولات المسموح بها لهذا المحتوى.",
   "logoutSyncWarning": {

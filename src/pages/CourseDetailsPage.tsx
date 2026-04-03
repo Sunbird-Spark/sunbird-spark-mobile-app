@@ -1,24 +1,25 @@
 import React from 'react';
 import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonImg } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { AppBackIcon } from '../components/common/AppBackIcon';
 import './CourseDetailsPage.css';
 import useImpression from '../hooks/useImpression';
 
 const SearchIcon = () => (
-    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg">
+    <svg width="19" height="19" viewBox="0 0 19 19" fill="var(--ion-color-primary)" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M13.5 12H12.71L12.43 11.73C13.41 10.59 14 9.11 14 7.5C14 3.91 11.09 1 7.5 1C3.91 1 1 3.91 1 7.5C1 11.09 3.91 14 7.5 14C9.11 14 10.59 13.41 11.73 12.43L12 12.71V13.5L17 18.49L18.49 17L13.5 12ZM7.5 12C5.01 12 3 9.99 3 7.5C3 5.01 5.01 3 7.5 3C9.99 3 12 5.01 12 7.5C12 9.99 9.99 12 7.5 12Z" />
     </svg>
 );
 
 const ShareIcon = () => (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <path d="M18 16.08C17.24 16.08 16.56 16.38 16.04 16.85L8.91 12.7C8.96 12.47 9 12.24 9 12C9 11.76 8.96 11.53 8.91 11.3L15.96 7.19C16.5 7.69 17.21 8 18 8C19.66 8 21 6.66 21 5C21 3.34 19.66 2 18 2C16.34 2 15 3.34 15 5C15 5.24 15.04 5.47 15.09 5.7L8.04 9.81C7.5 9.31 6.79 9 6 9C4.34 9 3 10.34 3 12C3 13.66 4.34 15 6 15C6.79 15 7.5 14.69 8.04 14.19L15.16 18.34C15.11 18.55 15.08 18.77 15.08 19C15.08 20.61 16.39 21.92 18 21.92C19.61 21.92 20.92 20.61 20.92 19C20.92 17.39 19.61 16.08 18 16.08Z" fill="var(--ion-color-primary)" />
     </svg>
 );
 
 const CheckIcon = () => (
-    <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginTop: '2px' }}>
+    <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="cd-check-icon">
         <path d="M4.5 9.5L0.5 5.5L1.91 4.09L4.5 6.67L10.59 0.580002L12 2L4.5 9.5Z" fill="var(--ion-color-primary)" />
     </svg>
 );
@@ -69,20 +70,21 @@ const relatedItems = [
 const CourseDetailsPage: React.FC = () => {
     useImpression({ pageid: 'CourseDetailsPage', env: 'course' });
     const history = useHistory();
+    const { t } = useTranslation();
 
     return (
         <IonPage className="course-details-page">
             <IonHeader className="ion-no-border">
                 <IonToolbar className="course-details-header">
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <button onClick={() => history.goBack()} style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    <div className="cd-toolbar-row">
+                        <button onClick={() => history.goBack()} className="cd-icon-btn" aria-label={t('back')}>
                             <AppBackIcon />
                         </button>
-                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                            <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
+                        <div className="cd-toolbar-actions">
+                            <button className="cd-icon-btn" aria-label={t('search')}>
                                 <SearchIcon />
                             </button>
-                            <button style={{ background: 'none', border: 'none', padding: '4px', cursor: 'pointer' }}>
+                            <button className="cd-icon-btn" aria-label={t('share')}>
                                 <ShareIcon />
                             </button>
                         </div>
@@ -91,205 +93,207 @@ const CourseDetailsPage: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen>
-                {/* Meta details */}
-                <div className="course-details-title-section">
-                    <h1 className="course-details-title">The AI Engineer Course 2026: Complete AI Engineer Bootcamp</h1>
-                    <div className="course-meta">
-                        <span className="rating">4.5 <span className="star">★</span></span>
-                        <span className="dot">•</span>
-                        <span>25 Lessons</span>
-                    </div>
-                </div>
-
-                {/* Course Overview */}
-                <div className="section-container">
-                    <h2 className="section-title">Course Overview</h2>
-                    <div className="course-overview-meta">
-                        <div className="overview-meta-item">
-                            <CalendarIcon />
-                            <span>4 Weeks</span>
-                        </div>
-                        <div className="overview-meta-item">
-                            <VideoIcon />
+                <main id="main-content">
+                    {/* Meta details */}
+                    <div className="course-details-title-section">
+                        <h1 className="course-details-title">The AI Engineer Course 2026: Complete AI Engineer Bootcamp</h1>
+                        <div className="course-meta">
+                            <span className="rating">4.5 <span className="star">★</span></span>
+                            <span className="dot">•</span>
                             <span>25 Lessons</span>
                         </div>
                     </div>
-                    <p className="course-description">
-                        Introduction to Cyber Security course for beginners is designed to give you a
-                        foundational look at today's cybersecurity landscape and provide you with the tools to
-                        evaluate and manage security protocols in information processing systems.
-                    </p>
-                </div>
 
-                {/* Skills */}
-                <div className="section-container">
-                    <h2 className="section-title">Skills you will learn</h2>
-                    <ul className="skills-list">
-                        <li><CheckIcon /> Business analysis, planning, and monitoring</li>
-                        <li><CheckIcon /> Elicitation and collaboration</li>
-                        <li><CheckIcon /> Requirements life cycle management</li>
-                        <li><CheckIcon /> Business intelligence perspective</li>
-                        <li><CheckIcon /> Requirements analysis and design definition</li>
-                    </ul>
-                </div>
-
-                {/* Best Suited For */}
-                <div className="section-container">
-                    <h2 className="section-title">Best Suited For</h2>
-                    <ul className="skills-list">
-                        <li><CheckIcon /> Business Analyst</li>
-                        <li><CheckIcon /> Data Analyst</li>
-                        <li><CheckIcon /> Business Analyst</li>
-                        <li><CheckIcon /> Analytics Managers</li>
-                    </ul>
-                </div>
-
-                {/* Course Curriculum */}
-                <div className="section-container" style={{ paddingBottom: '8px' }}>
-                    <h2 className="section-title">Course Curriculum</h2>
-
-                    <IonAccordionGroup className="curriculum-accordion-group">
-                        <IonAccordion value="week1" className="curriculum-accordion">
-                            <IonItem slot="header" className="curriculum-header" lines="none">
-                                <IonLabel>
-                                    <div>Week 1: Foundation & Basics</div>
-                                    <div className="curriculum-header-subtitle">Business analysis, planning, and monitoring</div>
-                                </IonLabel>
-                            </IonItem>
-                            <div slot="content">
-                                <div className="curriculum-item">
-                                    <div className="curriculum-item-left">
-                                        <VideoIcon />
-                                        <span className="curriculum-item-title">0.1 Overview</span>
-                                    </div>
-                                    <span className="curriculum-item-time">04:56</span>
-                                </div>
-                                <div className="curriculum-item">
-                                    <div className="curriculum-item-left">
-                                        <DocumentIcon />
-                                        <span className="curriculum-item-title">0.2 Business Decisions and Analytics</span>
-                                    </div>
-                                    <span className="curriculum-item-time">04:56</span>
-                                </div>
-                                <div className="curriculum-item">
-                                    <div className="curriculum-item-left">
-                                        <VideoIcon />
-                                        <span className="curriculum-item-title">0.3 Types of Business Analytics</span>
-                                    </div>
-                                    <span className="curriculum-item-time">04:56</span>
-                                </div>
-                                <div className="curriculum-item">
-                                    <div className="curriculum-item-left">
-                                        <VideoIcon />
-                                        <span className="curriculum-item-title">0.4 Applications of Business Analytics</span>
-                                    </div>
-                                    <span className="curriculum-item-time">04:56</span>
-                                </div>
-                                <div className="curriculum-item">
-                                    <div className="curriculum-item-left">
-                                        <DocumentIcon />
-                                        <span className="curriculum-item-title">0.5 Data Science Overview</span>
-                                    </div>
-                                    <span className="curriculum-item-time">04:56</span>
-                                </div>
+                    {/* Course Overview */}
+                    <div className="section-container">
+                        <h2 className="section-title">Course Overview</h2>
+                        <div className="course-overview-meta">
+                            <div className="overview-meta-item">
+                                <CalendarIcon />
+                                <span>4 Weeks</span>
                             </div>
-                        </IonAccordion>
-
-                        <IonAccordion value="week2" className="curriculum-accordion">
-                            <IonItem slot="header" className="curriculum-header" lines="none">
-                                <IonLabel>Week 2: Core Competencies</IonLabel>
-                            </IonItem>
-                            <div slot="content">
-                                {/* Empty for design */}
+                            <div className="overview-meta-item">
+                                <VideoIcon />
+                                <span>25 Lessons</span>
                             </div>
-                        </IonAccordion>
-
-                        <IonAccordion value="week3" className="curriculum-accordion">
-                            <IonItem slot="header" className="curriculum-header" lines="none">
-                                <IonLabel>Week 3: Professional Application</IonLabel>
-                            </IonItem>
-                            <div slot="content">
-                                {/* Empty for design */}
-                            </div>
-                        </IonAccordion>
-                    </IonAccordionGroup>
-                </div>
-
-                {/* Related Content */}
-                <div className="section-container">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <h2 className="section-title" style={{ margin: 0 }}>Related Content</h2>
-                        <RightArrowIcon />
+                        </div>
+                        <p className="course-description">
+                            Introduction to Cyber Security course for beginners is designed to give you a
+                            foundational look at today's cybersecurity landscape and provide you with the tools to
+                            evaluate and manage security protocols in information processing systems.
+                        </p>
                     </div>
 
-                    <div className="related-content-container">
-                        {relatedItems.map(item => (
-                            <div
-                                key={item.id}
-                                role="button"
-                                tabIndex={0}
-                                className="content-card standard-card related-card"
-                                onClick={() => history.push(`/video/${item.id}`)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') history.push(`/video/${item.id}`); if (e.key === ' ') { e.preventDefault(); history.push(`/video/${item.id}`); } }}
-                            >
-                                <IonImg src={item.thumbnail} alt={item.title} className="card-img"  />
-                                <div className="card-badge bg-yellow-badge">{item.type}</div>
-                                <h3 className="card-title">{item.title}</h3>
-                                <div className="card-meta">
-                                    <span className="rating">{item.rating} <span className="star">★</span></span>
-                                    <span className="dot">•</span>
-                                    <span className="lessons">{item.lessons} Lessons</span>
-                                </div>
-                            </div>
-                        ))}
+                    {/* Skills */}
+                    <div className="section-container">
+                        <h2 className="section-title">Skills you will learn</h2>
+                        <ul className="skills-list">
+                            <li><CheckIcon /> Business analysis, planning, and monitoring</li>
+                            <li><CheckIcon /> Elicitation and collaboration</li>
+                            <li><CheckIcon /> Requirements life cycle management</li>
+                            <li><CheckIcon /> Business intelligence perspective</li>
+                            <li><CheckIcon /> Requirements analysis and design definition</li>
+                        </ul>
                     </div>
-                </div>
 
-                {/* FAQs */}
-                <div className="section-container" style={{ paddingBottom: '32px' }}>
-                    <h2 className="section-title">Frequently asked questions</h2>
+                    {/* Best Suited For */}
+                    <div className="section-container">
+                        <h2 className="section-title">Best Suited For</h2>
+                        <ul className="skills-list">
+                            <li><CheckIcon /> Business Analyst</li>
+                            <li><CheckIcon /> Data Analyst</li>
+                            <li><CheckIcon /> Business Analyst</li>
+                            <li><CheckIcon /> Analytics Managers</li>
+                        </ul>
+                    </div>
 
-                    <IonAccordionGroup className="faq-accordion-group">
-                        <IonAccordion value="faq1" className="faq-accordion">
-                            <IonItem slot="header" className="faq-header" lines="none">
-                                <IonLabel style={{ whiteSpace: 'normal', paddingRight: '12px' }}>What kind of courses are available on this platform?</IonLabel>
-                            </IonItem>
-                            <div slot="content" className="faq-content">
-                                Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.
-                            </div>
-                        </IonAccordion>
+                    {/* Course Curriculum */}
+                    <div className="section-container cd-section-curriculum">
+                        <h2 className="section-title">Course Curriculum</h2>
 
-                        <IonAccordion value="faq2" className="faq-accordion">
-                            <IonItem slot="header" className="faq-header" lines="none">
-                                <IonLabel style={{ whiteSpace: 'normal' }}>What if I need help during the course?</IonLabel>
-                            </IonItem>
-                            <div slot="content" className="faq-content">
-                                {/* content */}
-                            </div>
-                        </IonAccordion>
+                        <IonAccordionGroup className="curriculum-accordion-group">
+                            <IonAccordion value="week1" className="curriculum-accordion">
+                                <IonItem slot="header" className="curriculum-header" lines="none">
+                                    <IonLabel>
+                                        <div>Week 1: Foundation & Basics</div>
+                                        <div className="curriculum-header-subtitle">Business analysis, planning, and monitoring</div>
+                                    </IonLabel>
+                                </IonItem>
+                                <div slot="content">
+                                    <div className="curriculum-item">
+                                        <div className="curriculum-item-left">
+                                            <VideoIcon />
+                                            <span className="curriculum-item-title">0.1 Overview</span>
+                                        </div>
+                                        <span className="curriculum-item-time">04:56</span>
+                                    </div>
+                                    <div className="curriculum-item">
+                                        <div className="curriculum-item-left">
+                                            <DocumentIcon />
+                                            <span className="curriculum-item-title">0.2 Business Decisions and Analytics</span>
+                                        </div>
+                                        <span className="curriculum-item-time">04:56</span>
+                                    </div>
+                                    <div className="curriculum-item">
+                                        <div className="curriculum-item-left">
+                                            <VideoIcon />
+                                            <span className="curriculum-item-title">0.3 Types of Business Analytics</span>
+                                        </div>
+                                        <span className="curriculum-item-time">04:56</span>
+                                    </div>
+                                    <div className="curriculum-item">
+                                        <div className="curriculum-item-left">
+                                            <VideoIcon />
+                                            <span className="curriculum-item-title">0.4 Applications of Business Analytics</span>
+                                        </div>
+                                        <span className="curriculum-item-time">04:56</span>
+                                    </div>
+                                    <div className="curriculum-item">
+                                        <div className="curriculum-item-left">
+                                            <DocumentIcon />
+                                            <span className="curriculum-item-title">0.5 Data Science Overview</span>
+                                        </div>
+                                        <span className="curriculum-item-time">04:56</span>
+                                    </div>
+                                </div>
+                            </IonAccordion>
 
-                        <IonAccordion value="faq3" className="faq-accordion">
-                            <IonItem slot="header" className="faq-header" lines="none">
-                                <IonLabel style={{ whiteSpace: 'normal', paddingRight: '12px' }}>Are the courses accredited or do they offer certification?</IonLabel>
-                            </IonItem>
-                            <div slot="content" className="faq-content">
-                                {/* content */}
-                            </div>
-                        </IonAccordion>
+                            <IonAccordion value="week2" className="curriculum-accordion">
+                                <IonItem slot="header" className="curriculum-header" lines="none">
+                                    <IonLabel>Week 2: Core Competencies</IonLabel>
+                                </IonItem>
+                                <div slot="content">
+                                    {/* Empty for design */}
+                                </div>
+                            </IonAccordion>
 
-                        <IonAccordion value="faq4" className="faq-accordion">
-                            <IonItem slot="header" className="faq-header" lines="none">
-                                <IonLabel style={{ whiteSpace: 'normal' }}>Can I learn in offline mode?</IonLabel>
-                            </IonItem>
-                            <div slot="content" className="faq-content">
-                                {/* content */}
-                            </div>
-                        </IonAccordion>
-                    </IonAccordionGroup>
-                </div>
+                            <IonAccordion value="week3" className="curriculum-accordion">
+                                <IonItem slot="header" className="curriculum-header" lines="none">
+                                    <IonLabel>Week 3: Professional Application</IonLabel>
+                                </IonItem>
+                                <div slot="content">
+                                    {/* Empty for design */}
+                                </div>
+                            </IonAccordion>
+                        </IonAccordionGroup>
+                    </div>
 
-                {/* padding for CTA */}
-                <div style={{ height: '80px' }}></div>
+                    {/* Related Content */}
+                    <div className="section-container">
+                        <div className="cd-related-header">
+                            <h2 className="section-title cd-section-title-no-margin">Related Content</h2>
+                            <RightArrowIcon />
+                        </div>
+
+                        <div className="related-content-container">
+                            {relatedItems.map(item => (
+                                <div
+                                    key={item.id}
+                                    role="button"
+                                    tabIndex={0}
+                                    className="content-card standard-card related-card"
+                                    onClick={() => history.push(`/video/${item.id}`)}
+                                    onKeyDown={(e) => { if (e.key === 'Enter') history.push(`/video/${item.id}`); if (e.key === ' ') { e.preventDefault(); history.push(`/video/${item.id}`); } }}
+                                >
+                                    <IonImg src={item.thumbnail} alt={item.title} className="card-img"  />
+                                    <div className="card-badge bg-yellow-badge">{item.type}</div>
+                                    <h3 className="card-title">{item.title}</h3>
+                                    <div className="card-meta">
+                                        <span className="rating">{item.rating} <span className="star">★</span></span>
+                                        <span className="dot">•</span>
+                                        <span className="lessons">{item.lessons} Lessons</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* FAQs */}
+                    <div className="section-container cd-section-faq">
+                        <h2 className="section-title">Frequently asked questions</h2>
+
+                        <IonAccordionGroup className="faq-accordion-group">
+                            <IonAccordion value="faq1" className="faq-accordion">
+                                <IonItem slot="header" className="faq-header" lines="none">
+                                    <IonLabel className="cd-faq-label cd-faq-label-padded">What kind of courses are available on this platform?</IonLabel>
+                                </IonItem>
+                                <div slot="content" className="faq-content">
+                                    Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups.
+                                </div>
+                            </IonAccordion>
+
+                            <IonAccordion value="faq2" className="faq-accordion">
+                                <IonItem slot="header" className="faq-header" lines="none">
+                                    <IonLabel className="cd-faq-label">What if I need help during the course?</IonLabel>
+                                </IonItem>
+                                <div slot="content" className="faq-content">
+                                    {/* content */}
+                                </div>
+                            </IonAccordion>
+
+                            <IonAccordion value="faq3" className="faq-accordion">
+                                <IonItem slot="header" className="faq-header" lines="none">
+                                    <IonLabel className="cd-faq-label cd-faq-label-padded">Are the courses accredited or do they offer certification?</IonLabel>
+                                </IonItem>
+                                <div slot="content" className="faq-content">
+                                    {/* content */}
+                                </div>
+                            </IonAccordion>
+
+                            <IonAccordion value="faq4" className="faq-accordion">
+                                <IonItem slot="header" className="faq-header" lines="none">
+                                    <IonLabel className="cd-faq-label">Can I learn in offline mode?</IonLabel>
+                                </IonItem>
+                                <div slot="content" className="faq-content">
+                                    {/* content */}
+                                </div>
+                            </IonAccordion>
+                        </IonAccordionGroup>
+                    </div>
+
+                    {/* padding for CTA */}
+                    <div className="cd-cta-spacer"></div>
+                </main>
             </IonContent>
 
             <div className="bottom-cta-bar">

@@ -30,6 +30,7 @@ const Dashboard: React.FC = () => {
               <IonTitle size="large">{t('dashboard')}</IonTitle>
             </IonToolbar>
           </IonHeader>
+          <main id="main-content">
           <div className="ion-padding">
             <IonCard>
               <IonCardHeader>
@@ -60,6 +61,7 @@ const Dashboard: React.FC = () => {
               </IonCardContent>
             </IonCard>
           </div>
+          </main>
         </IonContent>
       </MobileLayout>
     </IonPage>

@@ -10,6 +10,7 @@ import {
 import { useParams } from 'react-router';
 import { useHistory } from 'react-router-dom';
 import { shareSocialOutline, downloadOutline } from 'ionicons/icons';
+import { useTranslation } from 'react-i18next';
 import { AppBackIcon } from '../components/common/AppBackIcon';
 import { telemetryService } from '../services/TelemetryService';
 import './VideoContentPage.css';
@@ -19,6 +20,7 @@ const VideoContentPage: React.FC = () => {
     useImpression({ pageid: 'VideoContentPage', env: 'contentplayer' });
     const { id } = useParams<{ id: string }>();
     const history = useHistory();
+    const { t } = useTranslation();
 
     const handleShare = useCallback(() => {
         void telemetryService.share({
@@ -31,15 +33,15 @@ const VideoContentPage: React.FC = () => {
             <IonHeader className="ion-no-border" style={{ boxShadow: 'none' }}>
                 <IonToolbar style={{ '--background': 'transparent', '--min-height': '60px' }}>
                     <IonButtons slot="start">
-                        <button className="action-btn" onClick={() => history.goBack()} style={{ padding: '8px' }}>
+                        <button className="action-btn" onClick={() => history.goBack()} style={{ padding: '8px' }} aria-label={t('back')}>
                             <AppBackIcon />
                         </button>
                     </IonButtons>
                     <IonButtons slot="end" className="header-actions">
-                        <button className="action-btn">
+                        <button className="action-btn" aria-label={t('download.download')}>
                             <IonIcon icon={downloadOutline} color="primary" />
                         </button>
-                        <button className="action-btn" onClick={handleShare}>
+                        <button className="action-btn" onClick={handleShare} aria-label={t('share')}>
                             <IonIcon icon={shareSocialOutline} color="primary" />
                         </button>
                     </IonButtons>
@@ -47,6 +49,7 @@ const VideoContentPage: React.FC = () => {
             </IonHeader>
 
             <IonContent fullscreen>
+                <main id="main-content">
                 <div className="video-container">
                     <div className="video-hero">
                         <div className="video-meta">
@@ -128,6 +131,7 @@ const VideoContentPage: React.FC = () => {
                         </div>
                     </div>
                 </div>
+                </main>
             </IonContent>
         </IonPage>
     );

@@ -69,8 +69,8 @@ const NotificationPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="notification-page__header">
           <div className="notification-page__header-inner">
-            <button className="notification-page__back-btn" onClick={() => router.goBack()}>
-              <svg width="12" height="20" viewBox="0 0 12 20" fill="none">
+            <button className="notification-page__back-btn" onClick={() => router.goBack()} aria-label={t('back')}>
+              <svg width="12" height="20" viewBox="0 0 12 20" fill="none" aria-hidden="true">
                 <path d="M10 2L2 10L10 18" stroke="var(--ion-color-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -84,8 +84,9 @@ const NotificationPage: React.FC = () => {
           <IonRefresherContent />
         </IonRefresher>
 
+        <main id="main-content">
         {isOffline ? (
-          <div className="notification-offline">
+          <div className="notification-offline" role="status" aria-live="polite">
             <p className="notification-offline__message">{t('offlineNotifications')}</p>
           </div>
         ) : isLoading ? (
@@ -93,7 +94,7 @@ const NotificationPage: React.FC = () => {
         ) : error ? (
           <PageLoader error={error.message} onRetry={() => refetch()} />
         ) : filtered.length === 0 ? (
-          <div className="notification-empty">
+          <div className="notification-empty" role="status" aria-live="polite">
             <h3 className="notification-empty__title">{t('noNotifications')}</h3>
             <p className="notification-empty__desc">{t('noNotificationsDesc')}</p>
           </div>
@@ -107,6 +108,7 @@ const NotificationPage: React.FC = () => {
                     <button
                       className="notification-section__delete-all"
                       onClick={handleDeleteAll}
+                      aria-label={t('deleteAll')}
                     >
                       {t('deleteAll')}
                     </button>
@@ -124,6 +126,7 @@ const NotificationPage: React.FC = () => {
             ))}
           </div>
         )}
+        </main>
       </IonContent>
     </IonPage>
   );

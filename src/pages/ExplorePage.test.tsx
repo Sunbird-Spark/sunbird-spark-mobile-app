@@ -486,4 +486,92 @@ describe('ExplorePage', () => {
       expect(lastCall.request.filters.dialcodes).toEqual(['XYZABC']);
     });
   });
+
+  describe('accessibility', () => {
+    it('empty state has role="status" and aria-live', () => {
+      (useContentSearch as any).mockReturnValue({
+        ...defaultSearchReturn,
+        data: { data: { content: [], QuestionSet: [] } },
+      });
+
+      render(<ExplorePage />);
+      const emptyState = screen.getByText('No content found').closest('[role="status"]');
+      expect(emptyState).toBeInTheDocument();
+      expect(emptyState).toHaveAttribute('aria-live', 'polite');
+    });
+
+    it('search input has aria-label when open', () => {
+      render(<ExplorePage />);
+
+      // Open search
+      const buttons = screen.getAllByRole('button');
+      fireEvent.click(buttons[0]);
+
+      const input = screen.getByPlaceholderText('Search content...');
+      expect(input).toHaveAttribute('aria-label', 'Search content...');
+    });
+
+    it('filter modal has aria-labelledby pointing to title', () => {
+      (useFormRead as any).mockReturnValue({
+        ...defaultFormReturn,
+        data: mockFormData,
+      });
+
+      render(<ExplorePage />);
+      fireEvent.click(screen.getByLabelText('Filters'));
+
+      // The h2 should have the id that the modal references
+      const title = screen.getByText('Filters', { selector: 'h2' });
+      expect(title).toHaveAttribute('id', 'filter-modal-title');
+    });
+
+    it('filter close button has aria-label', () => {
+      (useFormRead as any).mockReturnValue({
+        ...defaultFormReturn,
+        data: mockFormData,
+      });
+
+      render(<ExplorePage />);
+      fireEvent.click(screen.getByLabelText('Filters'));
+
+      // The close button in modal header
+      const closeBtn = screen.getByLabelText('Close');
+      expect(closeBtn).toBeInTheDocument();
+    });
+
+    it('filter sidebar has role="tablist" with tab buttons', () => {
+      (useFormRead as any).mockReturnValue({
+        ...defaultFormReturn,
+        data: mockFormData,
+      });
+
+      render(<ExplorePage />);
+      fireEvent.click(screen.getByLabelText('Filters'));
+
+      const tablist = screen.getByRole('tablist');
+      expect(tablist).toBeInTheDocument();
+
+      const tabs = screen.getAllByRole('tab');
+      expect(tabs.length).toBeGreaterThan(0);
+
+      // First tab should be selected
+      expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
+    });
+
+    it('switching filter tabs updates aria-selected', () => {
+      (useFormRead as any).mockReturnValue({
+        ...defaultFormReturn,
+        data: mockFormData,
+      });
+
+      render(<ExplorePage />);
+      fireEvent.click(screen.getByLabelText('Filters'));
+
+      const tabs = screen.getAllByRole('tab');
+      fireEvent.click(tabs[1]); // Click Medium tab
+
+      expect(tabs[0]).toHaveAttribute('aria-selected', 'false');
+      expect(tabs[1]).toHaveAttribute('aria-selected', 'true');
+    });
+  });
 });

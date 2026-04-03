@@ -149,4 +149,16 @@ describe('SignInPage — accessibility', () => {
     const loginBtn = screen.getByRole('button', { name: 'signInPage.login' });
     expect(loginBtn).not.toBeDisabled();
   });
+
+  it('login form has aria-label for screen reader identification', () => {
+    const { container } = render(<SignInPage />);
+    const form = container.querySelector('form');
+    expect(form).toHaveAttribute('aria-label', 'signInPage.login');
+  });
+
+  it('Google icon SVG is hidden from screen readers', () => {
+    const { container } = render(<SignInPage />);
+    const googleSvg = container.querySelector('.sign-in-google-btn svg');
+    expect(googleSvg).toHaveAttribute('aria-hidden', 'true');
+  });
 });

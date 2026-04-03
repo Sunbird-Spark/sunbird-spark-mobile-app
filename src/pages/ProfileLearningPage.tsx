@@ -31,19 +31,19 @@ type FilterOption = 'all' | 'ongoing' | 'completed';
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
 const FilterIcon: React.FC = () => (
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M2 2H16V0H2V2ZM2 3.58997V2H0V3.58997H2ZM6.41003 8L2 3.58997L0.589966 5L5 9.41003L6.41003 8ZM5 9.41003V16.3101H7V9.41003H5ZM5 16.3101C5 17.3301 5.99997 18.05 6.96997 17.73L6.33997 15.83C6.66997 15.72 7 15.9701 7 16.3101H5ZM6.96997 17.73L11.97 16.0601L11.34 14.17L6.33997 15.83L6.96997 17.73ZM11.97 16.0601C12.59 15.8601 13 15.29 13 14.64H11C11 14.42 11.14 14.23 11.34 14.17L11.97 16.0601ZM13 14.64V9.41003H11V14.64H13ZM16 3.58997L11.59 8L13 9.41003L17.41 5L16 3.58997ZM16 2V3.58997H18V2H16ZM17.41 5C17.79 4.62 18 4.11997 18 3.58997H16L17.41 5ZM13 9.41003L11.59 8C11.21 8.38 11 8.88003 11 9.41003H13ZM5 9.41003H7C7 8.88003 6.79003 8.38 6.41003 8L5 9.41003ZM0 3.58997C0 4.11997 0.209966 4.62 0.589966 5L2 3.58997H0ZM16 2H18C18 0.9 17.1 0 16 0V2ZM2 0C0.9 0 0 0.9 0 2H2V0Z" fill="var(--ion-color-primary)" />
   </svg>
 );
 
 const DownloadIcon: React.FC = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <path d="M7 1V9M7 9L4 6M7 9L10 6M2 12H12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 const NoCertIcon: React.FC = () => (
-  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <circle cx="7" cy="6" r="3" stroke="currentColor" strokeWidth="1.2" />
     <path d="M5 10.5L4 13L7 11.5L10 13L9 10.5" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" />
   </svg>
@@ -57,7 +57,7 @@ const ProgressRing: React.FC<{ progress: number; size?: number }> = ({ progress,
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
   return (
-    <svg width={size} height={size} className="pl-progress-ring">
+    <svg width={size} height={size} className="pl-progress-ring" role="img" aria-label={`${progress}% complete`}>
       <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--ion-color-warning-shade, var(--color-f0ce94, #F0CE94))" strokeWidth={stroke} />
       <circle
         cx={size / 2} cy={size / 2} r={radius}
@@ -247,7 +247,7 @@ const ProfileLearningPage: React.FC = () => {
           <IonTitle className="pl-title">{t('myLearning')}</IonTitle>
           <IonButtons slot="end">
             <div className="pl-filter-wrapper">
-              <button className="pl-filter-btn" onClick={() => setFilterOpen(prev => !prev)}>
+              <button className="pl-filter-btn" onClick={() => setFilterOpen(prev => !prev)} aria-label={t('filters')} aria-expanded={filterOpen}>
                 <FilterIcon />
               </button>
             </div>
@@ -256,11 +256,12 @@ const ProfileLearningPage: React.FC = () => {
       </IonHeader>
 
       <IonContent className="pl-content" onClick={() => filterOpen && setFilterOpen(false)}>
+        <main id="main-content">
 
         {/* Filter dropdown */}
         {filterOpen && (
-          // eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events
-          <div className="pl-filter-dropdown" onClick={e => e.stopPropagation()}>
+          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+          <div className="pl-filter-dropdown" role="group" aria-label={t('filters')} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
             {filterOptions.map(opt => (
               <button
                 key={opt.key}
@@ -320,6 +321,7 @@ const ProfileLearningPage: React.FC = () => {
           </div>
         )}
 
+        </main>
       </IonContent>
 
       {/* Format picker */}
