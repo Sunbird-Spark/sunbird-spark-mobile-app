@@ -323,11 +323,11 @@ const ExplorePage: React.FC = () => {
                     )}
 
                     {isInitialLoading && (
-                        <PageLoader message="Loading..." />
+                        <PageLoader message={t('loading')} />
                     )}
 
                     {queryError && pagination.displayItems.length === 0 && (
-                        <PageLoader error="Failed to load content" onRetry={() => refetch()} />
+                        <PageLoader error={t('failedToLoad')} onRetry={() => refetch()} />
                     )}
 
                     {!isInitialLoading && !queryError && pagination.displayItems.length === 0 && (

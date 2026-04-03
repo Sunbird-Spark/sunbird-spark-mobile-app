@@ -162,7 +162,7 @@ describe('SearchPage', () => {
     const input = screen.getByPlaceholderText('Search courses, textbooks...');
     fireEvent.change(input, { target: { value: 'test' } });
 
-    expect(screen.getByText('Search failed: Network error')).toBeInTheDocument();
+    expect(screen.getByText('failedToLoad')).toBeInTheDocument();
   });
 
   it('shows "No results" when search returns empty', () => {
@@ -281,7 +281,7 @@ describe('SearchPage', () => {
       const input = screen.getByPlaceholderText('Search courses, textbooks...');
       fireEvent.change(input, { target: { value: 'test' } });
 
-      const errorDiv = screen.getByText('Search failed: Network error').closest('[role="alert"]');
+      const errorDiv = screen.getByText('failedToLoad').closest('[role="alert"]');
       expect(errorDiv).toBeInTheDocument();
     });
 

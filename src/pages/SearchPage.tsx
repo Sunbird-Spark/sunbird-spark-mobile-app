@@ -123,7 +123,7 @@ const SearchPage: React.FC = () => {
                     {/* Error State */}
                     {error && (
                         <div className="search-error" role="alert">
-                            <p>Search failed: {error.message}</p>
+                            <p>{t('failedToLoad')}</p>
                         </div>
                     )}
 
