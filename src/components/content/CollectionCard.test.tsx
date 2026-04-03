@@ -25,14 +25,16 @@ vi.mock('./ContentCards.css', () => ({}));
 // Mock react-i18next
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
+    t: (key: string, fallback?: string) => {
       const translations: Record<string, string> = {
         lessons: 'Lessons',
         untitled: 'Untitled',
         unknown: 'Unknown',
         collectionLabel: 'Collection',
+        'contentBadge.Course': 'Course',
+        'contentBadge.Collection': 'Collection',
       };
-      return translations[key] ?? key;
+      return translations[key] ?? fallback ?? key;
     },
   }),
 }));
