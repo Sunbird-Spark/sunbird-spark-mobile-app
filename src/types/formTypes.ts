@@ -21,10 +21,13 @@ export interface FormReadResponse {
   };
 }
 
+/** A label can be a plain string or a locale object (e.g. { en: "Hello", fr: "Bonjour" }) */
+export type LocaleString = string | Record<string, string>;
+
 export interface ExploreFilterOption {
   id: string;
   index: number;
-  label: string;
+  label: LocaleString;
   code: string;
   value: string | string[];
 }
@@ -32,7 +35,7 @@ export interface ExploreFilterOption {
 export interface ExploreFilterGroup {
   id: string;
   index: number;
-  label: string;
+  label: LocaleString;
   options?: ExploreFilterOption[];
   list?: ExploreFilterOption[];
 }

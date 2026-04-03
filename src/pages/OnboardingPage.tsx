@@ -7,6 +7,7 @@ import { useFormRead } from '../hooks/useFormRead';
 import { userService } from '../services/UserService';
 import { useBackButtonOverride } from '../hooks/useBackButton';
 import { OnboardingFormData, OnboardingScreen, OnboardingField } from '../types/onboardingTypes';
+import { resolveLabel } from '../utils/formLocaleResolver';
 import ProgressBar from '../components/onboarding/ProgressBar';
 import OptionChip from '../components/onboarding/OptionChip';
 import sunbirdLogo from '../assets/sunbird-logo-new.png';
@@ -49,7 +50,7 @@ const OnboardingPage: React.FC = () => {
   const { userId, completeOnboarding } = useAuth();
   const router = useIonRouter();
   const queryClient = useQueryClient();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [screenHistory, setScreenHistory] = useState<string[]>([]);
   const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
@@ -272,7 +273,7 @@ const OnboardingPage: React.FC = () => {
           />
 
           {/* Screen question */}
-          <h2 className="onboarding-question">{currentScreen.title}</h2>
+          <h2 className="onboarding-question">{resolveLabel(currentScreen.title, i18n.language)}</h2>
 
           {/* Option chips — always visible so users can switch selections */}
           <div className="onboarding-grid">

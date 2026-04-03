@@ -9,6 +9,7 @@ import {
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
+import { resolveLabel } from '../utils/formLocaleResolver';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { PublicWelcomeHeader } from '../components/home/PublicWelcomeHeader';
@@ -138,7 +139,7 @@ const RecommendedContentSection: React.FC<{ enrolledCourseIds: string[] }> = ({ 
 const HomePage: React.FC = () => {
   useImpression({ pageid: 'HomePage', env: 'home' });
   const { isAuthenticated, userId } = useAuth();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   // Form-driven sections for pre-enrollment view
   const { data: formData, isLoading: homeFormLoading } = useFormRead({
@@ -147,8 +148,20 @@ const HomePage: React.FC = () => {
   const homeSections = useMemo(() => {
     const raw = _.get(formData, 'data.form.data.sections', []);
     if (!_.isArray(raw)) return [];
-    return _.sortBy(raw, (s: any) => s.index ?? 0);
-  }, [formData]);
+    return _.sortBy(raw, (s: any) => s.index ?? 0).map((section: any) => {
+      const resolved: any = {
+        ...section,
+        title: resolveLabel(section.title, i18n.language),
+      };
+      if (section.type === 'categories' && _.isArray(section.list)) {
+        resolved.list = section.list.map((item: any) => ({
+          ...item,
+          title: resolveLabel(item.title, i18n.language),
+        }));
+      }
+      return resolved;
+    });
+  }, [formData, i18n.language]);
 
   // Landing page sections for public view
   const { sections: landingSections, isLoading: landingLoading } = useLandingPageConfig();
