@@ -52,12 +52,13 @@ const NoCertIcon: React.FC = () => (
 // ── Progress ring ─────────────────────────────────────────────────────────────
 
 const ProgressRing: React.FC<{ progress: number; size?: number }> = ({ progress, size = 26 }) => {
+  const { t } = useTranslation();
   const stroke = 3;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
   return (
-    <svg width={size} height={size} className="pl-progress-ring" role="img" aria-label={`${progress}% complete`}>
+    <svg width={size} height={size} className="pl-progress-ring" role="img" aria-label={t('progressRingLabel', { progress })}>
       <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--ion-color-warning-shade, var(--color-f0ce94, #F0CE94))" strokeWidth={stroke} />
       <circle
         cx={size / 2} cy={size / 2} r={radius}

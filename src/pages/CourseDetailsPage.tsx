@@ -19,7 +19,7 @@ const ShareIcon = () => (
 );
 
 const CheckIcon = () => (
-    <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="cd-check-icon">
+    <svg width="13" height="10" viewBox="0 0 13 10" fill="none" xmlns="http://www.w3.org/2000/svg" className="cd-check-icon" aria-hidden="true" focusable="false">
         <path d="M4.5 9.5L0.5 5.5L1.91 4.09L4.5 6.67L10.59 0.580002L12 2L4.5 9.5Z" fill="var(--ion-color-primary)" />
     </svg>
 );

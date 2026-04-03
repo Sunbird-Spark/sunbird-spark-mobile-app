@@ -42,6 +42,7 @@ interface DonutChartProps {
 }
 
 const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, coursesCompleted, totalCourses }) => {
+  const { t } = useTranslation();
   const size = 133;
   const cx = size / 2;
   const cy = size / 2;
@@ -61,7 +62,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, c
   const innerOffset = innerCirc * (1 - innerRatio);
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }} role="img" aria-label={`${lessonsVisited} of ${totalLessons} lessons visited`}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }} role="img" aria-label={t('donutChartLabel', { visited: lessonsVisited, total: totalLessons })}>
       {/* Outer track */}
       <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={outerStroke} />
       {/* Outer fill — lessons */}
