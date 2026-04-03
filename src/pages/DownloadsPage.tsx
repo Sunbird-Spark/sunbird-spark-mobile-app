@@ -76,9 +76,10 @@ const DownloadsPage: React.FC = () => {
     <IonPage>
       <AppHeader title={t('downloads')} />
       <IonContent fullscreen>
+        <main id="main-content">
         {!hasAny ? (
-          <div className="dl-empty">
-            <IonIcon icon={cloudDownloadOutline} className="dl-empty-icon" />
+          <div className="dl-empty" role="status" aria-live="polite">
+            <IonIcon icon={cloudDownloadOutline} className="dl-empty-icon" aria-hidden="true" />
             <h2>{t('download.noActiveDownloads')}</h2>
             <p>{t('download.noActiveDownloadsDesc')}</p>
           </div>
@@ -87,7 +88,7 @@ const DownloadsPage: React.FC = () => {
             {/* Cancel All */}
             {(active.length + queued.length > 0) && (
               <div className="dl-actions-bar">
-                <button className="dl-cancel-all" onClick={() => downloadManager.cancelAll()}>
+                <button className="dl-cancel-all" onClick={() => downloadManager.cancelAll()} aria-label={t('download.cancelAll')}>
                   {t('download.cancelAll')}
                 </button>
               </div>
@@ -95,7 +96,7 @@ const DownloadsPage: React.FC = () => {
 
             {/* Active Downloads */}
             {active.length > 0 && (
-              <section className="dl-section">
+              <section className="dl-section" aria-live="polite">
                 <h3 className="dl-section-title">
                   {t('download.downloading')} ({active.length})
                 </h3>
@@ -219,13 +220,14 @@ const DownloadsPage: React.FC = () => {
             )}
 
             {/* Storage Footer */}
-            <div className="dl-storage-footer">
+            <div className="dl-storage-footer" role="status">
               <span>
                 {storage.itemCount} {storage.itemCount === 1 ? t('download.item') : t('download.items')} · {formatBytes(storage.totalBytes)} {t('download.used')}
               </span>
             </div>
           </div>
         )}
+        </main>
       </IonContent>
     </IonPage>
   );

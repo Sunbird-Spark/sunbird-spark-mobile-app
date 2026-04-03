@@ -26,6 +26,19 @@
   "viewAll": "Voir tout",
   "close": "Fermer",
   "back": "Retour",
+  "closeSearch": "Fermer la recherche",
+  "share": "Partager",
+  "moreOptions": "Plus d'options",
+  "resumeDownload": "Reprendre le téléchargement",
+  "pauseDownload": "Mettre en pause le téléchargement",
+  "downloadToPlayOfflineHint": "Télécharger pour lire hors ligne",
+  "bestScore": "Meilleur score",
+  "playItem": "Lire {{name}}",
+  "deleteItem": "Supprimer {{name}}",
+  "openItem": "Ouvrir {{name}}",
+  "digit": "Chiffre",
+  "skipToMainContent": "Aller au contenu principal",
+  "notStarted": "Non commencé",
   "search": "Rechercher",
   "cancel": "Annuler",
   "ok": "OK",
@@ -152,7 +165,10 @@
     "offlineNotAvailable": "Impossible de se connecter. Cette collection n'est pas disponible hors ligne.",
     "leaveCourseOffline": "Quitter un cours nécessite une connexion Internet active.",
     "leaveCourseTitle": "Quitter le cours",
-    "leaveCourseMessage": "Êtes-vous sûr de vouloir quitter ce cours ?"
+    "leaveCourseMessage": "Êtes-vous sûr de vouloir quitter ce cours ?",
+    "unlockYourLearning": "Libérez votre apprentissage.",
+    "loginToBeginJourney": "Connectez-vous pour commencer votre parcours d'apprentissage.",
+    "joinCourseToAccess": "Rejoignez le cours pour accéder au contenu."
   },
   "heroSection": {
     "title": "Le savoir qui vous propulse vers l'avant.",
@@ -385,7 +401,8 @@
     "deleteUnitMessage": "Supprimer tous les contenus téléchargés pour l'unité {{unitName}} ?",
     "deleteUnitDownloads": "Supprimer les téléchargements de l'unité",
     "downloadRemaining": "Télécharger le reste ({{count}} éléments)",
-    "downloadUnit": "Télécharger le contenu de l'unité ({{count}} éléments)"
+    "downloadUnit": "Télécharger le contenu de l'unité ({{count}} éléments)",
+    "retryFailed": "Téléchargement partiel — réessayer {{count}} élément(s) échoué(s)"
   },
   "assessment_max_attempts_reached": "Vous avez atteint le nombre maximum de tentatives autorisées pour ce contenu.",
   "logoutSyncWarning": {

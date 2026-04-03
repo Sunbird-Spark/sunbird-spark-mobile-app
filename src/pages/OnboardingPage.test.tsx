@@ -290,4 +290,28 @@ describe('OnboardingPage', () => {
       expect(mockRouterPush).toHaveBeenCalledWith('/home', 'root', 'replace');
     });
   });
+
+  // ── Accessibility Tests ──
+
+  it('option grid has role="radiogroup" with aria-label', () => {
+    renderPage();
+    const radiogroup = screen.getByRole('radiogroup');
+    expect(radiogroup).toBeInTheDocument();
+    expect(radiogroup).toHaveAttribute('aria-label', 'What is your language preference?');
+  });
+
+  it('question heading has aria-live for screen reader announcements', () => {
+    renderPage();
+    const heading = screen.getByText('What is your language preference?');
+    expect(heading).toHaveAttribute('aria-live', 'polite');
+  });
+
+  it('question heading aria-live announces new question on screen change', () => {
+    renderPage();
+    fireEvent.click(screen.getByText('English'));
+    fireEvent.click(screen.getByText('onboarding.saveAndProceed'));
+
+    const newHeading = screen.getByText('What is your role?');
+    expect(newHeading).toHaveAttribute('aria-live', 'polite');
+  });
 });

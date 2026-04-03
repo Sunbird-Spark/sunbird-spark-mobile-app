@@ -335,3 +335,12 @@
     cursor: pointer;
     margin-top: 0;
 }
+/* cursor: pointer moved from inline style on hs-category-card */
+.hs-category-card {
+    cursor: pointer;
+}
+
+.hs-loading {
+    padding: 1rem;
+    color: var(--ion-color-medium, #757575);
+}

@@ -26,6 +26,19 @@
   "viewAll": "View All",
   "close": "Close",
   "back": "Back",
+  "closeSearch": "Close search",
+  "share": "Share",
+  "moreOptions": "More options",
+  "resumeDownload": "Resume download",
+  "pauseDownload": "Pause download",
+  "downloadToPlayOfflineHint": "Download to play offline",
+  "bestScore": "Best score",
+  "playItem": "Play {{name}}",
+  "deleteItem": "Delete {{name}}",
+  "openItem": "Open {{name}}",
+  "digit": "Digit",
+  "skipToMainContent": "Skip to main content",
+  "notStarted": "Not started",
   "search": "Search",
   "cancel": "Cancel",
   "ok": "OK",
@@ -140,7 +153,10 @@
     "offlineNotAvailable": "Not able to connect. This collection is not available offline.",
     "leaveCourseOffline": "Leaving a course requires an active internet connection.",
     "leaveCourseTitle": "Leave Course",
-    "leaveCourseMessage": "Are you sure you want to leave this course?"
+    "leaveCourseMessage": "Are you sure you want to leave this course?",
+    "unlockYourLearning": "Unlock your learning.",
+    "loginToBeginJourney": "Log in to begin your learning journey with us.",
+    "joinCourseToAccess": "Join the course to access content."
   },
   "faqSection": {
     "heading": "Frequently Asked Questions",
@@ -386,7 +402,8 @@
     "deleteUnitMessage": "Delete all downloaded contents for Unit {{unitName}}?",
     "deleteUnitDownloads": "Delete unit downloads",
     "downloadRemaining": "Download remaining ({{count}} items)",
-    "downloadUnit": "Download unit contents ({{count}} items)"
+    "downloadUnit": "Download unit contents ({{count}} items)",
+    "retryFailed": "Partial download — retry {{count}} failed item(s)"
   },
   "logoutSyncWarning": {
     "header": "Unsaved Progress",

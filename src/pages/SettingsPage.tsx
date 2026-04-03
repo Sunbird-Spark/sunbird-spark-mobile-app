@@ -70,7 +70,7 @@ const SettingsPage: React.FC = () => {
         <div className="page-header">
           <div className="page-header__start">
             <button className="page-header__back-btn" onClick={() => router.goBack()} aria-label={t('back')}>
-              <IonIcon icon={chevronBackOutline} />
+              <IonIcon icon={chevronBackOutline} aria-hidden="true" />
             </button>
             <span className="page-header__title">{t('settings')}</span>
           </div>
@@ -81,21 +81,22 @@ const SettingsPage: React.FC = () => {
       </IonHeader>
 
       <IonContent className="settings-content">
+        <main id="main-content">
         <div className="settings-section">
           <h3 className="profile-settings-heading">{t('settingsPage.preferences')}</h3>
           <p className="profile-settings-subheading">{t('settingsPage.preferencesDesc')}</p>
 
           {/* Sync Data Card */}
           <div className="profile-settings-card">
-            <div className="profile-settings-icon-badge profile-settings-icon-sync">
+            <div className="profile-settings-icon-badge profile-settings-icon-sync" aria-hidden="true">
               <IonIcon icon={syncOutline} />
             </div>
             <div className="profile-settings-card-content">
               <div>
-                <h4 className="profile-settings-card-title">{t('settingsPage.syncUsageData')}</h4>
+                <h4 className="profile-settings-card-title" id="settings-sync-label">{t('settingsPage.syncUsageData')}</h4>
                 <p className="profile-settings-card-desc">{t('settingsPage.syncDesc')}</p>
               </div>
-              <div className="profile-settings-options">
+              <div className="profile-settings-options" role="group" aria-labelledby="settings-sync-label">
                 {SYNC_DATA_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -113,15 +114,15 @@ const SettingsPage: React.FC = () => {
 
           {/* Download Contents Card */}
           <div className="profile-settings-card">
-            <div className="profile-settings-icon-badge profile-settings-icon-download">
+            <div className="profile-settings-icon-badge profile-settings-icon-download" aria-hidden="true">
               <IonIcon icon={downloadOutline} />
             </div>
             <div className="profile-settings-card-content">
               <div>
-                <h4 className="profile-settings-card-title">{t('settingsPage.downloadContents')}</h4>
+                <h4 className="profile-settings-card-title" id="settings-download-label">{t('settingsPage.downloadContents')}</h4>
                 <p className="profile-settings-card-desc">{t('settingsPage.downloadDesc')}</p>
               </div>
-              <div className="profile-settings-options">
+              <div className="profile-settings-options" role="group" aria-labelledby="settings-download-label">
                 {DOWNLOAD_CONTENT_OPTIONS.map((option) => (
                   <button
                     key={option.value}
@@ -139,7 +140,7 @@ const SettingsPage: React.FC = () => {
 
           {/* App Version Card */}
           <div className="profile-settings-card profile-settings-version-card">
-            <div className="profile-settings-icon-badge profile-settings-icon-system">
+            <div className="profile-settings-icon-badge profile-settings-icon-system" aria-hidden="true">
               <IonIcon icon={informationCircleOutline} />
             </div>
             <div className="profile-settings-card-content">
@@ -168,9 +169,10 @@ const SettingsPage: React.FC = () => {
               <IonIcon icon={documentTextOutline} />
             </div>
             <span className="profile-settings-card-title profile-settings-tou-title">{t('termsOfUse')}</span>
-            <IonIcon icon={chevronForwardOutline} className="profile-settings-tou-chevron" />
+            <IonIcon icon={chevronForwardOutline} className="profile-settings-tou-chevron" aria-hidden="true" />
           </button>
         </div>
+        </main>
       </IonContent>
     </IonPage>
   );

@@ -26,6 +26,19 @@
   "viewAll": "Ver tudo",
   "close": "Fechar",
   "back": "Voltar",
+  "closeSearch": "Fechar pesquisa",
+  "share": "Compartilhar",
+  "moreOptions": "Mais opções",
+  "resumeDownload": "Retomar download",
+  "pauseDownload": "Pausar download",
+  "downloadToPlayOfflineHint": "Baixe para jogar offline",
+  "bestScore": "Melhor pontuação",
+  "playItem": "Reproduzir {{name}}",
+  "deleteItem": "Excluir {{name}}",
+  "openItem": "Abrir {{name}}",
+  "digit": "Dígito",
+  "skipToMainContent": "Ir para o conteúdo principal",
+  "notStarted": "Não iniciado",
   "search": "Pesquisar",
   "cancel": "Cancelar",
   "ok": "OK",
@@ -152,7 +165,10 @@
     "offlineNotAvailable": "Não foi possível conectar. Esta coleção não está disponível offline.",
     "leaveCourseOffline": "Sair de um curso requer uma conexão ativa com a Internet.",
     "leaveCourseTitle": "Sair do curso",
-    "leaveCourseMessage": "Tem certeza que deseja sair deste curso?"
+    "leaveCourseMessage": "Tem certeza que deseja sair deste curso?",
+    "unlockYourLearning": "Desbloqueie seu aprendizado.",
+    "loginToBeginJourney": "Faça login para começar sua jornada de aprendizado.",
+    "joinCourseToAccess": "Participe do curso para acessar o conteúdo."
   },
   "heroSection": {
     "title": "O conhecimento que te faz avançar.",
@@ -385,7 +401,8 @@
     "deleteUnitMessage": "Excluir todos os conteúdos baixados da unidade {{unitName}}?",
     "deleteUnitDownloads": "Excluir downloads da unidade",
     "downloadRemaining": "Baixar restante ({{count}} itens)",
-    "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)"
+    "downloadUnit": "Baixar conteúdo da unidade ({{count}} itens)",
+    "retryFailed": "Download parcial — tentar novamente {{count}} item(ns) com falha"
   },
   "assessment_max_attempts_reached": "Você atingiu o número máximo de tentativas permitidas para este conteúdo.",
   "logoutSyncWarning": {

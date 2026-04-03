@@ -51,4 +51,32 @@ describe('OptionChip', () => {
     fireEvent.click(screen.getByText('English'));
     expect(onClick).toHaveBeenCalledTimes(1);
   });
+
+  // ── Accessibility Tests ──
+
+  it('has role="radio" for radiogroup semantics', () => {
+    render(<OptionChip field={mockField} isSelected={false} onClick={vi.fn()} />);
+    const btn = screen.getByRole('radio');
+    expect(btn).toBeInTheDocument();
+  });
+
+  it('has aria-checked="false" when not selected', () => {
+    render(<OptionChip field={mockField} isSelected={false} onClick={vi.fn()} />);
+    const btn = screen.getByRole('radio');
+    expect(btn).toHaveAttribute('aria-checked', 'false');
+  });
+
+  it('has aria-checked="true" when selected', () => {
+    render(<OptionChip field={mockField} isSelected={true} onClick={vi.fn()} />);
+    const btn = screen.getByRole('radio');
+    expect(btn).toHaveAttribute('aria-checked', 'true');
+  });
+
+  it('check SVG is hidden from screen readers when selected', () => {
+    const { container } = render(
+      <OptionChip field={mockField} isSelected={true} onClick={vi.fn()} />
+    );
+    const checkSvg = container.querySelector('.onboarding-chip__check');
+    expect(checkSvg).toHaveAttribute('aria-hidden', 'true');
+  });
 });

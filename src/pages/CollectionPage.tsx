@@ -518,13 +518,14 @@ const CollectionPage: React.FC = () => {
         <IonHeader className="ion-no-border">
           <IonToolbar className="collection-page-header">
             <div className="collection-page-header-inner">
-              <button onClick={handleBack} className="collection-page-icon-btn">
+              <button onClick={handleBack} className="collection-page-icon-btn" aria-label={t('back')}>
                 <BackIcon />
               </button>
             </div>
           </IonToolbar>
         </IonHeader>
         <IonContent className="ion-padding ion-text-center">
+          <main id="main-content">
           <div style={{ marginTop: '4rem' }}>
             <h2 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.5rem' }}>{collectionData.title}</h2>
             <p style={{ color: 'var(--ion-color-medium)', fontSize: '0.9rem', lineHeight: 1.5 }}>
@@ -533,6 +534,7 @@ const CollectionPage: React.FC = () => {
               You can access the content once the batch begins.
             </p>
           </div>
+          </main>
         </IonContent>
       </IonPage>
     );
@@ -558,7 +560,7 @@ const CollectionPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="collection-page-header">
           <div className="collection-page-header-inner">
-            <button onClick={handleBack} className="collection-page-icon-btn">
+            <button onClick={handleBack} className="collection-page-icon-btn" aria-label={t('back')}>
               <BackIcon />
             </button>
             <div className="collection-page-header-actions">
@@ -663,7 +665,7 @@ const CollectionPage: React.FC = () => {
                   </button>
                 )
               )}
-              <button className="collection-page-icon-btn" onClick={() => router.push('/search', 'forward', 'push')}>
+              <button className="collection-page-icon-btn" onClick={() => router.push('/search', 'forward', 'push')} aria-label={t('search')}>
                 <SearchIcon />
               </button>
             </div>
@@ -672,6 +674,7 @@ const CollectionPage: React.FC = () => {
       </IonHeader>
 
       <IonContent fullscreen>
+        <main id="main-content">
         {/* Offline with no cached data — show immediately, bypassing any pending/idle query state */}
         {isOffline && !isLoading && !collectionData && (
           <PageLoader error={t('collection.offlineNotAvailable')} />
@@ -762,7 +765,7 @@ const CollectionPage: React.FC = () => {
                     <button
                       className="cp-menu-trigger"
                       onClick={() => setIsMenuOpen((prev) => !prev)}
-                      aria-label="More options"
+                      aria-label={t('moreOptions')}
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                         <circle cx="12" cy="5" r="2" fill="var(--ion-color-dark, #333)" />
@@ -1071,6 +1074,7 @@ const CollectionPage: React.FC = () => {
             <div style={{ height: '40px' }} />
           </>
         )}
+        </main>
       </IonContent>
 
       {/* Anonymous: "Let's Get Started" → login */}

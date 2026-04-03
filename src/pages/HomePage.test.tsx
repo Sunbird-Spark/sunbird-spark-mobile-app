@@ -340,4 +340,21 @@ describe('HomePage', () => {
     renderHomePage();
     expect(screen.getByText('error')).toBeInTheDocument();
   });
+
+  // --- Accessibility ---
+
+  describe('accessibility', () => {
+    it('renders main landmark inside content', () => {
+      renderHomePage();
+      expect(screen.getByRole('main')).toBeInTheDocument();
+      expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content');
+    });
+
+    it('main landmark is present in authenticated view', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      renderHomePage();
+      expect(screen.getByRole('main')).toBeInTheDocument();
+    });
+  });
 });

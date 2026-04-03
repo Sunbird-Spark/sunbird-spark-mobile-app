@@ -191,9 +191,11 @@ const OnboardingPage: React.FC = () => {
     return (
       <IonPage className="onboarding-page">
         <IonContent fullscreen className="onboarding-content">
+          <main id="main-content">
           <div className="onboarding-loader">
             <IonSpinner name="crescent" />
           </div>
+          </main>
         </IonContent>
       </IonPage>
     );
@@ -204,6 +206,7 @@ const OnboardingPage: React.FC = () => {
     return (
       <IonPage className="onboarding-page">
         <IonContent fullscreen className="onboarding-content">
+          <main id="main-content">
           <div className="onboarding-loader">
             <p className="onboarding-error-text">
               {t('onboarding.failedToLoad')}{' '}
@@ -212,6 +215,7 @@ const OnboardingPage: React.FC = () => {
               </button>
             </p>
           </div>
+          </main>
         </IonContent>
       </IonPage>
     );
@@ -222,6 +226,7 @@ const OnboardingPage: React.FC = () => {
     return (
       <IonPage className="onboarding-page">
         <IonContent fullscreen className="onboarding-content">
+          <main id="main-content">
           <div className="onboarding-loader">
             <p className="onboarding-error-text">
               {t('onboarding.somethingWentWrong')}{' '}
@@ -230,6 +235,7 @@ const OnboardingPage: React.FC = () => {
               </button>
             </p>
           </div>
+          </main>
         </IonContent>
       </IonPage>
     );
@@ -252,6 +258,7 @@ const OnboardingPage: React.FC = () => {
   return (
     <IonPage className="onboarding-page">
       <IonContent fullscreen className="onboarding-content">
+        <main id="main-content">
         <div className="onboarding-container">
           {/* Brand */}
           <img src={sunbirdLogo} alt="Sunbird" className="onboarding-brand" />
@@ -272,10 +279,10 @@ const OnboardingPage: React.FC = () => {
           />
 
           {/* Screen question */}
-          <h2 className="onboarding-question">{currentScreen.title}</h2>
+          <h2 className="onboarding-question" aria-live="polite">{currentScreen.title}</h2>
 
           {/* Option chips — always visible so users can switch selections */}
-          <div className="onboarding-grid">
+          <div className="onboarding-grid" role="radiogroup" aria-label={currentScreen.title}>
             {sortedFields.map((field) => (
               <OptionChip
                 key={field.id}
@@ -336,6 +343,7 @@ const OnboardingPage: React.FC = () => {
             {t('onboarding.skipOnboarding')}
           </button>
         </div>
+        </main>
       </IonContent>
 
       <IonToast
