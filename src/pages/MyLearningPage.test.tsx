@@ -308,12 +308,11 @@ describe('MyLearningPage', () => {
       expect(tabs[1]).toHaveAttribute('aria-selected', 'true');
     });
 
-    it('notification bell button has aria-label', () => {
+    it('does not render notification bell button', () => {
       mockAuthContext.isAuthenticated = true;
       mockAuthContext.userId = 'user-1';
       renderPage();
-      const bellBtn = screen.getByLabelText('notifications');
-      expect(bellBtn).toBeInTheDocument();
+      expect(screen.queryByLabelText('notifications')).not.toBeInTheDocument();
     });
 
     it('renders main landmark in authenticated view', () => {

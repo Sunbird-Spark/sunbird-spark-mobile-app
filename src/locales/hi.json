@@ -349,8 +349,29 @@
     "downloadUnit": "यूनिट सामग्री डाउनलोड करें ({{count}} आइटम)",
     "retryFailed": "आंशिक डाउनलोड — {{count}} विफल आइटम पुनः प्रयास करें"
   },
+  "mimeType": {
+    "video": "वीडियो",
+    "pdf": "पीडीएफ",
+    "epub": "ई-पुस्तक",
+    "html": "वेब पेज",
+    "ecml": "इंटरैक्टिव",
+    "h5p": "H5P सामग्री",
+    "view": "देखें"
+  },
   "offlineBanner": {
     "noInternet": "इंटरनेट कनेक्शन नहीं है",
     "backOnline": "वापस ऑनलाइन"
+  },
+  "contentBadge": {
+    "Course": "कोर्स",
+    "Digital Textbook": "डिजिटल पाठ्यपुस्तक",
+    "Content Playlist": "सामग्री प्लेलिस्ट",
+    "Learning Resource": "शिक्षण संसाधन",
+    "Resource": "संसाधन",
+    "Collection": "संग्रह",
+    "Explanation Content": "व्याख्यात्मक सामग्री",
+    "Practice Question Set": "अभ्यास प्रश्न सेट",
+    "eTextbook": "ई-पाठ्यपुस्तक",
+    "Teacher Resource": "शिक्षक संसाधन"
   }
 }

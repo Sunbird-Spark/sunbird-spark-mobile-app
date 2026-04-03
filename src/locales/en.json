@@ -414,5 +414,17 @@
   "offlineBanner": {
     "noInternet": "No internet connection",
     "backOnline": "Back online"
+  },
+  "contentBadge": {
+    "Course": "Course",
+    "Digital Textbook": "Digital Textbook",
+    "Content Playlist": "Content Playlist",
+    "Learning Resource": "Learning Resource",
+    "Resource": "Resource",
+    "Collection": "Collection",
+    "Explanation Content": "Explanation Content",
+    "Practice Question Set": "Practice Question Set",
+    "eTextbook": "eTextbook",
+    "Teacher Resource": "Teacher Resource"
   }
 }

@@ -325,11 +325,11 @@
   "collectionLabel": "مجموعة",
   "mimeType": {
     "video": "فيديو",
-    "pdf": "PDF",
-    "epub": "EPUB",
-    "html": "HTML",
-    "ecml": "ECML",
-    "h5p": "H5P",
+    "pdf": "ملف PDF",
+    "epub": "كتاب EPUB",
+    "html": "صفحة HTML",
+    "ecml": "محتوى تفاعلي",
+    "h5p": "محتوى H5P",
     "view": "عرض"
   },
   "tnc": {
@@ -422,5 +422,17 @@
   "offlineBanner": {
     "noInternet": "لا يوجد اتصال بالإنترنت",
     "backOnline": "متصل الآن"
+  },
+  "contentBadge": {
+    "Course": "دورة",
+    "Digital Textbook": "كتاب مدرسي رقمي",
+    "Content Playlist": "قائمة تشغيل المحتوى",
+    "Learning Resource": "مورد تعليمي",
+    "Resource": "مورد",
+    "Collection": "مجموعة",
+    "Explanation Content": "محتوى توضيحي",
+    "Practice Question Set": "مجموعة أسئلة تدريبية",
+    "eTextbook": "كتاب إلكتروني",
+    "Teacher Resource": "مورد المعلم"
   }
 }

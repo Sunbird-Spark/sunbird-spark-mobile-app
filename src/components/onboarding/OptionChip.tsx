@@ -1,5 +1,7 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { OnboardingField } from '../../types/onboardingTypes';
+import { resolveLabel } from '../../utils/formLocaleResolver';
 
 interface OptionChipProps {
   field: OnboardingField;
@@ -7,7 +9,9 @@ interface OptionChipProps {
   onClick: () => void;
 }
 
-const OptionChip: React.FC<OptionChipProps> = ({ field, isSelected, onClick }) => (
+const OptionChip: React.FC<OptionChipProps> = ({ field, isSelected, onClick }) => {
+  const { i18n } = useTranslation();
+  return (
   <button
     type="button"
     onClick={onClick}
@@ -15,7 +19,7 @@ const OptionChip: React.FC<OptionChipProps> = ({ field, isSelected, onClick }) =
     aria-checked={isSelected}
     className={`onboarding-chip ${isSelected ? 'onboarding-chip--selected' : 'onboarding-chip--default'}`}
   >
-    <span className="onboarding-chip__label">{field.label}</span>
+    <span className="onboarding-chip__label">{resolveLabel(field.label, i18n.language)}</span>
     {isSelected && (
       <svg className="onboarding-chip__check" width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
         <circle cx="10" cy="10" r="9" fill="white" />
@@ -23,6 +27,7 @@ const OptionChip: React.FC<OptionChipProps> = ({ field, isSelected, onClick }) =
       </svg>
     )}
   </button>
-);
+  );
+};
 
 export default OptionChip;

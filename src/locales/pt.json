@@ -414,5 +414,17 @@
   "offlineBanner": {
     "noInternet": "Sem conexão à Internet",
     "backOnline": "De volta online"
+  },
+  "contentBadge": {
+    "Course": "Curso",
+    "Digital Textbook": "Livro Didático Digital",
+    "Content Playlist": "Playlist de Conteúdo",
+    "Learning Resource": "Recurso de Aprendizagem",
+    "Resource": "Recurso",
+    "Collection": "Coleção",
+    "Explanation Content": "Conteúdo Explicativo",
+    "Practice Question Set": "Conjunto de Questões Práticas",
+    "eTextbook": "Livro Digital",
+    "Teacher Resource": "Recurso do Professor"
   }
 }

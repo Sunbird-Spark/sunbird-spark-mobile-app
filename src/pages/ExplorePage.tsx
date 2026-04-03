@@ -14,6 +14,7 @@ import { useFormRead } from '../hooks/useFormRead';
 import useDebounce from '../hooks/useDebounce';
 import type { ContentSearchItem } from '../types/contentTypes';
 import type { ExploreFilterGroup, ExploreFilterOption, FilterState } from '../types/formTypes';
+import { resolveLabel } from '../utils/formLocaleResolver';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
 import PageLoader from '../components/common/PageLoader';
@@ -87,7 +88,7 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
 // ── Component ──
 const ExplorePage: React.FC = () => {
     useImpression({ pageid: 'ExplorePage', env: 'explore' });
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     // ── Read query param from URL ──
     const location = useLocation();
     const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);
@@ -257,7 +258,7 @@ const ExplorePage: React.FC = () => {
 
     // All sidebar tabs = form groups + Sort By
     const sidebarTabs = [
-        ...filterGroups.map((g) => ({ id: g.id, label: g.label })),
+        ...filterGroups.map((g) => ({ id: g.id, label: resolveLabel(g.label, i18n.language) })),
         { id: '__sort__', label: t('sortBy') },
     ];
 
@@ -440,7 +441,7 @@ const ExplorePage: React.FC = () => {
                                                 checked={isChecked(option)}
                                                 onChange={(e) => handleCheckboxChange(option, e.target.checked)}
                                             />
-                                            <span>{option.label}</span>
+                                            <span>{resolveLabel(option.label, i18n.language)}</span>
                                         </label>
                                     ))}
                                 </div>

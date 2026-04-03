@@ -1,7 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { FormService } from '../services/FormService';
 import { AppInitializer } from '../AppInitializer';
+import { resolveLabel } from '../utils/formLocaleResolver';
 
 const formService = new FormService();
 
@@ -15,6 +17,8 @@ const LANDING_PAGE_REQUEST = {
 };
 
 export const useLandingPageConfig = () => {
+  const { i18n } = useTranslation();
+  const lang = i18n.language;
   const [appInitialized, setAppInitialized] = useState(AppInitializer.isInitialized());
 
   useEffect(() => {
@@ -36,13 +40,30 @@ export const useLandingPageConfig = () => {
   });
 
   const sections = useMemo(() => {
-    console.log('[LandingPageConfig] Raw API response:', JSON.stringify(data?.data, null, 2));
     const raw = data?.data?.form?.data?.sections;
     if (!Array.isArray(raw)) return [];
     const sorted = [...raw].sort((a: any, b: any) => (a.index ?? 0) - (b.index ?? 0));
-    console.log('[LandingPageConfig] Sections:', sorted.map((s: any) => ({ type: s.type, title: s.title, index: s.index })));
-    return sorted;
-  }, [data]);
+
+    return sorted.map((section: any) => {
+      const resolved: any = {
+        ...section,
+        title: resolveLabel(section.title, lang),
+      };
+
+      if (section.subtitle) {
+        resolved.subtitle = resolveLabel(section.subtitle, lang);
+      }
+
+      if (section.type === 'categories' && Array.isArray(section.list)) {
+        resolved.list = section.list.map((item: any) => ({
+          ...item,
+          title: resolveLabel(item.title, lang),
+        }));
+      }
+
+      return resolved;
+    });
+  }, [data, lang]);
 
   return { sections, isLoading: isLoading || !appInitialized, isError };
 };
