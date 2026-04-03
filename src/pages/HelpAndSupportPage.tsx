@@ -8,6 +8,7 @@ import {
     IonToast,
 } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
+import { resolveLabel } from '../utils/formLocaleResolver';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
 import { useFaqData } from '../hooks/useFaqData';
@@ -42,7 +43,7 @@ const ChevronDownIcon: React.FC = () => (
 const HelpAndSupportPage: React.FC = () => {
     useImpression({ pageid: 'HelpAndSupportPage', env: 'help' });
     const router = useIonRouter();
-    const { t } = useTranslation();
+    const { t, i18n } = useTranslation();
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
     const [showModal, setShowModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('');
@@ -67,10 +68,10 @@ const HelpAndSupportPage: React.FC = () => {
     const categoryField = formFields?.find((f: any) => f.code === 'category');
     const subcategoryField = formFields?.find((f: any) => f.code === 'subcategory');
 
-    const reportCategories: { value: string; label: string }[] =
+    const reportCategories: { value: string; label: any }[] =
         categoryField?.templateOptions?.options ?? [];
 
-    const reportSubcategories: { value: string; label: string }[] =
+    const reportSubcategories: { value: string; label: any }[] =
         selectedCategory
             ? (subcategoryField?.templateOptions?.options?.[selectedCategory] ?? [])
             : [];
@@ -168,7 +169,7 @@ const HelpAndSupportPage: React.FC = () => {
                                 >
                                     <option value="" disabled>{t('selectCategory')}</option>
                                     {reportCategories.map((cat) => (
-                                        <option key={cat.value} value={cat.value}>{cat.label}</option>
+                                        <option key={cat.value} value={cat.value}>{resolveLabel(cat.label, i18n.language)}</option>
                                     ))}
                                 </select>
                                 <svg className="hs-select-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
@@ -186,7 +187,7 @@ const HelpAndSupportPage: React.FC = () => {
                                 >
                                     <option value="" disabled>{t('selectSubcategory')}</option>
                                     {reportSubcategories.map((sub) => (
-                                        <option key={sub.value} value={sub.value}>{sub.label}</option>
+                                        <option key={sub.value} value={sub.value}>{resolveLabel(sub.label, i18n.language)}</option>
                                     ))}
                                 </select>
                                 <svg className="hs-select-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none">
