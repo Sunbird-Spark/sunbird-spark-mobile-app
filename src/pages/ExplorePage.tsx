@@ -175,10 +175,9 @@ const ExplorePage: React.FC = () => {
         },
     });
 
-    // ── Refetch stale data when tab becomes active (e.g. after coming online) ──
+    // ── Refetch form filters when tab becomes active (e.g. after coming online) ──
     useIonViewDidEnter(() => {
         refetchForm();
-        refetch();
     });
 
     // ── Accumulate items as pages load ──
