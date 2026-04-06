@@ -7,7 +7,7 @@ vi.mock('@ionic/react', () => ({
   IonHeader: ({ children, className }: any) => <div>{children}</div>,
   IonToolbar: ({ children, className }: any) => <div>{children}</div>,
   IonTitle: ({ children, className }: any) => <h1 className={className}>{children}</h1>,
-  IonContent: ({ children, className, onClick }: any) => <div className={className} onClick={onClick}>{children}</div>,
+  IonContent: ({ children, className, onClick }: any) => <div className={className} onClick={onClick} onKeyDown={onClick} role="presentation">{children}</div>,
   IonButtons: ({ children, slot }: any) => <div data-slot={slot}>{children}</div>,
   IonBackButton: ({ defaultHref, text, icon, color }: any) => (
     <button data-testid="ion-back-button" data-href={defaultHref} />

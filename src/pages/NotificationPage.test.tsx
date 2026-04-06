@@ -32,10 +32,13 @@ vi.mock('../hooks/useNotifications', () => ({
 vi.mock('../components/notifications/NotificationCard', () => ({
   default: ({ notification, onTap, onDelete }: any) => (
     <div
+      role="button"
+      tabIndex={0}
       data-testid="notification-card"
       data-id={notification.id}
       onClick={() => onTap?.(notification)}
       onDoubleClick={() => onDelete?.(notification)}
+      onKeyDown={() => onTap?.(notification)}
     >
       {notification.id}
     </div>
