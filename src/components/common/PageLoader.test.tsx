@@ -9,7 +9,7 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-vi.mock('../../assets/sunbird-logo-new.png', () => ({ default: 'sunbird-logo.png' }));
+vi.mock('../../assets/sunbird-logo-new.svg', () => ({ default: 'sunbird-logo.svg' }));
 vi.mock('./PageLoader.css', () => ({}));
 
 describe('PageLoader — accessibility', () => {

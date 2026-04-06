@@ -1,5 +1,5 @@
 import React from 'react';
-import sunbirdLogo from '../../assets/sunbird-logo-new.png';
+import sunbirdLogo from '../../assets/sunbird-logo-new.svg';
 import { LanguageSelector } from '../common/LanguageSelector';
 import Notification from '../common/Notification';
 import { QRScanButton } from '../common/QRScanButton';
@@ -15,7 +15,7 @@ export const PublicWelcomeHeader: React.FC = () => {
       <img
         src={sunbirdLogo}
         alt="Sunbird"
-        style={{ height: '1.75rem', width: 'auto' }}
+        className="page-header-logo"
       />
 
       <div className="page-header__actions">

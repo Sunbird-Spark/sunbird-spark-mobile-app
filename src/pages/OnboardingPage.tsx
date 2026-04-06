@@ -10,7 +10,7 @@ import { OnboardingFormData, OnboardingScreen, OnboardingField } from '../types/
 import { resolveLabel } from '../utils/formLocaleResolver';
 import ProgressBar from '../components/onboarding/ProgressBar';
 import OptionChip from '../components/onboarding/OptionChip';
-import sunbirdLogo from '../assets/sunbird-logo-new.png';
+import sunbirdLogo from '../assets/sunbird-logo-new.svg';
 import './OnboardingPage.css';
 
 /**

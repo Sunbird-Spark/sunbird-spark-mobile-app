@@ -51,7 +51,7 @@ vi.mock('../services/UserService', () => ({
 }));
 
 // Mock image import
-vi.mock('../assets/sunbird-logo-new.png', () => ({ default: 'sunbird-logo.png' }));
+vi.mock('../assets/sunbird-logo-new.svg', () => ({ default: 'sunbird-logo.svg' }));
 
 const mockFormData = {
   form: {

@@ -17,11 +17,12 @@
 
 /* Brand logo */
 .onboarding-brand {
-  height: 32px;
+  height: 4rem;
   width: auto;
+  display: block;
   object-fit: contain;
-  margin-bottom: 16px;
-}
+  align-self: flex-start;
+  margin-bottom: 16px;}
 
 /* Subtitle */
 .onboarding-subtitle {

@@ -38,8 +38,9 @@
 
 /* ── Logo ── */
 .sign-in-logo {
-    height: 2.5rem;
+    height: 3rem;
     width: auto;
+    display: block;
     object-fit: contain;
     margin-bottom: 2rem;
 }

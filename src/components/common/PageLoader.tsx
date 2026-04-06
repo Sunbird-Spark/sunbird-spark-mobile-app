@@ -1,4 +1,4 @@
-import sunbirdLogo from '../../assets/sunbird-logo-new.png';
+import sunbirdLogo from '../../assets/sunbird-logo-new.svg';
 import './PageLoader.css';
 import { useTranslation } from 'react-i18next';
 

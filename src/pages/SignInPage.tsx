@@ -12,7 +12,7 @@ import {
   useIonRouter,
 } from '@ionic/react';
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
-import sunbirdLogo from '../assets/sunbird-logo-new.png';
+import sunbirdLogo from '../assets/sunbird-logo-new.svg';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
