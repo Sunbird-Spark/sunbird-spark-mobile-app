@@ -37,7 +37,7 @@ const TermsOfUsePage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.termsOfUse')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.termsOfUse')}`;
   }, [t]);
 
   const { tncUrl, userId, isAuthenticated } = useAuth();
