@@ -199,15 +199,13 @@ describe('PersonalDetailsPage — accessibility', () => {
     fireEvent.click(editBtn);
     const verifyBtn = screen.getByRole('button', { name: 'verifyDetails' });
     fireEvent.click(verifyBtn);
-    // After clicking verify, the OTP modal should be shown
-    // Check for otp-inputs group - it only appears after the modal opens
-    // In this test we verify the attribute is present in the OTP section
-    // when the modal is rendered open
-    const otpGroup = container.querySelector('.otp-inputs[role="group"]');
-    if (otpGroup) {
-      expect(otpGroup).toHaveAttribute('role', 'group');
-      expect(otpGroup).toHaveAttribute('aria-label', 'enterTheCode');
-    }
+    let otpGroup: Element | null = null;
+    await waitFor(() => {
+      otpGroup = container.querySelector('.otp-inputs[role="group"]');
+      expect(otpGroup).not.toBeNull();
+    });
+    expect(otpGroup).toHaveAttribute('role', 'group');
+    expect(otpGroup).toHaveAttribute('aria-label', 'enterTheCode');
   });
 
   it('does not open edit modal when offline (shows toast instead)', () => {

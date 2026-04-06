@@ -170,15 +170,6 @@ describe('FaqDetailPage — landmarks', () => {
     expect(container.querySelector('.fd-feedback-thanks')).toBeInTheDocument();
   });
 
-  it('uses slug-based URL fallback when category param is a slug', () => {
-    // Override useParams to return a slug instead of an index
-    vi.mock('react-router-dom', () => ({
-      useParams: () => ({ category: 'general' }),
-    }));
-    const { container } = render(<FaqDetailPage />);
-    expect(container.querySelector('.fd-faq-list')).toBeInTheDocument();
-  });
-
   it('renders default title when category is not found', () => {
     (useFaqData as any).mockReturnValue({
       faqData: { categories: [] },

@@ -172,7 +172,6 @@ describe('ProfileLearningPage — accessibility', () => {
   });
 
   it('shows empty state when no courses', () => {
-    render(<ProfileLearningPage />);
     // Empty courses = no course cards rendered
     const { container } = render(<ProfileLearningPage />);
     expect(container.querySelector('.pl-card')).toBeNull();
