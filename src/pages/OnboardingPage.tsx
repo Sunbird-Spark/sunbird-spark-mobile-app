@@ -10,7 +10,7 @@ import { OnboardingFormData, OnboardingScreen, OnboardingField } from '../types/
 import { resolveLabel } from '../utils/formLocaleResolver';
 import ProgressBar from '../components/onboarding/ProgressBar';
 import OptionChip from '../components/onboarding/OptionChip';
-import sunbirdLogo from '../assets/sunbird-logo-new.png';
+import { ASSETS } from '../constants/assets';
 import './OnboardingPage.css';
 
 /**
@@ -266,7 +266,7 @@ const OnboardingPage: React.FC = () => {
         <main id="main-content">
         <div className="onboarding-container">
           {/* Brand */}
-          <img src={sunbirdLogo} alt="Sunbird" className="onboarding-brand" />
+          <img src={ASSETS.SUNBIRD_LOGO} alt="Sunbird" className="onboarding-brand" />
 
           {/* Subtitle */}
           <h1 className="onboarding-subtitle">

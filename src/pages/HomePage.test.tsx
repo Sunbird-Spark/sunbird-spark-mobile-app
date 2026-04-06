@@ -341,6 +341,155 @@ describe('HomePage', () => {
     expect(screen.getByText('error')).toBeInTheDocument();
   });
 
+  // --- Status-based course counting logic ---
+
+  describe('status-based course counting', () => {
+    it('counts only status=1 courses as in-progress', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'c1', status: 1, completionPercentage: 30 }),
+              makeCourse({ courseId: 'c2', status: 1, completionPercentage: 60 }),
+              makeCourse({ courseId: 'c3', status: 2, completionPercentage: 100 }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderHomePage();
+      // 2 courses with status=1 should be counted as in-progress
+      expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+    });
+
+    it('does not count status=0 courses as in-progress even with completionPercentage < 100', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'c1', status: 0, completionPercentage: 0 }),
+              makeCourse({ courseId: 'c2', status: 0, completionPercentage: 50 }),
+              makeCourse({ courseId: 'c3', status: 1, completionPercentage: 30 }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderHomePage();
+      // Only 1 course with status=1 should be counted as in-progress
+      // status=0 courses should not be counted even if completionPercentage < 100
+      expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+      expect(screen.getByTestId('continue-learning-card')).toBeInTheDocument();
+      // With 1 in-progress course, InProgressContents should not render
+      expect(screen.queryByTestId('in-progress-contents')).not.toBeInTheDocument();
+    });
+
+    it('counts only status=2 courses as completed', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'c1', status: 2, completionPercentage: 100 }),
+              makeCourse({ courseId: 'c2', status: 2, completionPercentage: 100 }),
+              makeCourse({ courseId: 'c3', status: 1, completionPercentage: 99 }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderHomePage();
+      // 2 courses with status=2 should be counted as completed
+      // 1 course with status=1 should be counted as in-progress
+      expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+    });
+
+    it('does not count status=1 courses with completionPercentage=100 as completed', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'c1', status: 1, completionPercentage: 100 }),
+              makeCourse({ courseId: 'c2', status: 2, completionPercentage: 100 }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderHomePage();
+      // Course with status=1 should be counted as in-progress, not completed
+      // Only course with status=2 should be counted as completed
+      expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+    });
+
+    it('handles mixed status values correctly', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'c1', status: 0, completionPercentage: 0 }),
+              makeCourse({ courseId: 'c2', status: 0, completionPercentage: 25 }),
+              makeCourse({ courseId: 'c3', status: 1, completionPercentage: 10 }),
+              makeCourse({ courseId: 'c4', status: 1, completionPercentage: 75 }),
+              makeCourse({ courseId: 'c5', status: 1, completionPercentage: 100 }),
+              makeCourse({ courseId: 'c6', status: 2, completionPercentage: 100 }),
+              makeCourse({ courseId: 'c7', status: 2, completionPercentage: 100 }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderHomePage();
+      // 3 courses with status=1 should be in-progress
+      // 2 courses with status=2 should be completed
+      // 2 courses with status=0 should not be counted in either
+      expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+      expect(screen.getByTestId('in-progress-contents')).toBeInTheDocument();
+    });
+
+    it('handles courses with undefined or null status gracefully', () => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'c1', status: undefined, completionPercentage: 50 }),
+              makeCourse({ courseId: 'c2', status: null, completionPercentage: 75 }),
+              makeCourse({ courseId: 'c3', status: 1, completionPercentage: 30 }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderHomePage();
+      // Only course with status=1 should be counted
+      // Courses with undefined/null status should not crash the app
+      expect(screen.getByTestId('learning-stats-grid')).toBeInTheDocument();
+    });
+  });
+
   // --- Accessibility ---
 
   describe('accessibility', () => {

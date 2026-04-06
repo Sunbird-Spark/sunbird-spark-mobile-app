@@ -123,8 +123,8 @@ const HelpAndSupportPage: React.FC = () => {
                                         tabIndex={0}
                                         className="hs-category-card"
                                         key={idx}
-                                        onClick={() => router.push(`/support/${cat.slug}`, 'forward', 'push')}
-                                        onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/support/${cat.slug}`, 'forward', 'push'); if (e.key === ' ') { e.preventDefault(); router.push(`/support/${cat.slug}`, 'forward', 'push'); } }}
+                                        onClick={() => router.push(`/support/${idx}`, 'forward', 'push')}
+                                        onKeyDown={(e) => { if (e.key === 'Enter') router.push(`/support/${idx}`, 'forward', 'push'); if (e.key === ' ') { e.preventDefault(); router.push(`/support/${idx}`, 'forward', 'push'); } }}
                                     >
                                         <div className="hs-accent-bar" />
                                         <h2 className="hs-category-title">{cat.title}</h2>

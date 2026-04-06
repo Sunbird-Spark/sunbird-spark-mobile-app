@@ -3,8 +3,6 @@ import { IonButton, IonIcon, IonToolbar, IonAvatar } from '@ionic/react';
 import { notifications } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { currentUser } from '../../data/mockData';
-import sunbirdLogo from '../../assets/sunbird-logo-new.png';
-
 export const WelcomeHeader: React.FC = () => {
   const { t } = useTranslation();
 

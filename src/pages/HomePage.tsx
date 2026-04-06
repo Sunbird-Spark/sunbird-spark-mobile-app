@@ -190,7 +190,8 @@ const HomePage: React.FC = () => {
   const certificationsEarned = _.size(_.get(certData, 'data', []));
 
   // Stats computation
-  const coursesInProgress = _.filter(enrolledCourses, c => (c.completionPercentage ?? 0) < 100).length;
+  
+  const coursesInProgress = _.filter(enrolledCourses, c => (c.status === 1)).length;
   const coursesCompleted = _.filter(enrolledCourses, { status: 2 }).length;
   const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
 

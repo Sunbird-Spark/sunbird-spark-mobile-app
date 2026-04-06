@@ -181,6 +181,20 @@
     }
 }
 
+/* ── Header logo: layout height stays at 1.75rem, visually scales to ~4rem ── */
+.page-header-logo {
+    height: 1.75rem;
+    width: auto;
+    display: block;
+    object-fit: contain;
+    transform: scale(2.28);
+    transform-origin: left center;
+}
+
+[dir="rtl"] .page-header-logo {
+    transform-origin: right center;
+}
+
 /* ── Shared div-based page header (matches MyLearning pattern) ── */
 .page-header {
     background-color: var(--color-white);
