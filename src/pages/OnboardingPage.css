@@ -22,7 +22,8 @@
   display: block;
   object-fit: contain;
   align-self: flex-start;
-  margin-bottom: 16px;}
+  margin-bottom: 16px;
+}
 
 /* Subtitle */
 .onboarding-subtitle {
