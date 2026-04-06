@@ -180,6 +180,8 @@ class AuthWebviewService {
     const baseUrl = this.buildUrl(config.target);
     const url = new URL(baseUrl);
     url.searchParams.set('client', 'mobileApp');
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    url.searchParams.set('lang', lang);
     const finalUrl = url.toString();
 
     // Extract the callback path from redirect_uri (e.g., /oauth2callback)
@@ -206,6 +208,8 @@ class AuthWebviewService {
     // Build forgot password URL using proper URL manipulation
     const url = new URL('/forgot-password', host);
     url.searchParams.set('client', 'mobileApp');
+    const lang = localStorage.getItem('appLanguage') || 'en';
+    url.searchParams.set('lang', lang);
     if (redirectUri) {
       url.searchParams.set('redirect_uri', redirectUri);
     }
