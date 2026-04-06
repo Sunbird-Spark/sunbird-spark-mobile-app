@@ -87,8 +87,10 @@ export class AppInitializer {
       const needsRetry = !authService.hasDeviceJwt() || !ChannelManager.hasChannelId();
       if (needsRetry && !this.reconnectRetryRegistered) {
         this.reconnectRetryRegistered = true;
+        let retryInFlight = false;
         const unsubscribe = networkService.subscribe((state) => {
-          if (!state.connected) return;
+          if (!state.connected || retryInFlight) return;
+          retryInFlight = true;
           void (async () => {
             try {
               // Re-acquire device JWT from Kong if using appJwt fallback
@@ -104,7 +106,8 @@ export class AppInitializer {
               }
             } catch {
               // Will retry on next reconnect event
-              return;
+            } finally {
+              retryInFlight = false;
             }
             if (authService.hasDeviceJwt() && ChannelManager.hasChannelId()) {
               unsubscribe();
