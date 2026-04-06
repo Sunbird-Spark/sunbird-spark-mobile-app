@@ -1,5 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import '@testing-library/jest-dom';
 import ExplorePage from './ExplorePage';
 
 // ── Mock react-i18next ──
@@ -67,6 +68,10 @@ vi.mock('@ionic/react', () => ({
   IonRefresher: ({ children }: any) => <div data-testid="ion-refresher">{children}</div>,
   IonRefresherContent: () => <div data-testid="ion-refresher-content" />,
   IonSpinner: () => <div data-testid="ion-spinner" />,
+  useIonViewDidEnter: vi.fn(),
+  useIonViewDidLeave: vi.fn(),
+  useIonViewWillEnter: vi.fn(),
+  useIonViewWillLeave: vi.fn(),
 }));
 
 // ── Mock BottomNavigation ──
