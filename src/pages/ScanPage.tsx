@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IonAlert, IonContent, IonPage, IonSpinner } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 import { AppHeader } from '../components/layout/AppHeader';
@@ -25,6 +25,11 @@ const QRFrameIcon = () => (
 const ScanPage: React.FC = () => {
   useImpression({ pageid: 'ScanPage', env: 'explore' });
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.scan')}`;
+  }, [t]);
+
   const { alertType, startScan, dismissAlert } = useDIALScanner();
   const { isEnabled, isLoading } = useQRScannerPreference();
 

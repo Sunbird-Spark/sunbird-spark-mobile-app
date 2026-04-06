@@ -130,4 +130,61 @@ describe('FaqDetailPage — landmarks', () => {
       expect(chevron).toHaveAttribute('aria-hidden', 'true');
     });
   });
+
+  it('clicking "yes" feedback shows thank-you message', () => {
+    const { container } = render(<FaqDetailPage />);
+    // First FAQ is expanded (index 0), feedback row is visible
+    const yesBtn = container.querySelector('.fd-feedback-yes') as HTMLElement;
+    expect(yesBtn).toBeInTheDocument();
+    fireEvent.click(yesBtn);
+    expect(container.querySelector('.fd-feedback-thanks')).toBeInTheDocument();
+  });
+
+  it('clicking "no" feedback shows the feedback form', () => {
+    const { container } = render(<FaqDetailPage />);
+    const noBtn = container.querySelector('.fd-feedback-no') as HTMLElement;
+    expect(noBtn).toBeInTheDocument();
+    fireEvent.click(noBtn);
+    expect(container.querySelector('.fd-feedback-form')).toBeInTheDocument();
+  });
+
+  it('clicking cancel from feedback form returns to feedback row', () => {
+    const { container } = render(<FaqDetailPage />);
+    const noBtn = container.querySelector('.fd-feedback-no') as HTMLElement;
+    fireEvent.click(noBtn);
+    const cancelBtn = container.querySelector('.fd-feedback-cancel') as HTMLElement;
+    expect(cancelBtn).toBeInTheDocument();
+    fireEvent.click(cancelBtn);
+    // Back to feedback row
+    expect(container.querySelector('.fd-feedback-row')).toBeInTheDocument();
+  });
+
+  it('submitting feedback shows thank-you and hides form', () => {
+    const { container } = render(<FaqDetailPage />);
+    const noBtn = container.querySelector('.fd-feedback-no') as HTMLElement;
+    fireEvent.click(noBtn);
+    const textarea = container.querySelector('.fd-feedback-textarea') as HTMLTextAreaElement;
+    fireEvent.change(textarea, { target: { value: 'Great improvement!' } });
+    const submitBtn = container.querySelector('.fd-feedback-submit') as HTMLElement;
+    fireEvent.click(submitBtn);
+    expect(container.querySelector('.fd-feedback-thanks')).toBeInTheDocument();
+  });
+
+  it('renders default title when category is not found', () => {
+    (useFaqData as any).mockReturnValue({
+      faqData: { categories: [] },
+      isLoading: false,
+      isError: false,
+    });
+    render(<FaqDetailPage />);
+    expect(screen.getByText("FAQ's")).toBeInTheDocument();
+  });
+
+  it('feedback submit button is disabled when textarea is empty', () => {
+    const { container } = render(<FaqDetailPage />);
+    const noBtn = container.querySelector('.fd-feedback-no') as HTMLElement;
+    fireEvent.click(noBtn);
+    const submitBtn = container.querySelector('.fd-feedback-submit') as HTMLButtonElement;
+    expect(submitBtn).toBeDisabled();
+  });
 });

@@ -47,6 +47,11 @@ const ContentPlayerPage: React.FC = () => {
   const { contentId } = useParams<{ contentId: string }>();
   const router = useIonRouter();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.contentPlayer')}`;
+  }, [t]);
+
   const { isOffline } = useNetwork();
   const [isPlaying, setIsPlaying] = useState(false);
 

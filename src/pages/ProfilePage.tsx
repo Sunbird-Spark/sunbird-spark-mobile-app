@@ -35,6 +35,10 @@ const ProfilePage: React.FC = () => {
   const { t } = useTranslation();
   const router = useIonRouter();
 
+  useEffect(() => {
+    document.title = `${t('pageTitle.profile')}`;
+  }, [t]);
+
   const { data: profile } = useUser(userId);
   const { data: enrollmentResponse } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
 

@@ -45,6 +45,7 @@ vi.mock('../services/download_manager', () => ({
     cancel: vi.fn(),
     pause: vi.fn(),
     resume: vi.fn(),
+    retry: vi.fn(),
     retryAllFailed: vi.fn(),
     cancelAll: vi.fn(),
   },
@@ -61,6 +62,7 @@ vi.mock('../services/download_manager', () => ({
 
 import { useDownloadQueue } from '../hooks/useDownloadQueue';
 import { downloadManager } from '../services/download_manager';
+import { useStorageInfo } from '../hooks/useStorageInfo';
 
 const makeEntry = (state: string, overrides: any = {}) => ({
   identifier: `id-${state}`,
@@ -210,5 +212,78 @@ describe('DownloadsPage', () => {
     const { container } = render(<DownloadsPage />);
     const footer = container.querySelector('.dl-storage-footer');
     expect(footer).toHaveAttribute('role', 'status');
+  });
+
+  it('calls downloadManager.cancelAll when cancel all button clicked', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('DOWNLOADING'), makeEntry('QUEUED', { identifier: 'q1' })]);
+    render(<DownloadsPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'download.cancelAll' }));
+    expect(downloadManager.cancelAll).toHaveBeenCalled();
+  });
+
+  it('calls downloadManager.cancel when cancel button clicked for downloading entry', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('DOWNLOADING')]);
+    render(<DownloadsPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+    expect(downloadManager.cancel).toHaveBeenCalledWith('id-DOWNLOADING');
+  });
+
+  it('calls downloadManager.cancel when cancel button clicked for queued entry', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('QUEUED')]);
+    render(<DownloadsPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'cancel' }));
+    expect(downloadManager.cancel).toHaveBeenCalledWith('id-QUEUED');
+  });
+
+  it('calls downloadManager.retry when retry button clicked for failed entry', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('FAILED', { last_error: 'Error' })]);
+    render(<DownloadsPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'retry' }));
+    expect(downloadManager.retry).toHaveBeenCalledWith('id-FAILED');
+  });
+
+  it('shows singular item text when itemCount is 1', () => {
+    vi.mocked(useStorageInfo).mockReturnValue({ totalBytes: 500, itemCount: 1 });
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('DOWNLOADING')]);
+    const { container } = render(<DownloadsPage />);
+    const footer = container.querySelector('.dl-storage-footer');
+    expect(footer?.textContent).toContain('download.item');
+    expect(footer?.textContent).not.toContain('download.items');
+  });
+
+  it('shows RETRY_WAIT entry in queued section', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('RETRY_WAIT')]);
+    const { container } = render(<DownloadsPage />);
+    expect(container.querySelector('.dl-section')).toBeInTheDocument();
+  });
+
+  it('shows 0 B when bytes_downloaded is 0', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([
+      makeEntry('DOWNLOADING', { bytes_downloaded: 0, total_bytes: 1000 }),
+    ]);
+    const { container } = render(<DownloadsPage />);
+    const sizeEl = container.querySelector('.dl-item-size');
+    expect(sizeEl?.textContent).toContain('0 B');
+  });
+
+  it('falls back to identifier when content_meta is invalid JSON', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([
+      makeEntry('DOWNLOADING', { identifier: 'do_invalid', content_meta: 'not-valid-json{' }),
+    ]);
+    render(<DownloadsPage />);
+    expect(screen.getByText('do_invalid')).toBeInTheDocument();
+  });
+
+  it('shows no cancel button when entry is IMPORTING', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('IMPORTING')]);
+    render(<DownloadsPage />);
+    // IMPORTING entries should not show cancel button (state !== IMPORTING condition is false)
+    expect(screen.queryByRole('button', { name: 'cancel' })).not.toBeInTheDocument();
+  });
+
+  it('failed entry without last_error does not show error text', () => {
+    vi.mocked(useDownloadQueue).mockReturnValue([makeEntry('FAILED', { last_error: null })]);
+    const { container } = render(<DownloadsPage />);
+    expect(container.querySelector('.dl-item-error')).not.toBeInTheDocument();
   });
 });

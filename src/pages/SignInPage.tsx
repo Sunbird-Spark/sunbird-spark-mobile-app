@@ -85,6 +85,10 @@ const SignInPage: React.FC = () => {
     }
   }, [isOffline]);
 
+  useEffect(() => {
+    document.title = `${t('pageTitle.signIn')}`;
+  }, [t]);
+
   const isFormValid = email.trim().length > 0 && password.length > 0;
 
   const handleLogin = async () => {
@@ -239,7 +243,7 @@ const SignInPage: React.FC = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="sign-in-error" role="alert" aria-live="assertive">{error}</div>
+            <div id="signin-error" className="sign-in-error" role="alert" aria-live="assertive">{error}</div>
           )}
 
           {/* Google Sign In Button */}
@@ -285,6 +289,8 @@ const SignInPage: React.FC = () => {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 className="sign-in-input"
+                aria-invalid={!!error}
+                aria-describedby={error ? 'signin-error' : undefined}
               />
             </div>
 
@@ -300,6 +306,8 @@ const SignInPage: React.FC = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={loading}
                   className="sign-in-input"
+                  aria-invalid={!!error}
+                  aria-describedby={error ? 'signin-error' : undefined}
                 />
                 <button
                   type="button"

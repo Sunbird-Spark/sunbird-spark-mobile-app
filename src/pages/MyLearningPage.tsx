@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import _ from 'lodash';
 import {
   IonContent,
@@ -204,6 +204,11 @@ const MyLearningPage: React.FC = () => {
   useImpression({ pageid: 'MyLearningPage', env: 'profile' });
   const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.myLearning')}`;
+  }, [t]);
+
   const { isAuthenticated, userId } = useAuth();
   const router = useIonRouter();
 

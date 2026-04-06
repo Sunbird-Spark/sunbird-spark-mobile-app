@@ -434,5 +434,31 @@
     "Practice Question Set": "مجموعة أسئلة تدريبية",
     "eTextbook": "كتاب إلكتروني",
     "Teacher Resource": "مورد المعلم"
+  },
+  "pageTitle": {
+    "signIn": "تسجيل الدخول",
+    "onboarding": "ابدأ",
+    "home": "الرئيسية",
+    "explore": "استكشف",
+    "search": "بحث",
+    "myLearning": "تعلمي",
+    "profile": "الملف الشخصي",
+    "profileLearning": "شهاداتي",
+    "personalDetails": "البيانات الشخصية",
+    "downloadedContents": "المحتوى المحمل",
+    "downloads": "التنزيلات",
+    "notifications": "الإشعارات",
+    "courseDetails": "تفاصيل الدورة",
+    "contentPlayer": "مشغل المحتوى",
+    "collection": "الدورة",
+    "faqDetail": "الأسئلة الشائعة",
+    "helpAndSupport": "المساعدة والدعم",
+    "scan": "مسح رمز QR",
+    "settings": "الإعدادات",
+    "termsAndConditions": "الشروط والأحكام",
+    "termsOfUse": "شروط الاستخدام",
+    "videoContent": "فيديو",
+    "courses": "الدورات",
+    "dashboard": "لوحة التحكم"
   }
 }

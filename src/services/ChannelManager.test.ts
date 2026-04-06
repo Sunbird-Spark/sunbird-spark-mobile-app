@@ -1,10 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ChannelManager } from './ChannelManager';
 import { getClient } from '../lib/http-client';
+import { userService } from './UserService';
+import { keyValueDbService } from './db/KeyValueDbService';
 
 // Mock the HTTP client
 vi.mock('../lib/http-client', () => ({
-  getClient: vi.fn()
+  getClient: vi.fn(),
+}));
+
+vi.mock('./UserService', () => ({
+  userService: { isLoggedIn: vi.fn().mockReturnValue(false) },
+}));
+
+vi.mock('./db/KeyValueDbService', () => ({
+  keyValueDbService: { set: vi.fn().mockResolvedValue(undefined) },
+  KVKey: { ACTIVE_CHANNEL_ID: 'active_channel_id' },
+}));
+
+vi.mock('./sync/SyncConfig', () => ({
+  syncConfig: { setChannelId: vi.fn() },
 }));
 
 describe('ChannelManager', () => {
@@ -125,6 +140,20 @@ describe('ChannelManager', () => {
 
       // Assert
       expect(ChannelManager.hasChannelId()).toBe(false);
+    });
+  });
+
+  describe('setChannelId when user is logged in', () => {
+    it('does not persist to keyValueDbService when user is logged in', () => {
+      (userService.isLoggedIn as any).mockReturnValue(true);
+      ChannelManager.setChannelId('channel-abc');
+      expect(keyValueDbService.set).not.toHaveBeenCalled();
+    });
+
+    it('persists to keyValueDbService when user is NOT logged in', () => {
+      (userService.isLoggedIn as any).mockReturnValue(false);
+      ChannelManager.setChannelId('channel-xyz');
+      expect(keyValueDbService.set).toHaveBeenCalled();
     });
   });
 

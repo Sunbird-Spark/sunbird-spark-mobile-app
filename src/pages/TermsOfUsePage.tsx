@@ -35,6 +35,11 @@ import './TermsAndConditionsPage.css';
 const TermsOfUsePage: React.FC = () => {
   useImpression({ pageid: 'TermsOfUsePage', env: 'user' });
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.termsOfUse')}`;
+  }, [t]);
+
   const { tncUrl, userId, isAuthenticated } = useAuth();
   const [loading, setLoading] = useState(true);
   const [termsUrl, setTermsUrl] = useState<string | null>(null);

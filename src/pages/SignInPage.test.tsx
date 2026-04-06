@@ -161,4 +161,108 @@ describe('SignInPage — accessibility', () => {
     const googleSvg = container.querySelector('.sign-in-google-btn svg');
     expect(googleSvg).toHaveAttribute('aria-hidden', 'true');
   });
+
+  it('shows offline toast when login attempted while offline', async () => {
+    (useNetwork as any).mockReturnValue({ isOffline: true });
+    render(<SignInPage />);
+    fireEvent.change(screen.getByLabelText('signInPage.emailOrMobile'), {
+      target: { value: 'user@test.com' },
+    });
+    fireEvent.change(screen.getByLabelText('signInPage.password'), {
+      target: { value: 'password' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'signInPage.login' }));
+    await waitFor(() => {
+      expect(screen.getByTestId('ion-toast')).toBeInTheDocument();
+    });
+  });
+
+  it('calls loginWithGoogle when Google sign-in button clicked', async () => {
+    mockLoginWithGoogle.mockResolvedValue(undefined);
+    render(<SignInPage />);
+    const googleBtn = screen.getByRole('button', { name: 'signInPage.signInWithGoogle' });
+    fireEvent.click(googleBtn);
+    await waitFor(() => {
+      expect(mockLoginWithGoogle).toHaveBeenCalled();
+    });
+  });
+
+  it('shows error when Google sign-in fails with non-cancel error', async () => {
+    const err = new Error('failed');
+    (err as any).code = 'SOME_ERROR';
+    mockLoginWithGoogle.mockRejectedValue(err);
+    render(<SignInPage />);
+    const googleBtn = screen.getByRole('button', { name: 'signInPage.signInWithGoogle' });
+    fireEvent.click(googleBtn);
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+  });
+
+  it('shows offline toast when Google sign-in attempted while offline', () => {
+    (useNetwork as any).mockReturnValue({ isOffline: true });
+    render(<SignInPage />);
+    const googleBtn = screen.getByRole('button', { name: 'signInPage.signInWithGoogle' });
+    fireEvent.click(googleBtn);
+    expect(screen.getByTestId('ion-toast')).toBeInTheDocument();
+  });
+
+  it('clicks forgot password button', async () => {
+    const { authWebviewService } = await import('../services/AuthWebviewService');
+    (authWebviewService.openForgotPassword as any).mockResolvedValue(undefined);
+    render(<SignInPage />);
+    const forgotBtn = screen.getByRole('button', { name: 'signInPage.forgotPassword' });
+    fireEvent.click(forgotBtn);
+    await waitFor(() => {
+      expect(authWebviewService.openForgotPassword).toHaveBeenCalled();
+    });
+  });
+
+  it('shows google security error when USER_NAME_NOT_PRESENT code', async () => {
+    const err = new Error('failed');
+    (err as any).code = 'USER_NAME_NOT_PRESENT';
+    mockLoginWithGoogle.mockRejectedValue(err);
+    render(<SignInPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'signInPage.signInWithGoogle' }));
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+  });
+
+  it('shows account blocked error when USER_ACCOUNT_BLOCKED code', async () => {
+    const err = new Error('blocked');
+    (err as any).code = 'USER_ACCOUNT_BLOCKED';
+    mockLoginWithGoogle.mockRejectedValue(err);
+    render(<SignInPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'signInPage.signInWithGoogle' }));
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument();
+    });
+  });
+
+  it('login succeeds and does not show error', async () => {
+    mockLoginWithCredentials.mockResolvedValue(undefined);
+    render(<SignInPage />);
+    fireEvent.change(screen.getByLabelText('signInPage.emailOrMobile'), {
+      target: { value: 'user@test.com' },
+    });
+    fireEvent.change(screen.getByLabelText('signInPage.password'), {
+      target: { value: 'password' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'signInPage.login' }));
+    await waitFor(() => {
+      expect(mockLoginWithCredentials).toHaveBeenCalled();
+    });
+  });
+
+  it('clicks register button', async () => {
+    const { authWebviewService } = await import('../services/AuthWebviewService');
+    (authWebviewService.openRegistration as any).mockResolvedValue(undefined);
+    render(<SignInPage />);
+    const registerBtn = screen.getByRole('button', { name: 'signInPage.createAccount' });
+    fireEvent.click(registerBtn);
+    await waitFor(() => {
+      expect(authWebviewService.openRegistration).toHaveBeenCalled();
+    });
+  });
 });

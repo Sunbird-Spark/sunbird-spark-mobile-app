@@ -373,5 +373,31 @@
     "Practice Question Set": "अभ्यास प्रश्न सेट",
     "eTextbook": "ई-पाठ्यपुस्तक",
     "Teacher Resource": "शिक्षक संसाधन"
+  },
+  "pageTitle": {
+    "signIn": "साइन इन",
+    "onboarding": "शुरू करें",
+    "home": "होम",
+    "explore": "एक्सप्लोर करें",
+    "search": "खोज",
+    "myLearning": "मेरी शिक्षा",
+    "profile": "प्रोफ़ाइल",
+    "profileLearning": "मेरे प्रमाणपत्र",
+    "personalDetails": "व्यक्तिगत विवरण",
+    "downloadedContents": "डाउनलोड की गई सामग्री",
+    "downloads": "डाउनलोड",
+    "notifications": "सूचनाएँ",
+    "courseDetails": "कोर्स विवरण",
+    "contentPlayer": "कंटेंट प्लेयर",
+    "collection": "कोर्स",
+    "faqDetail": "सामान्य प्रश्न",
+    "helpAndSupport": "सहायता",
+    "scan": "QR स्कैन करें",
+    "settings": "सेटिंग्स",
+    "termsAndConditions": "नियम और शर्तें",
+    "termsOfUse": "उपयोग की शर्तें",
+    "videoContent": "वीडियो",
+    "courses": "कोर्स",
+    "dashboard": "डैशबोर्ड"
   }
 }

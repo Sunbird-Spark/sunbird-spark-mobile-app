@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
     IonContent,
     IonHeader,
@@ -21,6 +21,10 @@ const VideoContentPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const history = useHistory();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.videoContent')}`;
+    }, [t]);
 
     const handleShare = useCallback(() => {
         void telemetryService.share({

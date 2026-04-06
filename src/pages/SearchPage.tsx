@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     IonPage, IonHeader, IonToolbar, IonContent, IonInput, IonSpinner, useIonRouter,
 } from '@ionic/react';
@@ -39,6 +39,10 @@ const SearchPage: React.FC = () => {
     useImpression({ pageid: 'SearchPage', env: 'search' });
     const router = useIonRouter();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.search')}`;
+    }, [t]);
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedQuery = useDebounce(searchQuery.trim(), 600);
 
