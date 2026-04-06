@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import _ from 'lodash';
 import {
   IonContent,
@@ -140,6 +140,10 @@ const HomePage: React.FC = () => {
   useImpression({ pageid: 'HomePage', env: 'home' });
   const { isAuthenticated, userId } = useAuth();
   const { t, i18n } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.home')} — Sunbird Spark`;
+  }, [t]);
 
   // Form-driven sections for pre-enrollment view
   const { data: formData, isLoading: homeFormLoading } = useFormRead({

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
   IonPage,
   IonHeader,
@@ -23,6 +23,11 @@ import './NotificationPage.css';
 
 const NotificationPage: React.FC = () => {
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.notifications')} — Sunbird Spark`;
+  }, [t]);
+
   const router = useIonRouter();
   const { isOffline } = useNetwork();
   const { notifications, isLoading, error, refetch } = useNotificationRead();

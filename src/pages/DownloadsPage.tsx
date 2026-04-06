@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import {
   IonContent,
   IonPage,
@@ -55,6 +55,11 @@ const QUEUED_STATES = new Set<string>([DownloadState.QUEUED, DownloadState.RETRY
 const DownloadsPage: React.FC = () => {
   useImpression({ pageid: 'DownloadsPage', env: 'downloads' });
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.downloads')} — Sunbird Spark`;
+  }, [t]);
+
   const allEntries = useDownloadQueue();
   const storage = useStorageInfo();
 

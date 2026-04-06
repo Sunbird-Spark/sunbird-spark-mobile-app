@@ -89,6 +89,11 @@ function paginationReducer(state: PaginationState, action: PaginationAction): Pa
 const ExplorePage: React.FC = () => {
     useImpression({ pageid: 'ExplorePage', env: 'explore' });
     const { t, i18n } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.explore')} — Sunbird Spark`;
+    }, [t]);
+
     // ── Read query param from URL ──
     const location = useLocation();
     const urlQuery = useMemo(() => new URLSearchParams(location.search).get('query') || '', [location.search]);

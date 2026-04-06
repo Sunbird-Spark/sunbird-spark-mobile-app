@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     IonContent,
@@ -29,6 +29,11 @@ const PersonalDetailsBody: React.FC = () => {
     useImpression({ pageid: 'PersonalDetailsPage', env: 'profile' });
     const telemetry = useTelemetry();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.personalDetails')} — Sunbird Spark`;
+    }, [t]);
+
     const { userId } = useAuth();
     const { data: profile } = useUser(userId);
     const { isOffline } = useNetwork();

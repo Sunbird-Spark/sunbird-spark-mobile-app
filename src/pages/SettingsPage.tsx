@@ -25,6 +25,11 @@ const SettingsPage: React.FC = () => {
   useImpression({ pageid: 'SettingsPage', env: 'settings' });
   const { t } = useTranslation();
   const router = useIonRouter();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.settings')} — Sunbird Spark`;
+  }, [t]);
+
   const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');
   const [downloadContents, setDownloadContentsState] = useState<DownloadContentValue>('always');
   const [appVersion, setAppVersion] = useState<string>('');

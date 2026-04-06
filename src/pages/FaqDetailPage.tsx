@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
     IonContent,
@@ -25,6 +25,11 @@ const FaqDetailPage: React.FC = () => {
     useImpression({ pageid: 'FaqDetailPage', env: 'help' });
     const { category } = useParams<{ category: string }>();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.faqDetail')} — Sunbird Spark`;
+    }, [t]);
+
     const { faqData, isLoading, isError } = useFaqData();
 
     const categoryIndex = parseInt(category, 10);

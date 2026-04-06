@@ -177,6 +177,11 @@ const SwipeableCard: React.FC<{
 const DownloadedContentsPage: React.FC = () => {
   useImpression({ pageid: 'DownloadedContentsPage', env: 'profile' });
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.downloadedContents')} — Sunbird Spark`;
+  }, [t]);
+
   const history = useHistory();
   const [items, setItems] = useState<ContentEntry[]>([]);
   const [deleteTarget, setDeleteTarget] = useState<ContentEntry | null>(null);

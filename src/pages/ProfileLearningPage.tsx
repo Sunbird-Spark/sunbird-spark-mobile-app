@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   IonActionSheet,
   IonBackButton,
@@ -164,6 +164,11 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
 const ProfileLearningPage: React.FC = () => {
   useImpression({ pageid: 'ProfileLearningPage', env: 'profile' });
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.profileLearning')} — Sunbird Spark`;
+  }, [t]);
+
   const { userId } = useAuth();
 
   const [filter, setFilter] = useState<FilterOption>('all');

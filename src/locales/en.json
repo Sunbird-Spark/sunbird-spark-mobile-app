@@ -426,5 +426,31 @@
     "Practice Question Set": "Practice Question Set",
     "eTextbook": "eTextbook",
     "Teacher Resource": "Teacher Resource"
+  },
+  "pageTitle": {
+    "signIn": "Sign In",
+    "onboarding": "Get Started",
+    "home": "Home",
+    "explore": "Explore",
+    "search": "Search",
+    "myLearning": "My Learning",
+    "profile": "Profile",
+    "profileLearning": "My Certificates",
+    "personalDetails": "Personal Details",
+    "downloadedContents": "Downloaded Contents",
+    "downloads": "Downloads",
+    "notifications": "Notifications",
+    "courseDetails": "Course Details",
+    "contentPlayer": "Content Player",
+    "collection": "Course",
+    "faqDetail": "FAQ",
+    "helpAndSupport": "Help & Support",
+    "scan": "Scan QR",
+    "settings": "Settings",
+    "termsAndConditions": "Terms and Conditions",
+    "termsOfUse": "Terms of Use",
+    "videoContent": "Video",
+    "courses": "Courses",
+    "dashboard": "Dashboard"
   }
 }

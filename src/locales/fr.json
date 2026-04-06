@@ -426,5 +426,31 @@
     "Practice Question Set": "Série de questions pratiques",
     "eTextbook": "Manuel électronique",
     "Teacher Resource": "Ressource enseignant"
+  },
+  "pageTitle": {
+    "signIn": "Se connecter",
+    "onboarding": "Commencer",
+    "home": "Accueil",
+    "explore": "Explorer",
+    "search": "Rechercher",
+    "myLearning": "Mon apprentissage",
+    "profile": "Profil",
+    "profileLearning": "Mes certificats",
+    "personalDetails": "Détails personnels",
+    "downloadedContents": "Contenus téléchargés",
+    "downloads": "Téléchargements",
+    "notifications": "Notifications",
+    "courseDetails": "Détails du cours",
+    "contentPlayer": "Lecteur de contenu",
+    "collection": "Cours",
+    "faqDetail": "FAQ",
+    "helpAndSupport": "Aide et support",
+    "scan": "Scanner QR",
+    "settings": "Paramètres",
+    "termsAndConditions": "Conditions générales",
+    "termsOfUse": "Conditions d'utilisation",
+    "videoContent": "Vidéo",
+    "courses": "Cours",
+    "dashboard": "Tableau de bord"
   }
 }

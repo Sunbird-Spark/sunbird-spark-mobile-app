@@ -29,6 +29,10 @@ const TermsAndConditionsPage: React.FC = () => {
   const { t } = useTranslation();
   const router = useIonRouter();
 
+  useEffect(() => {
+    document.title = `${t('pageTitle.termsAndConditions')} — Sunbird Spark`;
+  }, [t]);
+
   const acceptTnC = useTnCAccept();
 
   const [loading, setLoading] = useState(true);

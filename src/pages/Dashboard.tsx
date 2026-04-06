@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import {
   IonCard,
   IonCardContent,
@@ -20,6 +21,11 @@ import useImpression from '../hooks/useImpression';
 const Dashboard: React.FC = () => {
   useImpression({ pageid: 'Dashboard', env: 'home' });
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = `${t('pageTitle.dashboard')} — Sunbird Spark`;
+  }, [t]);
+
   return (
     <IonPage>
       <MobileLayout>

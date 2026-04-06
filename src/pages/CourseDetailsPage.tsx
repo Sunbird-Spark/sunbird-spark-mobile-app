@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { IonPage, IonHeader, IonToolbar, IonContent, IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonImg } from '@ionic/react';
 import { useHistory } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -71,6 +71,10 @@ const CourseDetailsPage: React.FC = () => {
     useImpression({ pageid: 'CourseDetailsPage', env: 'course' });
     const history = useHistory();
     const { t } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.courseDetails')} — Sunbird Spark`;
+    }, [t]);
 
     return (
         <IonPage className="course-details-page">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useIonRouter } from '@ionic/react';
 import {
     IonContent,
@@ -44,6 +44,11 @@ const HelpAndSupportPage: React.FC = () => {
     useImpression({ pageid: 'HelpAndSupportPage', env: 'help' });
     const router = useIonRouter();
     const { t, i18n } = useTranslation();
+
+    useEffect(() => {
+        document.title = `${t('pageTitle.helpAndSupport')} — Sunbird Spark`;
+    }, [t]);
+
     const [expandedFaq, setExpandedFaq] = useState<number>(0);
     const [showModal, setShowModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState('');

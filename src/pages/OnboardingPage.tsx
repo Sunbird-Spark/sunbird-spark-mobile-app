@@ -52,6 +52,10 @@ const OnboardingPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { t, i18n } = useTranslation();
 
+  useEffect(() => {
+    document.title = `${t('pageTitle.onboarding')} — Sunbird Spark`;
+  }, [t]);
+
   const [screenHistory, setScreenHistory] = useState<string[]>([]);
   const [currentScreenId, setCurrentScreenId] = useState<string | null>(null);
   const [selections, setSelections] = useState<Record<string, string>>({});

@@ -91,6 +91,10 @@ const CollectionPage: React.FC = () => {
   const userId = userService.getUserId();
   const { t } = useLanguage();
 
+  useEffect(() => {
+    document.title = `${t('pageTitle.collection')} — Sunbird Spark`;
+  }, [t]);
+
   // Track whether this Ionic view is currently active (visible).
   // State-based so child components (e.g. CourseCompletionDialog) can react to it.
   const [isViewActive, setIsViewActive] = useState(false);

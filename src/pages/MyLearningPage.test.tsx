@@ -165,9 +165,38 @@ describe('MyLearningPage', () => {
   it('shows error with retry', () => {
     mockAuthContext.isAuthenticated = true;
     mockAuthContext.userId = 'user-1';
-    mockEnrollmentData = { data: undefined, isLoading: false, error: new Error('fail'), refetch: vi.fn() };
+    const mockRefetch = vi.fn();
+    mockEnrollmentData = { data: undefined, isLoading: false, error: new Error('fail'), refetch: mockRefetch };
     renderPage();
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
+  });
+
+  it('calls refetch when retry button is clicked on error', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    const mockRefetch = vi.fn();
+    mockEnrollmentData = { data: undefined, isLoading: false, error: new Error('fail'), refetch: mockRefetch };
+    renderPage();
+    const retryBtn = screen.getByRole('button', { name: 'Retry' });
+    fireEvent.click(retryBtn);
+    expect(mockRefetch).toHaveBeenCalled();
+  });
+
+  it('shows upcoming courses with future batch start dates', () => {
+    mockAuthContext.isAuthenticated = true;
+    mockAuthContext.userId = 'user-1';
+    const futureCourse = makeCourse({
+      courseName: 'Future Course',
+      completionPercentage: 0,
+      batch: { startDate: '2099-01-01' },
+    });
+    mockEnrollmentData = {
+      data: { data: { courses: [futureCourse] } },
+      isLoading: false, error: null, refetch: vi.fn(),
+    };
+    renderPage();
+    fireEvent.click(screen.getByText('Upcoming'));
+    expect(screen.getByText('Future Course')).toBeInTheDocument();
   });
 
   // --- Tabs ---

@@ -426,5 +426,31 @@
     "Practice Question Set": "Conjunto de Questões Práticas",
     "eTextbook": "Livro Digital",
     "Teacher Resource": "Recurso do Professor"
+  },
+  "pageTitle": {
+    "signIn": "Entrar",
+    "onboarding": "Começar",
+    "home": "Início",
+    "explore": "Explorar",
+    "search": "Pesquisar",
+    "myLearning": "Meu aprendizado",
+    "profile": "Perfil",
+    "profileLearning": "Meus certificados",
+    "personalDetails": "Dados pessoais",
+    "downloadedContents": "Conteúdos baixados",
+    "downloads": "Downloads",
+    "notifications": "Notificações",
+    "courseDetails": "Detalhes do curso",
+    "contentPlayer": "Reprodutor de conteúdo",
+    "collection": "Curso",
+    "faqDetail": "Perguntas frequentes",
+    "helpAndSupport": "Ajuda e suporte",
+    "scan": "Escanear QR",
+    "settings": "Configurações",
+    "termsAndConditions": "Termos e condições",
+    "termsOfUse": "Termos de uso",
+    "videoContent": "Vídeo",
+    "courses": "Cursos",
+    "dashboard": "Painel"
   }
 }
