@@ -49,7 +49,7 @@ const ContentPlayerPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.contentPlayer')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.contentPlayer')}`;
   }, [t]);
 
   const { isOffline } = useNetwork();

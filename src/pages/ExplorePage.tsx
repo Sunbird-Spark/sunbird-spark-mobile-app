@@ -91,7 +91,7 @@ const ExplorePage: React.FC = () => {
     const { t, i18n } = useTranslation();
 
     useEffect(() => {
-        document.title = `${t('pageTitle.explore')} — Sunbird Spark`;
+        document.title = `${t('pageTitle.explore')}`;
     }, [t]);
 
     // ── Read query param from URL ──

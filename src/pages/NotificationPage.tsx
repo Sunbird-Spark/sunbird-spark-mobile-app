@@ -25,7 +25,7 @@ const NotificationPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.notifications')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.notifications')}`;
   }, [t]);
 
   const router = useIonRouter();

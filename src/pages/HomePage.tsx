@@ -142,7 +142,7 @@ const HomePage: React.FC = () => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.home')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.home')}`;
   }, [t]);
 
   // Form-driven sections for pre-enrollment view

@@ -179,7 +179,7 @@ const DownloadedContentsPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.downloadedContents')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.downloadedContents')}`;
   }, [t]);
 
   const history = useHistory();

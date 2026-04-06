@@ -46,7 +46,7 @@ const HelpAndSupportPage: React.FC = () => {
     const { t, i18n } = useTranslation();
 
     useEffect(() => {
-        document.title = `${t('pageTitle.helpAndSupport')} — Sunbird Spark`;
+        document.title = `${t('pageTitle.helpAndSupport')}`;
     }, [t]);
 
     const [expandedFaq, setExpandedFaq] = useState<number>(0);

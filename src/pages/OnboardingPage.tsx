@@ -53,7 +53,7 @@ const OnboardingPage: React.FC = () => {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.onboarding')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.onboarding')}`;
   }, [t]);
 
   const [screenHistory, setScreenHistory] = useState<string[]>([]);

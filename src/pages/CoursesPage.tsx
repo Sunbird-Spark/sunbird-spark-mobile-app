@@ -9,7 +9,7 @@ const CoursesPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.courses')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.courses')}`;
   }, [t]);
 
   return (

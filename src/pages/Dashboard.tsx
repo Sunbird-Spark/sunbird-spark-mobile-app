@@ -23,7 +23,7 @@ const Dashboard: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.dashboard')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.dashboard')}`;
   }, [t]);
 
   return (

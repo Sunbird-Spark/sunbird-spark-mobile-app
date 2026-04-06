@@ -23,7 +23,7 @@ const VideoContentPage: React.FC = () => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        document.title = `${t('pageTitle.videoContent')} — Sunbird Spark`;
+        document.title = `${t('pageTitle.videoContent')}`;
     }, [t]);
 
     const handleShare = useCallback(() => {

@@ -166,7 +166,7 @@ const ProfileLearningPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.profileLearning')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.profileLearning')}`;
   }, [t]);
 
   const { userId } = useAuth();

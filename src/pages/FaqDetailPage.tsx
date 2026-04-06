@@ -27,7 +27,7 @@ const FaqDetailPage: React.FC = () => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        document.title = `${t('pageTitle.faqDetail')} — Sunbird Spark`;
+        document.title = `${t('pageTitle.faqDetail')}`;
     }, [t]);
 
     const { faqData, isLoading, isError } = useFaqData();

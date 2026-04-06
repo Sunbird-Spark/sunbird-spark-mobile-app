@@ -31,7 +31,7 @@ const PersonalDetailsBody: React.FC = () => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        document.title = `${t('pageTitle.personalDetails')} — Sunbird Spark`;
+        document.title = `${t('pageTitle.personalDetails')}`;
     }, [t]);
 
     const { userId } = useAuth();

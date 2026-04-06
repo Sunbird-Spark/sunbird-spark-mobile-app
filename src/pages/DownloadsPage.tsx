@@ -57,7 +57,7 @@ const DownloadsPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.downloads')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.downloads')}`;
   }, [t]);
 
   const allEntries = useDownloadQueue();

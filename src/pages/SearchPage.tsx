@@ -41,7 +41,7 @@ const SearchPage: React.FC = () => {
     const { t } = useTranslation();
 
     useEffect(() => {
-        document.title = `${t('pageTitle.search')} — Sunbird Spark`;
+        document.title = `${t('pageTitle.search')}`;
     }, [t]);
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedQuery = useDebounce(searchQuery.trim(), 600);

@@ -27,7 +27,7 @@ const ScanPage: React.FC = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.scan')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.scan')}`;
   }, [t]);
 
   const { alertType, startScan, dismissAlert } = useDIALScanner();

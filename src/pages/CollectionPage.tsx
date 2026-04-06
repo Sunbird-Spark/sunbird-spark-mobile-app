@@ -92,7 +92,7 @@ const CollectionPage: React.FC = () => {
   const { t } = useLanguage();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.collection')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.collection')}`;
   }, [t]);
 
   // Track whether this Ionic view is currently active (visible).

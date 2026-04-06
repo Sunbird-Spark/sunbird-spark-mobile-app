@@ -30,7 +30,7 @@ const TermsAndConditionsPage: React.FC = () => {
   const router = useIonRouter();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.termsAndConditions')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.termsAndConditions')}`;
   }, [t]);
 
   const acceptTnC = useTnCAccept();

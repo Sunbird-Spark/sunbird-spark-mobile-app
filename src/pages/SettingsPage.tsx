@@ -27,7 +27,7 @@ const SettingsPage: React.FC = () => {
   const router = useIonRouter();
 
   useEffect(() => {
-    document.title = `${t('pageTitle.settings')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.settings')}`;
   }, [t]);
 
   const [syncData, setSyncDataState] = useState<SyncDataValue>('wifi');

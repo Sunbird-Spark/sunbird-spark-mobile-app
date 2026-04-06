@@ -86,7 +86,7 @@ const SignInPage: React.FC = () => {
   }, [isOffline]);
 
   useEffect(() => {
-    document.title = `${t('pageTitle.signIn')} — Sunbird Spark`;
+    document.title = `${t('pageTitle.signIn')}`;
   }, [t]);
 
   const isFormValid = email.trim().length > 0 && password.length > 0;
