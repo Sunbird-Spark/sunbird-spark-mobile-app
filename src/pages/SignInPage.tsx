@@ -12,7 +12,7 @@ import {
   useIonRouter,
 } from '@ionic/react';
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
-import sunbirdLogo from '../assets/sunbird-logo-new.svg';
+import { ASSETS } from '../constants/assets';
 import { useNetwork } from '../providers/NetworkProvider';
 import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
@@ -224,7 +224,7 @@ const SignInPage: React.FC = () => {
         <div className="sign-in-container">
           {/* Sunbird Logo */}
           <img
-            src={sunbirdLogo}
+            src={ASSETS.SUNBIRD_LOGO}
             alt="Sunbird"
             className="sign-in-logo"
           />

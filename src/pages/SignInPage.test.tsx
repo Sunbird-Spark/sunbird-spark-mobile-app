@@ -26,7 +26,11 @@ vi.mock('ionicons/icons', () => ({
   chevronBackOutline: 'chevron-back',
 }));
 
-vi.mock('../assets/sunbird-logo-new.svg', () => ({ default: 'sunbird-logo.svg' }));
+vi.mock('../constants/assets', () => ({
+  ASSETS: {
+    SUNBIRD_LOGO: 'sunbird-logo.svg',
+  },
+}));
 vi.mock('./SignInPage.css', () => ({}));
 
 vi.mock('react-i18next', () => ({

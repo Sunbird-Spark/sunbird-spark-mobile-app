@@ -1,4 +1,4 @@
-import sunbirdLogo from '../../assets/sunbird-logo-new.svg';
+import { ASSETS } from '../../constants/assets';
 import './PageLoader.css';
 import { useTranslation } from 'react-i18next';
 
@@ -26,7 +26,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry 
               <div className="page-loader-ring page-loader-ring-error" />
               <div className="page-loader-ring-inner page-loader-ring-inner-error" />
               <div className="page-loader-logo-circle">
-                <img src={sunbirdLogo} alt="" className="page-loader-logo" />
+                <img src={ASSETS.SUNBIRD_LOGO} alt="" className="page-loader-logo" />
               </div>
             </>
           ) : (
@@ -34,7 +34,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry 
               <div className="page-loader-ring page-loader-ring-spin" />
               <div className="page-loader-ring-inner page-loader-ring-pulse" />
               <div className="page-loader-logo-circle">
-                <img src={sunbirdLogo} alt="" className="page-loader-logo" />
+                <img src={ASSETS.SUNBIRD_LOGO} alt="" className="page-loader-logo" />
               </div>
             </>
           )}
