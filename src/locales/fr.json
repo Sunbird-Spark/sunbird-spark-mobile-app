@@ -133,6 +133,7 @@
   "contentsViewed": "Contenus consultés",
   "totalCourses": "Total des cours",
   "inProgress": "En cours",
+  "enrolled": "Inscrit",
   "welcomeBack": "Bienvenue à nouveau",
   "welcome": "Bienvenue",
   "faqSection": {
@@ -267,6 +268,7 @@
     "youreOffline": "Vous êtes hors ligne",
     "downloadToPlayOffline": "Téléchargez ce contenu pour le lire hors ligne.",
     "downloadSuccess": "Contenu téléchargé avec succès",
+    "downloadedSuccessfully": "Téléchargé ({{localCount}}/{{totalCount}} éléments) avec succès.",
     "noActiveDownloads": "Aucun téléchargement actif",
     "noActiveDownloadsDesc": "Les téléchargements que vous lancez apparaîtront ici.",
     "noDownloadedContent": "Aucun contenu téléchargé pour le moment.",
@@ -315,6 +317,25 @@
   "untitled": "Sans titre",
   "unknown": "Inconnu",
   "collectionLabel": "Collection",
+  "update": "Mettre à jour",
+  "name": "Nom",
+  "state": "État",
+  "userId": "ID utilisateur",
+  "certificateDetails": {
+    "earnCertificate": "Obtenez un certificat à la fin du cours. Vérifiez les détails avant de terminer le cours.",
+    "noCertificate": "Actuellement, ce cours n'a pas de certificat. Le créateur du cours peut joindre un certificat ultérieurement.",
+    "previewCertificate": "Aperçu du certificat"
+  },
+  "consent": {
+    "profileSharingOn": "Le partage des données de profil est activé. Vous avez accepté de partager les détails de votre profil avec l'administrateur du cours.",
+    "profileSharingOff": "Le partage des données de profil est désactivé. Vous n'avez pas accepté de partager les détails de votre profil avec l'administrateur du cours.",
+    "lastUpdatedOn": "Dernière mise à jour le",
+    "editFromProfile": "Vous pouvez modifier ces détails depuis votre profil.",
+    "agreeToShare": "J'accepte de partager les détails de profil ci-dessus avec l'administrateur du cours.",
+    "doNotShare": "Ne pas partager",
+    "share": "Partager",
+    "preferenceUpdated": "Préférence de partage des données de profil mise à jour."
+  },
   "mimeType": {
     "video": "Vidéo",
     "pdf": "PDF",
@@ -452,5 +473,40 @@
     "videoContent": "Vidéo",
     "courses": "Cours",
     "dashboard": "Tableau de bord"
+  },
+  "courseDetails": {
+    "courseOverview": "Aperçu du cours",
+    "skillsYouWillLearn": "Compétences que vous apprendrez",
+    "bestSuitedFor": "Idéal pour",
+    "courseCurriculum": "Programme du cours",
+    "relatedContent": "Contenu connexe",
+    "relatedVideos": "Vidéos connexes",
+    "frequentlyAskedQuestions": "Questions fréquemment posées",
+    "letsGetStarted": "Commençons",
+    "weeks": "Semaines",
+    "lessons": "Leçons",
+    "views": "Vues",
+    "businessAnalyst": "Analyste d'affaires",
+    "dataAnalyst": "Analyste de données",
+    "analyticsManagers": "Gestionnaires d'analytique",
+    "weekFoundation": "Semaine 1 : Fondation et bases",
+    "weekCore": "Semaine 2 : Compétences de base",
+    "weekProfessional": "Semaine 3 : Application professionnelle",
+    "faqQuestion1": "Quels types de cours sont disponibles sur cette plateforme ?",
+    "faqQuestion2": "Que faire si j'ai besoin d'aide pendant le cours ?",
+    "faqQuestion3": "Les cours sont-ils accrédités ou offrent-ils une certification ?",
+    "faqQuestion4": "Puis-je apprendre en mode hors ligne ?",
+    "faqAnswer1": "Lorem ipsum est un texte de remplissage couramment utilisé dans les industries graphiques, d'impression et d'édition pour prévisualiser les mises en page et les maquettes visuelles."
+  },
+  "courseCompletion": {
+    "congratulations": "Félicitations !",
+    "successMessage": "Vous avez terminé ce cours avec succès.",
+    "certificateMessage": "Vous pouvez télécharger votre certificat depuis la page Profil.",
+    "noCertificateNote": "Remarque : Ce cours n'a pas de certificat.",
+    "continue": "Continuer"
+  },
+  "coursesPage": {
+    "title": "Page des cours",
+    "description": "Ceci est le contenu de la page des cours."
   }
 }

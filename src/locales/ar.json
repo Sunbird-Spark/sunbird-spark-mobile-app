@@ -125,6 +125,7 @@
   "contentsViewed": "المحتوى المُشاهد",
   "totalCourses": "إجمالي الدورات",
   "inProgress": "قيد التقدّم",
+  "enrolled": "مسجل",
   "welcomeBack": "مرحباً بعودتك",
   "welcome": "مرحباً",
   "faqSection": {
@@ -275,6 +276,7 @@
     "youreOffline": "أنت غير متصل",
     "downloadToPlayOffline": "قم بتحميل هذا المحتوى لتشغيله بدون إنترنت.",
     "downloadSuccess": "تم تنزيل المحتوى بنجاح",
+    "downloadedSuccessfully": "تم التنزيل ({{localCount}}/{{totalCount}} عناصر) بنجاح.",
     "noActiveDownloads": "لا توجد تحميلات نشطة",
     "noActiveDownloadsDesc": "ستظهر التحميلات التي تبدأها هنا.",
     "noDownloadedContent": "لا يوجد محتوى محمّل بعد.",
@@ -323,6 +325,25 @@
   "untitled": "بدون عنوان",
   "unknown": "غير معروف",
   "collectionLabel": "مجموعة",
+  "update": "تحديث",
+  "name": "الاسم",
+  "state": "الولاية",
+  "userId": "معرف المستخدم",
+  "certificateDetails": {
+    "earnCertificate": "احصل على شهادة عند إكمال الدورة. تحقق من التفاصيل قبل إكمال الدورة.",
+    "noCertificate": "حاليًا، لا تحتوي هذه الدورة على شهادة. قد يرفق منشئ الدورة شهادة لاحقًا.",
+    "previewCertificate": "معاينة الشهادة"
+  },
+  "consent": {
+    "profileSharingOn": "مشاركة بيانات الملف الشخصي قيد التشغيل. لقد وافقت على مشاركة تفاصيل ملفك الشخصي مع مسؤول الدورة.",
+    "profileSharingOff": "مشاركة بيانات الملف الشخصي متوقفة. لم توافق على مشاركة تفاصيل ملفك الشخصي مع مسؤول الدورة.",
+    "lastUpdatedOn": "آخر تحديث في",
+    "editFromProfile": "يمكنك تعديل هذه التفاصيل من ملفك الشخصي.",
+    "agreeToShare": "أوافق على مشاركة تفاصيل الملف الشخصي أعلاه مع مسؤول الدورة.",
+    "doNotShare": "لا تشارك",
+    "share": "شارك",
+    "preferenceUpdated": "تم تحديث تفضيل مشاركة بيانات الملف الشخصي."
+  },
   "mimeType": {
     "video": "فيديو",
     "pdf": "ملف PDF",
@@ -460,5 +481,40 @@
     "videoContent": "فيديو",
     "courses": "الدورات",
     "dashboard": "لوحة التحكم"
+  },
+  "courseDetails": {
+    "courseOverview": "نظرة عامة على الدورة",
+    "skillsYouWillLearn": "المهارات التي ستتعلمها",
+    "bestSuitedFor": "الأنسب لـ",
+    "courseCurriculum": "منهج الدورة",
+    "relatedContent": "محتوى ذو صلة",
+    "relatedVideos": "مقاطع فيديو ذات صلة",
+    "frequentlyAskedQuestions": "الأسئلة الشائعة",
+    "letsGetStarted": "لنبدأ",
+    "weeks": "أسابيع",
+    "lessons": "دروس",
+    "views": "مشاهدات",
+    "businessAnalyst": "محلل أعمال",
+    "dataAnalyst": "محلل بيانات",
+    "analyticsManagers": "مديرو التحليلات",
+    "weekFoundation": "الأسبوع 1: الأساسيات والمبادئ",
+    "weekCore": "الأسبوع 2: الكفاءات الأساسية",
+    "weekProfessional": "الأسبوع 3: التطبيق المهني",
+    "faqQuestion1": "ما نوع الدورات المتاحة على هذه المنصة؟",
+    "faqQuestion2": "ماذا لو احتجت إلى مساعدة أثناء الدورة؟",
+    "faqQuestion3": "هل الدورات معتمدة أو تقدم شهادات؟",
+    "faqQuestion4": "هل يمكنني التعلم في وضع عدم الاتصال؟",
+    "faqAnswer1": "Lorem ipsum هو نص عنصر نائب يستخدم عادة في صناعات الرسومات والطباعة والنشر لمعاينة التخطيطات والنماذج المرئية."
+  },
+  "courseCompletion": {
+    "congratulations": "تهانينا!",
+    "successMessage": "لقد أكملت هذه الدورة بنجاح.",
+    "certificateMessage": "يمكنك تنزيل شهادتك من صفحة الملف الشخصي.",
+    "noCertificateNote": "ملاحظة: هذه الدورة لا تحتوي على شهادة.",
+    "continue": "متابعة"
+  },
+  "coursesPage": {
+    "title": "صفحة الدورات",
+    "description": "هذا هو محتوى صفحة الدورات."
   }
 }

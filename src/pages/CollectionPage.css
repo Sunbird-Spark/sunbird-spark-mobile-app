@@ -342,6 +342,10 @@
   margin-bottom: 0.5rem;
 }
 
+[dir="rtl"] .cp-related-section {
+  padding: 1rem 1rem 1rem 0;
+}
+
 .cp-related-title {
   font-size: 1.25rem;
   font-weight: 600;

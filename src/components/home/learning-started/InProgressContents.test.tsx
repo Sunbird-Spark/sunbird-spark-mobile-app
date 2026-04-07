@@ -10,14 +10,18 @@ vi.mock('@ionic/react', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key: string) => {
+    t: (key: string, fallback?: string) => {
       const map: Record<string, string> = {
         inProgressCourses: 'In Progress Courses',
         completedCourses: 'Completed Courses',
         course: 'Course',
         untitled: 'untitled',
+        'contentBadge.Course': 'Course',
+        'contentBadge.Digital Textbook': 'Digital Textbook',
+        'contentBadge.Collection': 'Collection',
+        'contentBadge.Learning Resource': 'Learning Resource',
       };
-      return map[key] || key;
+      return map[key] || fallback || key;
     },
   }),
 }));
@@ -160,5 +164,63 @@ describe('InProgressContents', () => {
     const course = makeCourse({ courseName: undefined as any } as any);
     render(<InProgressContents courses={[course]} />);
     expect(screen.getByText('untitled')).toBeInTheDocument();
+  });
+
+  describe('badge i18n behavior', () => {
+    it('renders translated badge for content.primaryCategory "Course"', () => {
+      const course = makeCourse({
+        content: { primaryCategory: 'Course' } as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Course')).toBeInTheDocument();
+    });
+
+    it('renders translated badge for content.primaryCategory "Digital Textbook"', () => {
+      const course = makeCourse({
+        content: { primaryCategory: 'Digital Textbook' } as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Digital Textbook')).toBeInTheDocument();
+    });
+
+    it('renders translated badge for content.primaryCategory "Collection"', () => {
+      const course = makeCourse({
+        content: { primaryCategory: 'Collection' } as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Collection')).toBeInTheDocument();
+    });
+
+    it('renders translated badge for content.primaryCategory "Learning Resource"', () => {
+      const course = makeCourse({
+        content: { primaryCategory: 'Learning Resource' } as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Learning Resource')).toBeInTheDocument();
+    });
+
+    it('falls back to raw primaryCategory value when translation is missing', () => {
+      const course = makeCourse({
+        content: { primaryCategory: 'Unknown Category' } as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Unknown Category')).toBeInTheDocument();
+    });
+
+    it('uses default "Course" when content.primaryCategory is missing', () => {
+      const course = makeCourse({
+        content: {} as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Course')).toBeInTheDocument();
+    });
+
+    it('uses default "Course" when content is undefined', () => {
+      const course = makeCourse({
+        content: undefined as any,
+      });
+      render(<InProgressContents courses={[course]} />);
+      expect(screen.getByText('Course')).toBeInTheDocument();
+    });
   });
 });

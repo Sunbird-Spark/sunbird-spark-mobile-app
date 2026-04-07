@@ -33,6 +33,6 @@ describe('CoursesPage — landmarks', () => {
   it('main content area wraps the page content', () => {
     const { container } = render(<CoursesPage />);
     const main = container.querySelector('main#main-content')!;
-    expect(main.textContent).toContain('Courses Page');
+    expect(main.textContent).toContain('coursesPage.title');
   });
 });
