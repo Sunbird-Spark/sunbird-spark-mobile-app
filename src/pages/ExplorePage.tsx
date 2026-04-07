@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useReducer } from 'react';
 import {
     IonPage, IonHeader, IonContent, IonModal,
     IonInfiniteScroll, IonInfiniteScrollContent, IonRefresher,
-    IonRefresherContent, IonSpinner,
+    IonRefresherContent, IonSpinner, useIonViewDidEnter,
 } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -131,7 +131,7 @@ const ExplorePage: React.FC = () => {
     const infiniteScrollRef = useRef<HTMLIonInfiniteScrollElement>(null);
 
     // ── Form read for filter groups ──
-    const { data: formData, isLoading: isFormLoading } = useFormRead({
+    const { data: formData, isLoading: isFormLoading, refetch: refetchForm } = useFormRead({
         request: {
             type: 'app',
             subType: 'explorepage',
@@ -178,6 +178,11 @@ const ExplorePage: React.FC = () => {
             sort_by: sortBy,
             filters: activeFilters,
         },
+    });
+
+    // ── Refetch form filters when tab becomes active (e.g. after coming online) ──
+    useIonViewDidEnter(() => {
+        refetchForm();
     });
 
     // ── Accumulate items as pages load ──

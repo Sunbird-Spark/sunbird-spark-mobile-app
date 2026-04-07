@@ -22,6 +22,7 @@ import { OrganizationService } from './services/OrganizationService';
 export class AppInitializer {
   private static initialized = false;
   private static listeners: Array<() => void> = [];
+  private static reconnectRetryRegistered = false;
 
   /**
    * Initialize all application services and configurations
@@ -80,32 +81,40 @@ export class AppInitializer {
       }
 
       // Resolve channel hashTagId on every startup and set it in HTTP headers.
-      // For logged-in users: read organisations[0].hashTagId directly from the cached
-      // user profile — no extra API call needed.
-      // For guests: fall back to org search using the default_channel system setting.
-      try {
-        let channelId: string | null = null;
-        if (userService.isLoggedIn()) {
-          const uid = userService.getUserId();
-          if (uid) {
-            const profileResponse = await userService.userRead(uid);
-            channelId = profileResponse?.data?.response?.organisations?.[0]?.hashTagId ?? null;
-          }
-        }
-        if (!channelId) {
-          const systemSettings = new SystemSettingService();
-          const setting = await systemSettings.read<any>('default_channel').catch(() => null);
-          const slug = setting?.data?.response?.value || 'sunbird';
-          const orgResponse = await new OrganizationService().search({
-            request: { filters: { isTenant: true, slug } },
-          }).catch(() => null);
-          channelId = orgResponse?.data?.response?.content?.[0]?.hashTagId ?? null;
-        }
-        if (channelId) {
-          ChannelManager.setChannelId(channelId);
-        }
-      } catch {
-        // Non-fatal — sync will retry; channel set during onboarding as fallback
+      await this.resolveChannel();
+
+      // If device JWT or channel wasn't resolved (e.g. offline startup), retry on reconnect.
+      const needsRetry = !authService.hasDeviceJwt() || !ChannelManager.hasChannelId();
+      if (needsRetry && !this.reconnectRetryRegistered) {
+        this.reconnectRetryRegistered = true;
+        let retryInFlight = false;
+        const unsubscribe = networkService.subscribe((state) => {
+          if (!state.connected || retryInFlight) return;
+          retryInFlight = true;
+          void (async () => {
+            try {
+              // Re-acquire device JWT from Kong if using appJwt fallback
+              if (!authService.hasDeviceJwt()) {
+                const token = await authService.getAuthenticatedToken();
+                httpClient.updateHeaders([
+                  { key: 'Authorization', value: `Bearer ${token}`, action: 'add' },
+                ]);
+              }
+              // Resolve channel if still missing
+              if (!ChannelManager.hasChannelId()) {
+                await this.resolveChannel();
+              }
+            } catch {
+              // Will retry on next reconnect event
+            } finally {
+              retryInFlight = false;
+            }
+            if (authService.hasDeviceJwt() && ChannelManager.hasChannelId()) {
+              unsubscribe();
+              this.reconnectRetryRegistered = false;
+            }
+          })();
+        });
       }
 
       // Initialize Google Sign-In plugin (non-blocking — don't fail app init)
@@ -148,6 +157,38 @@ export class AppInitializer {
       }
 
       throw error;
+    }
+  }
+
+  /**
+   * Resolve channel hashTagId and set it in HTTP headers.
+   * For logged-in users: read organisations[0].hashTagId from the user profile.
+   * For guests: fall back to org search using the default_channel system setting.
+   */
+  private static async resolveChannel(): Promise<void> {
+    try {
+      let channelId: string | null = null;
+      if (userService.isLoggedIn()) {
+        const uid = userService.getUserId();
+        if (uid) {
+          const profileResponse = await userService.userRead(uid);
+          channelId = profileResponse?.data?.response?.organisations?.[0]?.hashTagId ?? null;
+        }
+      }
+      if (!channelId) {
+        const systemSettings = new SystemSettingService();
+        const setting = await systemSettings.read<any>('default_channel').catch(() => null);
+        const slug = setting?.data?.response?.value || 'sunbird';
+        const orgResponse = await new OrganizationService().search({
+          request: { filters: { isTenant: true, slug } },
+        }).catch(() => null);
+        channelId = orgResponse?.data?.response?.content?.[0]?.hashTagId ?? null;
+      }
+      if (channelId) {
+        ChannelManager.setChannelId(channelId);
+      }
+    } catch {
+      // Non-fatal — will be retried on network reconnect
     }
   }
 

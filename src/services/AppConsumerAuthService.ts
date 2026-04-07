@@ -242,6 +242,11 @@ export class AppConsumerAuthService {
     return false;
   }
 
+  /** Returns true when the device-registered JWT (not the app fallback) is available. */
+  hasDeviceJwt(): boolean {
+    return this.deviceJwt !== null && this.isTokenValid(this.deviceJwt);
+  }
+
   getHttpClient(): IHttpClient {
     return this.httpClient;
   }
