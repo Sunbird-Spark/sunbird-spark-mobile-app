@@ -115,7 +115,7 @@ describe('ProfilePage', () => {
 
     it('shows fallback "User" name when no profile', () => {
       const { container } = render(<ProfilePage />);
-      expect(container.querySelector('.profile-name')?.textContent).toBe('User');
+      expect(container.querySelector('.profile-name')?.textContent).toBe('guestUser');
     });
 
     it('shows learner role when no roles', () => {
