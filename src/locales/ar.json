@@ -481,5 +481,40 @@
     "videoContent": "فيديو",
     "courses": "الدورات",
     "dashboard": "لوحة التحكم"
+  },
+  "courseDetails": {
+    "courseOverview": "نظرة عامة على الدورة",
+    "skillsYouWillLearn": "المهارات التي ستتعلمها",
+    "bestSuitedFor": "الأنسب لـ",
+    "courseCurriculum": "منهج الدورة",
+    "relatedContent": "محتوى ذو صلة",
+    "relatedVideos": "مقاطع فيديو ذات صلة",
+    "frequentlyAskedQuestions": "الأسئلة الشائعة",
+    "letsGetStarted": "لنبدأ",
+    "weeks": "أسابيع",
+    "lessons": "دروس",
+    "views": "مشاهدات",
+    "businessAnalyst": "محلل أعمال",
+    "dataAnalyst": "محلل بيانات",
+    "analyticsManagers": "مديرو التحليلات",
+    "weekFoundation": "الأسبوع 1: الأساسيات والمبادئ",
+    "weekCore": "الأسبوع 2: الكفاءات الأساسية",
+    "weekProfessional": "الأسبوع 3: التطبيق المهني",
+    "faqQuestion1": "ما نوع الدورات المتاحة على هذه المنصة؟",
+    "faqQuestion2": "ماذا لو احتجت إلى مساعدة أثناء الدورة؟",
+    "faqQuestion3": "هل الدورات معتمدة أو تقدم شهادات؟",
+    "faqQuestion4": "هل يمكنني التعلم في وضع عدم الاتصال؟",
+    "faqAnswer1": "Lorem ipsum هو نص عنصر نائب يستخدم عادة في صناعات الرسومات والطباعة والنشر لمعاينة التخطيطات والنماذج المرئية."
+  },
+  "courseCompletion": {
+    "congratulations": "تهانينا!",
+    "successMessage": "لقد أكملت هذه الدورة بنجاح.",
+    "certificateMessage": "يمكنك تنزيل شهادتك من صفحة الملف الشخصي.",
+    "noCertificateNote": "ملاحظة: هذه الدورة لا تحتوي على شهادة.",
+    "continue": "متابعة"
+  },
+  "coursesPage": {
+    "title": "صفحة الدورات",
+    "description": "هذا هو محتوى صفحة الدورات."
   }
 }

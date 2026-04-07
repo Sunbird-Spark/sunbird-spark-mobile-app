@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { IonModal } from '@ionic/react';
+import { useTranslation } from 'react-i18next';
 
 interface CourseCompletionDialogProps {
   progressPercentage: number;
@@ -25,6 +26,7 @@ export default function CourseCompletionDialog({
   progressBeforePlayer,
   isOffline,
 }: CourseCompletionDialogProps) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const previousProgressRef = useRef<number | null>(null);
   const lastCollectionIdRef = useRef<string | undefined>(undefined);
@@ -99,22 +101,22 @@ export default function CourseCompletionDialog({
           </svg>
         </div>
 
-        <h2 className="cp-completion-dialog-title">Congratulations!</h2>
+        <h2 className="cp-completion-dialog-title">{t('courseCompletion.congratulations')}</h2>
 
         <p className="cp-completion-dialog-desc">
-          You have successfully completed this course.
+          {t('courseCompletion.successMessage')}
         </p>
 
         {!isOffline && (hasCertificate ? (
           <p className="cp-completion-dialog-note">
-            You can download your certificate from the Profile page.
+            {t('courseCompletion.certificateMessage')}
           </p>
         ) : (
           <div className="cp-completion-dialog-warning">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
               <path d="M1 21H23L12 2L1 21ZM13 18H11V16H13V18ZM13 14H11V10H13V14Z" fill="var(--ion-color-warning, #ffc409)" />
             </svg>
-            <span>Note: This course does not have a certificate.</span>
+            <span>{t('courseCompletion.noCertificateNote')}</span>
           </div>
         ))}
 
@@ -122,7 +124,7 @@ export default function CourseCompletionDialog({
           className="cp-completion-dialog-btn"
           onClick={() => setOpen(false)}
         >
-          Continue
+          {t('courseCompletion.continue')}
         </button>
       </div>
     </IonModal>

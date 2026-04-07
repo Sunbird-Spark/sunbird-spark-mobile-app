@@ -473,5 +473,40 @@
     "videoContent": "Vídeo",
     "courses": "Cursos",
     "dashboard": "Painel"
+  },
+  "courseDetails": {
+    "courseOverview": "Visão geral do curso",
+    "skillsYouWillLearn": "Habilidades que você aprenderá",
+    "bestSuitedFor": "Mais indicado para",
+    "courseCurriculum": "Currículo do curso",
+    "relatedContent": "Conteúdo relacionado",
+    "relatedVideos": "Vídeos relacionados",
+    "frequentlyAskedQuestions": "Perguntas frequentes",
+    "letsGetStarted": "Vamos começar",
+    "weeks": "Semanas",
+    "lessons": "Lições",
+    "views": "Visualizações",
+    "businessAnalyst": "Analista de negócios",
+    "dataAnalyst": "Analista de dados",
+    "analyticsManagers": "Gerentes de análise",
+    "weekFoundation": "Semana 1: Fundação e Básicos",
+    "weekCore": "Semana 2: Competências Essenciais",
+    "weekProfessional": "Semana 3: Aplicação Profissional",
+    "faqQuestion1": "Que tipos de cursos estão disponíveis nesta plataforma?",
+    "faqQuestion2": "E se eu precisar de ajuda durante o curso?",
+    "faqQuestion3": "Os cursos são credenciados ou oferecem certificação?",
+    "faqQuestion4": "Posso aprender no modo offline?",
+    "faqAnswer1": "Lorem ipsum é um texto de espaço reservado comumente usado nas indústrias gráfica, de impressão e publicação para visualizar layouts e maquetes visuais."
+  },
+  "courseCompletion": {
+    "congratulations": "Parabéns!",
+    "successMessage": "Você concluiu este curso com sucesso.",
+    "certificateMessage": "Você pode baixar seu certificado na página de Perfil.",
+    "noCertificateNote": "Nota: Este curso não possui certificado.",
+    "continue": "Continuar"
+  },
+  "coursesPage": {
+    "title": "Página de Cursos",
+    "description": "Este é o conteúdo da página de cursos."
   }
 }

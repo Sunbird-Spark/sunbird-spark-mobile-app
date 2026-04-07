@@ -63,7 +63,12 @@
   "settings": "सेटिंग्स",
   "termsOfUse": "उपयोग की शर्तें",
   "tnc": {
-    "notAvailable": "उपयोग की शर्तें उपलब्ध नहीं हैं"
+    "notAvailable": "उपयोग की शर्तें उपलब्ध नहीं हैं",
+    "title": "नियम और शर्तें",
+    "iAgree": "मैं SUNBIRD उपयोग की शर्तों को समझता हूं और स्वीकार करता हूं",
+    "continue": "जारी रखें",
+    "acceptFailed": "आपकी स्वीकृति रिकॉर्ड करने में असमर्थ। कृपया बाद में पुनः प्रयास करें।",
+    "error": "त्रुटि"
   },
   "login": "लॉग इन",
   "editProfile": "प्रोफ़ाइल संपादित करें",
@@ -280,6 +285,38 @@
     "may": "मई",
     "jun": "जून"
   },
+  "pageLoader": {
+    "somethingWentWrong": "कुछ गलत हो गया"
+  },
+  "signInPage": {
+    "invalidCredentials": "अमान्य ईमेल/मोबाइल नंबर या पासवर्ड",
+    "accountBlocked": "आपका खाता ब्लॉक कर दिया गया है। कृपया व्यवस्थापक से संपर्क करें",
+    "loginFailed": "लॉगिन विफल। कृपया पुनः प्रयास करें",
+    "unableToConnect": "कनेक्ट करने में असमर्थ। कृपया पुनः प्रयास करें",
+    "somethingWentWrong": "कुछ गलत हो गया। कृपया पुनः प्रयास करें",
+    "backOnline": "आप वापस ऑनलाइन हैं",
+    "checkInternet": "कृपया अपना इंटरनेट कनेक्शन जांचें",
+    "googleSecurityError": "आपकी Google सुरक्षा सेटिंग्स के कारण Google साइन-इन विफल रहा",
+    "googleSignInFailed": "Google साइन-इन विफल रहा",
+    "unableToOpen": "खोलने में असमर्थ। कृपया पुनः प्रयास करें",
+    "unableToOpenRegistration": "पंजीकरण खोलने में असमर्थ। कृपया पुनः प्रयास करें",
+    "forgotPassword": "पासवर्ड भूल गए?",
+    "newUser": "नए उपयोगकर्ता? कृपया",
+    "createAccount": "खाता बनाएं",
+    "toContinue": "जारी रखने के लिए।",
+    "registerPrompt": "नए उपयोगकर्ता? कृपया जारी रखने के लिए <link>खाता बनाएं</link>।",
+    "welcomeTitle": "Sunbird में आपका स्वागत है!",
+    "welcomeSubtitle": "आपकी सीखने की यात्रा यहाँ से शुरू होती है—जारी रखने के लिए लॉग इन करें।",
+    "signInWithGoogle": "Google के साथ साइन इन करें",
+    "or": "या",
+    "emailOrMobile": "ईमेल आईडी / मोबाइल नंबर",
+    "enterEmailOrMobile": "ईमेल आईडी / मोबाइल नंबर दर्ज करें",
+    "password": "पासवर्ड",
+    "enterPassword": "पासवर्ड दर्ज करें",
+    "showPassword": "पासवर्ड दिखाएं",
+    "hidePassword": "पासवर्ड छिपाएं",
+    "login": "लॉगिन"
+  },
   "download": {
     "download": "डाउनलोड",
     "resume": "डाउनलोड फिर से शुरू करें",
@@ -359,11 +396,24 @@
     "preferenceUpdated": "प्रोफ़ाइल डेटा साझाकरण प्राथमिकता अपडेट की गई।"
   },
   "assessment_max_attempts_reached": "आप इस सामग्री के लिए अधिकतम अनुमत प्रयासों तक पहुँच चुके हैं।",
+  "and": "और",
+  "browseCourses": "कोर्स ब्राउज़ करें",
+  "complete": "पूर्ण करें",
+  "featuredCourses": "विशेष कोर्स",
+  "activeSessions": "सक्रिय सत्र",
+  "ongoingSessions": "चल रहे सत्र",
+  "completionRate": "पूर्णता दर",
+  "averageCompletion": "औसत पूर्णता",
+  "dashboardOverview": "डैशबोर्ड अवलोकन",
+  "dashboardDescription": "अपने प्रमुख मेट्रिक्स और हाल की गतिविधि का सारांश देखें।",
+  "totalStudents": "कुल छात्र",
+  "studentsEnrolled": "छात्र नामांकित",
+  "resourceCenterSubtitle": "आगे रहें। अगला क्या है यहाँ से शुरू होता है।",
   "logoutSyncWarning": {
-    "header": "Unsaved Progress",
-    "message": "Your course progress has not been synced yet. If you logout now, this data will be permanently lost.",
-    "cancel": "Cancel",
-    "confirm": "Logout Anyway"
+    "header": "असहेजी प्रगति",
+    "message": "आपकी कोर्स प्रगति अभी तक सिंक नहीं हुई है। यदि आप अभी लॉगआउट करते हैं, तो यह डेटा स्थायी रूप से खो जाएगा।",
+    "cancel": "रद्द करें",
+    "confirm": "फिर भी लॉगआउट करें"
   },
   "collectionAccordion": {
     "deleteUnit": "यूनिट हटाएं",
@@ -423,5 +473,40 @@
     "videoContent": "वीडियो",
     "courses": "कोर्स",
     "dashboard": "डैशबोर्ड"
+  },
+  "courseDetails": {
+    "courseOverview": "कोर्स अवलोकन",
+    "skillsYouWillLearn": "आप जो कौशल सीखेंगे",
+    "bestSuitedFor": "सबसे उपयुक्त",
+    "courseCurriculum": "कोर्स पाठ्यक्रम",
+    "relatedContent": "संबंधित सामग्री",
+    "relatedVideos": "संबंधित वीडियो",
+    "frequentlyAskedQuestions": "अक्सर पूछे जाने वाले प्रश्न",
+    "letsGetStarted": "चलिए शुरू करते हैं",
+    "weeks": "सप्ताह",
+    "lessons": "पाठ",
+    "views": "दृश्य",
+    "businessAnalyst": "व्यवसाय विश्लेषक",
+    "dataAnalyst": "डेटा विश्लेषक",
+    "analyticsManagers": "विश्लेषण प्रबंधक",
+    "weekFoundation": "सप्ताह 1: नींव और मूल बातें",
+    "weekCore": "सप्ताह 2: मुख्य दक्षताएं",
+    "weekProfessional": "सप्ताह 3: व्यावसायिक अनुप्रयोग",
+    "faqQuestion1": "इस प्लेटफॉर्म पर किस प्रकार के कोर्स उपलब्ध हैं?",
+    "faqQuestion2": "यदि मुझे कोर्स के दौरान सहायता की आवश्यकता हो तो क्या होगा?",
+    "faqQuestion3": "क्या कोर्स मान्यता प्राप्त हैं या वे प्रमाणन प्रदान करते हैं?",
+    "faqQuestion4": "क्या मैं ऑफ़लाइन मोड में सीख सकता हूं?",
+    "faqAnswer1": "Lorem ipsum ग्राफिक, प्रिंट और प्रकाशन उद्योगों में लेआउट और दृश्य मॉकअप के पूर्वावलोकन के लिए आमतौर पर उपयोग किया जाने वाला प्लेसहोल्डर टेक्स्ट है।"
+  },
+  "courseCompletion": {
+    "congratulations": "बधाई हो!",
+    "successMessage": "आपने इस कोर्स को सफलतापूर्वक पूरा कर लिया है।",
+    "certificateMessage": "आप प्रोफ़ाइल पेज से अपना प्रमाणपत्र डाउनलोड कर सकते हैं।",
+    "noCertificateNote": "नोट: इस कोर्स में प्रमाणपत्र नहीं है।",
+    "continue": "जारी रखें"
+  },
+  "coursesPage": {
+    "title": "कोर्स पेज",
+    "description": "यह कोर्स पेज की सामग्री है।"
   }
 }
