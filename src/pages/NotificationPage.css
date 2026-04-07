@@ -90,17 +90,6 @@
   border: 1.5px solid var(--ion-color-primary-tint);
 }
 
-/* Brown dot for unread — positioned on the left edge */
-.notification-card__dot {
-  position: absolute;
-  left: -4px;
-  top: 30%;
-  transform: translateY(-50%);
-  width: 8px;
-  height: 8px;
-  background: var(--ion-color-primary-tint);
-  border-radius: 50%;
-}
 
 .notification-card__content {
   flex: 1;
