@@ -29,7 +29,8 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
       <div className="in-progress__list">
         {displayCourses.map((course) => {
           const collectionId = course.collectionId || course.courseId;
-          const badge = _.get(course, 'content.primaryCategory', t('course'));
+          const rawBadge = _.get(course, 'content.primaryCategory', 'Course');
+          const badge = t(`contentBadge.${rawBadge}`, rawBadge);
           const title = course.courseName || _.get(course, 'content.name') || t('untitled');
           const thumbnail = _.get(course, 'content.posterImage')
             || _.get(course, 'content.appIcon', '');
