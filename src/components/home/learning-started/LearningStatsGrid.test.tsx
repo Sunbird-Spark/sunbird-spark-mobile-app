@@ -7,8 +7,8 @@ vi.mock('react-i18next', () => ({
     t: (key: string) => {
       const map: Record<string, string> = {
         totalCourses: 'Total Courses',
-        coursesInProgress: 'Courses in Progress',
-        coursesCompleted: 'Courses Completed',
+        inProgress: 'In Progress',
+        completed: 'Completed',
         certificationsEarned: 'Certifications Earned',
       };
       return map[key] || key;
@@ -27,8 +27,8 @@ describe('LearningStatsGrid', () => {
       />
     );
     expect(screen.getByText('Total Courses')).toBeInTheDocument();
-    expect(screen.getByText('Courses in Progress')).toBeInTheDocument();
-    expect(screen.getByText('Courses Completed')).toBeInTheDocument();
+    expect(screen.getByText('In Progress')).toBeInTheDocument();
+    expect(screen.getByText('Completed')).toBeInTheDocument();
     expect(screen.getByText('Certifications Earned')).toBeInTheDocument();
   });
 

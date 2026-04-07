@@ -20,7 +20,6 @@ vi.mock('@ionic/react', () => ({
 }));
 
 vi.mock('ionicons/icons', () => ({
-  timeOutline: 'time',
   chevronForwardOutline: 'chevron-forward',
   logOutOutline: 'log-out',
 }));
@@ -41,6 +40,17 @@ vi.mock('../hooks/useImpression', () => ({ default: vi.fn() }));
 vi.mock('../contexts/AuthContext', () => ({ useAuth: vi.fn() }));
 vi.mock('../hooks/useUser', () => ({ useUser: vi.fn() }));
 vi.mock('../hooks/useUserEnrollment', () => ({ useUserEnrollmentList: vi.fn() }));
+vi.mock('../hooks/useUserCertificates', () => ({ useUserCertificates: vi.fn() }));
+vi.mock('../components/home/learning-started/LearningStatsGrid', () => ({
+  LearningStatsGrid: ({ totalCourses, coursesInProgress, coursesCompleted, certificationsEarned }: any) => (
+    <div data-testid="learning-stats-grid">
+      <span className="stats-grid__value">{String(totalCourses).padStart(2, '0')}</span>
+      <span className="stats-grid__value">{String(coursesInProgress).padStart(2, '0')}</span>
+      <span className="stats-grid__value">{String(coursesCompleted).padStart(2, '0')}</span>
+      <span className="stats-grid__value">{String(certificationsEarned).padStart(2, '0')}</span>
+    </div>
+  ),
+}));
 vi.mock('../services/network/networkService', () => ({
   networkService: { isConnected: vi.fn().mockReturnValue(true) },
 }));
@@ -52,6 +62,7 @@ vi.mock('react-avatar', () => ({ default: ({ name }: any) => <div data-testid="a
 import { useAuth } from '../contexts/AuthContext';
 import { useUser } from '../hooks/useUser';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
+import { useUserCertificates } from '../hooks/useUserCertificates';
 
 const mockAuthBase = { logout: vi.fn() };
 
@@ -60,6 +71,7 @@ describe('ProfilePage', () => {
     vi.clearAllMocks();
     (useUser as any).mockReturnValue({ data: null });
     (useUserEnrollmentList as any).mockReturnValue({ data: null });
+    (useUserCertificates as any).mockReturnValue({ data: null });
   });
 
   describe('unauthenticated view', () => {
@@ -113,7 +125,7 @@ describe('ProfilePage', () => {
 
     it('shows zeroed stats when no enrollments', () => {
       const { container } = render(<ProfilePage />);
-      const statValues = container.querySelectorAll('.profile-stat-value');
+      const statValues = container.querySelectorAll('.stats-grid__value');
       expect(statValues.length).toBeGreaterThan(0);
       statValues.forEach(v => expect(v.textContent).toBe('00'));
     });
@@ -135,9 +147,9 @@ describe('ProfilePage', () => {
         data: {
           data: {
             courses: [
-              { status: 1, issuedCertificates: [] },
-              { status: 2, issuedCertificates: [{ identifier: 'cert-1' }] },
-              { status: 2, issuedCertificates: [] },
+              { status: 1, completionPercentage: 50, issuedCertificates: [] },
+              { status: 2, completionPercentage: 100, issuedCertificates: [{ identifier: 'cert-1' }] },
+              { status: 2, completionPercentage: 100, issuedCertificates: [] },
             ],
           },
         },
@@ -156,7 +168,7 @@ describe('ProfilePage', () => {
 
     it('shows correct stat values', () => {
       const { container } = render(<ProfilePage />);
-      const statValues = Array.from(container.querySelectorAll('.profile-stat-value')).map(el => el.textContent);
+      const statValues = Array.from(container.querySelectorAll('.stats-grid__value')).map(el => el.textContent);
       expect(statValues).toContain('03'); // total
       expect(statValues).toContain('01'); // in-progress
       expect(statValues).toContain('02'); // completed
@@ -169,6 +181,26 @@ describe('ProfilePage', () => {
       expect(screen.getByText('downloadedContents')).toBeInTheDocument();
       expect(screen.getByText('settings')).toBeInTheDocument();
       expect(screen.getByText('logout')).toBeInTheDocument();
+    });
+
+    it('renders certificationsEarned count correctly from useUserCertificates', () => {
+      // Re-mock useUserCertificates directly in this test to assert non-empty
+      (useUserCertificates as any).mockReturnValue({
+        data: {
+          data: [
+            { identifier: 'cert-1' },
+            { identifier: 'cert-2' },
+            { identifier: 'cert-3' },
+            { identifier: 'cert-4' },
+          ],
+        },
+      });
+      
+      const { container } = render(<ProfilePage />);
+      const statValues = Array.from(container.querySelectorAll('.stats-grid__value')).map(el => el.textContent);
+      
+      // With 4 certificates in the array, the count should be '04'
+      expect(statValues).toContain('04');
     });
   });
 
