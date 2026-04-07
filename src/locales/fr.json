@@ -268,6 +268,7 @@
     "youreOffline": "Vous êtes hors ligne",
     "downloadToPlayOffline": "Téléchargez ce contenu pour le lire hors ligne.",
     "downloadSuccess": "Contenu téléchargé avec succès",
+    "downloadedSuccessfully": "Téléchargé ({{localCount}}/{{totalCount}} éléments) avec succès.",
     "noActiveDownloads": "Aucun téléchargement actif",
     "noActiveDownloadsDesc": "Les téléchargements que vous lancez apparaîtront ici.",
     "noDownloadedContent": "Aucun contenu téléchargé pour le moment.",
@@ -316,6 +317,25 @@
   "untitled": "Sans titre",
   "unknown": "Inconnu",
   "collectionLabel": "Collection",
+  "update": "Mettre à jour",
+  "name": "Nom",
+  "state": "État",
+  "userId": "ID utilisateur",
+  "certificateDetails": {
+    "earnCertificate": "Obtenez un certificat à la fin du cours. Vérifiez les détails avant de terminer le cours.",
+    "noCertificate": "Actuellement, ce cours n'a pas de certificat. Le créateur du cours peut joindre un certificat ultérieurement.",
+    "previewCertificate": "Aperçu du certificat"
+  },
+  "consent": {
+    "profileSharingOn": "Le partage des données de profil est activé. Vous avez accepté de partager les détails de votre profil avec l'administrateur du cours.",
+    "profileSharingOff": "Le partage des données de profil est désactivé. Vous n'avez pas accepté de partager les détails de votre profil avec l'administrateur du cours.",
+    "lastUpdatedOn": "Dernière mise à jour le",
+    "editFromProfile": "Vous pouvez modifier ces détails depuis votre profil.",
+    "agreeToShare": "J'accepte de partager les détails de profil ci-dessus avec l'administrateur du cours.",
+    "doNotShare": "Ne pas partager",
+    "share": "Partager",
+    "preferenceUpdated": "Préférence de partage des données de profil mise à jour."
+  },
   "mimeType": {
     "video": "Vidéo",
     "pdf": "PDF",

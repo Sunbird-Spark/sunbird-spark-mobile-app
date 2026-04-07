@@ -280,6 +280,7 @@
     "youreOffline": "You're offline",
     "downloadToPlayOffline": "Download this content to play it offline.",
     "downloadSuccess": "Content downloaded successfully",
+    "downloadedSuccessfully": "Downloaded ({{localCount}}/{{totalCount}} items) successfully.",
     "noActiveDownloads": "No active downloads",
     "noActiveDownloadsDesc": "Downloads you start will appear here.",
     "noDownloadedContent": "No downloaded content yet.",
@@ -324,6 +325,25 @@
   "untitled": "Untitled",
   "unknown": "Unknown",
   "collectionLabel": "Collection",
+  "update": "Update",
+  "name": "Name",
+  "state": "State",
+  "userId": "User ID",
+  "certificateDetails": {
+    "earnCertificate": "Earn a certificate on completion of the course. Verify the details before completing the course.",
+    "noCertificate": "Currently, this course does not have a certificate. The course creator may attach a certificate later.",
+    "previewCertificate": "Preview Certificate"
+  },
+  "consent": {
+    "profileSharingOn": "Profile data sharing is On. You have agreed to share your profile details with the course administrator.",
+    "profileSharingOff": "Profile data sharing is Off. You have not agreed to share your profile details with the course administrator.",
+    "lastUpdatedOn": "Last updated on",
+    "editFromProfile": "You can edit these details from your profile.",
+    "agreeToShare": "I agree to share the above profile details with the course administrator.",
+    "doNotShare": "Do not share",
+    "share": "Share",
+    "preferenceUpdated": "Profile data sharing preference updated."
+  },
   "mimeType": {
     "video": "Video",
     "pdf": "PDF",

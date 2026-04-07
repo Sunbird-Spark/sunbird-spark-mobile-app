@@ -268,6 +268,7 @@
     "youreOffline": "Você está offline",
     "downloadToPlayOffline": "Baixe este conteúdo para reproduzi-lo offline.",
     "downloadSuccess": "Conteúdo baixado com sucesso",
+    "downloadedSuccessfully": "Baixado ({{localCount}}/{{totalCount}} itens) com sucesso.",
     "noActiveDownloads": "Nenhum download ativo",
     "noActiveDownloadsDesc": "Os downloads que você iniciar aparecerão aqui.",
     "noDownloadedContent": "Nenhum conteúdo baixado ainda.",
@@ -316,6 +317,25 @@
   "untitled": "Sem título",
   "unknown": "Desconhecido",
   "collectionLabel": "Coleção",
+  "update": "Atualizar",
+  "name": "Nome",
+  "state": "Estado",
+  "userId": "ID do usuário",
+  "certificateDetails": {
+    "earnCertificate": "Ganhe um certificado ao concluir o curso. Verifique os detalhes antes de concluir o curso.",
+    "noCertificate": "Atualmente, este curso não possui certificado. O criador do curso pode anexar um certificado posteriormente.",
+    "previewCertificate": "Visualizar certificado"
+  },
+  "consent": {
+    "profileSharingOn": "O compartilhamento de dados do perfil está ativado. Você concordou em compartilhar os detalhes do seu perfil com o administrador do curso.",
+    "profileSharingOff": "O compartilhamento de dados do perfil está desativado. Você não concordou em compartilhar os detalhes do seu perfil com o administrador do curso.",
+    "lastUpdatedOn": "Última atualização em",
+    "editFromProfile": "Você pode editar esses detalhes no seu perfil.",
+    "agreeToShare": "Concordo em compartilhar os detalhes do perfil acima com o administrador do curso.",
+    "doNotShare": "Não compartilhar",
+    "share": "Compartilhar",
+    "preferenceUpdated": "Preferência de compartilhamento de dados do perfil atualizada."
+  },
   "mimeType": {
     "video": "Vídeo",
     "pdf": "PDF",

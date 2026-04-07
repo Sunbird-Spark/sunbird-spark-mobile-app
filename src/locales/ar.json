@@ -276,6 +276,7 @@
     "youreOffline": "أنت غير متصل",
     "downloadToPlayOffline": "قم بتحميل هذا المحتوى لتشغيله بدون إنترنت.",
     "downloadSuccess": "تم تنزيل المحتوى بنجاح",
+    "downloadedSuccessfully": "تم التنزيل ({{localCount}}/{{totalCount}} عناصر) بنجاح.",
     "noActiveDownloads": "لا توجد تحميلات نشطة",
     "noActiveDownloadsDesc": "ستظهر التحميلات التي تبدأها هنا.",
     "noDownloadedContent": "لا يوجد محتوى محمّل بعد.",
@@ -324,6 +325,25 @@
   "untitled": "بدون عنوان",
   "unknown": "غير معروف",
   "collectionLabel": "مجموعة",
+  "update": "تحديث",
+  "name": "الاسم",
+  "state": "الولاية",
+  "userId": "معرف المستخدم",
+  "certificateDetails": {
+    "earnCertificate": "احصل على شهادة عند إكمال الدورة. تحقق من التفاصيل قبل إكمال الدورة.",
+    "noCertificate": "حاليًا، لا تحتوي هذه الدورة على شهادة. قد يرفق منشئ الدورة شهادة لاحقًا.",
+    "previewCertificate": "معاينة الشهادة"
+  },
+  "consent": {
+    "profileSharingOn": "مشاركة بيانات الملف الشخصي قيد التشغيل. لقد وافقت على مشاركة تفاصيل ملفك الشخصي مع مسؤول الدورة.",
+    "profileSharingOff": "مشاركة بيانات الملف الشخصي متوقفة. لم توافق على مشاركة تفاصيل ملفك الشخصي مع مسؤول الدورة.",
+    "lastUpdatedOn": "آخر تحديث في",
+    "editFromProfile": "يمكنك تعديل هذه التفاصيل من ملفك الشخصي.",
+    "agreeToShare": "أوافق على مشاركة تفاصيل الملف الشخصي أعلاه مع مسؤول الدورة.",
+    "doNotShare": "لا تشارك",
+    "share": "شارك",
+    "preferenceUpdated": "تم تحديث تفضيل مشاركة بيانات الملف الشخصي."
+  },
   "mimeType": {
     "video": "فيديو",
     "pdf": "ملف PDF",
