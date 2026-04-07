@@ -182,6 +182,26 @@ describe('ProfilePage', () => {
       expect(screen.getByText('settings')).toBeInTheDocument();
       expect(screen.getByText('logout')).toBeInTheDocument();
     });
+
+    it('renders certificationsEarned count correctly from useUserCertificates', () => {
+      // Re-mock useUserCertificates directly in this test to assert non-empty
+      (useUserCertificates as any).mockReturnValue({
+        data: {
+          data: [
+            { identifier: 'cert-1' },
+            { identifier: 'cert-2' },
+            { identifier: 'cert-3' },
+            { identifier: 'cert-4' },
+          ],
+        },
+      });
+      
+      const { container } = render(<ProfilePage />);
+      const statValues = Array.from(container.querySelectorAll('.stats-grid__value')).map(el => el.textContent);
+      
+      // With 4 certificates in the array, the count should be '04'
+      expect(statValues).toContain('04');
+    });
   });
 
   describe('authenticated view — role as string', () => {
