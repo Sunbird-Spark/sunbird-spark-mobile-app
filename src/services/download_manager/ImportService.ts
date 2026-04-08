@@ -242,15 +242,15 @@ export class ImportService {
       // EPUB → copy directly
       await this.copyAsset(itemSourcePath, destUri);
     } else if (ecmlMimeTypes.includes(mimeType)) {
-      // ECML archives: attempt normal unzip first.
-      // Older ECML ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
+      // ECML/H5P/HTML archives: attempt normal unzip first.
+      // Older ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
       // Fall back to our multi-threaded fflate worker to sanitize and extract.
       try {
         await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
       } catch (err) {
         const msg = String((err as Error)?.message ?? err);
         if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
-          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with worker:', msg);
+          console.warn('[ImportService] Archive artifact has absolute entry paths — extracting with worker:', msg);
           await this.extractWithWorker(itemSourcePath, destUri);
         } else {
           throw err;

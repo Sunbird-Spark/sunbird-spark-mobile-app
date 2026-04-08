@@ -159,11 +159,11 @@ export class EcmlPlayerService {
     // forces an AJAX fetch to globalConfig.basepath (streamingUrl).
     // For H5P/HTML online, we must pass {} because there is no index.json and pulling
     // from an external streamingUrl via AJAX crashes the player due to CORS.
-    const isH5pOrHtml = String(metadata.mimeType).startsWith('application/vnd.ekstep.h') 
-                        && String(metadata.mimeType).endsWith('-archive');
+    const isH5pOrHtml = String(metadata.mimeType).startsWith('application/vnd.ekstep.h')
+      && String(metadata.mimeType).endsWith('-archive');
     let dataPayload: Record<string, any> | null = !_.isEmpty(metadata.body) ? metadata.body : null;
-    
-    if (isH5pOrHtml && !isLocal) {
+
+    if (isH5pOrHtml && !isLocal && !dataPayload) {
       dataPayload = {};
     }
 
