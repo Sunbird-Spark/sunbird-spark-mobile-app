@@ -147,7 +147,12 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     ScreenOrientation.lock({ orientation: 'landscape' }).catch(() => { });
 
     return () => {
-      ScreenOrientation.unlock().catch(() => { });
+      // Defer unlock to the next frame so the player DOM element is fully removed first.
+      // Immediate unlock triggers orientation change/resize during player teardown,
+      // which causes crashes in libraries like epub.js or PDF.js.
+      requestAnimationFrame(() => {
+        ScreenOrientation.unlock().catch(() => { });
+      });
     };
   }, []);
 

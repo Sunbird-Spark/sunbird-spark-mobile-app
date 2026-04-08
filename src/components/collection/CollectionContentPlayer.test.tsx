@@ -141,12 +141,15 @@ describe('CollectionContentPlayer', () => {
     expect(mockLock).toHaveBeenCalledWith({ orientation: 'landscape' });
   });
 
-  it('unlocks screen orientation on unmount', () => {
+  it('unlocks screen orientation on unmount', async () => {
     const { unmount } = render(
       <CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />
     );
     unmount();
-    expect(mockUnlock).toHaveBeenCalled();
+    // Orientation unlock is deferred until the player cleanup promise resolves
+    await vi.waitFor(() => {
+      expect(mockUnlock).toHaveBeenCalled();
+    });
   });
 
   it('shows loading state while content is loading', () => {

@@ -75,8 +75,8 @@ export const EpubPlayer: React.FC<EpubPlayerProps> = ({
     return () => {
       cancelled = true;
       if (playerElement) {
-        service.removeEventListeners(playerElement);
         playerElement.remove();
+        service.removeEventListeners(playerElement);
       }
     };
   }, [metadata.identifier, metadata.isAvailableLocally]);

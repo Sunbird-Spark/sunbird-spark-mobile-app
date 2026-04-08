@@ -76,8 +76,8 @@ export const PdfPlayer: React.FC<PdfPlayerProps> = ({
     return () => {
       cancelled = true;
       if (playerElement) {
-        service.removeEventListeners(playerElement);
         playerElement.remove();
+        service.removeEventListeners(playerElement);
       }
     };
   }, [metadata.identifier, metadata.isAvailableLocally]);
