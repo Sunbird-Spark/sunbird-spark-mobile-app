@@ -225,8 +225,8 @@ const App: React.FC = () => {
         <LogoutGuard />
         <OnboardingGuard />
         <PushNotificationGuard />
-        <BackButtonHandler />
         <IonRouterOutlet>
+          <BackButtonHandler />
           <Route exact path="/search">
             <SearchPage />
           </Route>

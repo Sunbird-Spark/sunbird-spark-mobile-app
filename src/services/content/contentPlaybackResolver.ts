@@ -5,6 +5,29 @@ import { contentDbService } from '../db/ContentDbService';
 const TAG = '[contentPlaybackResolver]';
 
 /**
+ * Extract the `/content/...` suffix from a streamingUrl and prepend `/assets/public`.
+ *
+ * Extracts the exact suffix from the API's streaming URL to dynamically resolve 
+ * the local restructuring folder path.
+ *
+ * Returns null if the streamingUrl doesn't contain `/content/`.
+ */
+export function toAssetsPublicPath(streamingUrl: string): string | null {
+  try {
+    const url = new URL(streamingUrl);
+    const idx = url.pathname.indexOf('/content/');
+    if (idx !== -1) {
+      return `/assets/public${url.pathname.slice(idx)}`;
+    }
+  } catch {
+    // Not an absolute URL — try plain string match
+    console.warn("Invalid URL", streamingUrl);
+  }
+  return null;
+}
+
+
+/**
  * Resolves content metadata URLs to local filesystem paths when the content
  * has been downloaded (content_state === 2). This enables offline playback
  * across all player types.
@@ -93,10 +116,16 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
       // Video player: set streamingUrl to directory so player appends artifactUrl
       resolved.streamingUrl = toWebviewUrl(basePath);
     } else if (isH5pOrHtml) {
-      // H5P/HTML: The genie-canvas renderer builds the iframe URL using basePath
-      // config, NOT streamingUrl. Set streamingUrl to the content directory (where
-      // index.html lives) so any fallback logic still points to the right place.
-      resolved.streamingUrl = toWebviewUrl(basePath);
+      // H5P/HTML: The renderer sets globalConfig.basepath = streamingUrl and the
+      // htmlrenderer plugin uses basepath + "/index.html" as the iframe src.
+      // After import, restructureForRenderer places files at:
+      //   content/{id}/assets/public/content/{h5p|html}/{id}-{suffix}/
+      const assetsPath = toAssetsPublicPath(String(resolved.streamingUrl || ''));
+      if (assetsPath) {
+        resolved.streamingUrl = toWebviewUrl(`${basePath}${assetsPath}`);
+      } else {
+        resolved.streamingUrl = toWebviewUrl(basePath);
+      }
     } else if (isEcml) {
       // ECML: The renderer sets globalConfig.basepath = e.streamingUrl.
       // The CDN streamingUrl typically points to a versioned subdirectory
@@ -123,15 +152,10 @@ export async function resolveContentForPlayer<T extends Record<string, any>>(
       }
     }
 
-    // For ECML/H5P/HTML content: load body from local filesystem if not already present.
-    // The renderer needs the body JSON to render stages/scenes. Without it, the renderer
-    // tries to fetch from the API which fails offline.
-    const ecmlMimeTypes = [
-      'application/vnd.ekstep.ecml-archive',
-      'application/vnd.ekstep.h5p-archive',
-      'application/vnd.ekstep.html-archive',
-    ];
-    if (!resolved.body && ecmlMimeTypes.includes(String(resolved.mimeType))) {
+    // For ECML content: load body from local filesystem if not already present.
+    // The renderer needs the body JSON (index.json/index.ecml) to render stages.
+    // Without it, the renderer fetches from the API — which fails offline.
+    if (!resolved.body && String(resolved.mimeType) === 'application/vnd.ekstep.ecml-archive') {
       resolved.body = await loadLocalBody(basePath);
     }
 
