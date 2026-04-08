@@ -20,7 +20,6 @@ export function toAssetsPublicPath(streamingUrl: string): string | null {
       return `/assets/public${url.pathname.slice(idx)}`;
     }
   } catch {
-    // Not an absolute URL — try plain string match
     console.warn("Invalid URL", streamingUrl);
   }
   return null;
