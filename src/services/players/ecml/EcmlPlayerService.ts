@@ -16,6 +16,8 @@ export class EcmlPlayerService {
 
     const isLocal = !!metadata.isAvailableLocally && !!metadata.basePath;
     const rawBasePath = (isLocal ? metadata.basePath || '' : '').trim();
+    const mimeType = String(metadata.mimeType || '');
+    const isH5pOrHtml = mimeType === 'application/vnd.ekstep.h5p-archive' || mimeType === 'application/vnd.ekstep.html-archive';
 
     // Extreme sanitation: ensure exactly one trailing slash and no surrounding whitespace
     const safeBaseDir = rawBasePath ? (rawBasePath.replace(/\/+$/, '') + '/') : '';
@@ -103,11 +105,7 @@ export class EcmlPlayerService {
       // H5P/HTML: the renderer uses streamingUrl as the iframe src base path.
       // CDN streamingUrls (blob storage) cause cross-origin errors. Rewrite to
       // a same-origin /assets/public/... path that the Android proxy intercepts.
-      const mime = String(metadata.mimeType || '');
-      if (
-        (mime === 'application/vnd.ekstep.h5p-archive' || mime === 'application/vnd.ekstep.html-archive')
-        && metadata.streamingUrl
-      ) {
+      if (isH5pOrHtml && metadata.streamingUrl) {
         const sameOriginPath = toAssetsPublicPath(metadata.streamingUrl);
         if (sameOriginPath) {
           metadata = { ...metadata, streamingUrl: sameOriginPath };
@@ -159,8 +157,6 @@ export class EcmlPlayerService {
     // forces an AJAX fetch to globalConfig.basepath (streamingUrl).
     // For H5P/HTML online, we must pass {} because there is no index.json and pulling
     // from an external streamingUrl via AJAX crashes the player due to CORS.
-    const isH5pOrHtml = String(metadata.mimeType).startsWith('application/vnd.ekstep.h')
-      && String(metadata.mimeType).endsWith('-archive');
     let dataPayload: Record<string, any> | null = !_.isEmpty(metadata.body) ? metadata.body : null;
 
     if (isH5pOrHtml && !isLocal && !dataPayload) {

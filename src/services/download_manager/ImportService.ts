@@ -250,7 +250,7 @@ export class ImportService {
       } catch (err) {
         const msg = String((err as Error)?.message ?? err);
         if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
-          console.warn('[ImportService] Archive artifact has absolute entry paths — extracting with worker:', msg);
+          console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with worker:', msg);
           await this.extractWithWorker(itemSourcePath, destUri);
         } else {
           throw err;
