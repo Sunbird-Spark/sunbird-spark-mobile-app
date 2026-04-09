@@ -18,8 +18,8 @@ const CoursesPage: React.FC = () => {
       <IonContent fullscreen>
         <main id="main-content">
           <div className="ion-padding">
-            <h1>Courses Page</h1>
-            <p>This is the courses page content.</p>
+            <h1>{t('coursesPage.title')}</h1>
+            <p>{t('coursesPage.description')}</p>
           </div>
         </main>
       </IonContent>

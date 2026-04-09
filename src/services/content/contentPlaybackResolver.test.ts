@@ -6,7 +6,7 @@ vi.mock('../db/ContentDbService', () => ({
 }));
 
 vi.mock('@capacitor/filesystem', () => ({
-  Filesystem: { readFile: vi.fn() },
+  Filesystem: { readFile: vi.fn(), stat: vi.fn(), readdir: vi.fn() },
   Encoding: { UTF8: 'utf8' },
 }));
 
@@ -14,9 +14,17 @@ import { contentDbService } from '../db/ContentDbService';
 
 const mockGetByIdentifier = vi.mocked(contentDbService.getByIdentifier);
 const mockReadFile = vi.mocked(Filesystem.readFile);
+const mockStat = vi.mocked(Filesystem.stat);
+const mockReaddir = vi.mocked(Filesystem.readdir);
 
 describe('resolveContentForPlayer', () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Default stat: file not found (safe default for H5P/HTML index.html check)
+    mockStat.mockRejectedValue(new Error('not found'));
+    // Default readdir: empty (safe default for filename resolution)
+    mockReaddir.mockResolvedValue({ files: [] } as any);
+  });
 
   const metadata: Record<string, any> = {
     identifier: 'do_123',
@@ -158,6 +166,96 @@ describe('resolveContentForPlayer', () => {
       const result = await resolveContentForPlayer('do_ecml', ecmlMeta);
 
       expect((result as any).body).toBeNull();
+    });
+  });
+
+  describe('H5P/HTML offline resolution', () => {
+    beforeEach(() => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_h5p',
+      } as any);
+    });
+
+    it('sets streamingUrl to the restructured h5p subdirectory for Live H5P content', async () => {
+      const h5pMeta = {
+        identifier: 'do_h5p',
+        mimeType: 'application/vnd.ekstep.h5p-archive',
+        status: 'Live',
+        streamingUrl: 'https://cdn.example.com/container/content/h5p/do_h5p-latest',
+      };
+      const result = await resolveContentForPlayer('do_h5p', h5pMeta);
+      // streamingUrl must point to the subdirectory where restructureForRenderer placed files
+      expect((result as any).streamingUrl).toBe(
+        'file:///data/content/do_h5p/assets/public/content/h5p/do_h5p-latest',
+      );
+    });
+
+    it('sets streamingUrl to the snapshot subdirectory for Draft H5P content', async () => {
+      const h5pMeta = {
+        identifier: 'do_h5p',
+        mimeType: 'application/vnd.ekstep.h5p-archive',
+        status: 'Draft',
+        streamingUrl: 'https://cdn.example.com/container/content/h5p/do_h5p-snapshot'
+      };
+      const result = await resolveContentForPlayer('do_h5p', h5pMeta);
+      expect((result as any).streamingUrl).toBe(
+        'file:///data/content/do_h5p/assets/public/content/h5p/do_h5p-snapshot',
+      );
+    });
+
+    it('sets streamingUrl to the restructured html subdirectory for HTML archive content', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_html',
+      } as any);
+      const htmlMeta = {
+        identifier: 'do_html',
+        mimeType: 'application/vnd.ekstep.html-archive',
+        status: 'Live',
+        streamingUrl: 'https://cdn.example.com/container/content/html/do_html-latest',
+      };
+      const result = await resolveContentForPlayer('do_html', htmlMeta);
+      expect((result as any).streamingUrl).toBe(
+        'file:///data/content/do_html/assets/public/content/html/do_html-latest',
+      );
+    });
+
+    it('does NOT call readFile (loadLocalBody) for H5P content', async () => {
+      const h5pMeta = {
+        identifier: 'do_h5p',
+        mimeType: 'application/vnd.ekstep.h5p-archive',
+        status: 'Live',
+      };
+      await resolveContentForPlayer('do_h5p', h5pMeta);
+      expect(mockReadFile).not.toHaveBeenCalled();
+    });
+
+    it('does NOT call readFile (loadLocalBody) for HTML archive content', async () => {
+      mockGetByIdentifier.mockResolvedValue({
+        content_state: 2,
+        path: 'file:///data/content/do_html',
+      } as any);
+      const htmlMeta = {
+        identifier: 'do_html',
+        mimeType: 'application/vnd.ekstep.html-archive',
+        status: 'Live',
+      };
+      await resolveContentForPlayer('do_html', htmlMeta);
+      expect(mockReadFile).not.toHaveBeenCalled();
+    });
+
+    it('falls back to basePath when streamingUrl has no /content/ segment', async () => {
+      const h5pMeta = {
+        identifier: 'do_h5p',
+        mimeType: 'application/vnd.ekstep.h5p-archive',
+        // streamingUrl without /content/ path — fallback
+        streamingUrl: 'https://cdn.example.com/some-other-path',
+      };
+      const result = await resolveContentForPlayer('do_h5p', h5pMeta);
+      expect((result as any).streamingUrl).toBe(
+        'file:///data/content/do_h5p',
+      );
     });
   });
 });

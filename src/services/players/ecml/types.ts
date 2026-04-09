@@ -62,7 +62,7 @@ export interface EcmlPlayerConfig {
     };
   };
   metadata: EcmlPlayerMetadata;
-  data: Record<string, any>;
+  data: Record<string, any> | null;
 }
 
 export interface EcmlPlayerEvent {

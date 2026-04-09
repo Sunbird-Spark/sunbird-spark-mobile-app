@@ -35,6 +35,7 @@ export interface PlayerContext {
   partner: any[];
   userData: { firstName: string; lastName: string };
   contentId?: string;
+  origin?: string;
 }
 
 export interface PlayerContextOverrides {

@@ -46,8 +46,8 @@ const ProfilePage: React.FC = () => {
 
   const fullName = useMemo(() => {
     const parts = [profile?.firstName, profile?.lastName].filter(Boolean);
-    return parts.length > 0 ? parts.join(' ') : 'User';
-  }, [profile]);
+    return parts.length > 0 ? parts.join(' ') : t('guestUser');
+  }, [profile, t]);
 
   const roles = useMemo(() => {
     const roleSet = new Set<string>();

@@ -43,7 +43,6 @@ const NotificationCard: React.FC<NotificationCardProps> = ({
         }
       }}
     >
-      {isUnread && <div className="notification-card__dot" />}
       <div className="notification-card__content">
         <p className="notification-card__message">{message}</p>
         <span className="notification-card__time">{timestamp}</span>

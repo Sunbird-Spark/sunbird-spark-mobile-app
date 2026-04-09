@@ -370,7 +370,7 @@ const CollectionPage: React.FC = () => {
         if (downloadable.length > 0 && localCount > 0 && !localStorage.getItem(toastKey)) {
           localStorage.setItem(toastKey, '1');
           setDownloadToast({
-            message: `Downloaded (${localCount}/${downloadable.length} items) successfully.`,
+            message: t('download.downloadedSuccessfully', { localCount, totalCount: downloadable.length }),
             color: 'success',
             icon: checkmarkCircle,
           });
@@ -864,18 +864,18 @@ const CollectionPage: React.FC = () => {
                   </div>
                   {enrollment.hasCertificate ? (
                     <>
-                      <p className="info-card-desc">Earn a certificate on completion of the course. Verify the details before completing the course.</p>
+                      <p className="info-card-desc">{t('certificateDetails.earnCertificate')}</p>
                       {enrollment.certPreviewUrl && (
                         <button
                           className="btn-primary"
                           onClick={() => setIsCertPreviewOpen(true)}
                         >
-                          Preview Certificate
+                          {t('certificateDetails.previewCertificate')}
                         </button>
                       )}
                     </>
                   ) : (
-                    <p className="info-card-desc">Currently, this course does not have a certificate. The course creator may attach a certificate later.</p>
+                    <p className="info-card-desc">{t('certificateDetails.noCertificate')}</p>
                   )}
                 </div>
               )}
@@ -886,13 +886,13 @@ const CollectionPage: React.FC = () => {
                   <h3 className="info-card-title" style={{ marginTop: 0 }}>{t('personalInformation')}</h3>
                   <p className="info-card-desc">
                     {consent.status === 'ACTIVE'
-                      ? 'Profile data sharing is On. You have agreed to share your profile details with the course administrator.'
-                      : 'Profile data sharing is Off. You have not agreed to share your profile details with the course administrator.'}
+                      ? t('consent.profileSharingOn')
+                      : t('consent.profileSharingOff')}
                   </p>
                   <div className="info-card-footer">
                     {consent.lastUpdatedOn && (
                       <span className="info-card-date">
-                        Last updated on {new Date(consent.lastUpdatedOn).toLocaleDateString()}
+                        {t('consent.lastUpdatedOn')} {new Date(consent.lastUpdatedOn).toLocaleDateString()}
                       </span>
                     )}
                     <button
@@ -903,7 +903,7 @@ const CollectionPage: React.FC = () => {
                       }}
                       disabled={consent.isUpdating}
                     >
-                      {consent.isUpdating ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : 'Update'}
+                      {consent.isUpdating ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : t('update')}
                     </button>
                   </div>
                 </div>
@@ -996,13 +996,13 @@ const CollectionPage: React.FC = () => {
                   <button onClick={() => setIsConsentModalOpen(false)} style={{ background: 'none', border: 'none', fontSize: '1.5rem', lineHeight: 1, color: 'var(--ion-color-medium)' }}>&times;</button>
                 </div>
                 <div style={{ fontSize: '0.9rem', color: 'var(--ion-color-dark)', lineHeight: '1.6' }}>
-                  <p style={{ margin: '0.5rem 0' }}><strong>Name:</strong> {userProfile?.firstName || ''} {userProfile?.lastName || ''}</p>
-                  <p style={{ margin: '0.5rem 0' }}><strong>State:</strong> {(userProfile as any)?.state || '-'}</p>
-                  <p style={{ margin: '0.5rem 0' }}><strong>User ID:</strong> {userProfile?.id || userProfile?.userId || userId}</p>
-                  <p style={{ margin: '0.5rem 0' }}><strong>Mobile Number:</strong> {(userProfile as any)?.maskedPhone || (userProfile as any)?.phone || ''}</p>
-                  <p style={{ margin: '0.5rem 0' }}><strong>Email:</strong> {(userProfile as any)?.maskedEmail || (userProfile as any)?.email || ''}</p>
+                  <p style={{ margin: '0.5rem 0' }}><strong>{t('name')}:</strong> {userProfile?.firstName || ''} {userProfile?.lastName || ''}</p>
+                  <p style={{ margin: '0.5rem 0' }}><strong>{t('state')}:</strong> {(userProfile as any)?.state || '-'}</p>
+                  <p style={{ margin: '0.5rem 0' }}><strong>{t('userId')}:</strong> {userProfile?.id || userProfile?.userId || userId}</p>
+                  <p style={{ margin: '0.5rem 0' }}><strong>{t('mobileNumber')}:</strong> {(userProfile as any)?.maskedPhone || (userProfile as any)?.phone || ''}</p>
+                  <p style={{ margin: '0.5rem 0' }}><strong>{t('emailId')}:</strong> {(userProfile as any)?.maskedEmail || (userProfile as any)?.email || ''}</p>
 
-                  <p style={{ color: 'var(--ion-color-medium)', marginTop: '1rem', marginBottom: '1rem' }}>You can edit these details from your profile.</p>
+                  <p style={{ color: 'var(--ion-color-medium)', marginTop: '1rem', marginBottom: '1rem' }}>{t('consent.editFromProfile')}</p>
 
                   <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '1.5rem' }}>
                     <input
@@ -1013,7 +1013,7 @@ const CollectionPage: React.FC = () => {
                       style={{ marginTop: '0.2rem', accentColor: 'var(--ion-color-primary)' }}
                     />
                     <label htmlFor="consent-checkbox" style={{ fontSize: '0.9rem', color: 'var(--ion-text-color)' }}>
-                      I agree to share the above profile details with the course administrator.
+                      {t('consent.agreeToShare')}
                     </label>
                   </div>
 
@@ -1027,7 +1027,7 @@ const CollectionPage: React.FC = () => {
                         try {
                           await consent.updateConsent('REVOKED');
                           setIsConsentModalOpen(false);
-                          setConsentToastMessage('Profile data sharing preference updated.');
+                          setConsentToastMessage(t('consent.preferenceUpdated'));
                           consent.refetch();
                         } catch {
                           setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
@@ -1035,7 +1035,7 @@ const CollectionPage: React.FC = () => {
                       }}
                       style={{ padding: '0.6rem 1rem', border: '1px solid var(--ion-color-medium-tint)', borderRadius: '8px', background: 'transparent', color: 'var(--ion-color-dark)', fontWeight: 500 }}
                     >
-                      Do not share
+                      {t('consent.doNotShare')}
                     </button>
                     <button
                       onClick={async () => {
@@ -1047,7 +1047,7 @@ const CollectionPage: React.FC = () => {
                         try {
                           await consent.updateConsent('ACTIVE');
                           setIsConsentModalOpen(false);
-                          setConsentToastMessage('Profile data sharing preference updated.');
+                          setConsentToastMessage(t('consent.preferenceUpdated'));
                           consent.refetch();
                         } catch {
                           setDownloadToast({ message: t('syncNoInternet'), color: 'danger', icon: alertCircleOutline });
@@ -1056,7 +1056,7 @@ const CollectionPage: React.FC = () => {
                       disabled={!consentChecked || consent.isUpdating}
                       style={{ padding: '0.6rem 1rem', border: 'none', borderRadius: '8px', background: consentChecked ? 'var(--ion-color-primary, #D28D5D)' : 'var(--ion-color-light-shade, #ccc)', color: consentChecked ? 'var(--ion-color-primary-contrast, #fff)' : 'var(--ion-color-medium)', fontWeight: 500 }}
                     >
-                      {consent.isUpdating ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : 'Share'}
+                      {consent.isUpdating ? <IonSpinner name="crescent" style={{ width: 14, height: 14 }} /> : t('consent.share')}
                     </button>
                   </div>
                 </div>

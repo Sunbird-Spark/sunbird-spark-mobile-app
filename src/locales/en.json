@@ -124,6 +124,7 @@
   "contentsViewed": "Contents Viewed",
   "totalCourses": "Total Courses",
   "inProgress": "In Progress",
+  "enrolled": "Enrolled",
   "welcomeBack": "Welcome back",
   "featuredCourses": "Featured Courses",
   "browseCourses": "Browse Courses",
@@ -279,6 +280,7 @@
     "youreOffline": "You're offline",
     "downloadToPlayOffline": "Download this content to play it offline.",
     "downloadSuccess": "Content downloaded successfully",
+    "downloadedSuccessfully": "Downloaded ({{localCount}}/{{totalCount}} items) successfully.",
     "noActiveDownloads": "No active downloads",
     "noActiveDownloadsDesc": "Downloads you start will appear here.",
     "noDownloadedContent": "No downloaded content yet.",
@@ -323,6 +325,25 @@
   "untitled": "Untitled",
   "unknown": "Unknown",
   "collectionLabel": "Collection",
+  "update": "Update",
+  "name": "Name",
+  "state": "State",
+  "userId": "User ID",
+  "certificateDetails": {
+    "earnCertificate": "Earn a certificate on completion of the course. Verify the details before completing the course.",
+    "noCertificate": "Currently, this course does not have a certificate. The course creator may attach a certificate later.",
+    "previewCertificate": "Preview Certificate"
+  },
+  "consent": {
+    "profileSharingOn": "Profile data sharing is On. You have agreed to share your profile details with the course administrator.",
+    "profileSharingOff": "Profile data sharing is Off. You have not agreed to share your profile details with the course administrator.",
+    "lastUpdatedOn": "Last updated on",
+    "editFromProfile": "You can edit these details from your profile.",
+    "agreeToShare": "I agree to share the above profile details with the course administrator.",
+    "doNotShare": "Do not share",
+    "share": "Share",
+    "preferenceUpdated": "Profile data sharing preference updated."
+  },
   "mimeType": {
     "video": "Video",
     "pdf": "PDF",
@@ -452,5 +473,40 @@
     "videoContent": "Video",
     "courses": "Courses",
     "dashboard": "Dashboard"
+  },
+  "courseDetails": {
+    "courseOverview": "Course Overview",
+    "skillsYouWillLearn": "Skills you will learn",
+    "bestSuitedFor": "Best Suited For",
+    "courseCurriculum": "Course Curriculum",
+    "relatedContent": "Related Content",
+    "relatedVideos": "Related Videos",
+    "frequentlyAskedQuestions": "Frequently asked questions",
+    "letsGetStarted": "Let's Get Started",
+    "weeks": "Weeks",
+    "lessons": "Lessons",
+    "views": "Views",
+    "businessAnalyst": "Business Analyst",
+    "dataAnalyst": "Data Analyst",
+    "analyticsManagers": "Analytics Managers",
+    "weekFoundation": "Week 1: Foundation & Basics",
+    "weekCore": "Week 2: Core Competencies",
+    "weekProfessional": "Week 3: Professional Application",
+    "faqQuestion1": "What kind of courses are available on this platform?",
+    "faqQuestion2": "What if I need help during the course?",
+    "faqQuestion3": "Are the courses accredited or do they offer certification?",
+    "faqQuestion4": "Can I learn in offline mode?",
+    "faqAnswer1": "Lorem ipsum is placeholder text commonly used in the graphic, print, and publishing industries for previewing layouts and visual mockups."
+  },
+  "courseCompletion": {
+    "congratulations": "Congratulations!",
+    "successMessage": "You have successfully completed this course.",
+    "certificateMessage": "You can download your certificate from the Profile page.",
+    "noCertificateNote": "Note: This course does not have a certificate.",
+    "continue": "Continue"
+  },
+  "coursesPage": {
+    "title": "Courses Page",
+    "description": "This is the courses page content."
   }
 }
