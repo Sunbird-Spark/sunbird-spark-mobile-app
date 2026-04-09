@@ -154,10 +154,17 @@ export class EpubPlayerService {
    * until the END event fires (self-removing handler) so the web component's
    * asynchronous ngOnDestroy dispatch is captured. A 3 s safety timeout
    * removes the listener if END never fires.
+   *
+   * The self-removing handler is scoped to this player's contentId so that
+   * an END event from a different player/session does not remove this listener
+   * prematurely.
    */
   removeEventListeners(element: HTMLElement): void {
     const handlers = this.eventHandlers.get(element);
     if (!handlers) return;
+
+    // Capture the contentId used to scope the END detection to this player only.
+    const playerId = element.getAttribute('data-player-id') ?? '';
 
     const playerEl = this.getPlayerElement(element);
     playerEl.removeEventListener('playerEvent', handlers.player);
@@ -169,8 +176,17 @@ export class EpubPlayerService {
     };
     const safetyTimer = setTimeout(cleanup, 3000);
     const selfRemovingHandler = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+
+      // Scope: only react to events from this player instance.
+      const eventContentId: string =
+        detail?.object?.id ?? detail?.context?.contentId ?? '';
+      if (playerId && eventContentId && eventContentId !== playerId) {
+        return;
+      }
+
       originalHandler(event);
-      const eid = ((event as CustomEvent).detail?.eid ?? '').toUpperCase();
+      const eid = (detail?.eid ?? '').toUpperCase();
       if (eid === 'END') {
         clearTimeout(safetyTimer);
         cleanup();

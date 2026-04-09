@@ -160,6 +160,7 @@ export class PdfPlayerService {
   removeEventListeners(element: HTMLElement): void {
     const handlers = this.eventHandlers.get(element);
     if (!handlers) return;
+    const playerId = element.getAttribute('data-player-id') ?? 'unknown';
 
     const playerEl = this.getPlayerElement(element);
     playerEl.removeEventListener('playerEvent', handlers.player);
@@ -171,8 +172,16 @@ export class PdfPlayerService {
     };
     const safetyTimer = setTimeout(cleanup, 3000);
     const selfRemovingHandler = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+
+      // Scope: only react to events from this player instance.
+      const eventContentId: string =
+        detail?.object?.id ?? detail?.context?.contentId ?? '';
+      if (eventContentId !== playerId) {
+        return;
+      }
       originalHandler(event);
-      const eid = ((event as CustomEvent).detail?.eid ?? '').toUpperCase();
+      const eid = (detail?.eid ?? '').toUpperCase();
       if (eid === 'END') {
         clearTimeout(safetyTimer);
         cleanup();

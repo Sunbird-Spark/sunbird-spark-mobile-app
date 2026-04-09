@@ -146,7 +146,7 @@ describe('CollectionContentPlayer', () => {
       <CollectionContentPlayer contentId="do_1" onClose={mockOnClose} />
     );
     unmount();
-    // Orientation unlock is deferred until the player cleanup promise resolves
+    // Orientation unlock is deferred via requestAnimationFrame
     await vi.waitFor(() => {
       expect(mockUnlock).toHaveBeenCalled();
     });
