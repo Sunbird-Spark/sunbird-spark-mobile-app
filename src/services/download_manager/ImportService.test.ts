@@ -458,6 +458,49 @@ describe('ImportService', () => {
     });
   });
 
+  // ── import — H5P/HTML fallback ──
+
+  describe('import — H5P/HTML fallback', () => {
+    it('falls back to worker extraction when H5P zip has absolute entry paths', async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      const { Zip } = await import('capa-zip');
+
+      // First call (ECAR unzip) -> Success
+      // Second call (H5P item unzip) -> Fail with path error
+      vi.mocked(Zip.unzip)
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Error unzipping file: Invalid zip entry path: /content/H5P.Question-1.2/scripts/question.js'));
+
+      vi.mocked(Filesystem.readFile).mockImplementation(async (options) => {
+        if (options.path.endsWith('manifest.json')) {
+          return {
+            data: JSON.stringify({
+              ver: '1.1',
+              archive: {
+                items: [{
+                  identifier: 'do_h5p',
+                  mimeType: 'application/vnd.ekstep.h5p-archive',
+                  artifactUrl: 'do_h5p/artifact.zip',
+                  status: 'Live',
+                  visibility: 'Default',
+                }]
+              }
+            })
+          } as any;
+        }
+        return { data: 'e30=' } as any;
+      });
+
+      vi.mocked(Filesystem.readdir).mockResolvedValue({
+        files: [{ name: 'index.html' }, { name: 'assets' }],
+      } as any);
+
+      const result = await svc.import('do_h5p', '/p.ecar');
+      expect(result.status).toBe('SUCCESS');
+      expect(vi.mocked(Worker)).toHaveBeenCalled();
+    });
+  });
+
   // ── import — visibility upgrade (standalone import) ──
 
   describe('import — visibility upgrade', () => {

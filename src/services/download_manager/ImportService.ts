@@ -11,6 +11,12 @@ type CancelChecker = () => Promise<boolean>;
 
 const CONTENT_DIR = 'content';
 
+const ecmlMimeTypes = [
+  'application/vnd.ekstep.ecml-archive',
+  'application/vnd.ekstep.h5p-archive',
+  'application/vnd.ekstep.html-archive',
+];
+
 /** Shape of each item inside the manifest archive */
 interface ManifestItem {
   identifier: string;
@@ -235,9 +241,9 @@ export class ImportService {
     ) {
       // EPUB → copy directly
       await this.copyAsset(itemSourcePath, destUri);
-    } else if (mimeType === 'application/vnd.ekstep.ecml-archive') {
-      // ECML archives: attempt normal unzip first.
-      // Older ECML ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
+    } else if (ecmlMimeTypes.includes(mimeType)) {
+      // ECML/H5P/HTML archives: attempt normal unzip first.
+      // Older ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
       // Fall back to our multi-threaded fflate worker to sanitize and extract.
       try {
         await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
