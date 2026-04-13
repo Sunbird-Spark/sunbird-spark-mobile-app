@@ -58,10 +58,32 @@ describe('CourseProgressEnqueuer', () => {
   });
 
   it('updates enrolled_courses progress with correct status string', async () => {
-    await enqueuer.enqueue(BASE_REQUEST);
+    await enqueuer.enqueue(BASE_REQUEST); // progress=50
 
     expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
       'course-1', 'user-1', 50, 'active',
+    );
+  });
+
+  it('maps status 1 with progress 0 → "not-started" in enrolled_courses', async () => {
+    await enqueuer.enqueue({
+      ...BASE_REQUEST,
+      contents: [{ ...BASE_REQUEST.contents[0], status: 1, progress: 0 }],
+    });
+
+    expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
+      'course-1', 'user-1', 0, 'not-started',
+    );
+  });
+
+  it('maps status 0 → "not-started" in enrolled_courses', async () => {
+    await enqueuer.enqueue({
+      ...BASE_REQUEST,
+      contents: [{ ...BASE_REQUEST.contents[0], status: 0, progress: 0 }],
+    });
+
+    expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
+      'course-1', 'user-1', 0, 'not-started',
     );
   });
 

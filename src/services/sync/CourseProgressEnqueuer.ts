@@ -30,7 +30,7 @@ export class CourseProgressEnqueuer {
       // visually reset the progress bar for in-progress (status=1) updates.
       if (progress !== undefined) {
         try {
-          const courseStatus = status === 2 ? 'completed' : 'active';
+          const courseStatus = status === 2 ? 'completed' : status === 1 && (progress ?? 0) > 0 ? 'active' : 'not-started';
           await enrolledCoursesDbService.updateProgress(courseId, userId, progress, courseStatus as any);
         } catch {
           // best-effort

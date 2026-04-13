@@ -81,7 +81,7 @@ export class EnrollmentService {
             completionPercentage: row.progress,
             progress: row.progress,
             leafNodesCount: row.details.leafNodesCount,
-            status: row.status === 'completed' ? 2 : 1,
+            status: row.status === 'completed' ? 2 : row.status === 'not-started' ? 0 : 1,
             enrolledDate: new Date(row.enrolled_on).toISOString(),
             batch: row.details.batchId ? {
                 identifier: row.details.batchId,
@@ -128,7 +128,7 @@ export class EnrollmentService {
             details,
             enrolled_on: course.enrolledDate ? new Date(course.enrolledDate).getTime() : Date.now(),
             progress: course.completionPercentage ?? course.progress ?? 0,
-            status: course.status === 2 ? 'completed' : 'active',
+            status: course.status === 2 ? 'completed' : course.status === 1 && (course.completionPercentage ?? course.progress ?? 0) > 0 ? 'active' : 'not-started',
         };
     }
 }

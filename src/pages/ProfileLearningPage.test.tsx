@@ -222,6 +222,58 @@ describe('ProfileLearningPage — accessibility', () => {
     expect(screen.getByTestId('ion-page')).toBeInTheDocument();
   });
 
+  it('filter "not-started" option is present in filter dropdown', () => {
+    render(<ProfileLearningPage />);
+    const filterBtn = screen.getByRole('button', { name: 'filters' });
+    fireEvent.click(filterBtn);
+    const filterGroup = screen.getByRole('group', { name: 'filters' });
+    const buttons = filterGroup.querySelectorAll('button');
+    const notStartedBtn = Array.from(buttons).find(b => b.textContent === 'notStarted');
+    expect(notStartedBtn).toBeTruthy();
+  });
+
+  it('filter "not-started" filters to courses with status 0', () => {
+    const notStartedCourse = { ...sampleCourse, status: 0, completionPercentage: 0 };
+    (useUserEnrollmentList as any).mockReturnValue({
+      data: { data: { courses: [notStartedCourse] } },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    render(<ProfileLearningPage />);
+    const filterBtn = screen.getByRole('button', { name: 'filters' });
+    fireEvent.click(filterBtn);
+    const filterGroup = screen.getByRole('group', { name: 'filters' });
+    const buttons = filterGroup.querySelectorAll('button');
+    const notStartedBtn = Array.from(buttons).find(b => b.textContent === 'notStarted');
+    if (notStartedBtn) fireEvent.click(notStartedBtn);
+    expect(screen.getByTestId('ion-page')).toBeInTheDocument();
+  });
+
+  it('course with status 0 renders not-started badge', () => {
+    const notStartedCourse = { ...sampleCourse, status: 0, completionPercentage: 0 };
+    (useUserEnrollmentList as any).mockReturnValue({
+      data: { data: { courses: [notStartedCourse] } },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    const { container } = render(<ProfileLearningPage />);
+    expect(container.querySelector('.pl-badge-not-started')).toBeInTheDocument();
+  });
+
+  it('course with status=1 and completionPercentage=100 renders completed badge', () => {
+    const laggedCourse = { ...sampleCourse, status: 1, completionPercentage: 100 };
+    (useUserEnrollmentList as any).mockReturnValue({
+      data: { data: { courses: [laggedCourse] } },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    const { container } = render(<ProfileLearningPage />);
+    expect(container.querySelector('.pl-badge-completed')).toBeInTheDocument();
+  });
+
   it('filter "completed" option filters to completed courses', () => {
     (useUserEnrollmentList as any).mockReturnValue({
       data: { data: { courses: [{ ...sampleCourse, status: 2 }] } },

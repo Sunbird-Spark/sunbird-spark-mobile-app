@@ -26,7 +26,13 @@ import { getPlaceholderImage } from '../utils/placeholderImages';
 import './ProfileLearningPage.css';
 import useImpression from '../hooks/useImpression';
 
-type FilterOption = 'all' | 'ongoing' | 'completed';
+type FilterOption = 'all' | 'ongoing' | 'completed' | 'not-started';
+
+function getCompletionStatus(status: number, completionPercentage: number): 'completed' | 'ongoing' | 'not-started' {
+  if (status === 2 || completionPercentage >= 100) return 'completed';
+  if (status === 1) return 'ongoing';
+  return 'not-started';
+}
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 
@@ -83,8 +89,9 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
   const { t } = useTranslation();
   const router = useIonRouter();
 
-  const isCompleted = course.status === 2;
   const progress = course.completionPercentage ?? 0;
+  const completionStatus = getCompletionStatus(course.status ?? 0, progress);
+  const isCompleted = completionStatus === 'completed';
   const hasCertificate = (course.issuedCertificates?.length ?? 0) > 0;
   const courseId = course.courseId ?? course.contentId ?? '';
   const collectionId = course.courseId ?? course.collectionId ?? course.contentId;
@@ -112,8 +119,8 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
     >
       <div className="pl-card-body">
         <div className="pl-card-info">
-          <span className={`pl-badge ${isCompleted ? 'pl-badge-completed' : 'pl-badge-ongoing'}`}>
-            {isCompleted ? t('completed') : t('ongoing')}
+          <span className={`pl-badge pl-badge-${completionStatus}`}>
+            {t(completionStatus === 'not-started' ? 'notStarted' : completionStatus)}
           </span>
           <h3 className="pl-course-title">{course.courseName ?? course.name ?? ''}</h3>
           {dueDate && (
@@ -189,8 +196,9 @@ const ProfileLearningPage: React.FC = () => {
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 
   const filteredCourses = useMemo(() => {
-    if (filter === 'ongoing') return courses.filter(c => c.status !== 2);
-    if (filter === 'completed') return courses.filter(c => c.status === 2);
+    if (filter === 'ongoing') return courses.filter(c => c.status === 1 && !((c.completionPercentage ?? 0) >= 100));
+    if (filter === 'completed') return courses.filter(c => c.status === 2 || (c.completionPercentage ?? 0) >= 100);
+    if (filter === 'not-started') return courses.filter(c => getCompletionStatus(c.status ?? 0, c.completionPercentage ?? 0) === 'not-started');
     return courses;
   }, [courses, filter]);
 
@@ -236,6 +244,7 @@ const ProfileLearningPage: React.FC = () => {
     { key: 'all', label: t('all') },
     { key: 'ongoing', label: t('ongoing') },
     { key: 'completed', label: t('completed') },
+    { key: 'not-started', label: t('notStarted') },
   ];
 
   return (

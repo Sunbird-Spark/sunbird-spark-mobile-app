@@ -78,12 +78,12 @@ const ProfilePage: React.FC = () => {
   const totalCourses = courses.length;
 
   const inProgressCount = useMemo(
-    () => courses.filter(c => (c.completionPercentage ?? 0) < 100).length,
+    () => courses.filter(c => c.status === 1 && !((c.completionPercentage ?? 0) >= 100)).length,
     [courses]
   );
 
   const completedCount = useMemo(
-    () => courses.filter(c => c.status === 2).length,
+    () => courses.filter(c => c.status === 2 || (c.completionPercentage ?? 0) >= 100).length,
     [courses]
   );
 

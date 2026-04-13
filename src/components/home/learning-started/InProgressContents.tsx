@@ -14,8 +14,8 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
   const { t } = useTranslation();
   const router = useIonRouter();
 
-  const inProgressCourses = _.filter(courses, c => (c.completionPercentage ?? 0) < 100);
-  const completedCourses = _.filter(courses, c => (c.completionPercentage ?? 0) >= 100);
+  const inProgressCourses = _.filter(courses, c => c.status === 1 && (c.completionPercentage ?? 0) < 100);
+  const completedCourses = _.filter(courses, c => c.status === 2 || (c.completionPercentage ?? 0) >= 100);
 
   const displayCourses = _.isEmpty(inProgressCourses) ? completedCourses : inProgressCourses;
   const sectionTitle = _.isEmpty(inProgressCourses) ? t('completedCourses') : t('inProgressCourses');

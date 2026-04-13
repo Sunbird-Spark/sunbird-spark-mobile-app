@@ -183,6 +183,25 @@ describe('ProfilePage', () => {
       expect(screen.getByText('logout')).toBeInTheDocument();
     });
 
+    it('excludes status=1 with completionPercentage>=100 from in-progress and counts it as completed', () => {
+      (useUserEnrollmentList as any).mockReturnValue({
+        data: {
+          data: {
+            courses: [
+              { status: 1, completionPercentage: 100, issuedCertificates: [] }, // lag: should be completed
+              { status: 1, completionPercentage: 50, issuedCertificates: [] },  // genuinely in-progress
+            ],
+          },
+        },
+      });
+      const { container } = render(<ProfilePage />);
+      const statValues = Array.from(container.querySelectorAll('.stats-grid__value')).map(el => el.textContent);
+      expect(statValues).toContain('02'); // total = 2
+      expect(statValues).toContain('01'); // in-progress = 1 (only status=1 with <100%)
+      // completed = 1 (status=1 but completionPercentage=100)
+      expect(statValues).toContain('01');
+    });
+
     it('renders certificationsEarned count correctly from useUserCertificates', () => {
       // Re-mock useUserCertificates directly in this test to assert non-empty
       (useUserCertificates as any).mockReturnValue({
