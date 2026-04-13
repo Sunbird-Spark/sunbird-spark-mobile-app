@@ -65,14 +65,14 @@ describe('CourseProgressEnqueuer', () => {
     );
   });
 
-  it('maps status 1 with progress 0 → "not-started" in enrolled_courses', async () => {
+  it('maps status 1 with progress 0 → "active" in enrolled_courses', async () => {
     await enqueuer.enqueue({
       ...BASE_REQUEST,
       contents: [{ ...BASE_REQUEST.contents[0], status: 1, progress: 0 }],
     });
 
     expect(enrolledCoursesDbService.updateProgress).toHaveBeenCalledWith(
-      'course-1', 'user-1', 0, 'not-started',
+      'course-1', 'user-1', 0, 'active',
     );
   });
 

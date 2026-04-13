@@ -174,7 +174,7 @@ describe('EnrollmentService', () => {
             );
         });
 
-        it('should save status as not-started when status=1 and progress=0', async () => {
+        it('should save status as active when status=1 and progress=0', async () => {
             const zeroProgressResponse = {
                 ...mockEnrollmentResponse,
                 data: {
@@ -192,7 +192,7 @@ describe('EnrollmentService', () => {
 
             expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith(
                 expect.arrayContaining([
-                    expect.objectContaining({ status: 'not-started' }),
+                    expect.objectContaining({ status: 'active' }),
                 ])
             );
         });
