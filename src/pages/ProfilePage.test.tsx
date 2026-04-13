@@ -197,9 +197,8 @@ describe('ProfilePage', () => {
       const { container } = render(<ProfilePage />);
       const statValues = Array.from(container.querySelectorAll('.stats-grid__value')).map(el => el.textContent);
       expect(statValues).toContain('02'); // total = 2
-      expect(statValues).toContain('01'); // in-progress = 1 (only status=1 with <100%)
-      // completed = 1 (status=1 but completionPercentage=100)
-      expect(statValues).toContain('01');
+      // in-progress = 1 and completed = 1, so '01' should appear twice across the stat cards
+      expect(statValues.filter(value => value === '01')).toHaveLength(2);
     });
 
     it('renders certificationsEarned count correctly from useUserCertificates', () => {
@@ -214,10 +213,10 @@ describe('ProfilePage', () => {
           ],
         },
       });
-      
+
       const { container } = render(<ProfilePage />);
       const statValues = Array.from(container.querySelectorAll('.stats-grid__value')).map(el => el.textContent);
-      
+
       // With 4 certificates in the array, the count should be '04'
       expect(statValues).toContain('04');
     });

@@ -30,7 +30,7 @@ type FilterOption = 'all' | 'ongoing' | 'completed' | 'not-started';
 
 function getCompletionStatus(status: number, completionPercentage: number): 'completed' | 'ongoing' | 'not-started' {
   if (status === 2 || completionPercentage >= 100) return 'completed';
-  if (status === 1) return 'ongoing';
+  if (status === 1 && !(completionPercentage >= 100)) return 'ongoing';
   return 'not-started';
 }
 
@@ -273,68 +273,68 @@ const ProfileLearningPage: React.FC = () => {
       <IonContent className="pl-content" onClick={() => filterOpen && setFilterOpen(false)}>
         <main id="main-content">
 
-        {/* Filter dropdown */}
-        {filterOpen && (
-          // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
-          <div className="pl-filter-dropdown" role="group" aria-label={t('filters')} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
-            {filterOptions.map(opt => (
+          {/* Filter dropdown */}
+          {filterOpen && (
+            // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions
+            <div className="pl-filter-dropdown" role="group" aria-label={t('filters')} onClick={e => e.stopPropagation()} onKeyDown={e => e.stopPropagation()}>
+              {filterOptions.map(opt => (
+                <button
+                  key={opt.key}
+                  className={`pl-filter-option${filter === opt.key ? ' pl-filter-active' : ''}`}
+                  onClick={() => { setFilter(opt.key); setFilterOpen(false); }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Loading */}
+          {isLoading && (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+              <IonSpinner name="crescent" />
+            </div>
+          )}
+
+          {/* Error */}
+          {isError && (
+            <div style={{ textAlign: 'center', padding: '2rem' }}>
+              <p style={{ color: 'var(--ion-color-danger)', marginBottom: '1rem' }}>{t('error')}</p>
               <button
-                key={opt.key}
-                className={`pl-filter-option${filter === opt.key ? ' pl-filter-active' : ''}`}
-                onClick={() => { setFilter(opt.key); setFilterOpen(false); }}
+                onClick={() => refetch()}
+                style={{
+                  padding: '0.5rem 1.5rem',
+                  border: '1px solid var(--ion-color-primary)',
+                  borderRadius: '0.5rem',
+                  background: 'none',
+                  color: 'var(--ion-color-primary)',
+                  cursor: 'pointer',
+                }}
               >
-                {opt.label}
+                {t('retry')}
               </button>
-            ))}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* Loading */}
-        {isLoading && (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
-            <IonSpinner name="crescent" />
-          </div>
-        )}
-
-        {/* Error */}
-        {isError && (
-          <div style={{ textAlign: 'center', padding: '2rem' }}>
-            <p style={{ color: 'var(--ion-color-danger)', marginBottom: '1rem' }}>{t('error')}</p>
-            <button
-              onClick={() => refetch()}
-              style={{
-                padding: '0.5rem 1.5rem',
-                border: '1px solid var(--ion-color-primary)',
-                borderRadius: '0.5rem',
-                background: 'none',
-                color: 'var(--ion-color-primary)',
-                cursor: 'pointer',
-              }}
-            >
-              {t('retry')}
-            </button>
-          </div>
-        )}
-
-        {/* Course list */}
-        {!isLoading && !isError && (
-          <div className="pl-cards-container">
-            {filteredCourses.length === 0 ? (
-              <p style={{ textAlign: 'center', color: 'var(--ion-color-medium)', padding: '2rem 0' }}>
-                {t('noEnrolledCourses')}
-              </p>
-            ) : (
-              filteredCourses.map(course => (
-                <CourseCard
-                  key={`${course.courseId ?? course.contentId}-${course.batchId}`}
-                  course={course}
-                  downloadingId={downloadingId}
-                  onDownloadCertificate={handleDownloadCertificate}
-                />
-              ))
-            )}
-          </div>
-        )}
+          {/* Course list */}
+          {!isLoading && !isError && (
+            <div className="pl-cards-container">
+              {filteredCourses.length === 0 ? (
+                <p style={{ textAlign: 'center', color: 'var(--ion-color-medium)', padding: '2rem 0' }}>
+                  {t('noEnrolledCourses')}
+                </p>
+              ) : (
+                filteredCourses.map(course => (
+                  <CourseCard
+                    key={`${course.courseId ?? course.contentId}-${course.batchId}`}
+                    course={course}
+                    downloadingId={downloadingId}
+                    onDownloadCertificate={handleDownloadCertificate}
+                  />
+                ))
+              )}
+            </div>
+          )}
 
         </main>
       </IonContent>
