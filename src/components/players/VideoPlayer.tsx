@@ -81,8 +81,8 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = ({
       cancelled = true;
       initializingRef.current = false;
       if (playerElement) {
-        service.removeEventListeners(playerElement);
         playerElement.remove();
+        service.removeEventListeners(playerElement);
       }
     };
   }, [metadata.identifier, metadata.isAvailableLocally]);

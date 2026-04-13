@@ -147,17 +147,48 @@ export class PdfPlayerService {
     };
 
     playerEl.addEventListener('playerEvent', playerHandler);
-    playerEl.addEventListener('telemetryEvent', telemetryHandler);
+    document.addEventListener('TelemetryEvent', telemetryHandler);
     this.eventHandlers.set(element, { player: playerHandler, telemetry: telemetryHandler });
   }
 
+  /**
+   * Remove event listeners. The global TelemetryEvent listener stays alive
+   * until the END event fires (self-removing handler) so the web component's
+   * asynchronous ngOnDestroy dispatch is captured. A 3 s safety timeout
+   * removes the listener if END never fires.
+   */
   removeEventListeners(element: HTMLElement): void {
     const handlers = this.eventHandlers.get(element);
-    if (handlers) {
-      const playerEl = this.getPlayerElement(element);
-      playerEl.removeEventListener('playerEvent', handlers.player);
-      playerEl.removeEventListener('telemetryEvent', handlers.telemetry);
-      this.eventHandlers.delete(element);
-    }
+    if (!handlers) return;
+    const playerId = element.getAttribute('data-player-id') ?? 'unknown';
+
+    const playerEl = this.getPlayerElement(element);
+    playerEl.removeEventListener('playerEvent', handlers.player);
+    this.eventHandlers.delete(element);
+
+    const originalHandler = handlers.telemetry;
+    const cleanup = () => {
+      document.removeEventListener('TelemetryEvent', selfRemovingHandler);
+    };
+    const safetyTimer = setTimeout(cleanup, 3000);
+    const selfRemovingHandler = (event: Event) => {
+      const detail = (event as CustomEvent).detail;
+
+      // Scope: only react to events from this player instance.
+      const eventContentId: string =
+        detail?.object?.id ?? detail?.context?.contentId ?? '';
+      if (eventContentId !== playerId) {
+        return;
+      }
+      originalHandler(event);
+      const eid = (detail?.eid ?? '').toUpperCase();
+      if (eid === 'END') {
+        clearTimeout(safetyTimer);
+        cleanup();
+      }
+    };
+
+    document.removeEventListener('TelemetryEvent', originalHandler);
+    document.addEventListener('TelemetryEvent', selfRemovingHandler);
   }
 }
