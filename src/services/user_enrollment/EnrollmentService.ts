@@ -99,8 +99,8 @@ export class EnrollmentService {
     ): Promise<TrackableCollection[]> {
         return Promise.all(
             courses.map(async course => {
-                const courseId       = course.courseId ?? course.contentId ?? '';
-                const batchId        = course.batchId ?? '';
+                const courseId = course.courseId ?? course.contentId ?? '';
+                const batchId = course.batchId ?? '';
                 const leafNodesCount = course.leafNodesCount ?? 0;
                 if (!courseId || !batchId) return course;
                 const localPct = await contentStateSyncService
@@ -128,7 +128,7 @@ export class EnrollmentService {
             details,
             enrolled_on: course.enrolledDate ? new Date(course.enrolledDate).getTime() : Date.now(),
             progress: course.completionPercentage ?? course.progress ?? 0,
-            status: course.status === 2 ? 'completed' : course.status === 1 && (course.completionPercentage ?? course.progress ?? 0) > 0 ? 'active' : 'not-started',
+            status: course.status === 2 ? 'completed' : course.status === 1 && (course.completionPercentage ?? course.progress ?? 0) < 100 ? 'active' : 'not-started',
         };
     }
 }

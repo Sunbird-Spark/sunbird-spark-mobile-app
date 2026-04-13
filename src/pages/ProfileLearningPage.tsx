@@ -30,7 +30,7 @@ type FilterOption = 'all' | 'ongoing' | 'completed' | 'not-started';
 
 function getCompletionStatus(status: number, completionPercentage: number): 'completed' | 'ongoing' | 'not-started' {
   if (status === 2 || completionPercentage >= 100) return 'completed';
-  if (status === 1 && !(completionPercentage >= 100)) return 'ongoing';
+  if (status === 1 && completionPercentage < 100) return 'ongoing';
   return 'not-started';
 }
 
@@ -196,7 +196,7 @@ const ProfileLearningPage: React.FC = () => {
   const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
 
   const filteredCourses = useMemo(() => {
-    if (filter === 'ongoing') return courses.filter(c => c.status === 1 && !((c.completionPercentage ?? 0) >= 100));
+    if (filter === 'ongoing') return courses.filter(c => c.status === 1 && (c.completionPercentage ?? 0) < 100);
     if (filter === 'completed') return courses.filter(c => c.status === 2 || (c.completionPercentage ?? 0) >= 100);
     if (filter === 'not-started') return courses.filter(c => getCompletionStatus(c.status ?? 0, c.completionPercentage ?? 0) === 'not-started');
     return courses;

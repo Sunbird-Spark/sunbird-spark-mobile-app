@@ -78,7 +78,7 @@ const ProfilePage: React.FC = () => {
   const totalCourses = courses.length;
 
   const inProgressCount = useMemo(
-    () => courses.filter(c => c.status === 1 && !((c.completionPercentage ?? 0) >= 100)).length,
+    () => courses.filter(c => c.status === 1 && (c.completionPercentage ?? 0) < 100).length,
     [courses]
   );
 
@@ -133,40 +133,40 @@ const ProfilePage: React.FC = () => {
 
         <IonContent fullscreen className="profile-content">
           <main id="main-content">
-          {/* Guest profile card */}
-          <div className="profile-info-card">
-            <div className="profile-avatar-wrapper">
-              <Avatar name={t('guestUser')} round={true} size="133" color="var(--ion-color-medium)" className="profile-avatar" />
+            {/* Guest profile card */}
+            <div className="profile-info-card">
+              <div className="profile-avatar-wrapper">
+                <Avatar name={t('guestUser')} round={true} size="133" color="var(--ion-color-medium)" className="profile-avatar" />
+              </div>
+              <h2 className="profile-name">{t('guestUser')}</h2>
             </div>
-            <h2 className="profile-name">{t('guestUser')}</h2>
-          </div>
 
-          {/* Sign-in prompt */}
-          <div className="profile-signin-prompt">
-            <p className="profile-signin-message">
-              {t('signInToAccess')}
-            </p>
-            <button
-              className="my-learning__sign-in-button"
-              onClick={() => router.push('/sign-in', 'forward', 'push')}
-            >
-              {t('signIn')}
-            </button>
-          </div>
+            {/* Sign-in prompt */}
+            <div className="profile-signin-prompt">
+              <p className="profile-signin-message">
+                {t('signInToAccess')}
+              </p>
+              <button
+                className="my-learning__sign-in-button"
+                onClick={() => router.push('/sign-in', 'forward', 'push')}
+              >
+                {t('signIn')}
+              </button>
+            </div>
 
-          {/* Downloaded Contents & Settings — always visible */}
-          <IonList className="profile-actions-list profile-guest-actions" lines="none">
-            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
-              <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
-              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-            </IonItem>
-            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/settings', 'forward', 'push')}>
-              <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
-              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-            </IonItem>
-          </IonList>
+            {/* Downloaded Contents & Settings — always visible */}
+            <IonList className="profile-actions-list profile-guest-actions" lines="none">
+              <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
+                <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
+                <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+              </IonItem>
+              <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/settings', 'forward', 'push')}>
+                <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
+                <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+              </IonItem>
+            </IonList>
 
-          <div className="profile-bottom-spacer"></div>
+            <div className="profile-bottom-spacer"></div>
           </main>
         </IonContent>
 
@@ -182,64 +182,64 @@ const ProfilePage: React.FC = () => {
 
       <IonContent fullscreen className="profile-content">
         <main id="main-content">
-        {/* Profile Info Card */}
-        <div className="profile-info-card">
-          <div className="profile-avatar-wrapper">
-            <Avatar name={fullName} round={true} size="133" color="var(--ion-color-primary-tint)" className="profile-avatar" />
+          {/* Profile Info Card */}
+          <div className="profile-info-card">
+            <div className="profile-avatar-wrapper">
+              <Avatar name={fullName} round={true} size="133" color="var(--ion-color-primary-tint)" className="profile-avatar" />
+            </div>
+
+            <h2 className="profile-name">{fullName}</h2>
+            <p className="profile-email">{t('sunbirdId')} : {profile?.userName ?? ''}</p>
+
+            <div className="profile-roles">
+              {roles.length > 0 ? roles.map((role, i) => (
+                <React.Fragment key={role}>
+                  {i > 0 && <span className="profile-role-dot"></span>}
+                  <span className="profile-role">{role}</span>
+                </React.Fragment>
+              )) : (
+                <span className="profile-role">{t('learner')}</span>
+              )}
+            </div>
           </div>
 
-          <h2 className="profile-name">{fullName}</h2>
-          <p className="profile-email">{t('sunbirdId')} : {profile?.userName ?? ''}</p>
+          {/* Stats Grid — reuses the same component as HomePage */}
+          <LearningStatsGrid
+            totalCourses={totalCourses}
+            coursesInProgress={inProgressCount}
+            coursesCompleted={completedCount}
+            certificationsEarned={certificatesEarned}
+          />
 
-          <div className="profile-roles">
-            {roles.length > 0 ? roles.map((role, i) => (
-              <React.Fragment key={role}>
-                {i > 0 && <span className="profile-role-dot"></span>}
-                <span className="profile-role">{role}</span>
-              </React.Fragment>
-            )) : (
-              <span className="profile-role">{t('learner')}</span>
-            )}
-          </div>
-        </div>
+          {/* Action Items */}
+          <IonList className="profile-actions-list" lines="none">
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/personal-details', 'forward', 'push')}>
+              <IonLabel className="profile-action-label">{t('personalInformation')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
 
-        {/* Stats Grid — reuses the same component as HomePage */}
-        <LearningStatsGrid
-          totalCourses={totalCourses}
-          coursesInProgress={inProgressCount}
-          coursesCompleted={completedCount}
-          certificationsEarned={certificatesEarned}
-        />
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/learning', 'forward', 'push')}>
+              <IonLabel className="profile-action-label">{t('myLearning')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
 
-        {/* Action Items */}
-        <IonList className="profile-actions-list" lines="none">
-          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/personal-details', 'forward', 'push')}>
-            <IonLabel className="profile-action-label">{t('personalInformation')}</IonLabel>
-            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-          </IonItem>
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
+              <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/learning', 'forward', 'push')}>
-            <IonLabel className="profile-action-label">{t('myLearning')}</IonLabel>
-            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-          </IonItem>
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/settings', 'forward', 'push')}>
+              <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
 
-          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
-            <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
-            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-          </IonItem>
+            <IonItem className="profile-action-item" button detail={false} onClick={handleLogout} disabled={isCheckingSync}>
+              <IonIcon icon={logOutOutline} slot="start" className="profile-action-chevron" />
+              <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
+            </IonItem>
+          </IonList>
 
-          <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/settings', 'forward', 'push')}>
-            <IonLabel className="profile-action-label">{t('settings')}</IonLabel>
-            <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
-          </IonItem>
-
-          <IonItem className="profile-action-item" button detail={false} onClick={handleLogout} disabled={isCheckingSync}>
-            <IonIcon icon={logOutOutline} slot="start" className="profile-action-chevron" />
-            <IonLabel className="profile-action-label">{t('logout')}</IonLabel>
-          </IonItem>
-        </IonList>
-
-        <div className="profile-bottom-spacer"></div>
+          <div className="profile-bottom-spacer"></div>
         </main>
 
         <IonAlert
