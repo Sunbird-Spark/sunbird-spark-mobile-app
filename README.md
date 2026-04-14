@@ -8,7 +8,7 @@ The Spark mobile app is built on **React + Ionic 8** with **Capacitor 7** as the
 - **Vite as the build tool** — The app uses Vite 7 for fast hot module replacement during web development and faster production builds.
 - **Offline-first design** — Content is downloaded as `.ecar` files (content packages) to device filesystem storage, with metadata tracked in SQLite. PDF, Video, ePub, and QuML players can render content from local files without any network connection.
 - **Telemetry sync** — Telemetry events are staged in SQLite when offline and synced to the server in batches when connectivity is restored.
-- **Multilingual support** — The app ships with translations for English, Hindi, French, Portuguese, and Arabic. Arabic includes RTL layout support, and language preference is persisted in browser localStorage across sessions.
+- **Multilingual support** — The app ships with translations for English, French, Portuguese, and Arabic. Arabic includes RTL layout support, and language preference is persisted in browser localStorage across sessions.
 
 ---
 
