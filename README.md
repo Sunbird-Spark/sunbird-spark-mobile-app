@@ -106,6 +106,8 @@ Place your `google-services.json` file in:
 android/app/
 ```
 
+> **Note:** `google-services.json` is added to `.gitignore` and should never be committed. It contains sensitive Firebase credentials.
+
 The build system checks for this file and applies the Google Services Gradle plugin conditionally.
 
 ### Step 5 — Build and Run on Android
