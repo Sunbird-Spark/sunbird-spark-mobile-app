@@ -1,0 +1,206 @@
+{
+  "categories": [
+    {
+      "name": "Conteúdo (pesquisa)",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "A mensagem \"Conteúdo em breve\" é apresentada no meu ecrã e não consigo ver nenhum conteúdo para o código QR lido",
+          "description": "O seu Estado está atualmente a criar conteúdo para este código QR. O atraso deve-se ao elevado número de manuais escolares para diversas turmas, meios e disciplinas. Verá o conteúdo assim que o Estado o tiver criado."
+        },
+        {
+          "topic": "Não consigo ver conteúdo para o meu conselho, meio, turma ou disciplina",
+          "description": "O seu Estado ainda não criou nem adicionou conteúdo para o seu meio, conselho, turma ou disciplina. Se vir livros listados na biblioteca da aplicação, é muito provável que obtenha o conteúdo neste ano letivo."
+        },
+        {
+          "topic": "Quero obter a aplicação móvel no iOS ou no computador",
+          "description": "Pode visitar https://dev.sunbirded.org/explore/ utilizando o seu navegador em dispositivos iOS ou computador para visualizar o conteúdo. Estamos atualmente a desenvolver uma aplicação de computador para utilização offline que deverá estar pronta ainda este ano"
+        },
+        {
+          "topic": "Não consigo ver o botão de leitura de código QR",
+          "description": "Isto deve-se a uma versão desatualizada do componente \u003Cb\u003EAndroid System WebView\u003C/b\u003E no seu telemóvel. Para atualizar o componente WebView:\n1. Aceda à Google Play Store\n2. Aceda à hiperligação do Android WebView. Utilize https://play.google.com/store/apps/details?id=com.google.android.webview.\n\nNota: O Android WebView é um componente pré-instalado que permite que as aplicações Android apresentem conteúdo web.\nDeve ser mantido atualizado para garantir as atualizações de segurança mais recentes."
+        },
+        {
+          "topic": "Quero aceder a recursos específicos por tipo",
+          "description": "\u003Cul\u003E\u003Cli\u003EClique no separador \u003Cb\u003ETipo de recurso\u003C/b\u003E na página inicial\u003C/li\u003E\u003Cli\u003ESelecione Projeto, Observação, Inquérito ou Curso\u003C/li\u003E\u003Cli\u003EÉ apresentada uma lista de recursos disponíveis do tipo de recurso selecionado para a sua função e localização\u003C/li\u003E\u003Cli\u003EClique no recurso pretendido da lista para o utilizar ou iniciar\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Reprodução de conteúdo",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Tenho um dispositivo com Android 4.4, não consigo reproduzir conteúdo nele",
+          "description": "A versão Android 4.4 não suporta HTML5 e, por isso, nem todo o conteúdo pode ser reproduzido. Para reproduzir conteúdo num dispositivo com a versão Android 4.4, tente o seguinte:\n\u003Cul\u003E\n\u003Cli\u003EAtualize a versão do Android para a mais recente, de preferência para uma versão superior a 5.1\u003C/li\u003E\n\u003Cli\u003EAtualize a aplicação móvel {{APP_NAME}} para a versão mais recente\u003C/li\u003E\n\u003C/ul\u003EA aplicação solicita a transferência e instalação do Crosswalk ao reproduzir conteúdo na versão Android 4.4. A utilização do Crosswalk permite reproduzir a maioria do conteúdo na versão Android 4.4\n\n"
+        },
+        {
+          "topic": "Quero reproduzir conteúdo quando não há Internet",
+          "description": "Só pode transferir conteúdo quando está ligado à Internet. Apenas o conteúdo transferido pode ser reproduzido posteriormente sem Internet.\nSó pode reproduzir vídeos do YouTube quando está ligado à Internet porque o YouTube não permite que outras aplicações transfiram vídeos."
+        },
+        {
+          "topic": "O conteúdo ocupa muito espaço no meu telemóvel",
+          "description": "Pode eliminar o conteúdo transferido a partir do separador de transferências na aplicação para libertar espaço"
+        },
+        {
+          "topic": "Quando tento reproduzir um vídeo, recebo o erro \"Não foi possível carregar o conteúdo multimédia\"",
+          "description": "Se receber este erro, pode:\n\u003Cul\u003E\u003Cli\u003ETransferir o vídeo e reproduzi-lo,\u003C/li\u003E\u003C/ul\u003EOU\n\u003Cul\u003E\u003Cli\u003ESe não vir a opção de transferência, e se tiver um cartão SIM de outro operador de rede, mude para a outra rede e tente novamente\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quando tento reproduzir um PDF, recebo o erro \"PDF em falta\"",
+          "description": "Se receber este erro, deve:\n\u003Cul\u003E\u003Cli\u003EAtualizar a aplicação (se houver uma atualização disponível)\u003C/ul\u003E\u003C/li\u003E\nSe continuar a ter este problema após a atualização, então\n\u003Cul\u003E\u003Cli\u003EEliminar o PDF se o tiver transferido\u003C/li\u003E\n\u003Cli\u003EVerificar a sua ligação à Internet e tentar reproduzir o conteúdo novamente\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Perfil",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Não consigo ver o meu conselho, meio, turma e disciplina",
+          "description": "O seu Estado não suporta atualmente todos os conselhos, meios, turmas e disciplinas. Assim que o seu Estado os adicionar, verá na lista."
+        },
+        {
+          "topic": "Não consigo ver as definições do meu perfil",
+          "description": "Isto deve-se a uma versão desatualizada do componente \u003Cb\u003EAndroid System WebView\u003C/b\u003E no seu telemóvel. Para atualizar o componente WebView:\n1. Aceda à Google Play Store\n2. Aceda à hiperligação do Android WebView. Utilize https://play.google.com/store/apps/details?id=com.google.android.webview\n\nNota: O Android WebView é um componente pré-instalado que permite que as aplicações Android apresentem conteúdo web.\nDeve ser mantido atualizado para garantir as atualizações de segurança mais recentes."
+        },
+        {
+          "topic": "Estou com sessão iniciada como Professor ou Outro. Quero alterar a minha função",
+          "description": "\u003Cul\u003E\u003Cli\u003EAceda à página de \u003Cb\u003EPerfil\u003C/b\u003E\u003C/li\u003E\u003Cli\u003EClique em \u003Cb\u003EEditar\u003C/b\u003E abaixo dos detalhes da sua função e localização\u003C/li\u003E\u003Cli\u003EModifique a sua função\u003C/li\u003E\u003Cli\u003E\u003Cb\u003ENota:\u003C/b\u003E Se pretender modificar a sua função para \u003Cb\u003ELíder\u003C/b\u003E, selecione a sua subfunção e os detalhes de localização relevantes\u003C/li\u003E\u003Cli\u003EClique em \u003Cb\u003ESubmeter\u003C/b\u003E\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero ver os programas e recursos para a minha função e localização",
+          "description": "\u003Cul\u003E\u003Cli\u003EClique em \u003Cb\u003EProgramas\u003C/b\u003E na página inicial\u003C/li\u003E\u003Cli\u003EÉ apresentada a lista de programas para a sua função e localização\u003C/li\u003E\u003Cli\u003ESelecione um programa para ver todos os recursos associados\u003C/li\u003E\u003Cli\u003EClique no recurso para o utilizar ou iniciar\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "O meu perfil não reflete corretamente o meu progresso no curso",
+          "description": "Para atualizar o seu progresso no curso no seu perfil, aceda a \u003Cb\u003EAs minhas aprendizagens\u003C/b\u003E. Clique no Curso. Após o curso abrir, aceda ao menu kebab (três pontos verticais à direita)\u003E clique em \u003Cb\u003ESincronizar progresso agora\u003C/b\u003E. Aguarde alguns minutos. O seu perfil deverá agora refletir o seu progresso correto no curso"
+        }
+      ]
+    },
+    {
+      "name": "Início de sessão",
+      "videos": [
+        {
+          "id": "01",
+          "name": "Vídeo de exemplo",
+          "thumbnail": "https://ntpproductionall.blob.core.windows.net/ntp-content-production/content/do_31309320735055872011111/artifact/nishtha_icon.thumb.jpg",
+          "url": "https://ntpproductionall.blob.core.windows.net/ntp-content-production/content/assets/do_31309320735055872011111/engagement-with-language-.mp4"
+        }
+      ],
+      "faqs": [
+        {
+          "topic": "Não consigo iniciar sessão",
+          "description": "Para utilizar a aplicação móvel {{APP_NAME}}, deve primeiro registar-se. Pode registar-se quando estiver ligado à Internet utilizando qualquer uma destas opções:\n\t\t\u003Cul\u003E\n\t\t\u003Cli\u003ENúmero de telemóvel ou endereço de e-mail registado\u003C/li\u003E\n\t\t\u003Cli\u003EID fornecido pelo Estado\u003C/li\u003E\n\t\t\u003Cli\u003EID Google (Gmail) existente\u003C/li\u003E\n\t\t\u003C/ul\u003ESe já se registou, verifique se tem uma ligação à Internet adequada."
+        }
+      ]
+    },
+    {
+      "name": "Criação de conteúdo",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Quero criar e adicionar conteúdo no {{APP_NAME}}",
+          "description": "Atualmente, o Estado designa professores para criar e adicionar conteúdo no {{APP_NAME}}. Se estiver interessado em criar conteúdo, envie um pedido à autoridade do seu Estado para obter direitos de criação"
+        }
+      ]
+    },
+    {
+      "name": "Cursos e certificados",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Quero cancelar a inscrição num curso",
+          "description": "Selecione o curso do qual pretende cancelar a inscrição, toque no menu de opções (três pontos verticais) no canto superior direito e toque em 'Cancelar inscrição'"
+        },
+        {
+          "topic": "Quero saber o estado de conclusão do meu curso",
+          "description": "Após concluir com sucesso um curso, o nome do curso será apresentado na secção 'Formações frequentadas' na sua página de perfil"
+        },
+        {
+          "topic": "Concluí a formação, mas o meu progresso não está a 100%.",
+          "description": "O Sunbird marca o progresso da formação como 100% apenas após visualizar todos os vídeos ou ler todos os documentos PDF na íntegra. Se visualizar um vídeo parcialmente ou saltar páginas ao ler um documento, o seu progresso não será marcado como 100%."
+        },
+        {
+          "topic": "Não consigo transferir o meu certificado de curso",
+          "description": "Pode ter uma versão mais antiga da aplicação. Aceda a \u003Cb\u003EPlay Store \u003E Sunbird\u003C/b\u003E. Clique em \u003Cb\u003EAtualizar\u003C/b\u003E para obter a versão mais recente da aplicação. Deverá conseguir transferir o certificado assim que tiver atualizado a aplicação com sucesso."
+        }
+      ]
+    },
+    {
+      "name": "Outros",
+      "faqs": [
+        {
+          "topic": "Concluí a minha formação iGOT COVID, mas não recebi o meu certificado",
+          "description": "O seu certificado de conclusão da formação COVID será emitido no prazo de 7 dias úteis após concluir qualquer formação COVID. Será informado por e-mail ou SMS quando o certificado for emitido. Se não receber o seu certificado no prazo de 7 dias úteis, contacte \u003Ca href=\"mailto:support@i-got.freshdesk.com\"\u003Esupport@i-got.freshdesk.com\u003C/a\u003E."
+        },
+        {
+          "topic": "Quero transferir o meu certificado de conclusão da formação iGOT COVID",
+          "description": "O seu certificado de conclusão da formação iGOT COVID será emitido no prazo de 7 dias úteis após concluir qualquer formação COVID. Será informado por e-mail ou SMS quando o certificado for emitido. Após receber a informação, para transferir o seu certificado:\u003Cul\u003E\u003Cli\u003EAceda a \u003Cb\u003EPerfil\u003C/b\u003E \u003E \u003Cb\u003EFormações frequentadas\u003C/b\u003E\u003C/li\u003E\u003Cli\u003EClique em \u003Cb\u003ETransferir\u003C/b\u003E\u003C/li\u003E\u003Cli\u003EO certificado é transferido em segundo plano\u003C/li\u003E\u003Cli\u003EVisualize e abra-o a partir do gestor de ficheiros do seu Android\u003C/li\u003E\u003C/ul\u003E\nSe não receber o seu certificado no prazo de 7 dias úteis, contacte \u003Ca href=\"mailto:support@i-got.freshdesk.com\"\u003Esupport@i-got.freshdesk.com\u003C/a\u003E."
+        },
+        {
+          "topic": "Quero saber se concluí a minha formação",
+          "description": "Para saber se concluiu a formação COVID, verifique se:\u003Cul\u003E\u003Cli\u003EO estado do progresso da sua formação é 100%\u003C/li\u003E\u003Cli\u003EO nome da formação aparece em \u003Cb\u003EPerfil\u003C/b\u003E \u003E \u003Cb\u003EFormações frequentadas\u003C/b\u003E\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    },
+    {
+      "name": "Gestão de projetos",
+      "videos": [],
+      "faqs": [
+        {
+          "topic": "Quero editar os detalhes do projeto",
+          "description": "\u003Cul\u003E\u003Cli\u003E1. Abra o projeto\u003C/li\u003E\u003Cli\u003E2. Clique nos 3 pontos no canto superior direito\u003C/li\u003E\u003Cli\u003EClique em \u003Cb\u003EEditar\u003C/b\u003E\u003C/li\u003E\u003Cli\u003EClique no ícone \u003Cb\u003EEditar\u003C/b\u003E (lápis) para editar os detalhes\u003C/li\u003E\u003Cli\u003EClique em \u003Cb\u003EGuardar edições\u003C/b\u003E para guardar as alterações\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero alterar o estado de uma tarefa quando não existem subtarefas",
+          "description": "\u003Cul\u003E\u003Cli\u003EAbra o projeto\u003C/li\u003E\u003Cli\u003EClique na tarefa\u003C/li\u003E\u003Cli\u003EClique na lista pendente abaixo da tarefa\u003C/li\u003E\u003Cli\u003EModifique o estado e clique em OK\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero alterar o estado de uma tarefa quando existem subtarefas",
+          "description": "\u003Cul\u003E\u003Cli\u003EAbra o projeto\u003C/li\u003E\u003Cli\u003EClique na tarefa pretendida\u003C/li\u003E\u003Cli\u003EÉ apresentada uma lista de subtarefas\u003C/li\u003E\u003Cli\u003EClique na lista pendente da subtarefa\u003C/li\u003E\u003Cli\u003EModifique o estado e clique em OK\u003C/li\u003E\u003Cli\u003E\u003Cb\u003ENota:\u003C/b\u003E O estado da tarefa é marcado como concluído automaticamente apenas se o estado de todas as suas subtarefas estiver concluído.\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero adicionar um ficheiro de evidência ao projeto após a conclusão da tarefa",
+          "description": "\u003Cul\u003E\u003Cli\u003E1. Abra o \u003Cb\u003EProjeto\u003C/b\u003E\u003C/li\u003E\u003Cli\u003E2. Clique na tarefa concluída\u003C/li\u003E\u003Cli\u003E3. Clique em \u003Cb\u003EAdicionar anexo\u003C/b\u003E no canto inferior direito\u003C/li\u003E\u003Cli\u003E4. Clique em \u003Cb\u003EUtilizar câmara\u003C/b\u003E para tirar uma fotografia\u003C/li\u003E\u003Cli\u003E5. Clique em \u003Cb\u003ECarregar da biblioteca\u003C/b\u003E para selecionar a imagem do seu telemóvel\u003C/li\u003E\u003Cli\u003E6. Verá a mensagem \u003Cb\u003EAnexado com sucesso\u003C/b\u003E na janela pop-up no topo do seu ecrã\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero adicionar um ficheiro de evidência para a Observação ou Inquérito (Apenas quando uma pergunta tem a opção de ficheiros)",
+          "description": "\u003Cul\u003E\u003Cli\u003EInicie o questionário de observação/inquérito\u003C/li\u003E\u003Cli\u003EClique na opção de ficheiros na pergunta\u003C/li\u003E\u003Cli\u003ESelecione câmara/carregar imagem\u003C/li\u003E\u003Cli\u003EÉ adicionado um ícone de imagem para indicar que a evidência foi adicionada.\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero aceder aos meus relatórios de Projeto no {{APP_NAME}}",
+          "description": "\u003Cul\u003E\u003Cli\u003EClique em \u003Cb\u003ERelatórios\u003C/b\u003E na página inicial\u003C/li\u003E\u003Cli\u003ESelecione o tipo de recurso como Projeto\u003C/li\u003E\u003Cli\u003EVisualize o relatório de visão geral do projeto, tarefas e categorias\u003C/li\u003E\u003Cli\u003EClique no filtro para selecionar um programa específico\u003C/li\u003E\u003Cli\u003EClique em 'Ver relatório' para relatórios detalhados\u003C/li\u003E\u003C/ul\u003E"
+        },
+        {
+          "topic": "Quero aceder aos meus relatórios de Observação no {{APP_NAME}}",
+          "description": "\u003Cul\u003E\u003Cli\u003EClique em \u003Cb\u003ERelatórios\u003C/b\u003E na página inicial\u003C/li\u003E\u003Cli\u003ESelecione o tipo de recurso como \u003Cb\u003EObservação\u003C/b\u003E\u003C/li\u003E\u003Cli\u003ESelecione o formulário de observação\u003C/li\u003E\u003Cli\u003ESelecione a Entidade\u003C/li\u003E\u003Cli\u003EClique em \u003Cb\u003EVer relatório da Entidade\u003C/b\u003E\u003C/li\u003E\u003C/ul\u003E"
+        }
+      ]
+    }
+  ],
+  "constants": {
+    "charactersLeft": "caracteres restantes",
+    "explainMsg": "Poderia explicar o problema?",
+    "faqMsg": "Perguntas frequentes",
+    "faqTitle": "FAQ(s)",
+    "help": "Ajuda",
+    "helpMsg": "Esta resposta foi-lhe útil?",
+    "initiateEmailButton": "Iniciar e-mail",
+    "knowMoreMsg": "O que mais gostaria de saber?",
+    "noMsg": "Não",
+    "reportIssue": "Reportar um problema",
+    "reportIssueMsg": "Reportar outro problema",
+    "resolveMsg": "Obtenha ajuda para encontrar conteúdo, resolver problemas técnicos e muito mais. Navegue pelos tópicos para encontrar perguntas frequentes, vídeos de ajuda e muito mais.",
+    "selectCategoryTitle": "Selecionar categoria",
+    "sorryMsg": "Lamentamos!",
+    "submitButton": "Submeter comentário",
+    "tellMoreMsg": "Diga-nos mais sobre o problema que enfrentou",
+    "thanksForFeedbackMsg": "Obrigado pelo seu comentário. Poderemos não conseguir responder a todas as sugestões que nos são enviadas, mas o seu comentário é valioso. Ajuda a tornar o {{app_name}} melhor para todos.",
+    "thanksMsg": "Obrigado pela sua resposta!",
+    "triggerEmailMsg": "Após adicionar os detalhes na caixa de texto e tocar no botão Iniciar e-mail, enviaremos um e-mail em seu nome. Pode adicionar mais detalhes e/ou anexar ficheiros aí.",
+    "typeHere": "Escreva aqui...",
+    "videoTitle": "Vídeo(s)",
+    "yesMsg": "Sim"
+  }
+}

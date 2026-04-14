@@ -1,0 +1,254 @@
+/* ── Detail Page ── */
+.cp-page {
+  --background: var(--ion-color-step-50, #f4f4f4);
+}
+
+.cp-container {
+  padding-bottom: 1.5rem;
+}
+
+/* ── Header (matches CollectionPage) ── */
+.cp-toolbar {
+  --background: var(--color-white);
+  --min-height: auto;
+  --border-width: 0;
+  --color: var(--ion-color-dark, #222222);
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
+}
+
+.cp-toolbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cp-header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.cp-icon-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cp-icon-btn ion-icon {
+  font-size: 1.25rem;
+}
+
+/* ── Hero Section ── */
+.cp-hero {
+  background: var(--color-white);
+  padding: 1rem 1.25rem 1.875rem;
+  box-shadow: 0 0.875rem 0.875rem rgba(0, 0, 0, 0.05);
+  border-bottom-left-radius: 1.25rem;
+  border-bottom-right-radius: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.cp-meta {
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  gap: 4px;
+}
+
+.cp-meta h1 {
+  font-family: var(--ion-font-family);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.cp-description {
+  font-family: var(--ion-font-family);
+  font-size: 0.875rem;
+  color: var(--ion-color-medium, #757575);
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Player / Thumbnail Area ── */
+.cp-player-area {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  position: relative;
+  background-color: var(--color-0b7f8c, #0b7f8c);
+  box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+}
+
+.cp-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cp-play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 3rem;
+  height: 3rem;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0.125rem 0.125rem 2.125rem rgba(0, 0, 0, 0.4);
+}
+
+/* ── Loading & Error ── */
+.cp-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.cp-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  color: var(--ion-color-medium);
+  padding: 2rem;
+  gap: 1rem;
+}
+
+/* ══════════════════════════════════════
+   Fullscreen Player Mode
+   ══════════════════════════════════════ */
+.cp-fullscreen {
+  --background: #000;
+}
+
+.cp-fullscreen ion-content {
+  --background: #000;
+}
+
+.cp-player-fullscreen-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+  box-sizing: border-box;
+}
+
+.cp-close-btn {
+  position: absolute;
+  top: calc(0.75rem + var(--safe-area-top));
+  left: calc(0.75rem + var(--safe-area-left));
+  z-index: 100;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.5);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* ── Video Player Overrides (matching portal) ── */
+
+/* Video.js overrides are now injected by VideoPlayerService to ensure
+   they apply consistently across all player instances (standalone and collection) */
+
+/* Make background transparent */
+[data-video-player-wrapper] .video-js {
+  background-color: transparent !important;
+}
+
+/* Ensure control bar is always interactive */
+[data-video-player-wrapper] .vjs-control-bar {
+  z-index: 3 !important;
+  pointer-events: auto !important;
+}
+
+/* Keep control bar visible and clickable when video is paused */
+[data-video-player-wrapper] .vjs-paused .vjs-control-bar,
+[data-video-player-wrapper] .vjs-paused.vjs-user-inactive .vjs-control-bar {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* Player embed classes used by player components */
+.content-player-wrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.content-player-embed {
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Offline Guard ── */
+.cp-offline-guard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+  color: var(--ion-text-color);
+}
+
+.cp-offline-icon {
+  font-size: 48px;
+  color: var(--ion-color-medium);
+  margin-bottom: 1rem;
+}
+
+.cp-offline-guard h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.cp-offline-guard p {
+  font-size: 0.9rem;
+  color: var(--ion-color-medium);
+  margin: 0 0 1.5rem;
+}
+
+.cp-offline-back {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid var(--ion-color-medium);
+  border-radius: 8px;
+  background: none;
+  color: var(--ion-text-color);
+  font-size: 0.9rem;
+  cursor: pointer;
+}

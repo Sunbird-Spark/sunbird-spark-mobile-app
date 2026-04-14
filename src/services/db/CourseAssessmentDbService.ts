@@ -1,0 +1,105 @@
+import { databaseService } from './DatabaseService';
+import { CourseContext } from '../sync/types';
+
+export interface AssessmentRow {
+  _id:              number;
+  assessment_event: string;
+  content_id:       string;
+  created_at:       number;
+  uid:              string;
+  course_id:        string;
+  batch_id:         string;
+  attempt_id:       string;
+}
+
+export interface AssessmentGroup {
+  uid:        string;
+  content_id: string;
+  course_id:  string;
+  batch_id:   string;
+  first_ts:   number;
+  attempt_id: string;
+  events:     any[];
+  ids:        number[];
+}
+
+export class CourseAssessmentDbService {
+  async insert(event: any, context: CourseContext, attemptId: string): Promise<void> {
+    await databaseService.insert('course_assessment', {
+      assessment_event: JSON.stringify(event),
+      content_id:       event?.object?.id ?? '',
+      created_at:       typeof event?.ets === 'number' ? event.ets : Date.now(),
+      uid:              context.userId,
+      course_id:        context.courseId,
+      batch_id:         context.batchId,
+      attempt_id:       attemptId,
+    });
+  }
+
+  /** Return all rows grouped by (uid, content_id, course_id, batch_id) for aggregation. */
+  async getGroupedForSync(): Promise<AssessmentGroup[]> {
+    const db = databaseService.getDb();
+    const result = await db.query(
+      `SELECT _id, assessment_event, content_id, created_at, uid, course_id, batch_id, attempt_id
+       FROM course_assessment
+       ORDER BY uid, course_id, batch_id, content_id, created_at ASC`,
+      []
+    );
+    const rows: AssessmentRow[] = (result.values ?? []) as AssessmentRow[];
+
+    const groupMap = new Map<string, AssessmentGroup>();
+    for (const row of rows) {
+      const key = `${row.uid}||${row.course_id}||${row.batch_id}||${row.content_id}||${row.attempt_id}`;
+      let group = groupMap.get(key);
+      if (!group) {
+        group = {
+          uid:        row.uid,
+          content_id: row.content_id,
+          course_id:  row.course_id,
+          batch_id:   row.batch_id,
+          first_ts:   row.created_at,
+          // Use the attempt_id from the first (earliest) row in the group — stable
+          // across crash-recovery re-runs as long as staging rows survive.
+          attempt_id: row.attempt_id,
+          events:     [],
+          ids:        [],
+        };
+        groupMap.set(key, group);
+      }
+      try {
+        group.events.push(JSON.parse(row.assessment_event));
+      } catch {
+        // skip malformed events
+      }
+      group.ids.push(row._id);
+    }
+
+    return Array.from(groupMap.values());
+  }
+
+  async deleteByIds(ids: number[]): Promise<void> {
+    if (ids.length === 0) return;
+    const db = databaseService.getDb();
+    const placeholders = ids.map(() => '?').join(', ');
+    await db.run(`DELETE FROM course_assessment WHERE _id IN (${placeholders})`, ids);
+  }
+
+  async getCount(): Promise<number> {
+    return databaseService.count('course_assessment');
+  }
+
+  /** Removes all staging rows for a user on logout so they are not picked up
+   *  by a subsequent sync that could run under a different user's session. */
+  async clearAllForUser(userId: string): Promise<void> {
+    await databaseService.delete('course_assessment', { eq: { uid: userId } });
+  }
+
+  /** Returns the number of unsent assessment events still in the staging table
+   *  for a user. Staging rows haven't been moved to network_queue yet so
+   *  getPendingCount alone would miss them when checking for data loss on logout. */
+  async getCountByUser(userId: string): Promise<number> {
+    return databaseService.count('course_assessment', { eq: { uid: userId } });
+  }
+}
+
+export const courseAssessmentDbService = new CourseAssessmentDbService();

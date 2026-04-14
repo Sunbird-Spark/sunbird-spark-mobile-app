@@ -1,0 +1,49 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 12px 16px 28px;
+}
+
+.stats-grid__tile {
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 105px;
+}
+
+.stats-grid__top-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.stats-grid__value {
+  font-family: var(--ion-font-family);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--ion-color-light);
+  margin: 0;
+  line-height: 1;
+}
+
+.stats-grid__icon {
+  border-radius: 8px;
+  width: 33px;
+  height: 33px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stats-grid__label {
+  font-family: var(--ion-font-family);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--ion-color-light);
+  margin: 0;
+  line-height: 1.2;
+}

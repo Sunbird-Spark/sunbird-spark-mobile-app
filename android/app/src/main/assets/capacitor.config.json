@@ -1,0 +1,14 @@
+{
+	"appId": "org.sunbird.app",
+	"appName": "sunbird-mobile-app",
+	"webDir": "dist",
+	"plugins": {
+		"CapacitorHttp": {
+			"enabled": false
+		},
+		"StatusBar": {
+			"style": "LIGHT",
+			"overlaysWebView": true
+		}
+	}
+}
