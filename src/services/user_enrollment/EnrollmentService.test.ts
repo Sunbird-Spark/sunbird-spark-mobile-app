@@ -162,6 +162,7 @@ describe('EnrollmentService', () => {
 
             await enrollmentService.getUserEnrollments('user_001');
 
+            // status=1, progress=50 → 'active'
             expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith(
                 expect.arrayContaining([
                     expect.objectContaining({
@@ -169,6 +170,64 @@ describe('EnrollmentService', () => {
                         user_id: 'user_001',
                         status: 'active',
                     }),
+                ])
+            );
+        });
+
+        it('should save status as active when status=1 and progress=0', async () => {
+            const zeroProgressResponse = {
+                ...mockEnrollmentResponse,
+                data: {
+                    courses: [{
+                        ...mockEnrollmentResponse.data.courses[0],
+                        status: 1,
+                        progress: 0,
+                        completionPercentage: 0,
+                    }],
+                },
+            };
+            mockHttpClient.get.mockResolvedValue(zeroProgressResponse);
+
+            await enrollmentService.getUserEnrollments('user_001');
+
+            expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({ status: 'active' }),
+                ])
+            );
+        });
+
+        it('should save status as not-started when status=0 (never started)', async () => {
+            const notStartedResponse = {
+                ...mockEnrollmentResponse,
+                data: {
+                    courses: [{
+                        ...mockEnrollmentResponse.data.courses[0],
+                        status: 0,
+                        progress: 0,
+                        completionPercentage: 0,
+                    }],
+                },
+            };
+            mockHttpClient.get.mockResolvedValue(notStartedResponse);
+
+            await enrollmentService.getUserEnrollments('user_001');
+
+            expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({ status: 'not-started' }),
+                ])
+            );
+        });
+
+        it('should save status as active when progress > 0 and < 100', async () => {
+            mockHttpClient.get.mockResolvedValue(mockEnrollmentResponse); // progress=50
+
+            await enrollmentService.getUserEnrollments('user_001');
+
+            expect(enrolledCoursesDbService.upsertBatch).toHaveBeenCalledWith(
+                expect.arrayContaining([
+                    expect.objectContaining({ status: 'active' }),
                 ])
             );
         });
@@ -212,6 +271,22 @@ describe('EnrollmentService', () => {
 
             expect(result.data.courses).toEqual([]);
             expect(result.status).toBe(200);
+        });
+
+        it('should map not-started course to status 0 from DB', async () => {
+            (networkService.isConnected as any).mockReturnValue(false);
+            (enrolledCoursesDbService.getByUser as any).mockResolvedValue([{
+                course_id: 'do_course_001',
+                user_id: 'user_001',
+                details: { courseId: 'do_course_001', name: 'New Course' },
+                enrolled_on: Date.now(),
+                progress: 0,
+                status: 'not-started',
+            }]);
+
+            const result = await enrollmentService.getUserEnrollments('user_001');
+
+            expect(result.data.courses[0].status).toBe(0);
         });
 
         it('should map completed course (status 2) correctly from DB', async () => {

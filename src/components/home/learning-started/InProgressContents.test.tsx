@@ -62,6 +62,25 @@ describe('InProgressContents', () => {
     expect(screen.getByText('Done Course')).toBeInTheDocument();
   });
 
+  it('treats status=1 with completionPercentage=100 as completed (API lag scenario)', () => {
+    const courses = [
+      makeCourse({ courseName: 'Lagged Course', completionPercentage: 100, status: 1 }),
+    ];
+    render(<InProgressContents courses={courses} />);
+    expect(screen.getByText('Completed Courses')).toBeInTheDocument();
+  });
+
+  it('does not show status=1 with completionPercentage=100 in in-progress list', () => {
+    const courses = [
+      makeCourse({ courseName: 'In Progress Real', completionPercentage: 50, status: 1, courseId: 'c1', collectionId: 'col1' }),
+      makeCourse({ courseName: 'Lagged Completed', completionPercentage: 100, status: 1, courseId: 'c2', collectionId: 'col2' }),
+    ];
+    render(<InProgressContents courses={courses} />);
+    expect(screen.getByText('In Progress Courses')).toBeInTheDocument();
+    expect(screen.getByText('In Progress Real')).toBeInTheDocument();
+    expect(screen.queryByText('Lagged Completed')).not.toBeInTheDocument();
+  });
+
   it('returns null when no courses at all', () => {
     const { container } = render(<InProgressContents courses={[]} />);
     expect(container.innerHTML).toBe('');

@@ -151,6 +151,12 @@
     color: var(--ion-color-dark, var(--color-000000, #000000));
 }
 
+.pl-badge-not-started {
+    background: var(--ion-color-step-150, var(--color-e0e0e0, #e0e0e0));
+    border: 1px solid var(--ion-color-step-400, var(--color-9e9e9e, #9e9e9e));
+    color: var(--ion-color-dark, var(--color-000000, #000000));
+}
+
 /* ── Course title ── */
 .pl-course-title {
     font-family: var(--ion-font-family);

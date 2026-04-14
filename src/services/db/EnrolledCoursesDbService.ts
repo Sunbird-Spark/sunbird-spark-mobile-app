@@ -1,6 +1,6 @@
 import { DatabaseService, databaseService } from './DatabaseService';
 
-export type CourseStatus = 'active' | 'completed' | 'dropped';
+export type CourseStatus = 'not-started' | 'active' | 'completed' | 'dropped';
 
 export interface EnrolledCourseDetails {
   courseId: string;
