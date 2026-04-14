@@ -1,233 +1,129 @@
-# SunbirdED Mobile App
+# Sunbird Spark Mobile App
+## Tech Overview
 
-A mobile application built with Ionic React framework for educational purposes.
+The Spark mobile app is built on **React + Ionic 8** with **Capacitor 7** as the native bridge. It runs natively on Android (minSdkVersion 26 / Android 8.0).
 
-## 🚀 Tech Stack
+### Key Architectural Decisions
 
-- **React**: 19.2.1
-- **TypeScript**: 5.9.3
-- **Ionic React**: 8.7.16
-- **Vite**: 7.3.1
-- **Capacitor**: 7.4.4
-- **React Router**: 5.3.4
-- **Vitest**: 4.0.16
-- **Testing Library**: 16.3.1
-- **i18next**: 25.7.4
-- **react-i18next**: 16.5.2
-- **Tailwind CSS**: 4.1.18
+- **Vite as the build tool** — The app uses Vite 7 for fast hot module replacement during web development and faster production builds.
+- **Offline-first design** — Content is downloaded as `.ecar` files (content packages) to device filesystem storage, with metadata tracked in SQLite. PDF, Video, ePub, and QuML players can render content from local files without any network connection.
+- **Telemetry sync** — Telemetry events are staged in SQLite when offline and synced to the server in batches when connectivity is restored.
+- **Multilingual support** — The app ships with translations for English, Hindi, French, Portuguese, and Arabic. Arabic includes RTL layout support, and language preference is persisted in browser localStorage across sessions.
 
-## 📋 Prerequisites
+---
 
-- **Node.js 22.x** (required for Vite 7)
-- npm 10.x
-- Git
+## Developer Setup
 
-## 🛠️ Installation
+### Tech Stack
 
-1. **Clone the repository**
+| Layer | Technology | Version |
+|---|---|---|
+| UI Framework | Ionic | 8.x |
+| UI Framework | React | 19.x |
+| Build Tool | Vite | 7.x |
+| Native Bridge | Capacitor | 7.x–8.x |
+| Language | TypeScript | 5.x |
+| Testing | Vitest + Testing Library | — |
 
-   ```bash
-   git clone https://github.com/<your-org>/sunbird-mobile-app.git
-   cd sunbird-mobile-app
-   ```
+### Prerequisites
 
-2. **Install dependencies**
-   ```bash
-   npm install --legacy-peer-deps
-   ```
+Before cloning, ensure you have the following installed.
 
-## 🏃‍♂️ Running the App
+#### All Platforms
 
-### Development Server
+| Tool | Version | Notes |
+|---|---|---|
+| Node.js | 22.x | Recommended for compatibility |
+| npm | 10.x | Bundled with Node 22 |
+| Git | Any recent | — |
 
-Start the development server with hot reload:
+#### Android Builds Only
+
+| Tool | Version | Notes |
+|---|---|---|
+| Android Studio | Latest stable | — |
+| Android SDK | compileSdk 36 (Android 15) | — |
+| JDK | 17+ | Required by Gradle 8.11 |
+| Gradle | 8.11.1 | Managed by the wrapper — no manual install needed |
+
+> **Note:** iOS is not currently supported. The `ios/` platform has not been added to this project.
+
+---
+
+### Step 1 — Clone the Repository
 
 ```bash
-npm run dev
+git clone <repository-url>
+cd sunbird-spark-mobile-app
 ```
 
-The app will be available at `http://localhost:8080` (or next available port).
-
-### Preview Production Build
+### Step 2 — Install Dependencies
 
 ```bash
-npm run build
-npm run preview
+npm install --legacy-peer-deps
 ```
 
-## 🧪 Testing
+> `--legacy-peer-deps` is required due to peer dependency conflicts between packages. Running plain `npm install` will fail.
 
-### Run all tests
+This also runs two postinstall scripts automatically:
 
-```bash
-npm test
+- **`copy-assets.js`** — Copies PDF, Video, ePub, and QuML player assets from `node_modules/@project-sunbird/*` into:
+  - `public/assets/`
+  - `public/content/assets/`
+- **`scripts/copyContentPlayer.js`** — Assembles `@project-sunbird/content-player` into `public/content-player/` with any local overrides applied on top.
+
+> ⚠️ If either script fails, check that all `@project-sunbird/*` packages were installed correctly before proceeding.
+
+### Step 3 — Configure Environment Variables (Android)
+
+Open `android/gradle.properties` and fill in the required values:
+
+```properties
+base_url=https://your-sunbird-backend.org
+mobile_app_consumer=mobile_device
+mobile_app_key=<your-api-key>
+mobile_app_secret=<your-api-secret>
+producer_id=dev.sunbirded.org
 ```
 
-### Watch mode
+These are injected as Android string resources at build time and read at runtime via the `capacitor-read-native-setting` plugin.
 
-```bash
-npm test
+> ⚠️ The app will not connect to a backend without these values.
+
+### Step 4 — Add Google Services for Push Notifications
+
+Place your `google-services.json` file in:
+
+```
+android/app/
 ```
 
-### Run tests once
+The build system checks for this file and applies the Google Services Gradle plugin conditionally.
+
+### Step 5 — Build and Run on Android
 
 ```bash
-npm run test:run
+npm run build && npx cap sync android && cd android && ./gradlew assembleDebug && cd ..
 ```
 
-### Coverage report
+| Command | Purpose |
+|---|---|
+| `npm run build` | Compiles TypeScript and bundles web assets into `dist/` |
+| `npx cap sync android` | Copies `dist/` into the Android project and syncs native plugins |
+| `./gradlew assembleDebug` | Builds the debug APK |
 
-```bash
-npm run test:coverage
+The output APK will be available at:
+
+```
+android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Test UI
+> **Tip:** Use `./gradlew clean assembleDebug` only when you suspect stale build artifacts (e.g., after changing native dependencies or syncing new Capacitor plugins).
+
+### Open in Android Studio
 
 ```bash
-npm run test:ui
-```
-
-Test coverage threshold is set to 70% for statements, branches, functions, and lines.
-
-## 🏗️ Building
-
-### Web Build
-
-```bash
-npm run build
-```
-
-### Type Checking
-
-```bash
-npm run type-check
-```
-
-### Linting
-
-```bash
-npm run lint          # Check for issues
-npm run lint:fix      # Auto-fix issues
-```
-
-## 📱 Mobile Platforms
-
-### Android
-
-```bash
-npx cap sync android
 npx cap open android
 ```
 
-### iOS (macOS only)
-
-```bash
-npx cap sync ios
-npx cap open ios
-```
-
-## 📁 Project Structure
-
-```
-src/
-├── components/         # Reusable components
-│   ├── LanguageSwitcher.tsx
-│   └── LanguageSwitcher.test.tsx
-├── pages/              # Page components
-│   ├── Home.tsx
-│   ├── Dashboard.tsx
-│   └── Profile.tsx
-├── config/             # App configuration
-│   └── i18n.ts         # Internationalization setup
-├── locales/            # Translation files
-│   ├── en.json         # English translations
-│   └── hi.json         # Hindi translations
-├── hooks/              # Custom React hooks
-├── services/           # API and business logic
-├── types/              # TypeScript type definitions
-├── theme/              # Ionic theme variables
-│   └── variables.css
-├── App.tsx             # Main app component with routing
-├── main.tsx            # Application entry point
-└── setupTests.ts       # Test configuration
-
-.github/
-└── workflows/          # CI/CD workflows
-    └── pr-checks.yml   # PR validation workflow
-
-```
-
-## 🌐 Internationalization
-
-The app supports multiple languages using i18next:
-
-- **English** (en) - Default language
-- **Hindi** (hi)
-
-Users can switch languages via the language dropdown in the app header. To add more languages:
-
-1. Create a new translation file in `src/locales/` (e.g., `es.json`)
-2. Add translations following the existing structure
-3. Import and register in `src/config/i18n.ts`
-
-## 🔄 CI/CD
-
-The project includes automated checks on pull requests:
-
-- **Lint Check**: Validates code style and quality
-- **Test Suite**: Runs all tests with coverage
-
-## 🤝 Contributing
-
-1. Create a new branch from `develop`
-
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. Make your changes and ensure:
-   - All tests pass (`npm test`)
-   - Linting passes (`npm run lint`)
-   - Code coverage meets threshold
-
-3. Commit your changes following conventional commits:
-
-   ```bash
-   git commit -m "feat: add new feature"
-   ```
-
-4. Push and create a Pull Request to `develop`
-
-## 📝 Available Scripts
-
-| Script                  | Description                 |
-| ----------------------- | --------------------------- |
-| `npm run dev`           | Start development server    |
-| `npm run build`         | Build for production        |
-| `npm run preview`       | Preview production build    |
-| `npm test`              | Run tests in watch mode     |
-| `npm run test:run`      | Run tests once              |
-| `npm run test:ui`       | Open Vitest UI              |
-| `npm run test:coverage` | Generate coverage report    |
-| `npm run type-check`    | Type check without emitting |
-| `npm run lint`          | Check code quality          |
-| `npm run lint:fix`      | Fix linting issues          |
-
-## 🔧 Configuration
-
-- **Vite**: [vite.config.ts](vite.config.ts)
-- **TypeScript**: [tsconfig.json](tsconfig.json), [tsconfig.app.json](tsconfig.app.json)
-- **Vitest**: [vitest.config.ts](vitest.config.ts)
-- **ESLint**: [eslint.config.js](eslint.config.js)
-- **PostCSS**: [postcss.config.js](postcss.config.js)
-- **Tailwind CSS**: [tailwind.config.ts](tailwind.config.ts)
-- **Capacitor**: [capacitor.config.ts](capacitor.config.ts)
-- **i18n**: [src/config/i18n.ts](src/config/i18n.ts)
-
-## 📄 License
-
-This project is licensed under the ISC License.
-
-## 👥 Support
-
-For issues and questions, please create an issue in the GitHub repository.
+In Android Studio: Select a device/emulator from the dropdown and click the Run button (green play icon)    
