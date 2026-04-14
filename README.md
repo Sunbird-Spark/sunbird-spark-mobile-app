@@ -76,7 +76,13 @@ This also runs two postinstall scripts automatically:
 
 ### Step 3 — Configure Environment Variables (Android)
 
-Open `android/gradle.properties` and fill in the required values:
+Copy the example gradle properties file and fill in your backend credentials:
+
+```bash
+cp android/gradle.properties.example android/gradle.properties
+```
+
+Open `android/gradle.properties` and update the placeholder values:
 
 ```properties
 base_url=https://your-sunbird-backend.org
@@ -86,7 +92,9 @@ mobile_app_secret=<your-api-secret>
 producer_id=dev.sunbirded.org
 ```
 
-These are injected as Android string resources at build time and read at runtime via the `capacitor-read-native-setting` plugin.
+> **Note:** `gradle.properties` is added to `.gitignore` and should never be committed. It contains sensitive credentials.
+
+These values are injected as Android string resources at build time and read at runtime via the `capacitor-read-native-setting` plugin.
 
 > ⚠️ The app will not connect to a backend without these values.
 
