@@ -56,7 +56,11 @@ export async function deleteDownloadedContent(identifier: string): Promise<Delet
       console.debug(TAG, identifier, 'hard delete (ref_count ≤ 1)');
       if (entry.path) {
         console.debug(TAG, identifier, 'removing files at path:', entry.path);
-        await Filesystem.rmdir({ path: entry.path, recursive: true }).catch((err) => {
+        // Extract relative path from URI if needed
+        const relativePath = entry.path.includes('/') && !entry.path.startsWith('/data')
+          ? entry.path
+          : entry.path.replace(/^.*\/data\/([^/]+\/.*)$/, '$1');
+        await Filesystem.rmdir({ path: relativePath, recursive: true }).catch((err) => {
           console.warn(TAG, identifier, 'failed to remove files (may already be gone):', err);
         });
       }
@@ -118,7 +122,11 @@ async function cleanupOrphanedCollections(deletedChildId: string): Promise<void>
         // All children are gone — remove the orphaned collection
         console.debug(TAG, collection.identifier, 'orphaned collection — all children deleted, removing');
         if (collection.path) {
-          await Filesystem.rmdir({ path: collection.path, recursive: true }).catch(() => {});
+          // Extract relative path from URI if needed
+        const relativePath = collection.path.includes('/') && !collection.path.startsWith('/data')
+          ? collection.path
+          : collection.path.replace(/^.*\/data\/([^/]+\/.*)$/, '$1');
+        await Filesystem.rmdir({ path: relativePath, recursive: true }).catch(() => {});
         }
         await contentDbService.delete(collection.identifier);
         await downloadDbService.delete(collection.identifier);

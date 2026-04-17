@@ -1,7 +1,7 @@
 # Sunbird Spark Mobile App
 ## Tech Overview
 
-The Spark mobile app is built on **React + Ionic 8** with **Capacitor 7** as the native bridge. It runs natively on Android (minSdkVersion 26 / Android 8.0).
+The Spark mobile app is built on **React + Ionic 8** with **Capacitor 8** as the native bridge. It runs natively on Android (minSdkVersion 26 / Android 8.0).
 
 ### Key Architectural Decisions
 
@@ -21,7 +21,7 @@ The Spark mobile app is built on **React + Ionic 8** with **Capacitor 7** as the
 | UI Framework | Ionic | 8.x |
 | UI Framework | React | 19.x |
 | Build Tool | Vite | 7.x |
-| Native Bridge | Capacitor | 7.x–8.x |
+| Native Bridge | Capacitor | 8.x |
 | Language | TypeScript | 5.x |
 | Testing | Vitest + Testing Library | — |
 
@@ -60,10 +60,8 @@ cd sunbird-spark-mobile-app
 ### Step 2 — Install Dependencies
 
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
-
-> `--legacy-peer-deps` is required due to peer dependency conflicts between packages. Running plain `npm install` will fail.
 
 This also runs two postinstall scripts automatically:
 
