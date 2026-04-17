@@ -470,7 +470,7 @@ export class ImportService {
       if (isMediaOrPdf) {
         const filename = item.artifactUrl.split('/').pop() || item.artifactUrl;
         const expectedPath = `${existing.path.replace(/\/$/, '')}/${filename}`;
-        const fileExists = await Filesystem.stat({ path: expectedPath, directory: Directory.Data }).then(() => true).catch(() => false);
+        const fileExists = await Filesystem.stat({ path: expectedPath }).then(() => true).catch(() => false);
         if (!fileExists) return true; // artifact missing — re-import
       }
     }
