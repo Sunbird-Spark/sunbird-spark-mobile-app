@@ -22,7 +22,7 @@ jobs:
           node-version: '24.12.0'
 
       - name: Install dependencies
-        run: npm i --legacy-peer-deps
+        run: npm i 
 
       - name: Run linter
         run: npm run lint

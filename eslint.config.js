@@ -24,6 +24,12 @@ export default tseslint.config(
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-unused-vars': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
+      // React Compiler rules — downgraded to warn; these flag valid React patterns
+      // (setState in effects, manual useMemo, ref access in JSX) that are incompatible
+      // with the React Compiler, but this project does not use the React Compiler.
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/refs': 'warn',
     },
   },
   // Accessibility rules — apply to TSX (JSX) files only

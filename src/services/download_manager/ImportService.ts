@@ -77,13 +77,14 @@ export class ImportService {
       await Filesystem.mkdir({ path: tmpDir, directory: Directory.Data, recursive: true }).catch(() => { });
       const tmpUri = (await Filesystem.getUri({ path: tmpDir, directory: Directory.Data })).uri;
 
+      // For capa-zip 8.x, pass full URI as destinationPath
       await Zip.unzip({ sourceFile: sourcePath, destinationPath: tmpUri });
 
       // ══ VALIDATE: Read manifest + dedup ══
       await this.checkCancelled(isCancelled);
       onProgress?.('VALIDATING', 20);
 
-      const manifest = await this.readManifest(tmpUri);
+      const manifest = await this.readManifest(tmpDir);
       const allItems = this.parseManifestItems(manifest);
       if (allItems.length === 0) {
         return { status: 'FAILED', identifiers: [], errors: ['No items in manifest'] };
@@ -122,20 +123,19 @@ export class ImportService {
         // Create content/{identifier}/ directory
         const contentPath = `${CONTENT_DIR}/${item.identifier}`;
         await Filesystem.mkdir({ path: contentPath, directory: Directory.Data, recursive: true }).catch(() => { });
-        const destUri = (
-          await Filesystem.getUri({ path: contentPath, directory: Directory.Data })
-        ).uri;
+
+        // Get the full URI for database storage
+        const contentUri = (await Filesystem.getUri({ path: contentPath, directory: Directory.Data })).uri;
 
         // Extract/copy payload based on contentDisposition + contentEncoding
-        const contentState = await this.extractPayload(item, tmpUri, destUri);
-
+        const contentState = await this.extractPayload(item, tmpDir, contentPath);
 
         // H5P/HTML: The genie-canvas renderer's htmlrenderer plugin constructs
         // iframe URLs as: {host}/assets/public/content/{type}/{id}-latest/index.html
         // (using config.s3ContentHost = "/assets/public/content/" and s3_folders).
         // Move extracted content into that directory structure so the renderer
         // finds index.html at the expected path.
-        await this.restructureForRenderer(item, destUri);
+        await this.restructureForRenderer(item, contentPath);
 
         // Build content DB row + upsert
         // For spine ECARs: all non-root items are children.
@@ -145,7 +145,7 @@ export class ImportService {
           : isEnqueuedAsChild;
         const row = this.constructContentRow(
           item,
-          destUri,
+          contentUri,
           String(manifest.ver),
           contentState,
           existing,
@@ -157,7 +157,7 @@ export class ImportService {
 
       await this.checkCancelled(isCancelled);
       onProgress?.('CREATING_MANIFEST', 70);
-      await this.copyManifestToContentDir(identifier, tmpUri);
+      await this.copyManifestToContentDir(identifier, tmpDir);
 
       // ══ CLEANUP ══
       onProgress?.('CLEANING_UP', 90);
@@ -211,8 +211,8 @@ export class ImportService {
    */
   private async extractPayload(
     item: ManifestItem,
-    tmpUri: string,
-    destUri: string
+    tmpDir: string,
+    destDir: string
   ): Promise<number> {
     const artifactUrl = item.artifactUrl;
     const disposition = item.contentDisposition || 'inline';
@@ -233,25 +233,26 @@ export class ImportService {
     // actual file is delivered in the individual leaf ECAR.
     if (!artifactUrl || artifactUrl.toLowerCase().startsWith('http')) return 0;
 
-    const itemSourcePath = `${tmpUri}/${artifactUrl}`;
+    const itemSourcePath = `${tmpDir}/${artifactUrl}`;
 
     if (
       mimeType === 'application/epub' ||
       mimeType === 'application/epub+zip'
     ) {
       // EPUB → copy directly
-      await this.copyAsset(itemSourcePath, destUri);
+      await this.copyAsset(itemSourcePath, destDir);
     } else if (ecmlMimeTypes.includes(mimeType)) {
       // ECML/H5P/HTML archives: attempt normal unzip first.
       // Older ECARs contain absolute entry paths (e.g. /assets/...) that capa-zip rejects.
       // Fall back to our multi-threaded fflate worker to sanitize and extract.
       try {
+        const destUri = (await Filesystem.getUri({ path: destDir, directory: Directory.Data })).uri;
         await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
       } catch (err) {
         const msg = String((err as Error)?.message ?? err);
         if (msg.toLowerCase().includes('invalid zip entry path') || msg.toLowerCase().includes('invalid zip')) {
           console.warn('[ImportService] ECML artifact has absolute entry paths — extracting with worker:', msg);
-          await this.extractWithWorker(itemSourcePath, destUri);
+          await this.extractWithWorker(itemSourcePath, destDir);
         } else {
           throw err;
         }
@@ -261,9 +262,10 @@ export class ImportService {
       // outer ECAR zip. Java's ZipInputStream silently returns no entries when
       // given a non-ZIP source, so calling Zip.unzip here would succeed but
       // extract nothing. Copy the file directly instead.
-      await this.copyAsset(itemSourcePath, destUri);
+      await this.copyAsset(itemSourcePath, destDir);
     } else {
       // Archive types (H5P, HTML) — unzip the inner artifact ZIP
+      const destUri = (await Filesystem.getUri({ path: destDir, directory: Directory.Data })).uri;
       await Zip.unzip({ sourceFile: itemSourcePath, destinationPath: destUri });
     }
     return 2; // ARTIFACT_AVAILABLE
@@ -289,7 +291,19 @@ export class ImportService {
 
   private async copyAsset(source: string, destDir: string): Promise<void> {
     const filename = source.split('/').pop() || 'artifact';
-    await Filesystem.copy({ from: source, to: `${destDir}/${filename}` });
+    const destPath = `${destDir}/${filename}`;
+    // Create parent directories
+    await Filesystem.mkdir({
+      path: destDir,
+      directory: Directory.Data,
+      recursive: true
+    }).catch(() => { });
+    // Copy file with relative path and Directory.Data
+    await Filesystem.copy({
+      from: source,
+      to: destPath,
+      directory: Directory.Data
+    });
   }
 
   /**
@@ -297,7 +311,7 @@ export class ImportService {
    * Repairs absolute entries (stripping leading slashes) while remaining non-blocking to the main UI thread.
    */
   private async extractWithWorker(sourceFile: string, destDir: string): Promise<void> {
-    const fileResult = await Filesystem.readFile({ path: sourceFile });
+    const fileResult = await Filesystem.readFile({ path: sourceFile, directory: Directory.Data });
 
     // Capacitor/Filesystem.readFile returns Base64 by default.
     // Convert Base64 string to Uint8Array buffer for fflate.
@@ -326,7 +340,7 @@ export class ImportService {
         for (const [path, data] of Object.entries(files as Record<string, Uint8Array>)) {
           const fullPath = `${destDir}/${path}`;
           const parentDir = fullPath.slice(0, fullPath.lastIndexOf('/'));
-          await Filesystem.mkdir({ path: parentDir, recursive: true }).catch(() => { });
+          await Filesystem.mkdir({ path: parentDir, directory: Directory.Data, recursive: true }).catch(() => { });
 
           // Fast conversion: Use chunked fromCharCode to avoid stack limits and slowness.
           let binary = '';
@@ -337,6 +351,7 @@ export class ImportService {
 
           await Filesystem.writeFile({
             path: fullPath,
+            directory: Directory.Data,
             data: btoa(binary),
           });
           count++;
@@ -507,6 +522,13 @@ export class ImportService {
 
     if (response.status !== 200) return;
 
+    // Create content directory if it doesn't exist
+    await Filesystem.mkdir({
+      path: contentPath,
+      directory: Directory.Data,
+      recursive: true,
+    }).catch(() => { });
+
     // Write the base64 data to file
     await Filesystem.writeFile({
       path: iconPath,
@@ -532,6 +554,7 @@ export class ImportService {
       try {
         const entry = await this.contentDb.getByIdentifier(id);
         if (entry?.path) {
+          // entry.path is a full URI from getUri() — use without directory parameter
           const stat = await Filesystem.stat({ path: entry.path });
           await this.contentDb.updateSizeOnDevice(id, stat.size);
         }
@@ -545,14 +568,15 @@ export class ImportService {
     if (fn && (await fn())) throw new Error('IMPORT_CANCELLED');
   }
 
-  private async readManifest(tmpUri: string): Promise<ManifestData> {
+  private async readManifest(tmpDir: string): Promise<ManifestData> {
     // Always prefer manifest.json — it has the standard { archive: { items: [...] } }
     // structure that parseManifestItems expects. hierarchy.json has a different nested
     // format ({ collection: { children: [...] } }) that isn't compatible.
     // Spine ECARs ship BOTH files; leaf ECARs only have manifest.json.
     try {
       const r = await Filesystem.readFile({
-        path: `${tmpUri}/manifest.json`,
+        path: `${tmpDir}/manifest.json`,
+        directory: Directory.Data,
         encoding: Encoding.UTF8,
       });
       return JSON.parse(r.data as string) as ManifestData;
@@ -560,7 +584,8 @@ export class ImportService {
       try {
         // Fallback to hierarchy.json (shouldn't normally be needed)
         const r = await Filesystem.readFile({
-          path: `${tmpUri}/hierarchy.json`,
+          path: `${tmpDir}/hierarchy.json`,
+          directory: Directory.Data,
           encoding: Encoding.UTF8,
         });
         return JSON.parse(r.data as string) as ManifestData;
@@ -583,7 +608,7 @@ export class ImportService {
 
   private async copyManifestToContentDir(
     identifier: string,
-    tmpUri: string
+    tmpDir: string
   ): Promise<void> {
     const contentPath = `${CONTENT_DIR}/${identifier}`;
     await Filesystem.mkdir({
@@ -591,16 +616,14 @@ export class ImportService {
       directory: Directory.Data,
       recursive: true,
     }).catch(() => { });
-    const destUri = (
-      await Filesystem.getUri({ path: contentPath, directory: Directory.Data })
-    ).uri;
 
     // Copy manifest.json or hierarchy.json
     for (const name of ['manifest.json', 'hierarchy.json']) {
       try {
         await Filesystem.copy({
-          from: `${tmpUri}/${name}`,
-          to: `${destUri}/${name}`,
+          from: `${tmpDir}/${name}`,
+          to: `${contentPath}/${name}`,
+          directory: Directory.Data
         });
       } catch {
         /* file may not exist */
@@ -632,29 +655,30 @@ export class ImportService {
    */
   private async restructureForRenderer(
     item: ManifestItem,
-    destUri: string
+    destDir: string
   ): Promise<void> {
     const folder = ImportService.RENDERER_S3_FOLDERS[item.mimeType || ''];
     if (!folder) return; // Not H5P or HTML — nothing to do
 
     const suffix = item.status === 'Live' ? 'latest' : 'snapshot';
     const subDir = `assets/public/content/${folder}/${item.identifier}-${suffix}`;
-    const targetUri = `${destUri}/${subDir}`;
+    const targetPath = `${destDir}/${subDir}`;
 
     try {
       // Create the nested target directory
-      await Filesystem.mkdir({ path: targetUri, recursive: true }).catch(() => { });
+      await Filesystem.mkdir({ path: targetPath, directory: Directory.Data, recursive: true }).catch(() => { });
 
       // Read all entries currently at the content root
-      const { files } = await Filesystem.readdir({ path: destUri });
+      const { files } = await Filesystem.readdir({ path: destDir, directory: Directory.Data });
 
       for (const entry of files) {
         // Skip the "assets" directory we just created
         if (entry.name === 'assets') continue;
 
         await Filesystem.rename({
-          from: `${destUri}/${entry.name}`,
-          to: `${targetUri}/${entry.name}`,
+          from: `${destDir}/${entry.name}`,
+          to: `${targetPath}/${entry.name}`,
+          directory: Directory.Data
         }).catch((err) => {
           console.warn(`[ImportService] restructure: could not move ${entry.name}:`, err);
         });

@@ -31,6 +31,15 @@ vi.mock('capa-zip', () => ({
 
 vi.mock('../db/DatabaseService', () => ({ DatabaseService: vi.fn(), databaseService: {} }));
 vi.mock('../db/ContentDbService', () => ({ ContentDbService: vi.fn(), contentDbService: {} }));
+vi.mock('@capacitor/core', async () => {
+  const actual = await vi.importActual('@capacitor/core');
+  return {
+    ...actual,
+    CapacitorHttp: {
+      get: vi.fn(),
+    },
+  };
+});
 // Mock Web Workers
 class MockWorker {
   onmessage: ((e: any) => void) | null = null;
@@ -593,16 +602,6 @@ describe('ImportService', () => {
     it('downloads and saves application icon', async () => {
       const { Filesystem } = await import('@capacitor/filesystem');
 
-      // Mock CapacitorHttp correctly if not already mocked
-      vi.mock('@capacitor/core', async () => {
-        const actual = await vi.importActual('@capacitor/core');
-        return {
-          ...actual,
-          CapacitorHttp: {
-            get: vi.fn(),
-          },
-        };
-      });
       const { CapacitorHttp } = await import('@capacitor/core');
 
       vi.mocked(CapacitorHttp.get).mockResolvedValue({
