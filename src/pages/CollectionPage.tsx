@@ -95,6 +95,9 @@ const CollectionPage: React.FC = () => {
     document.title = `${t('pageTitle.collection')}`;
   }, [t]);
 
+  // Data fetching
+  const { data: collectionData, isLoading, isError, fetchStatus, status: queryStatus, refetch: refetchCollection } = useCollection(collectionId);
+
   // Track whether this Ionic view is currently active (visible).
   // State-based so child components (e.g. CourseCompletionDialog) can react to it.
   const [isViewActive, setIsViewActive] = useState(false);
@@ -107,9 +110,6 @@ const CollectionPage: React.FC = () => {
     }
   });
   useIonViewWillLeave(() => { setIsViewActive(false); });
-
-  // Data fetching
-  const { data: collectionData, isLoading, isError, fetchStatus, status: queryStatus, refetch: refetchCollection } = useCollection(collectionId);
   // True only while the query has never run yet (pending + not actively fetching).
   // After the query completes with null (offline + not cached), queryStatus becomes
   // 'success' — we must not treat that as "still initializing".
@@ -203,6 +203,9 @@ const CollectionPage: React.FC = () => {
   const canDownload = viewState === 'enrolled' || viewState === 'default';
 
   const [isDownloadSheetOpen, setIsDownloadSheetOpen] = useState(false);
+
+  type ToastConfig = { message: string; color?: string; icon?: string };
+  const [toastMessage, setToastMessage] = useState<ToastConfig | null>(null);
 
   const handleDownloadAll = useCallback(async () => {
     setIsDownloadSheetOpen(false);
@@ -342,8 +345,6 @@ const CollectionPage: React.FC = () => {
   const { data: userProfile } = useUser(userId);
   const [isConsentModalOpen, setIsConsentModalOpen] = useState(false);
   const [consentChecked, setConsentChecked] = useState(false);
-  type ToastConfig = { message: string; color?: string; icon?: string };
-  const [toastMessage, setToastMessage] = useState<ToastConfig | null>(null);
   const [consentToastMessage, setConsentToastMessage] = useState('');
 
   // Download event toast (success/failure per-item, similar to ContentPlayerPage)
