@@ -22,8 +22,9 @@ export function DissolveLoader({ message, subVariant = 'classic' }: DissolveLoad
 
     if (lastVariant.current !== subVariant) {
       state.particles = [];
+      state.t = 0;
+      state.lastTs = 0;
       lastVariant.current = subVariant;
-      setLogoStyle({});
     }
 
     if (state.lastTs === 0) {
