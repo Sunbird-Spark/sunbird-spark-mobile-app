@@ -68,10 +68,10 @@ describe('applyLogoState — shatter', () => {
     expect(s.opacity as number).toBeLessThan(1);
   });
 
-  it('phase 3 (0.55 ≤ p < 0.72): invisible', () => {
+  it('phase 3 (0.55 ≤ p < 0.72): invisible with blur held', () => {
     const s = applyLogoState(0.63, 'shatter');
     expect(s.opacity).toBe(0);
-    expect(s.filter).toBe('none');
+    expect(s.filter).toMatch(/blur\(/);
   });
 
   it('phase 4 (p ≥ 0.72): reforming', () => {
