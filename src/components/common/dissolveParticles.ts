@@ -3,7 +3,6 @@ import React from 'react';
 export type SubVariant = 'classic' | 'ember' | 'shatter' | 'melt' | 'ashes';
 
 export interface DissolveLoaderProps {
-  message?: string;
   subVariant?: SubVariant;
 }
 
@@ -206,7 +205,7 @@ export function drawParticles(ctx: CanvasRenderingContext2D, W: number, H: numbe
     if (pt.rot !== undefined && pt.rotV !== undefined) pt.rot += pt.rotV;
 
     ctx.save();
-    ctx.globalAlpha = Math.max(0, pt.life);
+    ctx.globalAlpha = Math.max(0, pt.life * pt.alpha);
     if (pt.glow) { ctx.shadowBlur = 8; ctx.shadowColor = pt.color; }
 
     if (pt.type === 'circle') {

@@ -137,6 +137,10 @@ describe('spawnParticles', () => {
     vi.spyOn(Math, 'random').mockReturnValue(0); // always below spawn threshold
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it('does nothing when particle count already exceeds 200', () => {
     const particles: Particle[] = Array.from({ length: 201 }, () => ({
       x: 0, y: 0, vx: 0, vy: 0, size: 1, alpha: 1, decay: 0.01, life: 1, color: '#fff', type: 'circle',

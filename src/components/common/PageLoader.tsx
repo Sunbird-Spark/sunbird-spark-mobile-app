@@ -25,7 +25,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({ message, error = null, onRetry,
       aria-label={error ? t('pageLoader.somethingWentWrong') : displayMessage}
     >
       {!error ? (
-        <DissolveLoader message={displayMessage} />
+        <DissolveLoader />
       ) : (
         <div className="page-loader-content">
           <div className="page-loader-logo-container" aria-hidden="true">

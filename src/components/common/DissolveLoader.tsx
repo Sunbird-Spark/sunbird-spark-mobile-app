@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { GhostLogo, MainLogo } from './dissolveLogo';
+import './DissolveLoader.css';
 import {
   DissolveLoaderProps,
   CYCLE,
@@ -9,11 +10,11 @@ import {
   drawParticles,
 } from './dissolveParticles';
 
-export function DissolveLoader({ message, subVariant = 'classic' }: DissolveLoaderProps) {
+export function DissolveLoader({ subVariant = 'classic' }: DissolveLoaderProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef<{ t: number; lastTs: number; particles: Particle[]; raf: number }>({ t: 0, lastTs: 0, particles: [], raf: 0 });
-  const [logoStyle, setLogoStyle] = useState<React.CSSProperties>({});
 
   const lastVariant = useRef(subVariant);
 
@@ -56,7 +57,7 @@ export function DissolveLoader({ message, subVariant = 'classic' }: DissolveLoad
       state.t = (state.t + dt / CYCLE) % 1;
       const t = state.t;
 
-      setLogoStyle(applyLogoState(t, subVariant));
+      if (logoRef.current) Object.assign(logoRef.current.style, applyLogoState(t, subVariant));
 
       const canvas = canvasRef.current;
       if (canvas && wrapRef.current) {
@@ -85,7 +86,7 @@ export function DissolveLoader({ message, subVariant = 'classic' }: DissolveLoad
         style={{ position: 'relative', width: 'min(25rem, 80vw)', aspectRatio: '1110 / 580' }}
       >
         <GhostLogo />
-        <div style={{ ...logoStyle, position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
+        <div ref={logoRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
           <MainLogo />
         </div>
         <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />

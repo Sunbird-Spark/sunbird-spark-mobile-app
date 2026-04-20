@@ -18,8 +18,8 @@ vi.mock('../../constants/assets', () => ({
 vi.mock('./PageLoader.css', () => ({}));
 
 vi.mock('./DissolveLoader', () => ({
-  DissolveLoader: ({ message }: { message?: string }) => (
-    <div data-testid="dissolve-loader" data-message={message} />
+  DissolveLoader: () => (
+    <div data-testid="dissolve-loader" />
   ),
 }));
 
@@ -27,16 +27,6 @@ describe('PageLoader — loading state', () => {
   it('renders DissolveLoader when no error', () => {
     render(<PageLoader />);
     expect(screen.getByTestId('dissolve-loader')).toBeInTheDocument();
-  });
-
-  it('passes message to DissolveLoader', () => {
-    render(<PageLoader message="Please wait" />);
-    expect(screen.getByTestId('dissolve-loader')).toHaveAttribute('data-message', 'Please wait');
-  });
-
-  it('passes t("loading") as default message to DissolveLoader', () => {
-    render(<PageLoader />);
-    expect(screen.getByTestId('dissolve-loader')).toHaveAttribute('data-message', 'loading');
   });
 
   it('does not render error UI when no error', () => {
