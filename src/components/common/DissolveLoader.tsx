@@ -83,7 +83,7 @@ export function DissolveLoader({ subVariant = 'classic' }: DissolveLoaderProps) 
       <div className="dissolve-loader-glow" />
       <div
         ref={wrapRef}
-        style={{ position: 'relative', width: 'min(25rem, 80vw)', aspectRatio: '1110 / 580' }}
+        style={{ position: 'relative', width: 'min(12.5rem, 40vw)', aspectRatio: '1110 / 580' }}
       >
         <GhostLogo />
         <div ref={logoRef} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}>
