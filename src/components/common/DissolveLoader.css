@@ -1,0 +1,15 @@
+.dissolve-loader-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  opacity: 0.4;
+  background: radial-gradient(ellipse 40% 40% at 50% 50%, rgba(220, 119, 39, 0.3) 0%, transparent 80%);
+  filter: blur(2.5rem);
+  animation: dissolve-glow-pulse 2s ease-in-out infinite;
+}
+
+@keyframes dissolve-glow-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.5; }
+}
