@@ -64,13 +64,15 @@ vi.mock('@ionic/react-router', () => ({
   IonReactRouter: ({ children }: any) => <div data-testid="ion-react-router">{children}</div>,
 }));
 
+const mockUseLocation = vi.fn(() => ({ pathname: '/' }));
+
 // Mock react-router-dom
 vi.mock('react-router-dom', () => ({
   Route: ({ path, component: Component, children }: any) => (
     <div data-testid={`route-${path}`}>{children ?? (Component && <Component />)}</div>
   ),
   Redirect: ({ from, to, exact }: any) => <div data-testid={`redirect-${to}`}>Redirect</div>,
-  useLocation: () => ({ pathname: '/' }),
+  useLocation: () => mockUseLocation(),
   useHistory: () => ({ push: vi.fn(), goBack: vi.fn() }),
   useParams: () => ({ contentId: 'do_mock_001' }),
 }));
@@ -283,20 +285,22 @@ vi.mock('./hooks/useInteract', () => ({
   default: () => ({ interact: mockInteract }),
 }));
 
+const mockUseAuth = vi.fn(() => ({
+  isAuthenticated: false,
+  userId: null,
+  login: vi.fn(),
+  loginWithCredentials: vi.fn(),
+  logout: vi.fn(),
+  needsTnC: false,
+  tncData: null,
+  completeTnC: vi.fn(),
+  onboardingDismissed: false,
+  completeOnboarding: vi.fn(),
+}));
+
 // Mock AuthContext so TnCGuard doesn't crash
 vi.mock('./contexts/AuthContext', () => ({
-  useAuth: () => ({
-    isAuthenticated: false,
-    userId: null,
-    login: vi.fn(),
-    loginWithCredentials: vi.fn(),
-    logout: vi.fn(),
-    needsTnC: false,
-    tncData: null,
-    completeTnC: vi.fn(),
-    onboardingDismissed: false,
-    completeOnboarding: vi.fn(),
-  }),
+  useAuth: () => mockUseAuth(),
 }));
 
 // Mock TermsAndConditionsPage
@@ -312,6 +316,12 @@ vi.mock('./pages/OnboardingPage', () => ({
 // Mock useUser hook for OnboardingGuard
 vi.mock('./hooks/useUser', () => ({
   useUser: () => ({ data: null, isLoading: false, error: null }),
+}));
+
+vi.mock('./utils/returnTo', () => ({
+  consumeReturnTo: vi.fn(() => '/home'),
+  peekReturnTo: vi.fn(() => '/home'),
+  clearReturnTo: vi.fn(),
 }));
 
 describe('App', () => {
@@ -412,5 +422,86 @@ describe('App', () => {
       expect(mockInteract).toHaveBeenCalledWith({ id: 'push-notification-update-app', pageid: 'AppUpdate' });
     });
     expect(mockOpenAppStore).toHaveBeenCalledTimes(1);
+  });
+
+  describe('LoginRedirectGuard', () => {
+    beforeEach(() => {
+      mockUseLocation.mockReturnValue({ pathname: '/sign-in' });
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: true,
+        needsTnC: false,
+        userId: 'user-1',
+        login: vi.fn(),
+        loginWithCredentials: vi.fn(),
+        logout: vi.fn(),
+        tncData: null,
+        completeTnC: vi.fn(),
+        onboardingDismissed: false,
+        completeOnboarding: vi.fn(),
+      });
+    });
+
+    afterEach(() => {
+      mockUseLocation.mockReturnValue({ pathname: '/' });
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: false,
+        userId: null,
+        login: vi.fn(),
+        loginWithCredentials: vi.fn(),
+        logout: vi.fn(),
+        needsTnC: false,
+        tncData: null,
+        completeTnC: vi.fn(),
+        onboardingDismissed: false,
+        completeOnboarding: vi.fn(),
+      });
+    });
+
+    it('redirects authenticated user away from /sign-in to consumeReturnTo destination', async () => {
+      const { consumeReturnTo } = await import('./utils/returnTo');
+      vi.mocked(consumeReturnTo).mockReturnValue('/collection/do_123');
+
+      render(<App />);
+
+      expect(screen.getByTestId('redirect-/collection/do_123')).toBeInTheDocument();
+    });
+
+    it('does not redirect when user is not authenticated on /sign-in', () => {
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: false,
+        needsTnC: false,
+        userId: null,
+        login: vi.fn(),
+        loginWithCredentials: vi.fn(),
+        logout: vi.fn(),
+        tncData: null,
+        completeTnC: vi.fn(),
+        onboardingDismissed: false,
+        completeOnboarding: vi.fn(),
+      });
+
+      render(<App />);
+
+      expect(screen.queryByTestId('redirect-/collection/do_123')).not.toBeInTheDocument();
+    });
+
+    it('does not redirect when authenticated but needsTnC is true', () => {
+      mockUseAuth.mockReturnValue({
+        isAuthenticated: true,
+        needsTnC: true,
+        userId: 'user-1',
+        login: vi.fn(),
+        loginWithCredentials: vi.fn(),
+        logout: vi.fn(),
+        tncData: null,
+        completeTnC: vi.fn(),
+        onboardingDismissed: false,
+        completeOnboarding: vi.fn(),
+      });
+
+      render(<App />);
+
+      expect(screen.queryByTestId('redirect-/collection/do_123')).not.toBeInTheDocument();
+    });
   });
 });

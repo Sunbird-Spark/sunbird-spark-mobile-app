@@ -12,6 +12,7 @@ import ProgressBar from '../components/onboarding/ProgressBar';
 import OptionChip from '../components/onboarding/OptionChip';
 import { ASSETS } from '../constants/assets';
 import './OnboardingPage.css';
+import { consumeReturnTo } from '../utils/returnTo';
 
 /**
  * Compute total steps based on the user's actual path:
@@ -79,7 +80,7 @@ const OnboardingPage: React.FC = () => {
     if (onboardingData && !currentScreenId) {
       if (!onboardingData.isEnabled) {
         completeOnboarding();
-        router.push('/home', 'root', 'replace');
+        router.push(consumeReturnTo(), 'root', 'replace');
         return;
       }
       setCurrentScreenId(onboardingData.initialScreenId);
@@ -160,7 +161,7 @@ const OnboardingPage: React.FC = () => {
       // Always move forward — don't block the user if the API call fails.
       completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-      router.push('/home', 'root', 'replace');
+      router.push(consumeReturnTo(), 'root', 'replace');
       setIsSubmitting(false);
     }
   };
@@ -180,7 +181,7 @@ const OnboardingPage: React.FC = () => {
     } finally {
       completeOnboarding();
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-      router.push('/home', 'root', 'replace');
+      router.push(consumeReturnTo(), 'root', 'replace');
       setIsSubmitting(false);
     }
   }, [isSubmitting, userId, router, completeOnboarding, queryClient, t]);

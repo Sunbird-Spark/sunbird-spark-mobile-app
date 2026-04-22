@@ -9,6 +9,8 @@ import {
 import PageLoader from '../components/common/PageLoader';
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
+import { useLocation } from 'react-router-dom';
+import { saveReturnTo } from '../utils/returnTo';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
@@ -211,6 +213,7 @@ const MyLearningPage: React.FC = () => {
 
   const { isAuthenticated, userId } = useAuth();
   const router = useIonRouter();
+  const location = useLocation();
 
   const {
     data: enrollmentData,
@@ -293,7 +296,7 @@ const MyLearningPage: React.FC = () => {
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
             <button
               className="my-learning__sign-in-button"
-              onClick={() => router.push('/sign-in', 'forward', 'push')}
+              onClick={() => { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); }}
             >
               {t('signIn')}
             </button>

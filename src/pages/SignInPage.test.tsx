@@ -17,7 +17,6 @@ vi.mock('@ionic/react', () => ({
   IonIcon: ({ icon }: any) => <span data-testid="ion-icon" data-icon={icon} />,
   IonToast: ({ isOpen, message, onDidDismiss }: any) =>
     isOpen ? <div data-testid="ion-toast">{message}</div> : null,
-  useIonRouter: () => ({ push: vi.fn() }),
 }));
 
 vi.mock('ionicons/icons', () => ({
@@ -269,4 +268,6 @@ describe('SignInPage — accessibility', () => {
       expect(authWebviewService.openRegistration).toHaveBeenCalled();
     });
   });
+
 });
+

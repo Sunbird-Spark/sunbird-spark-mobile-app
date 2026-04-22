@@ -9,7 +9,6 @@ import {
   IonSpinner,
   IonIcon,
   IonToast,
-  useIonRouter,
 } from '@ionic/react';
 import { eyeOutline, eyeOffOutline, chevronBackOutline } from 'ionicons/icons';
 import { ASSETS } from '../constants/assets';
@@ -73,7 +72,6 @@ const SignInPage: React.FC = () => {
 
   const { isOffline } = useNetwork();
   const { loginWithCredentials, loginWithGoogle } = useAuth();
-  const router = useIonRouter();
   const wasOffline = useRef(false);
 
   useEffect(() => {
@@ -105,7 +103,6 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithCredentials(trimmedEmail, password);
-      router.push('/home', 'root', 'replace');
     } catch (err) {
       setError(t(getLoginErrorKey(err)));
     } finally {
@@ -191,7 +188,6 @@ const SignInPage: React.FC = () => {
 
     try {
       await loginWithGoogle();
-      router.push('/home', 'root', 'replace');
     } catch (err) {
       if (!isGoogleCancelError(err)) {
         const code = err instanceof Error ? (err as any).code : undefined;

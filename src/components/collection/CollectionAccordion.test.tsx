@@ -4,6 +4,7 @@ import CollectionAccordion from './CollectionAccordion';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 
 // Mock Ionic components
+const mockRouterPush = vi.fn();
 let accordionGroupValue: string[] = [];
 vi.mock('@ionic/react', () => ({
   IonAccordionGroup: ({ children, multiple, value, 'aria-label': ariaLabel }: any) => {
@@ -36,10 +37,19 @@ vi.mock('@ionic/react', () => ({
     if (!isOpen) return null;
     return <div data-testid="ion-toast">{message}</div>;
   },
-  useIonRouter: () => ({
-    push: vi.fn(),
-  }),
+  useIonRouter: () => ({ push: mockRouterPush }),
 }));
+
+vi.mock('react-router-dom', () => ({
+  useLocation: () => ({ pathname: '/collection/do_1', search: '' }),
+}));
+
+vi.mock('../../utils/returnTo', () => ({
+  saveReturnTo: vi.fn(),
+}));
+
+import { saveReturnTo } from '../../utils/returnTo';
+
 
 // Mock ionicons
 vi.mock('ionicons/icons', () => ({
@@ -212,6 +222,17 @@ describe('CollectionAccordion', () => {
       fireEvent.click(screen.getByText('Introduction'));
 
       expect(screen.getByText('login')).toBeInTheDocument();
+    });
+
+    it('calls saveReturnTo with current path and navigates to /sign-in when login button is clicked', () => {
+      render(
+        <CollectionAccordion children={mockChildren} collectionId="do_1" isCourse={true} viewState="anonymous" t={mockT} onContentPlay={mockOnContentPlay} />
+      );
+      fireEvent.click(screen.getByText('Introduction'));
+      fireEvent.click(screen.getByText('login'));
+
+      expect(saveReturnTo).toHaveBeenCalledWith('/collection/do_1');
+      expect(mockRouterPush).toHaveBeenCalledWith('/sign-in', 'forward', 'push');
     });
   });
 

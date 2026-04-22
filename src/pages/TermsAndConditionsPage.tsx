@@ -19,6 +19,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useTnCAccept } from '../hooks/useTnC';
 import { useTelemetry } from '../hooks/useTelemetry';
 import PageLoader from '../components/common/PageLoader';
+import { peekReturnTo, clearReturnTo } from '../utils/returnTo';
 import './TermsAndConditionsPage.css';
 import useImpression from '../hooks/useImpression';
 
@@ -47,6 +48,7 @@ const TermsAndConditionsPage: React.FC = () => {
   }, [tncData]);
 
   const handleClose = () => {
+    clearReturnTo();
     completeTnC();
     router.push('/home', 'root', 'replace');
   };
@@ -61,7 +63,7 @@ const TermsAndConditionsPage: React.FC = () => {
         object: { id: userId || '', type: 'User', ver: '1' },
       });
       completeTnC();
-      router.push('/home', 'root', 'replace');
+      router.push(peekReturnTo(), 'root', 'replace');
     } catch {
       setErrorMessage(t('tnc.acceptFailed'));
       setShowError(true);
@@ -70,6 +72,7 @@ const TermsAndConditionsPage: React.FC = () => {
 
   const handleErrorDismiss = () => {
     setShowError(false);
+    clearReturnTo();
     completeTnC();
     router.push('/home', 'root', 'replace');
   };

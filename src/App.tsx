@@ -10,6 +10,7 @@ import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
 import { AppInitializer } from './AppInitializer';
+import { consumeReturnTo } from './utils/returnTo';
 import { useAppInitialized } from './hooks/useAppInitialized';
 import PageLoader from './components/common/PageLoader';
 import Dashboard from './pages/Dashboard';
@@ -131,6 +132,17 @@ const LogoutGuard: React.FC = () => {
   return null;
 };
 
+/** Redirects to the stored returnTo path when the user successfully logs in from /sign-in */
+const LoginRedirectGuard: React.FC = () => {
+  const { isAuthenticated, needsTnC } = useAuth();
+  const location = useLocation();
+
+  if (isAuthenticated && !needsTnC && location.pathname === '/sign-in') {
+    return <Redirect to={consumeReturnTo()} />;
+  }
+  return null;
+};
+
 /** Redirects to /onboarding when onboarding is not yet completed */
 const OnboardingGuard: React.FC = () => {
   const { isAuthenticated, userId, needsTnC, onboardingDismissed } = useAuth();
@@ -223,6 +235,7 @@ const App: React.FC = () => {
         <AppUpdateGuard />
         <TnCGuard />
         <LogoutGuard />
+        <LoginRedirectGuard />
         <OnboardingGuard />
         <PushNotificationGuard />
         <IonRouterOutlet>
