@@ -6,7 +6,7 @@ HTTP client with an adapter pattern for switching transport.
 
 ```
 lib/http-client/
-  BaseClient.ts             # Core client — applies the responseInterceptor on 401/403
+  BaseClient.ts             # Core client — dispatches requests through the configured adapter
   adapters/
     CapacitorAdapter.ts     # Only transport adapter — uses Capacitor HTTP plugin
   offlineResponse.ts        # Wraps SQLite data into ApiResponse shape so offline reads are transparent to callers

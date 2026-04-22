@@ -24,7 +24,7 @@ PDF, Video, ePub, and QuML players are Sunbird web components (custom HTML eleme
 
 **Offline URL rewriting** — before rendering, `contentPlaybackResolver.ts` (`src/services/content/`) checks `content_state === 2` and rewrites artifact and streaming URLs to webview-accessible URLs using `Capacitor.convertFileSrc()`, which converts native `file://` paths to `https://localhost/_capacitor_file_/...`. Do not pass raw remote URLs to a player when content is downloaded.
 
-**Telemetry context** — `PlayerContextService.buildPlayerContext()` (`src/services/players/`) assembles the telemetry context object. It sets an empty `host` and `endpoint` so the player SDK does not make its own telemetry calls — all events are routed through `TelemetryService`.
+**Telemetry context** — `buildPlayerContext()` from `src/services/players/PlayerContextService.ts` assembles the telemetry context object. It sets an empty `host` and `endpoint` so the player SDK does not make its own telemetry calls — all events are routed through `TelemetryService`.
 
 **Player assets** live in `public/assets/` and are copied from `node_modules` at install time via `copy-assets.js`. Do not move, delete, or gitignore them.
 

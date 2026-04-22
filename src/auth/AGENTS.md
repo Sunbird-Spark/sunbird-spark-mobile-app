@@ -27,6 +27,6 @@ Google Sign-In (native plugin initialisation and OAuth flow) lives in `src/servi
 ## Key Rules
 
 - Never store tokens in `localStorage` or `sessionStorage`.
-- Never read tokens directly outside of `src/services/auth/`.
+- Never read tokens directly from `SecureStoragePlugin` — always use `userService.getAccessToken()` for Keycloak tokens and `AppConsumerAuthService.getAuthenticatedToken()` for the Authorization header token.
 - `AuthContext` (`src/contexts/AuthContext.tsx`) is the single source of truth for `isAuthenticated` and `userId` in the UI.
 - Logout must call `Promise.allSettled()` over all DB table clears to avoid cascade failures.
