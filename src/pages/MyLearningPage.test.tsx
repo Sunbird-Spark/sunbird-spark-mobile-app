@@ -133,6 +133,7 @@ const makeCourse = (overrides: any = {}) => ({
 describe('MyLearningPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
     mockAuthContext.isAuthenticated = false;
     mockAuthContext.userId = null;
     mockEnrollmentData = { data: undefined, isLoading: false, error: null, refetch: vi.fn() };

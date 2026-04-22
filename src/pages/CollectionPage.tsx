@@ -278,6 +278,11 @@ const CollectionPage: React.FC = () => {
     }
   }, [downloadStates]);
 
+  const goToSignIn = useCallback(() => {
+    saveReturnTo(location.pathname + location.search);
+    router.push('/sign-in', 'forward', 'push');
+  }, [location, router]);
+
   // True when all active items are IMPORTING (extracting) — no pause/resume in that phase
   const isImporting = useMemo(() => {
     if (!courseProgress.isDownloading) return false;
@@ -1088,8 +1093,8 @@ const CollectionPage: React.FC = () => {
           role="button"
           tabIndex={0}
           className="cp-bottom-cta"
-          onClick={() => { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter') { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); } if (e.key === ' ') { e.preventDefault(); saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); } }}
+          onClick={goToSignIn}
+          onKeyDown={(e) => { if (e.key === 'Enter') goToSignIn(); if (e.key === ' ') { e.preventDefault(); goToSignIn(); } }}
         >
           <span className="cp-bottom-cta-text">{t('collection.letsGetStarted')}</span>
           <RightArrowIcon />

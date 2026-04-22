@@ -10,7 +10,7 @@ import { routeNotification } from './services/push/notificationRouter';
 import { useAuth } from './contexts/AuthContext';
 import { useUser } from './hooks/useUser';
 import { AppInitializer } from './AppInitializer';
-import { peekReturnTo } from './utils/returnTo';
+import { consumeReturnTo } from './utils/returnTo';
 import { useAppInitialized } from './hooks/useAppInitialized';
 import PageLoader from './components/common/PageLoader';
 import Dashboard from './pages/Dashboard';
@@ -138,7 +138,7 @@ const LoginRedirectGuard: React.FC = () => {
   const location = useLocation();
 
   if (isAuthenticated && !needsTnC && location.pathname === '/sign-in') {
-    return <Redirect to={peekReturnTo()} />;
+    return <Redirect to={consumeReturnTo()} />;
   }
   return null;
 };

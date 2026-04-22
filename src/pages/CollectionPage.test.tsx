@@ -216,6 +216,7 @@ const mockCollectionData = {
 describe('CollectionPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    sessionStorage.clear();
     (useCollection as any).mockReturnValue({ ...mockCollectionReturn });
     (useContentSearch as any).mockReturnValue({ data: undefined });
     (useAuth as any).mockReturnValue({ isAuthenticated: false });
