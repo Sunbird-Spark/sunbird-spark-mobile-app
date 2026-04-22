@@ -21,7 +21,7 @@ src/
   config/           # API endpoints, i18n setup, NativeConfigService
   types/            # TypeScript type definitions
   constants/        # UPPER_SNAKE_CASE constants and enums
-  locales/          # en.json, fr.json, pt.json, ar.json
+  locales/          # Translation files per language (en, fr, pt, ar, hi)
   utils/            # Utility functions
   assets/           # Fonts, placeholder images
 android/            # Capacitor Android project
