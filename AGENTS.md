@@ -14,6 +14,7 @@ src/
   components/       # Reusable UI organized by feature domain
   services/         # Business logic — most are singletons; some are instantiated per usage
   hooks/            # React Query wrappers (useQuery / useMutation)
+  api/              # API client initialisation and response interceptor config
   auth/             # Keycloak API calls, Google Sign-In
   contexts/         # AuthContext, LanguageContext
   providers/        # QueryProvider, NetworkProvider, TelemetryProvider
@@ -67,7 +68,7 @@ cd android && ./gradlew assembleDebug   # Build the debug APK
 
 ## Coding Conventions
 
-- `strict: false`, `noImplicitAny: false` — do not tighten tsconfig settings.
+- `noImplicitAny: false`, `strictNullChecks: false` — do not tighten tsconfig settings.
 - Use `@/` path alias for all imports from `src/`.
 - Imports are auto-sorted by `prettier-plugin-organize-imports` — run `npm run format:write`, do not reorder manually.
 - Component props interfaces use the `*Props` suffix.

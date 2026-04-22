@@ -11,7 +11,7 @@ auth/
   types.ts         # Auth request/response types
 ```
 
-Token lifecycle and session recovery live in `src/services/auth/`.
+Google Sign-In (native plugin initialisation and OAuth flow) lives in `src/services/auth/socialLogin/`. Token lifecycle (save, refresh, expiry) lives in `src/services/UserService.ts`. Session recovery on app start lives in `AppInitializer.ts`.
 
 ---
 

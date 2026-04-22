@@ -24,7 +24,7 @@ hooks/
   useDownloadState.ts           # Single content download state
   useEditProfile.ts             # User profile update mutation
   useFaqData.ts                 # FAQ content fetch
-  useForceSync.ts               # Trigger manual telemetry/queue sync
+  useForceSync.ts               # Force sync of course batch activity aggregates (once per batch, requires network)
   useFormRead.ts                # Dynamic form config fetch
   useImpression.ts              # Fire IMPRESSION telemetry event
   useInteract.ts                # Fire INTERACT telemetry event

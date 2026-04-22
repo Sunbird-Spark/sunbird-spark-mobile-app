@@ -15,7 +15,7 @@ services/
   FormService.ts              # Dynamic form config fetch
   HttpService.ts              # Lightweight HTTP client using CapacitorHttp directly — for auth endpoints and full URLs that bypass the main API client
   NativeConfigService.ts      # Reads gradle.properties at runtime via Capacitor
-  NavigationHelperService.ts  # Programmatic navigation helpers
+  NavigationHelperService.ts  # Tracks page navigation timing and deduplicates same-URL navigations
   NotificationService.ts      # Local and push notification handling
   OrganizationService.ts      # Org/tenant data fetch
   OtpService.ts               # OTP request and verification

@@ -18,9 +18,11 @@ players/
 
 ## Architecture Notes
 
-**Players are Sunbird web components (custom HTML elements), not React components or iframes.** The React wrappers mount them into the DOM and pass config via element properties.
+PDF, Video, ePub, and QuML players are Sunbird web components (custom HTML elements). The React wrappers mount them into the DOM and pass config via element properties.
 
-**Offline URL rewriting** — before rendering, `contentPlaybackResolver.ts` (`src/services/content/`) checks `content_state === 2` and rewrites artifact and streaming URLs to local `file://` paths using `Capacitor.convertFileSrc()`. Do not pass raw remote URLs to a player when content is downloaded.
+**ECML is the exception** — `EcmlPlayer` renders content via an iframe pointing to `/content-player/preview.html`, not a web component.
+
+**Offline URL rewriting** — before rendering, `contentPlaybackResolver.ts` (`src/services/content/`) checks `content_state === 2` and rewrites artifact and streaming URLs to webview-accessible URLs using `Capacitor.convertFileSrc()`, which converts native `file://` paths to `https://localhost/_capacitor_file_/...`. Do not pass raw remote URLs to a player when content is downloaded.
 
 **Telemetry context** — `PlayerContextService.buildPlayerContext()` (`src/services/players/`) assembles the telemetry context object. It sets an empty `host` and `endpoint` so the player SDK does not make its own telemetry calls — all events are routed through `TelemetryService`.
 

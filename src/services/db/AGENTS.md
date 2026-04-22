@@ -48,15 +48,31 @@ Database name: `sunbird_spark`, schema version 5.
 
 ## Testing
 
-DB service tests use `vi.hoisted()` to create shared mock objects and mock the `SQLiteConnection` constructor so no real database is opened:
+DB service tests use `vi.hoisted()` to create two shared mock objects — one for the connection (`mockConn`) and one for the `SQLiteConnection` instance (`mockSQLiteConnection`):
 
 ```typescript
-const { mockDb } = vi.hoisted(() => ({
-  mockDb: { query: vi.fn(), run: vi.fn() }
-}));
+const { mockConn, mockSQLiteConnection } = vi.hoisted(() => {
+  const mockConn = {
+    open: vi.fn().mockResolvedValue(undefined),
+    close: vi.fn().mockResolvedValue(undefined),
+    execute: vi.fn().mockResolvedValue(undefined),
+    query: vi.fn().mockResolvedValue({ values: [] }),
+    run: vi.fn().mockResolvedValue(undefined),
+  };
+  const mockSQLiteConnection = {
+    isConnection: vi.fn().mockResolvedValue({ result: false }),
+    createConnection: vi.fn().mockResolvedValue(mockConn),
+    retrieveConnection: vi.fn().mockResolvedValue(mockConn),
+    initWebStore: vi.fn().mockResolvedValue(undefined),
+    closeConnection: vi.fn().mockResolvedValue(undefined),
+  };
+  return { mockConn, mockSQLiteConnection };
+});
 
 vi.mock('@capacitor-community/sqlite', () => ({
-  SQLiteConnection: vi.fn().mockImplementation(() => mockDb)
+  CapacitorSQLite: {},
+  SQLiteConnection: vi.fn(function () { return mockSQLiteConnection; }),
+  SQLiteDBConnection: vi.fn(),
 }));
 
 beforeEach(() => {
