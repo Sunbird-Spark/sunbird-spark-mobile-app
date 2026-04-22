@@ -12,7 +12,7 @@ An **offline-first mobile education app** built as a React + Ionic + Capacitor a
 src/
   pages/            # Top-level route components (*Page.tsx)
   components/       # Reusable UI organized by feature domain
-  services/         # Business logic — all singletons
+  services/         # Business logic — most are singletons; some are instantiated per usage
   hooks/            # React Query wrappers (useQuery / useMutation)
   auth/             # Keycloak API calls, Google Sign-In
   contexts/         # AuthContext — app-wide auth state

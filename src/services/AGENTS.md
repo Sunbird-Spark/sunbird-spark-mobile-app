@@ -2,7 +2,7 @@
 
 ## What Lives Here
 
-All business logic for the app. Every service is a singleton exported as a pre-instantiated constant.
+All business logic for the app. Most services are singletons exported as pre-instantiated constants. Some (e.g., `ContentService`, `FormService`) are instantiated directly at the call site via `new`.
 
 ```
 services/
@@ -59,7 +59,7 @@ export class SomeService {
 export const someService = SomeService.getInstance();
 ```
 
-**Always import the exported constant** (`someService`), not the class. Do not call `new SomeService()` or `SomeService.getInstance()` at the call site.
+**For singleton services, always import the exported constant** (`someService`), not the class. Do not call `new SomeService()` or `SomeService.getInstance()` at the call site. For non-singleton services like `ContentService` and `FormService`, instantiate via `new` at the call site as they already do.
 
 ---
 
