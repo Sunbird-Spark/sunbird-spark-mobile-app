@@ -15,10 +15,10 @@ src/
   services/         # Business logic — most are singletons; some are instantiated per usage
   hooks/            # React Query wrappers (useQuery / useMutation)
   auth/             # Keycloak API calls, Google Sign-In
-  contexts/         # AuthContext — app-wide auth state
-  providers/        # QueryProvider and other context wrappers
-  lib/http-client/  # HTTP client with interceptors and adapter pattern
-  config/           # API endpoints, i18n setup, NativeConfigService
+  contexts/         # AuthContext, LanguageContext
+  providers/        # QueryProvider, NetworkProvider, TelemetryProvider
+  lib/http-client/  # HTTP client with adapter pattern (CapacitorAdapter)
+  config/           # i18n setup and language config
   types/            # TypeScript type definitions
   constants/        # UPPER_SNAKE_CASE constants and enums
   locales/          # Translation files per language (en, fr, pt, ar, hi)
@@ -55,7 +55,7 @@ cd android && ./gradlew assembleDebug   # Build the debug APK
 ## Architecture Notes
 
 - **Offline-first** — content downloaded as `.ecar` files, metadata in SQLite, telemetry and failed API calls queued for later sync.
-- **Service singletons** — all services export a pre-instantiated singleton. Import the instance, not the class. See `src/services/AGENTS.md`.
+- **Service singletons** — most services export a pre-instantiated singleton. Some (e.g. `ContentService`, `FormService`) are instantiated at the call site. See `src/services/AGENTS.md`.
 - **React Query + AuthContext** — server state via TanStack Query v5; auth state via `AuthContext`. See `src/hooks/AGENTS.md`.
 - **Routing guards** — `OnboardingGuard`, `TnCGuard`, `AppUpdateGuard`, `LogoutGuard`, `PushNotificationGuard` sit inside `IonReactRouter` and handle redirects as side effects.
 - **Content players** — Sunbird web components rendered directly in the DOM. See `src/components/players/AGENTS.md`.

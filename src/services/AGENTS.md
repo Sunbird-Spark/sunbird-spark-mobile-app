@@ -13,7 +13,7 @@ services/
   ChannelManager.ts           # Sunbird channel/framework resolution
   ContentService.ts           # Content search and metadata fetch
   FormService.ts              # Dynamic form config fetch
-  HttpService.ts              # Thin wrapper around the HTTP client
+  HttpService.ts              # Lightweight HTTP client using CapacitorHttp directly — for auth endpoints and full URLs that bypass the main API client
   NativeConfigService.ts      # Reads gradle.properties at runtime via Capacitor
   NavigationHelperService.ts  # Programmatic navigation helpers
   NotificationService.ts      # Local and push notification handling
@@ -22,11 +22,11 @@ services/
   QuestionSetService.ts       # QuML question set fetch
   SettingsService.ts          # App settings (language, storage location)
   SystemSettingService.ts     # Sunbird system settings fetch
-  TelemetryContext.ts         # Builds telemetry context objects
+  TelemetryContext.ts         # TypeScript interfaces for telemetry context and event input shapes
   TelemetryService.ts         # Stages and syncs telemetry events
   TnCService.ts               # Terms and conditions check and accept
   UserService.ts              # User profile fetch and update
-  auth/                       # Token refresh, session recovery
+  auth/                       # Google Sign-In (socialLogin service)
   consent/                    # User data consent
   content/                    # Content download, import, delete, playback resolution
   course/                     # Course progress, assessment submission

@@ -6,31 +6,37 @@ HTTP client with request/response interceptors and an adapter pattern for switch
 
 ```
 lib/http-client/
-  BaseClient.ts      # Core client — applies interceptors, injects auth headers
-  adapters/          # Transport adapters (Axios, CapacitorHttp, etc.)
-  offlineResponse.ts # Returns a synthetic offline error response when no connection
-  types.ts           # Request/response types, interceptor interfaces
-  index.ts           # Exports the configured client instance
+  BaseClient.ts             # Core client — applies the responseInterceptor on 401/403
+  adapters/
+    CapacitorAdapter.ts     # Only transport adapter — uses Capacitor HTTP plugin
+  offlineResponse.ts        # Wraps SQLite data into ApiResponse shape so offline reads are transparent to callers
+  types.ts                  # Request/response types, interceptor interfaces
+  index.ts                  # Exports the configured client instance
 ```
 
 ---
 
 ## Architecture Notes
 
-**Every outgoing request gets two headers injected by the interceptor:**
-- `Authorization` — device JWT (from `AppConsumerAuthService`)
-- `X-Authenticated-User-Token` — user JWT (from `src/services/auth/`)
+**Headers set on the HTTP client during app init:**
+- `Authorization` — `Bearer <token>` from `AppConsumerAuthService.getAuthenticatedToken()`. Primarily the device JWT (obtained by registering the device with Kong using the app JWT). Falls back to the app JWT (signed with `mobileAppSecret`) if Kong registration fails.
+- `X-Authenticated-User-Token` — user's Keycloak access token from `UserService.getAccessToken()`. Set only when `userService.isLoggedIn()` is true.
+- `X-App-Id` — `producerId` from native config.
+- `X-Device-Id` — hashed device ID.
 
-**401 handling** — the interceptor calls `POST /mobile/auth/v1/refresh/token`. If the refresh fails, it calls logout and rejects the original request.
+**4xx/5xx errors** — `CapacitorAdapter` throws the response object (not returns it) for any `status >= 400`. Callers must catch thrown responses to handle errors.
 
-**Offline handling** — `offlineResponse.ts` is returned immediately when `NetworkService` reports no connection, without hitting the network.
+**Offline reads** — `buildOfflineResponse()` from `offlineResponse.ts` wraps SQLite data into the `ApiResponse` shape. Services use this so callers (hooks, React Query) handle offline and online data identically.
 
-**Adapter pattern** — swap the underlying transport (Axios, CapacitorHttp) by providing a different adapter. The `BaseClient` does not depend on any specific HTTP library.
+**Adapter pattern** — `BaseClient` does not depend on any specific HTTP library. The only current adapter is `CapacitorAdapter`. A new transport can be added by implementing the adapter interface and passing it to `init()`.
 
 ---
 
-## Usage
+## Two HTTP clients
 
-Import `HttpService` from `src/services/HttpService.ts`, not the client directly. `HttpService` is the singleton used by all other services.
+| Client | Where | Used for |
+|---|---|---|
+| `BaseClient` / `CapacitorAdapter` | `src/lib/http-client/` | All `/api` routes — goes through the interceptor chain (auth headers, 401/403 refresh, retry) |
+| `HttpService` | `src/services/HttpService.ts` | Auth endpoints, certificate downloads — full URLs, no interceptor, raw `CapacitorHttp` |
 
-Do not call `BaseClient` or the adapters directly from feature code.
+Do not use `HttpService` for routes that need the interceptor chain. Do not use `getClient()` for routes that bypass `/api`.
