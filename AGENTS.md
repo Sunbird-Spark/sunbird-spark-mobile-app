@@ -80,5 +80,5 @@ cd android && ./gradlew assembleDebug   # Build the debug APK
 
 - **Android only.** Do not add iOS-specific Capacitor config or plugins.
 - **Player assets must stay in `public/assets/`.** Copied at install time via `postinstall`.
-- **`android/gradle.properties` is gitignored.** Never commit credentials. Use `android/gradle.properties.example` as the template. Required fields: `base_url`, `mobile_app_consumer`, `mobile_app_key`, `mobile_app_secret`, `producer_id`.
+- **`android/gradle.properties` must be treated as local-only and must not contain committed credentials.** Ensure it is not tracked in git, and use `android/gradle.properties.example` as the template. Required fields: `base_url`, `mobile_app_consumer`, `mobile_app_key`, `mobile_app_secret`, `producer_id`.
 - **Coverage threshold is 70%** for lines, branches, functions, and statements. Run `npm run test:coverage` before submitting changes.
