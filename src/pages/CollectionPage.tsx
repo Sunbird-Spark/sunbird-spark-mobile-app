@@ -42,6 +42,7 @@ import CollectionContentPlayer from '../components/collection/CollectionContentP
 import CourseCompletionDialog from '../components/collection/CourseCompletionDialog';
 import FAQSection from '../components/home/FAQSection';
 import PageLoader from '../components/common/PageLoader';
+import { saveReturnTo } from '../utils/returnTo';
 import './CollectionPage.css';
 import useImpression from '../hooks/useImpression';
 import { TelemetryTracker } from '../components/telemetry/TelemetryTracker';
@@ -1087,8 +1088,8 @@ const CollectionPage: React.FC = () => {
           role="button"
           tabIndex={0}
           className="cp-bottom-cta"
-          onClick={() => { router.push('/sign-in', 'forward', 'push'); }}
-          onKeyDown={(e) => { if (e.key === 'Enter') router.push('/sign-in', 'forward', 'push'); if (e.key === ' ') { e.preventDefault(); router.push('/sign-in', 'forward', 'push'); } }}
+          onClick={() => { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); }}
+          onKeyDown={(e) => { if (e.key === 'Enter') { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); } if (e.key === ' ') { e.preventDefault(); saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); } }}
         >
           <span className="cp-bottom-cta-text">{t('collection.letsGetStarted')}</span>
           <RightArrowIcon />

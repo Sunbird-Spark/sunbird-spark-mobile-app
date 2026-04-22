@@ -67,7 +67,7 @@ vi.mock('../components/common/PageLoader', () => ({
 // ── Mock hooks ──
 vi.mock('react-router-dom', () => ({
   useParams: () => ({ collectionId: 'do_test_123' }),
-  useLocation: () => ({ pathname: '/collection/do_test_123', state: undefined }),
+  useLocation: () => ({ pathname: '/collection/do_test_123', search: '', state: undefined }),
 }));
 
 const mockCollectionReturn = {
@@ -428,6 +428,7 @@ describe('CollectionPage', () => {
       render(<CollectionPage />);
       fireEvent.click(screen.getByText('collection.letsGetStarted'));
       expect(mockRouterPush).toHaveBeenCalledWith('/sign-in', 'forward', 'push');
+      expect(sessionStorage.getItem('auth_return_to')).toBe('/collection/do_test_123');
     });
 
     it('shows unenrolled viewState for trackable collection when authenticated', () => {

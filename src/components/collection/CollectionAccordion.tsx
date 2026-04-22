@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { IonAccordionGroup, IonAccordion, IonItem, IonLabel, IonModal, IonToast, IonSpinner, useIonRouter, IonAlert } from '@ionic/react';
+import { useLocation } from 'react-router-dom';
+import { saveReturnTo } from '../../utils/returnTo';
 import { chevronDownOutline } from 'ionicons/icons';
 import { useTranslation, type TFunction } from 'react-i18next';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
@@ -618,6 +620,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
   spinePkgVersion,
 }) => {
   const router = useIonRouter();
+  const location = useLocation();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showJoinToast, setShowJoinToast] = useState(false);
   const [showMaxAttemptsToast, setShowMaxAttemptsToast] = useState(false);
@@ -728,6 +731,7 @@ const CollectionAccordion: React.FC<CollectionAccordionProps> = ({
             className="cp-login-prompt-btn"
             onClick={() => {
               setShowLoginPrompt(false);
+              saveReturnTo(location.pathname + location.search);
               router.push('/sign-in', 'forward', 'push');
             }}
           >

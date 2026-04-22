@@ -22,7 +22,7 @@ vi.mock('@ionic/react', () => ({
 }));
 
 vi.mock('react-router-dom', () => ({
-  useLocation: () => ({ pathname: '/profile/my-learning' }),
+  useLocation: () => ({ pathname: '/profile/my-learning', search: '' }),
 }));
 
 // Mock i18next
@@ -150,6 +150,7 @@ describe('MyLearningPage', () => {
     renderPage();
     fireEvent.click(screen.getByText('Sign In'));
     expect(mockPush).toHaveBeenCalledWith('/sign-in', 'forward', 'push');
+    expect(sessionStorage.getItem('auth_return_to')).toBe('/profile/my-learning');
   });
 
   // --- Loading/error ---

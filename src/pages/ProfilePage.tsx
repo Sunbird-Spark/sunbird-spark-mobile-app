@@ -16,6 +16,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
 import { useAuth } from '../contexts/AuthContext';
+import { clearReturnTo } from '../utils/returnTo';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { AppHeader } from '../components/layout/AppHeader';
 import Avatar from 'react-avatar';
@@ -148,7 +149,7 @@ const ProfilePage: React.FC = () => {
               </p>
               <button
                 className="my-learning__sign-in-button"
-                onClick={() => router.push('/sign-in', 'forward', 'push')}
+                onClick={() => { clearReturnTo(); router.push('/sign-in', 'forward', 'push'); }}
               >
                 {t('signIn')}
               </button>
