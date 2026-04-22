@@ -41,6 +41,14 @@ vi.mock('@ionic/react', () => ({
   }),
 }));
 
+vi.mock('react-router-dom', () => ({
+  useLocation: () => ({ pathname: '/collection/do_1', search: '' }),
+}));
+
+vi.mock('../../utils/returnTo', () => ({
+  saveReturnTo: vi.fn(),
+}));
+
 // Mock ionicons
 vi.mock('ionicons/icons', () => ({
   chevronDownOutline: 'chevron-down-outline',
