@@ -2,7 +2,7 @@
 
 ## What Lives Here
 
-HTTP client with request/response interceptors and an adapter pattern for switching transport.
+HTTP client with an adapter pattern for switching transport.
 
 ```
 lib/http-client/
@@ -11,7 +11,7 @@ lib/http-client/
     CapacitorAdapter.ts     # Only transport adapter — uses Capacitor HTTP plugin
   offlineResponse.ts        # Wraps SQLite data into ApiResponse shape so offline reads are transparent to callers
   types.ts                  # Request/response types, interceptor interfaces
-  index.ts                  # Exports the configured client instance
+  index.ts                  # Exports init(), getClient(), setLogoutCallback(), getLogoutCallback()
 ```
 
 ---
@@ -36,7 +36,7 @@ lib/http-client/
 
 | Client | Where | Used for |
 |---|---|---|
-| `BaseClient` / `CapacitorAdapter` | `src/lib/http-client/` | All `/api` routes — goes through the interceptor chain (auth headers, 401/403 refresh, retry) |
+| `BaseClient` / `CapacitorAdapter` | `src/lib/http-client/` | All `/api` routes — auth headers set at init, throws on 4xx/5xx |
 | `HttpService` | `src/services/HttpService.ts` | Auth endpoints, certificate downloads — full URLs, no interceptor, raw `CapacitorHttp` |
 
 Do not use `HttpService` for routes that need the interceptor chain. Do not use `getClient()` for routes that bypass `/api`.

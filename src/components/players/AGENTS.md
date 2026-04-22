@@ -8,7 +8,7 @@ React wrapper components for each Sunbird player web component.
 players/
   PdfPlayer.tsx     # Wraps <sunbird-pdf-player>
   VideoPlayer.tsx   # Wraps <sunbird-video-player>
-  EpubPlayer.tsx    # Wraps <sunbird-epub-reader>
+  EpubPlayer.tsx    # Wraps <sunbird-epub-player>
   QumlPlayer.tsx    # Wraps <sunbird-quml-player>
   EcmlPlayer.tsx    # Wraps ECML content player
   ContentPlayer.tsx # Router — picks the correct player by mimeType

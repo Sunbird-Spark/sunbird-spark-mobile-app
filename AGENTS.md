@@ -61,7 +61,7 @@ cd android && ./gradlew assembleDebug   # Build the debug APK
 - **Routing guards** — `OnboardingGuard`, `TnCGuard`, `AppUpdateGuard`, `LogoutGuard`, `PushNotificationGuard` sit inside `IonReactRouter` and handle redirects as side effects.
 - **Content players** — Sunbird web components rendered directly in the DOM. See `src/components/players/AGENTS.md`.
 - **Auth** — Keycloak + Google Sign-In, tokens in SecureStorage, JWT injected on every request. See `src/auth/AGENTS.md`.
-- **HTTP client** — adapter pattern with interceptors. See `src/lib/http-client/AGENTS.md`.
+- **HTTP client** — adapter pattern; only `CapacitorAdapter` exists. See `src/lib/http-client/AGENTS.md`.
 - **Database** — SQLite via `@capacitor-community/sqlite`. See `src/services/db/AGENTS.md`.
 
 ---

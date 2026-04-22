@@ -7,36 +7,36 @@ All business logic for the app. Most services are singletons exported as pre-ins
 ```
 services/
   AppConsumerAuthService.ts   # Device-level auth token management
-  AppUpdateService.ts         # Forced update flow
+  AppUpdateService.ts         # Checks for app update availability and redirects to app store
   AuthWebviewService.ts       # Webview-based auth flows
-  CertificateService.ts       # Course certificate download
-  ChannelManager.ts           # Sunbird channel/framework resolution
+  CertificateService.ts       # Certificate search and download pipeline (search by user/course, download SVG, convert and save to device)
+  ChannelManager.ts           # Manages channel ID and sets x-channel-id HTTP header
   ContentService.ts           # Content search and metadata fetch
   FormService.ts              # Dynamic form config fetch
   HttpService.ts              # Lightweight HTTP client using CapacitorHttp directly — for auth endpoints and full URLs that bypass the main API client
   NativeConfigService.ts      # Reads gradle.properties at runtime via Capacitor
   NavigationHelperService.ts  # Tracks page navigation timing and deduplicates same-URL navigations
-  NotificationService.ts      # Local and push notification handling
+  NotificationService.ts      # Notification feed API — read, update, delete; also exports date grouping and template message parsing utilities
   OrganizationService.ts      # Org/tenant data fetch
   OtpService.ts               # OTP request and verification
   QuestionSetService.ts       # QuML question set fetch
-  SettingsService.ts          # App settings (language, storage location)
+  SettingsService.ts          # App settings (sync preference, download preference, app version)
   SystemSettingService.ts     # Sunbird system settings fetch
   TelemetryContext.ts         # TypeScript interfaces for telemetry context and event input shapes
-  TelemetryService.ts         # Stages and syncs telemetry events
-  TnCService.ts               # Terms and conditions check and accept
-  UserService.ts              # User profile fetch and update
+  TelemetryService.ts         # Stages telemetry events to SQLite via the Sunbird telemetry SDK
+  TnCService.ts               # Utility functions to check if TnC acceptance is needed and extract TnC data from user profile
+  UserService.ts              # Session management (save/clear tokens), user profile read and update, TnC acceptance
   auth/                       # Google Sign-In (socialLogin service)
   consent/                    # User data consent
-  content/                    # Content download, import, delete, playback resolution
-  course/                     # Course progress, assessment submission
+  content/                    # Download helpers for individual content items, courses, and spine ECARs (metadata-only ZIPs that seed the hierarchy tree); content deletion; hierarchy utilities; playback URL resolution
+  course/                     # Batch management, course progress calculation, content state sync, enrollment mapping, certificate search
   db/                         # SQLite DB services (see db/AGENTS.md)
-  device/                     # Device info, storage
-  download_manager/           # Download queue management
+  device/                     # Device ID, hashed device ID, device state
+  download_manager/           # Download queue management and .ecar file import (extract, copy assets)
   network/                    # Connectivity detection
-  players/                    # Player context builder
-  push/                       # Push notification registration
-  sync/                       # Telemetry and network queue sync
+  players/                    # Telemetry context builder (PlayerContextService) and per-player services (pdf, epub, quml, video, ecml) for player init and event handling
+  push/                       # Push notification registration and notification tap routing
+  sync/                       # Telemetry, course progress, and assessment event sync — scheduled and on-demand
   user_enrollment/            # Course enrollment
 ```
 
@@ -44,7 +44,7 @@ services/
 
 ## Singleton Pattern
 
-Every service follows this pattern:
+Singleton services follow this pattern:
 
 ```typescript
 export class SomeService {
@@ -68,7 +68,7 @@ export const someService = SomeService.getInstance();
 - Wrap async operations in `try-catch`.
 - Offline-aware operations are expected to fail silently — do not surface errors to the user unless actionable.
 - Use `Promise.allSettled()` when clearing multiple resources in parallel (e.g., on logout) to prevent cascade failures.
-- Backend error responses expose a `.code` property for categorization.
+- Auth errors (from `keycloakApi.ts`) expose a `.code` property for categorization (e.g. `invalid_credentials`, `REFRESH_FAILED`).
 
 ---
 

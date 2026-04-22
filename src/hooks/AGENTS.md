@@ -2,20 +2,20 @@
 
 ## What Lives Here
 
-React Query wrappers. One hook per data concern.
+React Query-based data hooks, grouped by concern. Some files export multiple hooks.
 
 ```
 hooks/
   useAppInitialized.ts          # Waits for AppInitializer to complete
   useBackButton.ts              # Android hardware back button handler
-  useBatch.ts                   # Course batch details
+  useBatch.ts                   # Course batch details, enrol/unenrol, content state read and update
   useBatchDownloadStates.ts     # Download state for all items in a batch
   useCollection.ts              # Collection (textbook) fetch
-  useCollectionEnrollment.ts    # Enroll in a collection
+  useCollectionEnrollment.ts    # Full enrollment state for a collection — enrollment status, enrollable batches, enrol/unenrol mutations
   useConsent.ts                 # User data consent read/write
   useContent.ts                 # Single content item fetch
   useContentSearch.ts           # Content search query
-  useContentStateUpdate.ts      # Update content_state in DB
+  useContentStateUpdate.ts      # Tracks content progress and completion via API; handles view-only mode when batch has ended
   useCourseDownloadProgress.ts  # Aggregate download progress for a course
   useDIALScanner.ts             # QR/DIAL code scanner
   useDebounce.ts                # Debounce utility hook
@@ -31,14 +31,14 @@ hooks/
   useIsContentLocal.ts          # Check if content is downloaded
   useLandingPageConfig.ts       # Landing page layout config
   useLocalContentSet.ts         # All locally downloaded content
-  useNotifications.ts           # Push notification list
-  useQRScannerPreference.ts     # QR scanner preference toggle
+  useNotifications.ts           # Notification feed — read, update, delete, grouping, message formatting
+  useQRScannerPreference.ts     # Reads QR scanner enabled/disabled preference from form config
   useQumlContent.ts             # QuML assessment content fetch
   useRatingTimer.ts             # Content rating prompt timer
   useStorageInfo.ts             # Device storage stats
   useSystemSetting.ts           # Sunbird system setting fetch
-  useTelemetry.ts               # Telemetry context builder hook
-  useTnC.ts                     # Terms and conditions status
+  useTelemetry.ts               # Returns telemetryService from TelemetryProvider context; falls back to a noop service if context is unavailable
+  useTnC.ts                     # TnC check (fetch profile and return TnC data if acceptance needed) and TnC accept mutation
   useUser.ts                    # Current user profile
   useUserCertificates.ts        # User course certificates
   useUserEnrollment.ts          # User course enrollment list
@@ -48,7 +48,7 @@ hooks/
 
 ## Patterns
 
-All hooks that wrap `useQuery` or `useMutation` gate execution until the app and session are ready:
+Hooks that fetch data gate execution until required params and app state are ready:
 
 ```typescript
 const { data } = useQuery({
@@ -68,10 +68,10 @@ const { data } = useQuery({
 
 ## Testing
 
-Mock services at the module level; do not mock React Query internals:
+Mock services at the module level using relative paths; do not mock React Query internals:
 
 ```typescript
-vi.mock('@/services/ContentService', () => ({
+vi.mock('../services/ContentService', () => ({
   contentService: { getContent: vi.fn() }
 }));
 ```

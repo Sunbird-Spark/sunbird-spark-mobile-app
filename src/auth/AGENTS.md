@@ -7,8 +7,7 @@ Keycloak API calls and Google Sign-In integration.
 ```
 auth/
   keycloakApi.ts   # POST /mobile/keycloak/login, /mobile/google/auth/android, token refresh
-  index.ts         # Re-exports
-  types.ts         # Auth request/response types
+  types.ts         # Auth request/response types (AuthTokens, etc.)
 ```
 
 Google Sign-In (native plugin initialisation and OAuth flow) lives in `src/services/auth/socialLogin/`. Token lifecycle (save, refresh, expiry) lives in `src/services/UserService.ts`. Session recovery on app start lives in `AppInitializer.ts`.

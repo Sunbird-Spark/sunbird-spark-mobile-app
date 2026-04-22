@@ -15,7 +15,7 @@ db/
   TelemetryDbService.ts           # telemetry table — staged telemetry events
   NetworkQueueDbService.ts        # network_queue table — staged API requests
   CourseAssessmentDbService.ts    # course_assessment table — assessment events
-  ConfigDbService.ts              # Reads config entries from key_value
+  ConfigDbService.ts              # configs table — channel, framework, form, system_settings, and org config entries with 24h TTL
   index.ts                        # Re-exports all DB service singletons
 ```
 
@@ -32,6 +32,7 @@ Database name: `sunbird_spark`, schema version 5.
 | `enrolled_courses` | Enrollment status, completion percentage |
 | `users` | `details` column stores the full profile as JSON |
 | `key_value` | Generic `key` / `value` string pairs |
+| `configs` | Channel, framework, form, system_settings, and org entries; `config_type` + `config_key` indexed |
 | `telemetry` | JSON event payloads pending sync |
 | `network_queue` | Serialised API requests pending replay |
 | `course_assessment` | Assessment event batches pending submission |
