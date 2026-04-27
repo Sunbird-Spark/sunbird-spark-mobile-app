@@ -1,17 +1,26 @@
 def configFile = rootProject.file('signing.properties')
 def props = new Properties()
 if (configFile.canRead()) {
-    props.load(new FileInputStream(configFile))
+    configFile.withInputStream { props.load(it) }
 
-    if (props != null) {
-        android.signingConfigs.release.storeFile file(props['PROD_KEYSTORE'])
-        android.signingConfigs.release.storePassword props['PROD_SIGNING_STORE_PASSWORD']
-        android.signingConfigs.release.keyAlias props['PROD_SIGNING_KEY_ALIAS']
-        android.signingConfigs.release.keyPassword props['PROD_SIGNING_KEY_PASSWORD']
+    def requiredKeys = [
+        'PROD_KEYSTORE',
+        'PROD_SIGNING_STORE_PASSWORD',
+        'PROD_SIGNING_KEY_ALIAS',
+        'PROD_SIGNING_KEY_PASSWORD',
+    ]
+    def missingKeys = requiredKeys.findAll { !props[it]?.toString()?.trim() }
+    if (!missingKeys.isEmpty()) {
+        throw new GradleException("Missing required signing.properties entries: ${missingKeys.join(', ')}")
     }
+
+    android.signingConfigs.release.storeFile file(props['PROD_KEYSTORE'])
+    android.signingConfigs.release.storePassword props['PROD_SIGNING_STORE_PASSWORD']
+    android.signingConfigs.release.keyAlias props['PROD_SIGNING_KEY_ALIAS']
+    android.signingConfigs.release.keyPassword props['PROD_SIGNING_KEY_PASSWORD']
 } else {
-    android.signingConfigs.release.storeFile file("keystore/android_keystore.jks")
-    android.signingConfigs.release.storePassword System.getenv("PROD_SIGNING_STORE_PASSWORD")
-    android.signingConfigs.release.keyAlias System.getenv("PROD_SIGNING_KEY_ALIAS")
-    android.signingConfigs.release.keyPassword System.getenv("PROD_SIGNING_KEY_PASSWORD")
+    android.signingConfigs.release.storeFile file('keystore/android_keystore.jks')
+    android.signingConfigs.release.storePassword System.getenv('PROD_SIGNING_STORE_PASSWORD')
+    android.signingConfigs.release.keyAlias System.getenv('PROD_SIGNING_KEY_ALIAS')
+    android.signingConfigs.release.keyPassword System.getenv('PROD_SIGNING_KEY_PASSWORD')
 }
