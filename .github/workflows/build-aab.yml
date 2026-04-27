@@ -117,7 +117,7 @@ jobs:
 
       - name: Set versionName to environment
         run: |
-          VERSION_NAME=$(grep '^versionName' android/app/build.gradle | awk -F'"' '{print $2}')
+          VERSION_NAME=$(grep 'versionName' android/app/build.gradle | awk -F'"' '{print $2}')
           if [ -z "$VERSION_NAME" ]; then
             echo "::error::versionName not found in build.gradle"
             exit 1
