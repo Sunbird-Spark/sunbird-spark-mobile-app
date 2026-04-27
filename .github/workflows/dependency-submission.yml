@@ -1,0 +1,48 @@
+name: Dependency Submission
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  dependency-submission-npm:
+    name: Submit npm Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies (full lock resolution)
+        run: npm ci
+
+      - name: Submit npm Dependencies
+        uses: actions/dependency-review-action@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  dependency-submission-gradle:
+    name: Submit Gradle Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Submit Gradle Dependencies
+        uses: gradle/actions/dependency-submission@v4
+        with:
+          build-scan-publish: false
+          build-root-directory: android
