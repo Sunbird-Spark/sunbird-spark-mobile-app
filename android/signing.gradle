@@ -18,9 +18,17 @@ if (configFile.canRead()) {
     android.signingConfigs.release.storePassword props['PROD_SIGNING_STORE_PASSWORD']
     android.signingConfigs.release.keyAlias props['PROD_SIGNING_KEY_ALIAS']
     android.signingConfigs.release.keyPassword props['PROD_SIGNING_KEY_PASSWORD']
+    android.buildTypes.release.signingConfig android.signingConfigs.release
 } else {
-    android.signingConfigs.release.storeFile file('keystore/android_keystore.jks')
-    android.signingConfigs.release.storePassword System.getenv('PROD_SIGNING_STORE_PASSWORD')
-    android.signingConfigs.release.keyAlias System.getenv('PROD_SIGNING_KEY_ALIAS')
-    android.signingConfigs.release.keyPassword System.getenv('PROD_SIGNING_KEY_PASSWORD')
+    def storePassword = System.getenv('PROD_SIGNING_STORE_PASSWORD')
+    def keyAlias = System.getenv('PROD_SIGNING_KEY_ALIAS')
+    def keyPassword = System.getenv('PROD_SIGNING_KEY_PASSWORD')
+
+    if (storePassword && keyAlias && keyPassword) {
+        android.signingConfigs.release.storeFile file('keystore/android_keystore.jks')
+        android.signingConfigs.release.storePassword storePassword
+        android.signingConfigs.release.keyAlias keyAlias
+        android.signingConfigs.release.keyPassword keyPassword
+        android.buildTypes.release.signingConfig android.signingConfigs.release
+    }
 }
