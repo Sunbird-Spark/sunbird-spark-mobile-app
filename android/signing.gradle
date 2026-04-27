@@ -1,0 +1,17 @@
+def configFile = rootProject.file('signing.properties')
+def props = new Properties()
+if (configFile.canRead()) {
+    props.load(new FileInputStream(configFile))
+
+    if (props != null) {
+        android.signingConfigs.release.storeFile file(props['PROD_KEYSTORE'])
+        android.signingConfigs.release.storePassword props['PROD_SIGNING_STORE_PASSWORD']
+        android.signingConfigs.release.keyAlias props['PROD_SIGNING_KEY_ALIAS']
+        android.signingConfigs.release.keyPassword props['PROD_SIGNING_KEY_PASSWORD']
+    }
+} else {
+    android.signingConfigs.release.storeFile file("keystore/android_keystore.jks")
+    android.signingConfigs.release.storePassword System.getenv("PROD_SIGNING_STORE_PASSWORD")
+    android.signingConfigs.release.keyAlias System.getenv("PROD_SIGNING_KEY_ALIAS")
+    android.signingConfigs.release.keyPassword System.getenv("PROD_SIGNING_KEY_PASSWORD")
+}
