@@ -359,7 +359,7 @@ const MyLearningPage: React.FC = () => {
               <div className="my-learning__course-list">
                 {tabCourses.map((course) => (
                   <CourseCardItem
-                    key={course.collectionId || course.courseId || course.batchId}
+                    key={course.batchId ? `${course.courseId}-${course.batchId}` : course.courseId}
                     course={course}
                   />
                 ))}
