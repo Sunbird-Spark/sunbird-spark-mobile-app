@@ -55,14 +55,14 @@ jobs:
         with:
           fileName: 'google-services.json'
           fileDir: '${{ github.workspace }}/android/app/'
-          encodedString: ${{ secrets.PROD_GOOGLE_SERVICE_CONTENT }}
+          encodedString: ${{ secrets.GOOGLE_SERVICE_CONTENT }}
 
       - name: Replace secrets in gradle.properties
         run: |
           sed -i 's|^base_url=.*|base_url=${{ vars.BASE_URL }}|' android/gradle.properties
-          sed -i 's|^mobile_app_key=.*|mobile_app_key=${{ secrets.PROD_MOBILE_APP_KEY }}|' android/gradle.properties
-          sed -i 's|^mobile_app_secret=.*|mobile_app_secret=${{ secrets.PROD_MOBILE_APP_SECRET }}|' android/gradle.properties
-          sed -i 's|^mobile_app_consumer=.*|mobile_app_consumer=${{ secrets.PROD_MOBILE_APP_CONSUMER }}|' android/gradle.properties
+          sed -i 's|^mobile_app_key=.*|mobile_app_key=${{ secrets.MOBILE_APP_KEY }}|' android/gradle.properties
+          sed -i 's|^mobile_app_secret=.*|mobile_app_secret=${{ secrets.MOBILE_APP_SECRET }}|' android/gradle.properties
+          sed -i 's|^mobile_app_consumer=.*|mobile_app_consumer=${{ secrets.MOBILE_APP_CONSUMER }}|' android/gradle.properties
           sed -i 's|^producer_id=.*|producer_id=${{ vars.PRODUCER_ID }}|' android/gradle.properties
 
       - name: Decode production keystore
@@ -71,7 +71,7 @@ jobs:
         with:
           fileName: 'android_keystore.jks'
           fileDir: '${{ github.workspace }}/android/app/keystore/'
-          encodedString: ${{ secrets.PROD_KEYSTORE }}
+          encodedString: ${{ secrets.KEYSTORE }}
 
       - name: Create signing.properties from JSON secret
         run: |
@@ -79,17 +79,17 @@ jobs:
 
           trap 'rm -f signing.json' EXIT
 
-          echo "${{ secrets.PROD_SIGNING_KEYS }}" | base64 --decode > signing.json
+          echo "${{ secrets.SIGNING_KEYS }}" | base64 --decode > signing.json
 
-          PROD_SIGNING_STORE_PASSWORD=$(jq -r '.PROD_SIGNING_STORE_PASSWORD' signing.json)
-          PROD_SIGNING_KEY_ALIAS=$(jq -r '.PROD_SIGNING_KEY_ALIAS' signing.json)
-          PROD_SIGNING_KEY_PASSWORD=$(jq -r '.PROD_SIGNING_KEY_PASSWORD' signing.json)
+          SIGNING_STORE_PASSWORD=$(jq -r '.SIGNING_STORE_PASSWORD' signing.json)
+          SIGNING_KEY_ALIAS=$(jq -r '.SIGNING_KEY_ALIAS' signing.json)
+          SIGNING_KEY_PASSWORD=$(jq -r '.SIGNING_KEY_PASSWORD' signing.json)
 
           touch ${{ github.workspace }}/android/signing.properties
-          echo "PROD_KEYSTORE=${{ github.workspace }}/android/app/keystore/android_keystore.jks" >> ${{ github.workspace }}/android/signing.properties
-          echo "PROD_SIGNING_STORE_PASSWORD=$PROD_SIGNING_STORE_PASSWORD" >> ${{ github.workspace }}/android/signing.properties
-          echo "PROD_SIGNING_KEY_ALIAS=$PROD_SIGNING_KEY_ALIAS" >> ${{ github.workspace }}/android/signing.properties
-          echo "PROD_SIGNING_KEY_PASSWORD=$PROD_SIGNING_KEY_PASSWORD" >> ${{ github.workspace }}/android/signing.properties
+          echo "KEYSTORE=${{ github.workspace }}/android/app/keystore/android_keystore.jks" >> ${{ github.workspace }}/android/signing.properties
+          echo "SIGNING_STORE_PASSWORD=$SIGNING_STORE_PASSWORD" >> ${{ github.workspace }}/android/signing.properties
+          echo "SIGNING_KEY_ALIAS=$SIGNING_KEY_ALIAS" >> ${{ github.workspace }}/android/signing.properties
+          echo "SIGNING_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> ${{ github.workspace }}/android/signing.properties
 
       - name: Capacitor sync
         run: npx cap sync android
@@ -124,3 +124,26 @@ jobs:
           fi
           echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
           echo "Version: $VERSION_NAME"
+
+      - name: Upload AAB to Azure Blob Storage
+        uses: azure/CLI@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            AAB_FILE=$(find android/app/build/outputs/bundle/release/ -name "*.aab" | head -1)
+            if [ -z "$AAB_FILE" ]; then
+              echo "AAB file not found!"
+              exit 1
+            fi
+
+            echo "Uploading AAB file: $AAB_FILE"
+
+            az storage blob upload \
+              --account-name "${{ secrets.AZURE_STORAGE_ACCOUNT }}" \
+              --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
+              --container-name "${{ vars.AZURE_CONTAINER_NAME }}" \
+              --file "$AAB_FILE" \
+              --name "sunbird-release-${{ env.VERSION_NAME }}-${{ github.run_number }}.aab" \
+              --overwrite
+
+            echo "AAB uploaded: sunbird-release-${{ env.VERSION_NAME }}-${{ github.run_number }}.aab"
