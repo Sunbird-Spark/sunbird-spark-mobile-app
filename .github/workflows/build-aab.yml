@@ -3,16 +3,31 @@ name: Build Release AAB
 on:
   push:
     tags:
-      - '*release'
+      - 'test-*'
+      - 'sandbox-*'
 
 jobs:
   build:
-    environment: sunbird
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Determine environment and version from tag
+        id: env
+        run: |
+          TAG="${{ github.ref_name }}"
+          if [[ "$TAG" == test-* ]]; then
+            echo "name=test" >> $GITHUB_OUTPUT
+            echo "version=${TAG#test-}" >> $GITHUB_OUTPUT
+          elif [[ "$TAG" == sandbox-* ]]; then
+            echo "name=sandbox" >> $GITHUB_OUTPUT
+            echo "version=${TAG#sandbox-}" >> $GITHUB_OUTPUT
+          else
+            echo "::error::Tag must start with test- or sandbox-"
+            exit 1
+          fi
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -50,36 +65,75 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Decode google-services.json
-        id: decode_google_services
-        uses: timheuer/base64-to-file@v1.2
-        with:
-          fileName: 'google-services.json'
-          fileDir: '${{ github.workspace }}/android/app/'
-          encodedString: ${{ secrets.GOOGLE_SERVICE_CONTENT }}
+        env:
+          TEST_SECRET: ${{ secrets.TEST_GOOGLE_SERVICE_CONTENT }}
+          SANDBOX_SECRET: ${{ secrets.SANDBOX_GOOGLE_SERVICE_CONTENT }}
+        run: |
+          ENV="${{ steps.env.outputs.name }}"
+          if [ "$ENV" = "test" ]; then
+            echo "$TEST_SECRET" | base64 --decode > android/app/google-services.json
+          else
+            echo "$SANDBOX_SECRET" | base64 --decode > android/app/google-services.json
+          fi
 
       - name: Replace secrets in gradle.properties
+        env:
+          TEST_MOBILE_APP_KEY: ${{ secrets.TEST_MOBILE_APP_KEY }}
+          TEST_MOBILE_APP_SECRET: ${{ secrets.TEST_MOBILE_APP_SECRET }}
+          TEST_MOBILE_APP_CONSUMER: ${{ secrets.TEST_MOBILE_APP_CONSUMER }}
+          SANDBOX_MOBILE_APP_KEY: ${{ secrets.SANDBOX_MOBILE_APP_KEY }}
+          SANDBOX_MOBILE_APP_SECRET: ${{ secrets.SANDBOX_MOBILE_APP_SECRET }}
+          SANDBOX_MOBILE_APP_CONSUMER: ${{ secrets.SANDBOX_MOBILE_APP_CONSUMER }}
         run: |
-          sed -i 's|^base_url=.*|base_url=${{ vars.BASE_URL }}|' android/gradle.properties
-          sed -i 's|^mobile_app_key=.*|mobile_app_key=${{ secrets.MOBILE_APP_KEY }}|' android/gradle.properties
-          sed -i 's|^mobile_app_secret=.*|mobile_app_secret=${{ secrets.MOBILE_APP_SECRET }}|' android/gradle.properties
-          sed -i 's|^mobile_app_consumer=.*|mobile_app_consumer=${{ secrets.MOBILE_APP_CONSUMER }}|' android/gradle.properties
-          sed -i 's|^producer_id=.*|producer_id=${{ vars.PRODUCER_ID }}|' android/gradle.properties
+          ENV="${{ steps.env.outputs.name }}"
+          if [ "$ENV" = "test" ]; then
+            BASE_URL="${{ vars.TEST_BASE_URL }}"
+            MOBILE_APP_KEY="$TEST_MOBILE_APP_KEY"
+            MOBILE_APP_SECRET="$TEST_MOBILE_APP_SECRET"
+            MOBILE_APP_CONSUMER="$TEST_MOBILE_APP_CONSUMER"
+            PRODUCER_ID="${{ vars.TEST_PRODUCER_ID }}"
+          else
+            BASE_URL="${{ vars.SANDBOX_BASE_URL }}"
+            MOBILE_APP_KEY="$SANDBOX_MOBILE_APP_KEY"
+            MOBILE_APP_SECRET="$SANDBOX_MOBILE_APP_SECRET"
+            MOBILE_APP_CONSUMER="$SANDBOX_MOBILE_APP_CONSUMER"
+            PRODUCER_ID="${{ vars.SANDBOX_PRODUCER_ID }}"
+          fi
 
-      - name: Decode production keystore
-        id: decode_prod_keystore
-        uses: timheuer/base64-to-file@v1.2
-        with:
-          fileName: 'android_keystore.jks'
-          fileDir: '${{ github.workspace }}/android/app/keystore/'
-          encodedString: ${{ secrets.KEYSTORE }}
+          sed -i "s|^base_url=.*|base_url=$BASE_URL|" android/gradle.properties
+          sed -i "s|^mobile_app_key=.*|mobile_app_key=$MOBILE_APP_KEY|" android/gradle.properties
+          sed -i "s|^mobile_app_secret=.*|mobile_app_secret=$MOBILE_APP_SECRET|" android/gradle.properties
+          sed -i "s|^mobile_app_consumer=.*|mobile_app_consumer=$MOBILE_APP_CONSUMER|" android/gradle.properties
+          sed -i "s|^producer_id=.*|producer_id=$PRODUCER_ID|" android/gradle.properties
+
+      - name: Decode keystore
+        env:
+          TEST_SECRET: ${{ secrets.TEST_KEYSTORE }}
+          SANDBOX_SECRET: ${{ secrets.SANDBOX_KEYSTORE }}
+        run: |
+          mkdir -p android/app/keystore
+          ENV="${{ steps.env.outputs.name }}"
+          if [ "$ENV" = "test" ]; then
+            echo "$TEST_SECRET" | base64 --decode > android/app/keystore/android_keystore.jks
+          else
+            echo "$SANDBOX_SECRET" | base64 --decode > android/app/keystore/android_keystore.jks
+          fi
 
       - name: Create signing.properties from JSON secret
+        env:
+          TEST_SECRET: ${{ secrets.TEST_SIGNING_KEYS }}
+          SANDBOX_SECRET: ${{ secrets.SANDBOX_SIGNING_KEYS }}
         run: |
-          mkdir -p ${{ github.workspace }}/android/app/keystore
+          mkdir -p android/app/keystore
+          ENV="${{ steps.env.outputs.name }}"
 
           trap 'rm -f signing.json' EXIT
 
-          echo "${{ secrets.SIGNING_KEYS }}" | base64 --decode > signing.json
+          if [ "$ENV" = "test" ]; then
+            echo "$TEST_SECRET" | base64 --decode > signing.json
+          else
+            echo "$SANDBOX_SECRET" | base64 --decode > signing.json
+          fi
 
           SIGNING_STORE_PASSWORD=$(jq -r '.SIGNING_STORE_PASSWORD' signing.json)
           SIGNING_KEY_ALIAS=$(jq -r '.SIGNING_KEY_ALIAS' signing.json)
@@ -115,16 +169,6 @@ jobs:
           name: release-aab
           path: android/app/build/outputs/bundle/release/*.aab
 
-      - name: Set versionName to environment
-        run: |
-          VERSION_NAME=$(grep 'versionName' android/app/build.gradle | awk -F'"' '{print $2}')
-          if [ -z "$VERSION_NAME" ]; then
-            echo "::error::versionName not found in build.gradle"
-            exit 1
-          fi
-          echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
-          echo "Version: $VERSION_NAME"
-
       - name: Upload AAB to Azure Blob Storage
         uses: azure/CLI@v2
         with:
@@ -143,7 +187,7 @@ jobs:
               --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
               --container-name "${{ vars.AZURE_CONTAINER_NAME }}" \
               --file "$AAB_FILE" \
-              --name "sunbird-release-${{ env.VERSION_NAME }}-${{ github.run_number }}.aab" \
+              --name "sunbird-${{ steps.env.outputs.name }}-${{ steps.env.outputs.version }}-${{ github.run_number }}.aab" \
               --overwrite
 
-            echo "AAB uploaded: sunbird-release-${{ env.VERSION_NAME }}-${{ github.run_number }}.aab"
+            echo "AAB uploaded: sunbird-${{ steps.env.outputs.name }}-${{ steps.env.outputs.version }}-${{ github.run_number }}.aab"
