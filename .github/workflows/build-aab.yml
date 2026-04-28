@@ -17,16 +17,16 @@ jobs:
         id: env
         run: |
           TAG="${{ github.ref_name }}"
-          if [[ "$TAG" == test-* ]]; then
-            echo "name=TEST" >> $GITHUB_OUTPUT
-            echo "version=${TAG#test-}" >> $GITHUB_OUTPUT
-          elif [[ "$TAG" == sandbox-* ]]; then
-            echo "name=SANDBOX" >> $GITHUB_OUTPUT
-            echo "version=${TAG#sandbox-}" >> $GITHUB_OUTPUT
-          else
+          PREFIX=$(echo "$TAG" | cut -d'-' -f1 | tr '[:lower:]' '[:upper:]')
+          VERSION=$(echo "$TAG" | cut -d'-' -f2-)
+
+          if [[ "$PREFIX" != "TEST" && "$PREFIX" != "SANDBOX" ]]; then
             echo "::error::Tag must start with test- or sandbox-"
             exit 1
           fi
+
+          echo "name=$PREFIX" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
