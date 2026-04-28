@@ -3,8 +3,7 @@ name: Build Release AAB
 on:
   push:
     tags:
-      - 'test-*'
-      - 'sandbox-*'
+      - '*'
 
 jobs:
   build:
@@ -19,10 +18,10 @@ jobs:
         run: |
           TAG="${{ github.ref_name }}"
           if [[ "$TAG" == test-* ]]; then
-            echo "name=test" >> $GITHUB_OUTPUT
+            echo "name=TEST" >> $GITHUB_OUTPUT
             echo "version=${TAG#test-}" >> $GITHUB_OUTPUT
           elif [[ "$TAG" == sandbox-* ]]; then
-            echo "name=sandbox" >> $GITHUB_OUTPUT
+            echo "name=SANDBOX" >> $GITHUB_OUTPUT
             echo "version=${TAG#sandbox-}" >> $GITHUB_OUTPUT
           else
             echo "::error::Tag must start with test- or sandbox-"
@@ -70,7 +69,7 @@ jobs:
           SANDBOX_SECRET: ${{ secrets.SANDBOX_GOOGLE_SERVICE_CONTENT }}
         run: |
           ENV="${{ steps.env.outputs.name }}"
-          if [ "$ENV" = "test" ]; then
+          if [ "$ENV" = "TEST" ]; then
             echo "$TEST_SECRET" | base64 --decode > android/app/google-services.json
           else
             echo "$SANDBOX_SECRET" | base64 --decode > android/app/google-services.json
@@ -86,13 +85,13 @@ jobs:
           SANDBOX_MOBILE_APP_CONSUMER: ${{ secrets.SANDBOX_MOBILE_APP_CONSUMER }}
         run: |
           ENV="${{ steps.env.outputs.name }}"
-          if [ "$ENV" = "test" ]; then
+          if [ "$ENV" = "TEST" ]; then
             BASE_URL="${{ vars.TEST_BASE_URL }}"
             MOBILE_APP_KEY="$TEST_MOBILE_APP_KEY"
             MOBILE_APP_SECRET="$TEST_MOBILE_APP_SECRET"
             MOBILE_APP_CONSUMER="$TEST_MOBILE_APP_CONSUMER"
             PRODUCER_ID="${{ vars.TEST_PRODUCER_ID }}"
-          else
+          elif [ "$ENV" = "SANDBOX" ]; then
             BASE_URL="${{ vars.SANDBOX_BASE_URL }}"
             MOBILE_APP_KEY="$SANDBOX_MOBILE_APP_KEY"
             MOBILE_APP_SECRET="$SANDBOX_MOBILE_APP_SECRET"
@@ -113,7 +112,7 @@ jobs:
         run: |
           mkdir -p android/app/keystore
           ENV="${{ steps.env.outputs.name }}"
-          if [ "$ENV" = "test" ]; then
+          if [ "$ENV" = "TEST" ]; then
             echo "$TEST_SECRET" | base64 --decode > android/app/keystore/android_keystore.jks
           else
             echo "$SANDBOX_SECRET" | base64 --decode > android/app/keystore/android_keystore.jks
@@ -129,7 +128,7 @@ jobs:
 
           trap 'rm -f signing.json' EXIT
 
-          if [ "$ENV" = "test" ]; then
+          if [ "$ENV" = "TEST" ]; then
             echo "$TEST_SECRET" | base64 --decode > signing.json
           else
             echo "$SANDBOX_SECRET" | base64 --decode > signing.json
