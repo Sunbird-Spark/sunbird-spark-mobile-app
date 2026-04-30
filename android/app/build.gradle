@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace "org.sunbird.app"
+    namespace "org.sunbird.spark.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "org.sunbird.app"
+        applicationId "org.sunbird.spark.app"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "3.0"
+        versionCode 1
+        versionName "1.0"
         def BASE_URL = project.findProperty("base_url") ?: ""
         def MOBILE_APP_CONSUMER = project.findProperty("mobile_app_consumer") ?: ""
         def MOBILE_APP_KEY = project.findProperty("mobile_app_key") ?: ""
