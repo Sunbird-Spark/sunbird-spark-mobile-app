@@ -46,7 +46,7 @@
     "@capgo/capacitor-downloader": "^8.1.16",
     "@capgo/capacitor-social-login": "^8.0.0",
     "@ionic/react": "^8.7.17",
-    "@ionic/react-router": "^8.7.17",
+    "@ionic/react-router": "^8.8.5",
     "@project-sunbird/content-player": "^8.0.0",
     "@project-sunbird/sunbird-epub-player-web-component": "^2.0.1",
     "@project-sunbird/sunbird-pdf-player-web-component": "^2.0.1",
