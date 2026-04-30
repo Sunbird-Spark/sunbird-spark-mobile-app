@@ -1,4 +1,4 @@
-package org.sunbird.app;
+package org.sunbird.spark.app;
 
 import android.os.Bundle;
 import android.util.Log;
