@@ -190,8 +190,12 @@ function main() {
   console.log('\nRunning npx cap sync android...\n');
   try {
     execSync('npx cap sync android', { cwd: ROOT, stdio: 'inherit' });
-  } catch {
-    console.error('\nWarning: cap sync failed. Run "npx cap sync android" manually.');
+  } catch (err) {
+    console.error(`\nError during cap sync: ${err.message}`);
+    console.error('Rolling back all file changes...');
+    restoreFiles(snapshot);
+    console.error('Rollback complete. No files were changed.');
+    process.exit(1);
   }
 
   console.log('\nDone. App ID updated to:', newId);
