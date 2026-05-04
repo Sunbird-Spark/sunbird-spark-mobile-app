@@ -46,21 +46,53 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Snapshot all flat files so we can restore on failure
-function snapshotFiles() {
-  const snapshot = {};
+function snapshotFiles(oldId) {
+  const snapshot = { flat: {}, java: [] };
+
   for (const [key, filePath] of Object.entries(FILES)) {
     if (key === 'javaRoot') continue;
     if (fs.existsSync(filePath)) {
-      snapshot[filePath] = fs.readFileSync(filePath, 'utf8');
+      snapshot.flat[filePath] = fs.readFileSync(filePath, 'utf8');
     }
   }
+
+  const oldJavaDir = path.join(FILES.javaRoot, idToPath(oldId));
+  if (fs.existsSync(oldJavaDir)) {
+    for (const file of fs.readdirSync(oldJavaDir).filter((f) => f.endsWith('.java'))) {
+      const filePath = path.join(oldJavaDir, file);
+      snapshot.java.push({ path: filePath, content: fs.readFileSync(filePath, 'utf8') });
+    }
+  }
+
   return snapshot;
 }
 
-function restoreFiles(snapshot) {
-  for (const [filePath, content] of Object.entries(snapshot)) {
+function restoreFiles(snapshot, newId) {
+  for (const [filePath, content] of Object.entries(snapshot.flat)) {
     fs.writeFileSync(filePath, content, 'utf8');
+  }
+
+  // Restore Java files to original locations
+  for (const { path: filePath, content } of snapshot.java) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, content, 'utf8');
+  }
+
+  // Delete any Java files that were written to the new location
+  const newJavaDir = path.join(FILES.javaRoot, idToPath(newId));
+  if (fs.existsSync(newJavaDir)) {
+    for (const file of fs.readdirSync(newJavaDir).filter((f) => f.endsWith('.java'))) {
+      fs.unlinkSync(path.join(newJavaDir, file));
+    }
+    let dir = newJavaDir;
+    while (dir !== FILES.javaRoot) {
+      if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
+        fs.rmdirSync(dir);
+        dir = path.dirname(dir);
+      } else {
+        break;
+      }
+    }
   }
 }
 
@@ -147,7 +179,7 @@ function main() {
 
   console.log(`\nUpdating app ID: ${oldId} → ${newId}\n`);
 
-  const snapshot = snapshotFiles();
+  const snapshot = snapshotFiles(oldId);
 
   try {
     updateFile(FILES.capacitorConfigTs, [
@@ -182,7 +214,7 @@ function main() {
   } catch (err) {
     console.error(`\nError during update: ${err.message}`);
     console.error('Rolling back all file changes...');
-    restoreFiles(snapshot);
+    restoreFiles(snapshot, newId);
     console.error('Rollback complete. No files were changed.');
     process.exit(1);
   }
@@ -193,7 +225,7 @@ function main() {
   } catch (err) {
     console.error(`\nError during cap sync: ${err.message}`);
     console.error('Rolling back all file changes...');
-    restoreFiles(snapshot);
+    restoreFiles(snapshot, newId);
     console.error('Rollback complete. No files were changed.');
     process.exit(1);
   }
