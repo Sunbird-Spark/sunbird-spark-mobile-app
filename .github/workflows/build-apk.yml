@@ -181,7 +181,7 @@ jobs:
               --account-key "${{ secrets.AZURE_STORAGE_KEY }}" \
               --container-name "${{ vars.AZURE_CONTAINER_NAME }}" \
               --file "$APK_FILE" \
-              --name "sunbird-${{ needs.determine-env.outputs.environment }}-${{ needs.determine-env.outputs.version }}-${{ github.run_number }}.apk" \
+              --name "sunbird-${{ needs.determine-env.outputs.environment }}-${{ needs.determine-env.outputs.version }}-${{ github.run_number }}-debug.apk" \
               --overwrite
 
-            echo "APK uploaded: sunbird-${{ needs.determine-env.outputs.environment }}-${{ needs.determine-env.outputs.version }}-${{ github.run_number }}.apk"
+            echo "APK uploaded: sunbird-${{ needs.determine-env.outputs.environment }}-${{ needs.determine-env.outputs.version }}-${{ github.run_number }}-debug.apk"
