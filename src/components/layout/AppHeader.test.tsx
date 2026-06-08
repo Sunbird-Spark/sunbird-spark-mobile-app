@@ -1,6 +1,11 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { AppHeader } from './AppHeader';
+
+// Mutable feature-flag mock — value read by AppHeader at module-eval time, so
+// toggle tests must mutate this then re-import AppHeader (see below).
+const flags = vi.hoisted(() => ({ ENABLE_THEME_SELECTOR: false }));
+vi.mock('../../config/featureFlags', () => flags);
 
 const mockGoBack = vi.fn();
 vi.mock('@ionic/react', () => ({
@@ -102,5 +107,28 @@ describe('AppHeader — accessibility', () => {
   it('hides QR scan button when showScan is false', () => {
     render(<AppHeader title="Home" showScan={false} />);
     expect(screen.queryByTestId('qr-scan')).not.toBeInTheDocument();
+  });
+});
+
+describe('AppHeader — ENABLE_THEME_SELECTOR feature flag', () => {
+  afterEach(() => {
+    flags.ENABLE_THEME_SELECTOR = false;
+    vi.resetModules();
+  });
+
+  it('shows ThemeSelector when ENABLE_THEME_SELECTOR is true', async () => {
+    flags.ENABLE_THEME_SELECTOR = true;
+    vi.resetModules();
+    const { AppHeader: FreshAppHeader } = await import('./AppHeader');
+    render(<FreshAppHeader title="Home" />);
+    expect(screen.getByTestId('theme-selector')).toBeInTheDocument();
+  });
+
+  it('hides ThemeSelector when ENABLE_THEME_SELECTOR is false', async () => {
+    flags.ENABLE_THEME_SELECTOR = false;
+    vi.resetModules();
+    const { AppHeader: FreshAppHeader } = await import('./AppHeader');
+    render(<FreshAppHeader title="Home" />);
+    expect(screen.queryByTestId('theme-selector')).not.toBeInTheDocument();
   });
 });

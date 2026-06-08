@@ -57,19 +57,8 @@ ion-app {
   --sunbird-shadow-lg: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
 }
 
-html[data-template="classic"] {
-  --r-xxs: 0.25rem;
-  --r-xs: 0.375rem;
-  --r-sm: 0.5rem;
-  --r-md: 0.875rem;
-  --r-lg: 1.25rem;
-  --r-xl: 1.75rem;
-  --r-pill: 9999px;
-
-  --sunbird-shadow-sm: 0 0.125rem 0.5rem rgba(0, 0, 0, 0.06);
-  --sunbird-shadow-md: 0 0 0.75rem 0 rgba(0, 0, 0, 0.12);
-  --sunbird-shadow-lg: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
-}
+/* No html[data-template="classic"] block — Classic inherits the :root defaults
+ * above. Adding one would duplicate every token (two places to update). */
 
 html[data-template="modern"] {
   --r-xxs: 0.125rem;

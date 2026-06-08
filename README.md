@@ -289,8 +289,7 @@ Existing templates (`src/theme/themes.ts`):
 ```ts
 export const TEMPLATES: TemplateOption[] = [
   { id: 'classic', label: 'Classic', description: 'Warm, rounded', presetThemeId: 'terracotta', presetFontId: 'rubik' },
-  { id: 'modern',  label: 'Modern',  description: 'Sharp, bold',   presetThemeId: 'pink',       presetFontId: 'poppins' },
-  { id: 'royal',   label: 'Royal',   description: 'Mint serif',    presetThemeId: 'mint',       presetFontId: 'lora' },
+  { id: 'modern',  label: 'Modern',  description: 'Sharp, bold',   presetThemeId: 'rose',       presetFontId: 'inter' },
 ];
 ```
 

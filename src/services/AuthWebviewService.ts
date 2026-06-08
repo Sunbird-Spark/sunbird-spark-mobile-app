@@ -96,12 +96,12 @@ class AuthWebviewService {
   private isRedirectMatch(eventUrl: URL, redirectUri: string): boolean {
     try {
       const expectedUrl = new URL(redirectUri);
-      
+
       // Compare scheme, host, and pathname
       if (eventUrl.protocol !== expectedUrl.protocol) return false;
       if (eventUrl.host !== expectedUrl.host) return false;
       if (eventUrl.pathname !== expectedUrl.pathname) return false;
-      
+
       return true;
     } catch {
       // Invalid redirect URI
@@ -129,17 +129,17 @@ class AuthWebviewService {
           if (settled || !event.url) return;
           try {
             const eventUrl = new URL(event.url);
-            
+
             // Check if pathname matches the callback path
             const pathMatches = callbackPath && eventUrl.pathname === callbackPath;
-            
+
             // Check if full URL matches the redirect URI (scheme + host + pathname)
             const redirectMatches = redirectUri && this.isRedirectMatch(eventUrl, redirectUri);
-            
+
             if (pathMatches || redirectMatches) {
               settled = true;
               cleanup();
-              InAppBrowser.close().catch(() => {});
+              InAppBrowser.close().catch(() => { });
               resolve();
             }
           } catch {
@@ -204,7 +204,7 @@ class AuthWebviewService {
   async openRegistration(): Promise<void> {
     const config = await this.getAuthConfig('register');
     const redirectUri = this.getRedirectUri(config.target);
-    
+
     // Build URL using proper URL manipulation to avoid param duplication
     const baseUrl = this.buildUrl(config.target);
     const url = new URL(baseUrl);
