@@ -451,6 +451,48 @@ describe('AuthWebviewService', () => {
       await promise;
     });
 
+    it('should append theme/font/template params from localStorage on openRegistration', async () => {
+      localStorage.setItem('sunbird-theme', 'blue');
+      localStorage.setItem('sunbird-font', 'lora');
+      localStorage.setItem('sunbird-template', 'modern');
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openRegistration();
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+      browserClosedCallback?.();
+      await promise;
+
+      const callArgs = (InAppBrowser.openInWebView as any).mock.calls[0][0];
+      expect(callArgs.url).toContain('theme=blue');
+      expect(callArgs.url).toContain('font=lora');
+      expect(callArgs.url).toContain('template=modern');
+
+      localStorage.removeItem('sunbird-theme');
+      localStorage.removeItem('sunbird-font');
+      localStorage.removeItem('sunbird-template');
+    });
+
+    it('should omit theme params when localStorage is empty', async () => {
+      localStorage.removeItem('sunbird-theme');
+      localStorage.removeItem('sunbird-font');
+      localStorage.removeItem('sunbird-template');
+      mockFormRead.mockResolvedValue(mockFormResponse([registerConfig]));
+
+      const promise = authWebviewService.openForgotPassword();
+      await vi.waitFor(() => {
+        expect(InAppBrowser.openInWebView).toHaveBeenCalled();
+      });
+      browserClosedCallback?.();
+      await promise;
+
+      const callArgs = (InAppBrowser.openInWebView as any).mock.calls[0][0];
+      expect(callArgs.url).not.toContain('theme=');
+      expect(callArgs.url).not.toContain('font=');
+      expect(callArgs.url).not.toContain('template=');
+    });
+
     it('should handle invalid redirect_uri gracefully', async () => {
       const configWithInvalidRedirect = {
         context: 'register',

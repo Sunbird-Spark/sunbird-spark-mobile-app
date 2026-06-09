@@ -31,6 +31,10 @@ vi.mock('../components/common/LanguageSelector', () => ({
   LanguageSelector: () => <div data-testid="language-selector" />,
 }));
 
+vi.mock('../components/common/ThemeSelector', () => ({
+  ThemeSelector: () => <div data-testid="theme-selector" />,
+}));
+
 vi.mock('../hooks/useFaqData', () => ({
   useFaqData: vi.fn(),
 }));

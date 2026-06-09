@@ -65,7 +65,7 @@ const ProgressRing: React.FC<{ progress: number; size?: number }> = ({ progress,
   const offset = circumference - (progress / 100) * circumference;
   return (
     <svg width={size} height={size} className="pl-progress-ring" role="img" aria-label={t('progressRingLabel', { progress })}>
-      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--ion-color-warning-shade, var(--color-f0ce94, #F0CE94))" strokeWidth={stroke} />
+      <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="var(--sunbird-progress-track, #F0CE94)" strokeWidth={stroke} />
       <circle
         cx={size / 2} cy={size / 2} r={radius}
         fill="none" stroke="var(--ion-color-primary)" strokeWidth={stroke}

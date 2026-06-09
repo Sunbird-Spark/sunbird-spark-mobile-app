@@ -63,6 +63,9 @@ vi.mock('../components/common/QRScanButton', () => ({
 vi.mock('../components/common/LanguageSelector', () => ({
   LanguageSelector: () => <div data-testid="language-selector" />,
 }));
+vi.mock('../components/common/ThemeSelector', () => ({
+  ThemeSelector: () => <div data-testid="theme-selector" />,
+}));
 vi.mock('../components/layout/BottomNavigation', () => ({
   BottomNavigation: () => <div data-testid="bottom-navigation" />,
 }));

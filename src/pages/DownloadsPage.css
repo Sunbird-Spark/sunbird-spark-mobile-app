@@ -45,7 +45,7 @@
   color: var(--ion-color-danger);
   background: none;
   border: 1px solid var(--ion-color-danger);
-  border-radius: 6px;
+  border-radius: var(--r-sm);
   padding: 0.35rem 0.75rem;
   cursor: pointer;
 }
@@ -85,7 +85,7 @@
   align-items: center;
   gap: 0.75rem;
   background: var(--ion-background-color, #fff);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 0.75rem;
   margin-bottom: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
@@ -154,7 +154,7 @@
   --progress-background: var(--ion-color-primary);
   --buffer-background: var(--ion-color-light);
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
 }
 
 /* ── Item Actions ── */

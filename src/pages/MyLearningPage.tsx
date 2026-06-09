@@ -14,6 +14,8 @@ import { saveReturnTo } from '../utils/returnTo';
 import { FaArrowRightLong } from 'react-icons/fa6';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
+import { ThemeSelector } from '../components/common/ThemeSelector';
+import { ENABLE_THEME_SELECTOR } from '../config/featureFlags';
 import { QRScanButton } from '../components/common/QRScanButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useUserEnrollmentList } from '../hooks/useUserEnrollment';
@@ -287,6 +289,7 @@ const MyLearningPage: React.FC = () => {
             <div className="my-learning__header-actions">
               <QRScanButton />
               <LanguageSelector />
+              {ENABLE_THEME_SELECTOR && <ThemeSelector />}
             </div>
           </div>
         </IonHeader>
@@ -316,6 +319,7 @@ const MyLearningPage: React.FC = () => {
           <div className="my-learning__header-actions">
             <QRScanButton />
             <LanguageSelector />
+            {ENABLE_THEME_SELECTOR && <ThemeSelector />}
           </div>
         </div>
 

@@ -9,6 +9,8 @@ import {
 import { chevronBackOutline, chevronForwardOutline, documentTextOutline, syncOutline, downloadOutline, informationCircleOutline } from 'ionicons/icons';
 import { useTranslation } from 'react-i18next';
 import { LanguageSelector } from '../components/common/LanguageSelector';
+import { ThemeSelector } from '../components/common/ThemeSelector';
+import { ENABLE_THEME_SELECTOR } from '../config/featureFlags';
 import {
   settingsService,
   SYNC_DATA_OPTIONS,
@@ -81,6 +83,7 @@ const SettingsPage: React.FC = () => {
           </div>
           <div className="page-header__actions">
             <LanguageSelector />
+            {ENABLE_THEME_SELECTOR && <ThemeSelector />}
           </div>
         </div>
       </IonHeader>

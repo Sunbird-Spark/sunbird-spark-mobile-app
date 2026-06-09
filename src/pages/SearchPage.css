@@ -18,7 +18,7 @@
     height: 2.75rem;
     background: var(--color-white);
     border: 1px solid var(--ion-color-step-100, var(--color-e0e0e0, #e0e0e0));
-    border-radius: 0.75rem;
+    border-radius: var(--r-md);
     display: flex;
     align-items: center;
     padding: 0 0.75rem;

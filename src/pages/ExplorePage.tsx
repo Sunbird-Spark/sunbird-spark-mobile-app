@@ -8,6 +8,8 @@ import { useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { BottomNavigation } from '../components/layout/BottomNavigation';
 import { LanguageSelector } from '../components/common/LanguageSelector';
+import { ThemeSelector } from '../components/common/ThemeSelector';
+import { ENABLE_THEME_SELECTOR } from '../config/featureFlags';
 import { QRScanButton } from '../components/common/QRScanButton';
 import { useContentSearch } from '../hooks/useContentSearch';
 import { useFormRead } from '../hooks/useFormRead';
@@ -315,6 +317,7 @@ const ExplorePage: React.FC = () => {
                                     )}
                                 </button>
                                 <LanguageSelector />
+                                {ENABLE_THEME_SELECTOR && <ThemeSelector />}
                             </div>
                         </>
                     )}

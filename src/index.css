@@ -1,3 +1,69 @@
+/* Theme switcher fonts - self-hosted local files (Poppins / Satisfy / Lora). Rubik stays self-hosted below. */
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 300;
+    font-display: swap;
+    src: url('./assets/fonts/poppins-latin-300-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/poppins-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('./assets/fonts/poppins-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('./assets/fonts/poppins-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Poppins';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./assets/fonts/poppins-latin-700-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('./assets/fonts/inter-latin-variable.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Satisfy';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./assets/fonts/satisfy-latin-400-normal.woff2') format('woff2');
+}
+
+/* Lora — single variable file covers weights 400–700. */
+@font-face {
+    font-family: 'Lora';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('./assets/fonts/lora-latin-variable.woff2') format('woff2');
+}
+
 /* Rubik Font - Local Files */
 /* en / fr / pt */
 @font-face {
@@ -109,16 +175,12 @@
         /* Default application font family */
         --ion-font-family: 'Rubik', sans-serif;
 
-        /* Brand Palette CSS Variables for Tailwind */
-        --primary: 15 52% 44%;
-        /* BRICK var(--ion-color-primary) */
-        --primary-container: 33 53% 62%;
-        /* GINGER var(--ion-color-primary-tint) */
+        /* Brand Palette CSS Variables for Tailwind — derived from 6 seeds in theme/variables.css */
+        --primary: var(--sunbird-spark-theme-primary-h) var(--sunbird-spark-theme-primary-s) var(--sunbird-spark-theme-primary-l);
+        --primary-container: var(--sunbird-spark-theme-icon-h) 53% 62%;
         --primary-foreground: 0 0% 100%;
-        --primary-hover: 33 53% 62%;
-        /* GINGER */
-        --primary-active: 15 52% 37%;
-        /* BRICK darker */
+        --primary-hover: var(--sunbird-spark-theme-icon-h) 53% 62%;
+        --primary-active: var(--sunbird-spark-theme-primary-h) var(--sunbird-spark-theme-primary-s) 37%;
 
         --background: 53 100% 98%;
         /* IVORY var(--ion-color-light) */
@@ -148,10 +210,8 @@
         /* INK */
         --blue-secondary: 195 34% 59%;
         /* WAVE var(--ion-color-secondary) */
-        --orange-primary: 15 52% 44%;
-        /* BRICK */
-        --orange-secondary: 33 53% 62%;
-        /* GINGER */
+        --orange-primary: var(--sunbird-spark-theme-primary-h) var(--sunbird-spark-theme-primary-s) var(--sunbird-spark-theme-primary-l);
+        --orange-secondary: var(--sunbird-spark-theme-icon-h) 53% 62%;
         --purple-primary: 319 75% 20%;
         /* JAMUN var(--color-540f3b, #540f3b) */
         --purple-secondary: 324 20% 53%;
@@ -361,7 +421,7 @@ ion-tab-button:hover {
 
 .compact-course-card {
     margin: 0;
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     border: none;
     overflow: hidden;
@@ -389,7 +449,7 @@ ion-tab-button:hover {
 .course-image.horizontal {
     width: 5rem;
     height: 5rem;
-    border-radius: 0.25rem;
+    border-radius: var(--r-xxs);
     flex-shrink: 0;
 }
 
@@ -424,7 +484,7 @@ ion-tab-button:hover {
 /* Horizontal Course Cards (Browse Courses) */
 .horizontal-course-card {
     margin: 0 1rem 0.75rem 1rem;
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     border: none;
     transition: all 0.2s ease;
@@ -465,7 +525,7 @@ ion-tab-button:hover {
 
 .course-progress {
     height: 0.25rem;
-    border-radius: 0.125rem;
+    border-radius: var(--r-xxs);
     margin-bottom: 0.25rem;
 }
 
@@ -578,7 +638,7 @@ ion-tab-button:hover {
     font-size: 1rem;
     font-weight: 500;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     padding-block: 0.6875rem;
     padding-inline-start: 1rem;
     padding-inline-end: 1.5rem;
@@ -601,7 +661,7 @@ ion-tab-button:hover {
     align-items: center;
     justify-content: space-around;
     background: var(--color-white);
-    border-radius: 1.25rem;
+    border-radius: var(--r-lg);
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
     margin: -3rem 1rem 1.25rem;
     padding: 1.25rem 0.75rem;
@@ -718,7 +778,7 @@ ion-tab-button:hover {
     width: 14rem;
     margin: 0;
     background: var(--color-white);
-    border-radius: 0.875rem;
+    border-radius: var(--r-md);
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.15);
     overflow: hidden;
     cursor: pointer;
@@ -739,7 +799,7 @@ ion-tab-button:hover {
     width: 100%;
     height: 5.5625rem;
     object-fit: cover;
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     display: block;
 }
 
@@ -754,7 +814,7 @@ ion-tab-button:hover {
     color: var(--ion-color-dark, var(--color-000000, #000000));
     background: var(--color-warm-yellow);
     border: 1px solid var(--ion-color-primary-tint);
-    border-radius: 2.25rem;
+    border-radius: var(--r-pill);
     padding: 0.125rem 0.75rem;
 }
 
@@ -847,7 +907,7 @@ ion-tab-button:hover {
     margin: 0;
     width: 9.625rem;
     height: 8.6875rem;
-    border-radius: 0.625rem;
+    border-radius: var(--r-sm);
     overflow: hidden;
     position: relative;
     cursor: pointer;
@@ -988,7 +1048,7 @@ ion-tab-button:hover {
 }
 
 .resource-card {
-    border-radius: 1.25rem;
+    border-radius: var(--r-lg);
     overflow: hidden;
     position: relative;
     box-shadow: 0 0.875rem 1.875rem rgba(0, 0, 0, 0.08);
@@ -1035,7 +1095,7 @@ ion-tab-button:hover {
     font-weight: 500;
     color: var(--ion-color-dark, var(--color-000000, #000000));
     background: var(--color-white);
-    border-radius: 0.375rem;
+    border-radius: var(--r-xs);
     padding: 0.25rem 0.75rem;
     align-self: flex-start;
 }
@@ -1082,7 +1142,7 @@ ion-tab-button:hover {
 .faq-item {
     background: var(--color-white);
     border: 1px solid var(--color-input-border);
-    border-radius: 0.75rem;
+    border-radius: var(--r-md);
     overflow: hidden;
     transition: box-shadow 0.2s ease;
 }
@@ -1163,14 +1223,14 @@ ion-tab-button:hover {
 /* --- Language Selector Popover --- */
 .language-selector-popover {
     --width: 7.5rem;
-    --border-radius: 0.75rem;
+    --border-radius: var(--r-md);
     --box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
 }
 
 /* --- Profile Info Card --- */
 .profile-info-card {
     background: var(--color-white);
-    border-radius: 1.25rem;
+    border-radius: var(--r-lg);
     margin: 1rem 0.9375rem;
     padding: 1.75rem 1.25rem 1.5rem;
     display: flex;
@@ -1252,7 +1312,7 @@ ion-tab-button:hover {
 }
 
 .profile-stat-card {
-    border-radius: 1rem;
+    border-radius: var(--r-md);
     padding: 1rem;
     min-height: 6.5625rem;
     display: flex;
@@ -1261,20 +1321,21 @@ ion-tab-button:hover {
     position: relative;
 }
 
+/* Profile stat tiles — intentionally FIXED (parity with portal [FIXED] stat cards). */
 .profile-stat-time {
-    background: var(--ion-color-secondary);
+    background: rgb(112, 173, 191);
 }
 
 .profile-stat-badges {
-    background: var(--ion-color-primary-tint);
+    background: rgb(204, 133, 69);
 }
 
 .profile-stat-contents {
-    background: var(--color-66a682, #66a682);
+    background: rgb(102, 166, 130);
 }
 
 .profile-stat-certs {
-    background: var(--ion-color-medium);
+    background: rgb(153, 112, 138);
 }
 
 .profile-stat-value {
@@ -1298,7 +1359,7 @@ ion-tab-button:hover {
     inset-inline-end: 0.75rem;
     width: 2rem;
     height: 2.0625rem;
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1338,13 +1399,13 @@ ion-tab-button:hover {
     --border-color: var(--ion-color-primary);
     --border-width: 1px;
     --border-style: solid;
-    --border-radius: 0.625rem;
+    --border-radius: var(--r-sm);
     --inner-border-width: 0;
     --padding-start: 1rem;
     --padding-end: 1rem;
     --min-height: 3.625rem;
     margin: 0 0.9375rem 0.75rem;
-    border-radius: 0.625rem;
+    border-radius: var(--r-sm);
     box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
     overflow: hidden;
 }
@@ -1392,7 +1453,7 @@ ion-tab-button:hover {
 
 .profile-settings-card {
     background: var(--color-white);
-    border-radius: 0.75rem;
+    border-radius: var(--r-md);
     padding: 1.25rem;
     margin-bottom: 1rem;
     box-shadow: 0 1.25rem 2.5rem rgba(var(--ion-color-dark-rgb), 0.06);
@@ -1417,7 +1478,7 @@ ion-tab-button:hover {
 }
 
 .profile-settings-icon-sync {
-    background: rgba(var(--ion-color-primary-rgb), 0.1);
+    background: hsl(var(--sunbird-spark-theme-primary-hsl) / 0.1);
 }
 
 .profile-settings-icon-sync ion-icon {
@@ -1460,7 +1521,7 @@ ion-tab-button:hover {
 
 .profile-settings-option-btn {
     padding: 0.4375rem 1.125rem;
-    border-radius: 31.25rem;
+    border-radius: var(--r-pill);
     border: none;
     background: var(--ion-color-light-shade);
     color: var(--ion-color-medium);
@@ -1473,7 +1534,7 @@ ion-tab-button:hover {
 .profile-settings-option-btn.active-sync {
     background: var(--ion-color-primary);
     color: var(--ion-color-primary-contrast);
-    box-shadow: 0 0.25rem 0.75rem rgba(var(--ion-color-primary-rgb), 0.25);
+    box-shadow: 0 0.25rem 0.75rem hsl(var(--sunbird-spark-theme-primary-hsl) / 0.25);
 }
 
 .profile-settings-option-btn.active-download {
@@ -1521,7 +1582,7 @@ ion-tab-button:hover {
     background: var(--ion-color-success-shade);
     color: var(--ion-color-success-contrast);
     padding: 0.25rem 0.75rem;
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     font-family: monospace;
     font-size: 0.875rem;
 }

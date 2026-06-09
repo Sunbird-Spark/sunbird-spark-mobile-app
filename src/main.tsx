@@ -6,6 +6,7 @@ import './index.css';
 import { NetworkProvider } from './providers/NetworkProvider';
 import { AuthProvider } from './contexts/AuthContext';
 import { LanguageProvider } from './contexts/LanguageContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { QueryProvider } from './providers/QueryProvider';
 import { TelemetryProvider } from './providers/TelemetryProvider';
 
@@ -20,8 +21,10 @@ root.render(
         <AuthProvider>
           <TelemetryProvider>
             <LanguageProvider>
-              <OfflineBanner />
-              <App />
+              <ThemeProvider>
+                <OfflineBanner />
+                <App />
+              </ThemeProvider>
             </LanguageProvider>
           </TelemetryProvider>
         </AuthProvider>

@@ -56,18 +56,20 @@ export const LearningStatsGrid: React.FC<LearningStatsGridProps> = ({
 }) => {
   const { t } = useTranslation();
 
+  // Stat tile palettes are intentionally fixed (parity with portal [FIXED] stat cards).
+  // They represent permanent identity per metric and must NOT retint with theme changes.
   const stats = [
     {
       value: pad(totalCourses),
       labelKey: 'totalCourses',
-      tileBg: 'var(--ion-color-secondary)',
+      tileBg: 'rgb(112, 173, 191)',
       iconBg: 'rgb(61, 143, 167)',
       icon: <TotalContentsIcon />,
     },
     {
       value: pad(coursesInProgress),
       labelKey: 'inProgress',
-      tileBg: 'var(--ion-color-primary-tint)',
+      tileBg: 'rgb(204, 133, 69)',
       iconBg: 'rgb(176, 102, 36)',
       icon: <InProgressIcon />,
     },
@@ -81,7 +83,7 @@ export const LearningStatsGrid: React.FC<LearningStatsGridProps> = ({
     {
       value: pad(certificationsEarned),
       labelKey: 'certificationsEarned',
-      tileBg: 'var(--ion-color-medium)',
+      tileBg: 'rgb(153, 112, 138)',
       iconBg: 'rgb(116, 76, 101)',
       icon: <CertificationsIcon />,
     },

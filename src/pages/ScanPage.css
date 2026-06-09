@@ -36,7 +36,7 @@
   background: var(--ion-color-primary);
   color: var(--ion-color-primary-contrast);
   border: none;
-  border-radius: 1.75rem;
+  border-radius: var(--r-xl);
   padding: 0.875rem 2rem;
   font-size: 1rem;
   font-weight: 600;

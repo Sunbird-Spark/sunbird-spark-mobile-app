@@ -52,7 +52,7 @@
     top: calc(var(--safe-area-top) + 3.5rem);
     right: 0.75rem;
     background: var(--color-white);
-    border-radius: 0.75rem;
+    border-radius: var(--r-md);
     box-shadow: 0.125rem 0.125rem 1.25rem rgba(0, 0, 0, 0.12);
     padding: 0.375rem 0;
     min-width: 8.75rem;
@@ -109,7 +109,7 @@
 /* ── Card ── */
 .pl-card {
     background: var(--color-white);
-    border-radius: 1rem;
+    border-radius: var(--r-md);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     overflow: hidden;
 }
@@ -132,7 +132,7 @@
 .pl-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    border-radius: 2.25rem;
+    border-radius: var(--r-pill);
     font-family: var(--ion-font-family);
     font-size: 0.875rem;
     font-weight: 400;
@@ -203,7 +203,7 @@
 .pl-thumbnail {
     width: 4.375rem;
     height: 4.375rem;
-    border-radius: 0.625rem;
+    border-radius: var(--r-sm);
     overflow: hidden;
     flex-shrink: 0;
     align-self: flex-start;
@@ -214,7 +214,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 0.625rem;
+    border-radius: var(--r-sm);
 }
 
 /* ── Card footer ── */

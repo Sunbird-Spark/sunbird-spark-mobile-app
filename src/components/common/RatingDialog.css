@@ -97,7 +97,7 @@
   background: var(--color-ab4a2c, #ab4a2c);
   color: var(--color-white);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--r-sm);
   font-family: 'Rubik', sans-serif;
   font-weight: 500;
   font-size: 1rem;

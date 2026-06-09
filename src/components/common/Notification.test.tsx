@@ -60,9 +60,9 @@ describe('Notification — accessibility', () => {
     expect(screen.getByRole('button', { name: 'Notifications, 1 unread' })).toBeInTheDocument();
   });
 
-  it('bell icon has empty alt text (decorative)', () => {
+  it('bell icon is decorative (aria-hidden svg)', () => {
     const { container } = render(<Notification />);
-    const img = container.querySelector('img');
-    expect(img).toHaveAttribute('alt', '');
+    const svg = container.querySelector('svg');
+    expect(svg).toHaveAttribute('aria-hidden', 'true');
   });
 });

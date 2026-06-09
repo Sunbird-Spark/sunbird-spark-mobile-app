@@ -12,7 +12,7 @@
 
 .continue-learning__card {
   background-color: var(--color-white);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   box-shadow: 2px 2px 20px 0px #00000017;
   display: flex;
   flex-direction: row;
@@ -24,7 +24,7 @@
   width: 104px;
   flex-shrink: 0;
   overflow: hidden;
-  border-radius: 15px;
+  border-radius: var(--r-md);
   margin: 15px 0 15px 15px;
 }
 
@@ -32,7 +32,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 15px;
+  border-radius: var(--r-md);
 }
 
 .continue-learning__content {
@@ -69,7 +69,7 @@
 
 .continue-learning__button {
   background-color: var(--ion-color-primary);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   border: none;
   padding: 13px 18px;
   display: flex;

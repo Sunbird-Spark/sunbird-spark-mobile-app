@@ -1,0 +1,220 @@
+.theme-selector-button {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.theme-selector-popover {
+  --width: 14rem;
+  --border-radius: var(--r-md);
+  --box-shadow: 0 0.25rem 1.25rem rgba(0, 0, 0, 0.15);
+}
+
+.theme-selector-panel {
+  padding: 0.75rem;
+  background: var(--color-white);
+}
+
+.theme-selector-section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ion-color-medium, var(--color-757575, #757575));
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+.theme-selector-swatches {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
+  transition: scrollbar-color 0.2s ease;
+}
+
+.theme-selector-swatches::-webkit-scrollbar {
+  height: 0;
+  background: transparent;
+}
+
+.theme-selector-swatches:hover,
+.theme-selector-swatches:focus-within,
+.theme-selector-swatches:active {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-e0e0e0, #e0e0e0) transparent;
+}
+
+.theme-selector-swatches:hover::-webkit-scrollbar,
+.theme-selector-swatches:focus-within::-webkit-scrollbar,
+.theme-selector-swatches:active::-webkit-scrollbar {
+  height: 4px;
+}
+
+.theme-selector-swatches:hover::-webkit-scrollbar-thumb,
+.theme-selector-swatches:focus-within::-webkit-scrollbar-thumb,
+.theme-selector-swatches:active::-webkit-scrollbar-thumb {
+  background: var(--color-e0e0e0, #e0e0e0);
+  border-radius: var(--r-xxs);
+}
+
+.theme-selector-swatch {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.theme-selector-swatch:hover {
+  transform: scale(1.08);
+}
+
+.theme-selector-swatch--active {
+  border-color: var(--ion-color-dark, var(--color-222222, #222222));
+  box-shadow: 0 0 0 2px var(--color-white) inset;
+}
+
+.theme-selector-divider {
+  height: 1px;
+  background: var(--color-e0e0e0, #e0e0e0);
+  margin: 0.75rem 0;
+}
+
+.theme-selector-templates {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 0.25rem;
+  transition: scrollbar-color 0.2s ease;
+}
+
+.theme-selector-templates::-webkit-scrollbar {
+  height: 0;
+  background: transparent;
+}
+
+.theme-selector-templates:hover,
+.theme-selector-templates:focus-within,
+.theme-selector-templates:active {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-e0e0e0, #e0e0e0) transparent;
+}
+
+.theme-selector-templates:hover::-webkit-scrollbar,
+.theme-selector-templates:focus-within::-webkit-scrollbar,
+.theme-selector-templates:active::-webkit-scrollbar {
+  height: 4px;
+}
+
+.theme-selector-templates:hover::-webkit-scrollbar-thumb,
+.theme-selector-templates:focus-within::-webkit-scrollbar-thumb,
+.theme-selector-templates:active::-webkit-scrollbar-thumb {
+  background: var(--color-e0e0e0, #e0e0e0);
+  border-radius: var(--r-xxs);
+}
+
+.theme-selector-template {
+  flex: 0 0 auto;
+  min-width: 7rem;
+  background: var(--color-f4f4f4, #f4f4f4);
+  border: 1.5px solid transparent;
+  border-radius: var(--r-sm);
+  padding: 0.5rem 0.625rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.125rem;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.theme-selector-template:hover {
+  background: var(--color-e6e6e6, #e6e6e6);
+}
+
+.theme-selector-template--active {
+  border-color: var(--ion-color-primary);
+  background: var(--color-white);
+}
+
+.theme-selector-template__name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, var(--color-222222, #222222));
+}
+
+.theme-selector-template__desc {
+  font-size: 0.6875rem;
+  color: var(--ion-color-medium, var(--color-757575, #757575));
+}
+
+.theme-selector-fonts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  /* Cap visible fonts at 4; vertical scroll if more. */
+  max-height: 9rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.theme-selector-fonts::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
+.theme-selector-fonts:hover,
+.theme-selector-fonts:focus-within,
+.theme-selector-fonts:active {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-e0e0e0, #e0e0e0) transparent;
+}
+
+.theme-selector-fonts:hover::-webkit-scrollbar,
+.theme-selector-fonts:focus-within::-webkit-scrollbar,
+.theme-selector-fonts:active::-webkit-scrollbar {
+  width: 4px;
+}
+
+.theme-selector-fonts:hover::-webkit-scrollbar-thumb,
+.theme-selector-fonts:focus-within::-webkit-scrollbar-thumb,
+.theme-selector-fonts:active::-webkit-scrollbar-thumb {
+  background: var(--color-e0e0e0, #e0e0e0);
+  border-radius: var(--r-xxs);
+}
+
+.theme-selector-font-option {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  padding: 0.5rem 0.25rem;
+  text-align: left;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  border-radius: var(--r-xs);
+  transition: background 0.15s ease;
+}
+
+.theme-selector-font-option:hover {
+  background: var(--color-f4f4f4, #f4f4f4);
+}

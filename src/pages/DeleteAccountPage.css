@@ -58,7 +58,7 @@
 .da-warning-banner {
     background: var(--color-fef2f2);
     border-left: 4px solid var(--ion-color-danger);
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     padding: 0.875rem 1rem;
 }
 
@@ -99,7 +99,7 @@
     color: var(--ion-color-dark, var(--color-222222));
     background: var(--color-white, #fff);
     border: 1px solid var(--ion-color-medium, #c8c8c8);
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     outline: none;
 }
 

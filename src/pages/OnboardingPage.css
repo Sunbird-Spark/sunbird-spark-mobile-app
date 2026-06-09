@@ -67,7 +67,7 @@
 .onboarding-progress__segment {
   width: 28px;
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--r-xxs);
   transition: background 0.2s ease;
 }
 
@@ -109,7 +109,7 @@
   justify-content: center;
   gap: 8px;
   padding: 16px 12px;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-size: 16px;
   font-weight: 400;
   cursor: pointer;
@@ -147,7 +147,7 @@
   width: 100%;
   padding: 14px 16px;
   border: 1px solid var(--ion-color-primary);
-  border-radius: 12px;
+  border-radius: var(--r-md);
   font-size: 16px;
   color: var(--color-000000, #000000);
   background: var(--ion-color-primary-contrast);
@@ -174,7 +174,7 @@
   width: 100%;
   padding: 16px;
   border: none;
-  border-radius: 28px;
+  border-radius: var(--r-lg);
   background: var(--ion-color-primary);
   color: var(--ion-color-primary-contrast);
   font-size: 16px;

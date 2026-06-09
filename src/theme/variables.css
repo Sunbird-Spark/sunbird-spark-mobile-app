@@ -6,6 +6,21 @@
   --safe-area-bottom: env(safe-area-inset-bottom, 0px);
   --safe-area-left: env(safe-area-inset-left, 0px);
 
+  /** ============================================================
+   *  SUNBIRD SPARK — 6-SEED THEME (root control)
+   *  Change these 6 values → entire app retints.
+   *  Defaults reproduce original Brick / Ginger / Warm-yellow palette.
+   *  ============================================================ **/
+  --sunbird-spark-theme-primary-h: 12;
+  --sunbird-spark-theme-primary-s: 50%;
+  --sunbird-spark-theme-primary-l: 45%;
+  --sunbird-spark-theme-chip-h: 45;
+  --sunbird-spark-theme-chip-s: 100%;
+  --sunbird-spark-theme-icon-h: 28;
+  /** Shorthand: 3-value HSL composite for use in `hsl(var(--...-hsl) / alpha)` syntax. */
+  --sunbird-spark-theme-primary-hsl: var(--sunbird-spark-theme-primary-h) var(--sunbird-spark-theme-primary-s) var(--sunbird-spark-theme-primary-l);
+  /** Completion ring track — derived from chip seed (desaturated for soft warm tone). */
+  --sunbird-progress-track: hsl(var(--sunbird-spark-theme-chip-h) 75% 76%);
 
   /** Category Gradient Variables **/
   --category-gradient-1: linear-gradient(to right, #45C0ED, #8E46C5);
@@ -13,13 +28,13 @@
   --category-gradient-3: linear-gradient(to right, #1D79D5, #6ED97B);
   --category-gradient-4: linear-gradient(to right, #F59C84, #D655E7);
 
-  /** primary - BRICK **/
-  --ion-color-primary: #a85236;
+  /** primary - derived from seeds (was BRICK #a85236) **/
+  --ion-color-primary: hsl(var(--sunbird-spark-theme-primary-h) var(--sunbird-spark-theme-primary-s) var(--sunbird-spark-theme-primary-l));
   --ion-color-primary-rgb: 168, 82, 54;
   --ion-color-primary-contrast: #ffffff;
   --ion-color-primary-contrast-rgb: 255, 255, 255;
-  --ion-color-primary-shade: #8f4630;
-  --ion-color-primary-tint: #cc8545;
+  --ion-color-primary-shade: hsl(var(--sunbird-spark-theme-primary-h) var(--sunbird-spark-theme-primary-s) 37%);
+  --ion-color-primary-tint: hsl(var(--sunbird-spark-theme-icon-h) 53% 54%);
 
   /** secondary - WAVE **/
   --ion-color-secondary: #70adbf;
@@ -45,13 +60,13 @@
   --ion-color-success-shade: #72925c;
   --ion-color-success-tint: #8faf77;
 
-  /** warning - SUNFLOWER **/
-  --ion-color-warning: #ffdb73;
+  /** warning - SUNFLOWER (derived from chip seed so accent dots / progress tracks retint) **/
+  --ion-color-warning: hsl(var(--sunbird-spark-theme-chip-h) var(--sunbird-spark-theme-chip-s) 73%);
   --ion-color-warning-rgb: 255, 219, 115;
   --ion-color-warning-contrast: #000000;
   --ion-color-warning-contrast-rgb: 0, 0, 0;
-  --ion-color-warning-shade: #e0c165;
-  --ion-color-warning-tint: #ffdf81;
+  --ion-color-warning-shade: hsl(var(--sunbird-spark-theme-chip-h) var(--sunbird-spark-theme-chip-s) 63%);
+  --ion-color-warning-tint: hsl(var(--sunbird-spark-theme-chip-h) var(--sunbird-spark-theme-chip-s) 76%);
 
   /** danger **/
   --ion-color-danger: #eb445a;
@@ -80,8 +95,8 @@
   /** white **/
   --color-white: #ffffff;
 
-  /** warm yellow — resource center background, badge fills **/
-  --color-warm-yellow: #FFF1C7;
+  /** warm yellow — resource center background, badge fills (derived from chip seed) **/
+  --color-warm-yellow: hsl(var(--sunbird-spark-theme-chip-h) var(--sunbird-spark-theme-chip-s) 89%);
 
   /** input / card border **/
   --color-input-border: #D4D4D4;
@@ -104,13 +119,15 @@
   --color-f9f9f9: #f9f9f9;
   --color-fef2f2: #fef2f2;
 
-  /** brand-adjacent palette **/
-  --color-cc4b30: #cc4b30;
-  --color-ab4a2c: #ab4a2c;
-  --color-d4874e: #d4874e;
-  --color-fdf8f0: #fdf8f0;
+  /** brand-adjacent palette — derived from primary seed
+   *  Defaults (h=15 s=52% primary, icon-h=28) reproduce original hex values closely.
+   *  --color-0b7f8c stays static — semantic teal accent for video/content player UI. **/
+  --color-cc4b30: hsl(var(--sunbird-spark-theme-primary-h) 62% 50%);
+  --color-ab4a2c: hsl(var(--sunbird-spark-theme-primary-h) 60% 42%);
+  --color-d4874e: hsl(var(--sunbird-spark-theme-icon-h) 60% 57%);
+  --color-fdf8f0: hsl(var(--sunbird-spark-theme-chip-h) 70% 97%);
   --color-0b7f8c: #0b7f8c;
-  --color-a14f34: #a14f34;
+  --color-a14f34: hsl(var(--sunbird-spark-theme-primary-h) 52% 41%);
 
   /** profile stat tile backgrounds **/
   --color-66a682: #66a682;

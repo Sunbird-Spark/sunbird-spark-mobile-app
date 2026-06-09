@@ -184,7 +184,7 @@
 /* Each unit = separate white rounded card */
 .cp-curriculum-unit {
   background: var(--color-white);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   margin-bottom: 0.75rem;
   overflow: hidden;
 }
@@ -253,7 +253,7 @@
   padding: 0.875rem 1rem;
   margin-bottom: 0.5rem;
   background: var(--color-white);
-  border-radius: 0.625rem;
+  border-radius: var(--r-sm);
   box-shadow: 0 0.0625rem 0.5rem rgba(0, 0, 0, 0.08);
   cursor: pointer;
 }
@@ -426,7 +426,7 @@
   background: var(--color-white);
   margin-bottom: 0.75rem;
   border: 1px solid var(--ion-color-step-150, #e0e0e0);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
 }
 
 .cp-faq-accordion:last-child {
@@ -464,7 +464,6 @@
   align-items: center;
   gap: 0.5rem;
   z-index: 100;
-  padding-bottom: calc(0.2rem + var(--safe-area-bottom));
   cursor: pointer;
   color: var(--color-white);
 }
@@ -535,7 +534,7 @@
   -webkit-appearance: none;
   background: var(--color-white);
   border: 1px solid var(--ion-color-step-150, #D4D4D4);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   padding: 1rem 1.25rem;
   font-size: 1rem;
   font-weight: 500;
@@ -548,7 +547,7 @@
 .cp-batch-select:focus {
   outline: none;
   border-color: var(--ion-color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--ion-color-primary-rgb), 0.15);
+  box-shadow: 0 0 0 3px hsl(var(--sunbird-spark-theme-primary-hsl) / 0.15);
 }
 
 .cp-batch-select-icon {
@@ -571,14 +570,14 @@
 
 .cp-batch-modal-cta {
   background: var(--ion-color-primary);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   padding: 1rem;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+  box-shadow: 0 4px 12px hsl(var(--sunbird-spark-theme-primary-hsl) / 0.3);
   transition: opacity 0.2s;
 }
 
@@ -624,7 +623,7 @@
 .cp-login-prompt-btn {
   width: 100%;
   padding: 0.875rem;
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   border: none;
   background: var(--ion-color-primary);
   color: var(--color-white);
@@ -638,7 +637,7 @@
   --width: 85%;
   --max-width: 340px;
   --height: auto;
-  --border-radius: 1rem;
+  --border-radius: var(--r-md);
   --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
 }
 
@@ -655,7 +654,7 @@
   padding: 2rem 1.5rem;
   text-align: center;
   background: var(--color-white);
-  border-radius: 1rem;
+  border-radius: var(--r-md);
 }
 
 .cp-completion-dialog-icon {
@@ -701,7 +700,7 @@
 .cp-completion-dialog-btn {
   margin-top: 0;
   padding: 0.625rem 2rem;
-  border-radius: 0.5rem;
+  border-radius: var(--r-sm);
   border: none;
   background-color: var(--ion-color-primary);
   color: var(--color-white);
@@ -741,7 +740,7 @@
   padding: 0.75rem 1.25rem;
   background: var(--color-white);
   margin: 0.50rem 0 0 0;
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
 }
 
@@ -756,7 +755,7 @@
   background: var(--ion-color-primary, #8B5E3C);
   color: var(--ion-color-primary-contrast, #fff);
   border: none;
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   font-size: 0.85rem;
   font-weight: 500;
   cursor: pointer;
@@ -771,7 +770,7 @@
   margin-top: 0.5rem;
   padding: 0.6rem 1rem;
   background: var(--color-white);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
 }
 
@@ -786,14 +785,14 @@
 .cp-download-progress-track {
   height: 6px;
   background: var(--ion-color-step-100, #e0e0e0);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
   overflow: hidden;
 }
 
 .cp-download-progress-fill {
   height: 100%;
   background: var(--ion-color-primary, #8B5E3C);
-  border-radius: 3px;
+  border-radius: var(--r-xxs);
   transition: width 0.3s ease;
 }
 
@@ -806,7 +805,7 @@
   font-size: 0.8rem;
   color: var(--ion-color-success, #2dd36f);
   background: var(--color-white);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   box-shadow: 0 0.125rem 0.875rem rgba(0, 0, 0, 0.1);
 }
 
@@ -844,7 +843,7 @@
   background: var(--ion-color-medium-tint, #ccc);
   width: 2.5rem;
   height: 0.25rem;
-  border-radius: 0.125rem;
+  border-radius: var(--r-xxs);
   margin: 0.75rem auto 0;
 }
 
@@ -874,11 +873,11 @@
   background: var(--ion-color-primary, #8B5E3C);
   color: var(--ion-color-primary-contrast, #fff);
   border: none;
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   font-size: 1rem;
   font-weight: 500;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(var(--ion-color-primary-rgb), 0.3);
+  box-shadow: 0 4px 12px hsl(var(--sunbird-spark-theme-primary-hsl) / 0.3);
 }
 
 .cp-download-sheet-btn:disabled {
@@ -973,7 +972,7 @@
   right: 0;
   z-index: 100;
   background: var(--color-white);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   min-width: 10rem;
   overflow: hidden;
@@ -1020,7 +1019,7 @@
   --max-width: 480px;
   --height: auto;
   --max-height: 90vh;
-  --border-radius: 1rem;
+  --border-radius: var(--r-md);
   --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
 }
 
@@ -1035,7 +1034,7 @@
 
 .cp-cert-preview-content {
   background: var(--color-white);
-  border-radius: 1rem;
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -1079,7 +1078,7 @@
   width: 100%;
   height: auto;
   object-fit: contain;
-  border-radius: 0.5rem;
+  border-radius: var(--r-sm);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -1094,7 +1093,7 @@
 
 .info-card {
   background: var(--color-white);
-  border-radius: 0.75rem;
+  border-radius: var(--r-md);
   padding: 1rem 1rem 1.125rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
@@ -1140,7 +1139,7 @@
   background: var(--ion-color-primary, #A14F34);
   color: var(--color-white);
   border: none;
-  border-radius: 0.5rem;
+  border-radius: var(--r-sm);
   padding: 0.5rem 1rem;
   font-size: 0.8125rem;
   font-weight: 500;
@@ -1175,7 +1174,7 @@
 
 /* ── Creator Warning Toast ── */
 .cp-creator-toast {
-  --border-radius: 14px;
+  --border-radius: var(--r-md);
   --box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   --max-width: 90%;
   --start: 5%;

@@ -39,6 +39,10 @@ vi.mock('../components/common/LanguageSelector', () => ({
   LanguageSelector: () => null,
 }));
 
+vi.mock('../components/common/ThemeSelector', () => ({
+  ThemeSelector: () => null,
+}));
+
 // ── Mock QRScanButton ──
 vi.mock('../components/common/QRScanButton', () => ({
   QRScanButton: () => null,

@@ -47,7 +47,7 @@
 .hs-category-card {
     background: var(--color-white);
     border: none;
-    border-radius: 0.75rem;
+    border-radius: var(--r-md);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     padding: 0 1.25rem 1.25rem;
     position: relative;
@@ -128,7 +128,7 @@
 .hs-faq-item {
     background: var(--color-white);
     border: none;
-    border-radius: 0.75rem;
+    border-radius: var(--r-md);
     box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
     overflow: hidden;
     transition: box-shadow 0.2s ease;
@@ -266,7 +266,7 @@
     width: 100%;
     background: var(--color-white);
     border: 1px solid var(--color-input-border);
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     padding: 0.875rem 1rem;
     font-family: var(--ion-font-family);
     font-size: 1rem;
@@ -300,7 +300,7 @@
     min-height: 10rem;
     background: var(--color-white);
     border: 1px solid var(--color-input-border);
-    border-radius: 0.5rem;
+    border-radius: var(--r-sm);
     padding: 0.875rem 1rem;
     font-family: var(--ion-font-family);
     font-size: 1rem;

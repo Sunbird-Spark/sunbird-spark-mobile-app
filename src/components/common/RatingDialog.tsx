@@ -31,8 +31,8 @@ const StarIcon = ({ filled }: { filled: boolean }) => (
     width="27"
     height="27"
     viewBox="0 0 24 24"
-    fill={filled ? '#AB4A2C' : '#D4D4D4'}
-    stroke={filled ? '#AB4A2C' : '#D4D4D4'}
+    fill={filled ? 'var(--color-ab4a2c)' : '#D4D4D4'}
+    stroke={filled ? 'var(--color-ab4a2c)' : '#D4D4D4'}
     strokeWidth="2"
     strokeLinecap="round"
     strokeLinejoin="round"

@@ -103,7 +103,7 @@
 .tnc-accept-btn {
   width: 100%;
   height: 3rem;
-  border-radius: 999px;
+  border-radius: var(--r-pill);
   border: none;
   background: var(--ion-color-primary);
   color: var(--color-white);

@@ -6,7 +6,7 @@
 }
 
 .stats-grid__tile {
-  border-radius: 16px;
+  border-radius: var(--r-md);
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -30,7 +30,7 @@
 }
 
 .stats-grid__icon {
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   width: 33px;
   height: 33px;
   display: flex;

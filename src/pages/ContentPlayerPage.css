@@ -89,7 +89,7 @@
 .cp-player-area {
   width: 100%;
   aspect-ratio: 16 / 10;
-  border-radius: 1.25rem;
+  border-radius: var(--r-lg);
   overflow: hidden;
   position: relative;
   background-color: var(--color-0b7f8c, #0b7f8c);
@@ -246,7 +246,7 @@
   margin-top: 1rem;
   padding: 0.5rem 1.5rem;
   border: 1px solid var(--ion-color-medium);
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   background: none;
   color: var(--ion-text-color);
   font-size: 0.9rem;

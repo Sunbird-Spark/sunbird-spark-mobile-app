@@ -60,7 +60,7 @@ const CircularProgress = ({ value, size = 48 }: { value: number; size?: number }
     <div className="cp-progress-complete-icon">
       <svg height={size} width={size} className="circular-progress">
         {/* Background track */}
-        <circle stroke="var(--ion-color-warning-shade, #F0CE94)" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
+        <circle stroke="var(--sunbird-progress-track, #F0CE94)" fill="transparent" strokeWidth={stroke} r={normalizedRadius} cx={radius} cy={radius} />
         {/* Progress arc */}
         <circle stroke="var(--ion-color-primary, #8B5E3C)" fill="transparent" strokeWidth={stroke}
           strokeDasharray={circumference + ' ' + circumference} style={{ strokeDashoffset }}

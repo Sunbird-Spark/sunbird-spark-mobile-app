@@ -63,7 +63,7 @@
   background-color: var(--ion-color-primary);
   color: var(--color-white);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   padding: 12px 32px;
   font-family: var(--ion-font-family);
   font-size: 16px;
@@ -148,7 +148,7 @@
 /* ── Course card ── */
 .my-learning__card {
   background-color: var(--color-white);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   box-shadow: 0 0 12px 0 rgba(0, 0, 0, 0.12);
   padding: 14px;
   display: flex;
@@ -161,7 +161,7 @@
   width: 119px;
   height: 119px;
   flex-shrink: 0;
-  border-radius: 12px;
+  border-radius: var(--r-md);
   overflow: hidden;
 }
 
@@ -225,14 +225,14 @@
   flex: 1;
   height: 5px;
   background-color: var(--color-f4f4f4, #f4f4f4);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
   overflow: hidden;
 }
 
 .my-learning__progress-bar-fill {
   height: 100%;
   background-color: var(--ion-color-primary);
-  border-radius: 10px;
+  border-radius: var(--r-sm);
 }
 
 .my-learning__card-progress-percent {
@@ -276,7 +276,7 @@
 
 .my-learning__progress-card {
   background-color: var(--color-warm-yellow);
-  border-radius: 20px;
+  border-radius: var(--r-lg);
   padding: 16px;
 }
 
@@ -310,7 +310,7 @@
 .my-learning__metric-indicator {
   width: 32px;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--r-xxs);
   flex-shrink: 0;
 }
 
@@ -356,7 +356,7 @@
   background-color: var(--ion-color-primary);
   color: var(--color-white);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--r-sm);
   padding: 8px 20px;
   font-family: var(--ion-font-family);
   font-size: 14px;

@@ -14,7 +14,7 @@
   flex: 1;
   align-self: stretch;
   width: 100%;
-  border-radius: 1.25rem;
+  border-radius: var(--r-lg);
   border: 1px solid var(--ion-color-light, #e0e0e0);
   min-height: 25rem;
 }
@@ -105,7 +105,7 @@
   font-weight: 500;
   font-size: 0.875rem;
   border: none;
-  border-radius: 1.5rem;
+  border-radius: var(--r-lg);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   cursor: pointer;
 }

@@ -1,8 +1,10 @@
 import React from 'react';
 import { ASSETS } from '../../constants/assets';
 import { LanguageSelector } from '../common/LanguageSelector';
+import { ThemeSelector } from '../common/ThemeSelector';
 import Notification from '../common/Notification';
 import { QRScanButton } from '../common/QRScanButton';
+import { ENABLE_THEME_SELECTOR } from '../../config/featureFlags';
 import { useIonRouter } from '@ionic/react';
 import { useTranslation } from 'react-i18next';
 
@@ -34,6 +36,8 @@ export const PublicWelcomeHeader: React.FC = () => {
         <Notification />
 
         <LanguageSelector />
+
+        {ENABLE_THEME_SELECTOR && <ThemeSelector />}
       </div>
     </div>
   );
