@@ -6,6 +6,7 @@ import { ContentPlayer } from '../players/ContentPlayer';
 import { useContentRead } from '../../hooks/useContent';
 import { useQumlContent } from '../../hooks/useQumlContent';
 import { useContentStateUpdate } from '../../hooks/useContentStateUpdate';
+import { useContentView } from '../../hooks/useContentView';
 import { useIsContentLocal } from '../../hooks/useIsContentLocal';
 import { buildCollectionCdata, buildObjectRollup } from '../../services/course/collectionTelemetryContext';
 import { resolveContentForPlayer } from '../../services/content/contentPlaybackResolver';
@@ -34,6 +35,19 @@ interface CollectionContentPlayerProps {
   currentContentStatus?: number;
   /** A6: When true (creator/mentor viewing own course), skip all progress/state API calls. */
   skipContentStateUpdate?: boolean;
+  /**
+   * Set when this content is being played as part of a Learning Path. Routes
+   * progress through the Viewer Service (`useContentView`) instead of the
+   * legacy `content/state/update` (`useContentStateUpdate`).
+   *
+   * Per the Viewer Service wire contract, writes target the Learning Path
+   * ROOT's own record — `collectionId: pathId` + the PLAIN batch `contextId`
+   * — not the inner course's composite `<lpContextId>:<courseId>` context.
+   * `contentStatus` is leaf-keyed and `getCourseContentStatus` merges it in
+   * regardless of which course the leaf belongs to, so writing to the root
+   * record alone is sufficient for level/course progress to update.
+   */
+  lpContext?: { pathId: string; contextId: string };
 }
 
 const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
@@ -46,6 +60,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   isBatchEnded = false,
   currentContentStatus,
   skipContentStateUpdate = false,
+  lpContext,
 }) => {
   const { userId } = useAuth();
   const { data, isLoading, error, refetch, fetchStatus } = useContentRead(contentId);
@@ -238,7 +253,10 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   // attempt generates a distinct ID that survives as a separate sync group.
   const attemptIdRef = useRef<string>(uuidv4());
 
-  // Content state update hook — bridges telemetry events to API
+  // Content state update hook — bridges telemetry events to the legacy
+  // content/state/update API. Called unconditionally (rules of hooks) even in
+  // Learning Path mode, but disabled via skipContentStateUpdate so it never
+  // writes — useContentView (below) owns progress writes in that case.
   const handleTelemetryStateUpdate = useContentStateUpdate({
     collectionId,
     contentId,
@@ -247,9 +265,57 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     isBatchEnded,
     mimeType,
     currentContentStatus,
-    skipContentStateUpdate,
+    skipContentStateUpdate: skipContentStateUpdate || !!lpContext,
     contentType: playerMetadata?.contentType
   });
+
+  // Viewer Service equivalent — bridges telemetry events to /v1/view/* +
+  // /v1/assessment/submit for Learning Path content. Called unconditionally
+  // (rules of hooks) even outside Learning Path mode, but disabled via
+  // skipContentStateUpdate so it never writes when lpContext is unset.
+  const handleContentViewUpdate = useContentView({
+    collectionId: lpContext?.pathId,
+    contentId,
+    contextId: lpContext?.contextId,
+    isEnrolledInCurrentBatch: isEnrolled,
+    isBatchEnded,
+    mimeType,
+    currentContentStatus,
+    skipContentStateUpdate: skipContentStateUpdate || !lpContext,
+    contentType: playerMetadata?.contentType,
+  });
+
+  const handleTelemetryEvent = useCallback((event: any) => {
+    void telemetryService.save(event);
+    // Learning Path progress is Viewer-Service-backed and online-only (v1) — routed
+    // through useContentView instead of the legacy content/state/update path.
+    if (lpContext) {
+      handleContentViewUpdate(event);
+    } else {
+      handleTelemetryStateUpdate(event);
+    }
+
+    const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
+
+    // Each START marks a new play session — always generate a fresh attempt_id.
+    // This ensures close-and-reopen and crash-and-restart both produce a new
+    // attempt, preventing duplicate question answers within the same attempt_id.
+    if (eid === 'START') {
+      attemptIdRef.current = uuidv4();
+    }
+
+    // Persist ASSESS events to the course_assessment staging table so they survive
+    // app crashes and can be synced later (offline-safe path). Learning Path is
+    // online-only for v1 and writes via the Viewer Service, not this legacy
+    // staging table — skip it in lpContext mode.
+    if (!lpContext && eid === 'ASSESS' && collectionId && batchId && userId) {
+      void syncService.captureAssessmentEvent(event, {
+        userId,
+        courseId: collectionId,
+        batchId,
+      }, attemptIdRef.current);
+    }
+  }, [handleTelemetryStateUpdate, handleContentViewUpdate, lpContext, collectionId, batchId, userId]);
 
   const handlePlayerEvent = useCallback((event: any) => {
     // Player services wrap events as: { type: customEvent.detail.eid, data: customEvent.detail, ... }
@@ -263,32 +329,17 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     ) ?? '').toUpperCase();
     if (eid === 'EXIT') {
       handleClose();
+      return;
     }
-  }, [handleClose]);
-
-  const handleTelemetryEvent = useCallback((event: any) => {
-    void telemetryService.save(event);
-    handleTelemetryStateUpdate(event);
-
-    const eid = (event?.eid ?? event?.edata?.type ?? '').toUpperCase();
-
-    // Each START marks a new play session — always generate a fresh attempt_id.
-    // This ensures close-and-reopen and crash-and-restart both produce a new
-    // attempt, preventing duplicate question answers within the same attempt_id.
-    if (eid === 'START') {
-      attemptIdRef.current = uuidv4();
-    }
-
-    // Persist ASSESS events to the course_assessment staging table so they survive
-    // app crashes and can be synced later (offline-safe path).
-    if (eid === 'ASSESS' && collectionId && batchId && userId) {
-      void syncService.captureAssessmentEvent(event, {
-        userId,
-        courseId: collectionId,
-        batchId,
-      }, attemptIdRef.current);
-    }
-  }, [handleTelemetryStateUpdate, collectionId, batchId, userId]);
+    // Some players (e.g. PdfPlayer - see ContentPlayer's own comment on this
+    // exact split) only ever emit their real START/END via onPlayerEvent, never
+    // onTelemetryEvent. Without forwarding here, those contents' progress never
+    // reaches useContentView/useContentStateUpdate - the rating dialog still
+    // fires (ContentPlayer wires its timer to both channels) which makes the
+    // gap easy to miss, but view/state writes and the optimistic cache patch
+    // never happen, so level/course progress silently never updates.
+    handleTelemetryEvent(event);
+  }, [handleClose, handleTelemetryEvent]);
 
   // Build contentMeta for rating dialog telemetry
   const contentMeta = useMemo(() => {

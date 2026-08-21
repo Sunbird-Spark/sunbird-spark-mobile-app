@@ -34,6 +34,9 @@ import type { ContentSearchItem } from '../types/contentTypes';
 import CollectionCard from '../components/content/CollectionCard';
 import ResourceCard from '../components/content/ResourceCard';
 import useImpression from '../hooks/useImpression';
+import { parseCourseContextId } from '../services/viewer/summaryMapper';
+import { applyLearningPathProgress } from '../utils/applyLearningPathProgress';
+import { useViewerSummary } from '../hooks/useViewerSummary';
 
 const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
@@ -177,12 +180,23 @@ const HomePage: React.FC = () => {
     error: enrollmentsError,
     refetch,
   } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+  const { data: viewerSummaryRecords = [] } = useViewerSummary();
 
   useIonViewDidEnter(() => {
     refetch();
   });
 
-  const enrolledCourses = _.get(enrollmentData, 'data.courses', []);
+  // A Learning Path enrolment fans out one record per inner course under a
+  // composite "<lpBatchId>:<courseId>" batchId (see services/viewer/summaryMapper.ts) —
+  // those must be excluded here or they'd double-count/duplicate as phantom
+  // enrolled courses alongside the Learning Path's own record.
+  const enrolledCourses = applyLearningPathProgress(
+    _.filter(
+      _.get(enrollmentData, 'data.courses', []),
+      (c) => !parseCourseContextId(c.batchId)
+    ),
+    viewerSummaryRecords
+  );
   const enrolledCount = _.size(enrolledCourses);
 
   // Certificate count

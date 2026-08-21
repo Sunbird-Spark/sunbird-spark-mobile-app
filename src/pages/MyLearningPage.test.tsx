@@ -359,4 +359,69 @@ describe('MyLearningPage', () => {
       expect(screen.getByRole('main')).toBeInTheDocument();
     });
   });
+
+  describe('Courses | Learning Paths type switcher', () => {
+    beforeEach(() => {
+      mockAuthContext.isAuthenticated = true;
+      mockAuthContext.userId = 'user-1';
+    });
+
+    it('does not render the switcher when the learner has no enrolled Learning Paths', () => {
+      mockEnrollmentData = {
+        data: { data: { courses: [makeCourse({ content: { primaryCategory: 'Course' } })] } },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderPage();
+      expect(screen.queryByText('learningPaths')).not.toBeInTheDocument();
+    });
+
+    it('renders the switcher and routes a Learning Path card to /learning-path/:id once one is enrolled', () => {
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'course-1', collectionId: 'col-1', content: { primaryCategory: 'Course' } }),
+              makeCourse({ courseId: 'lp-1', collectionId: 'lp-1', courseName: 'Test Path', content: { primaryCategory: 'Learning Path' } }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderPage();
+      expect(screen.getByText('learningPaths')).toBeInTheDocument();
+
+      // Default tab is Courses — the LP card is not shown yet.
+      expect(screen.queryByText('Test Path')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('learningPaths'));
+      expect(screen.getByText('Test Path')).toBeInTheDocument();
+      fireEvent.click(screen.getByText('Test Path'));
+      expect(mockPush).toHaveBeenCalledWith('/learning-path/lp-1');
+    });
+
+    it('filters phantom Learning Path fan-out rows out of both lists', () => {
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'lp-1', collectionId: 'lp-1', courseName: 'Test Path', content: { primaryCategory: 'Learning Path' } }),
+              // Composite fan-out record for an inner course — must not show up anywhere.
+              makeCourse({ courseId: 'inner-1', collectionId: 'inner-1', courseName: 'Inner Course', batchId: 'lp-1-ctx:inner-1', content: { primaryCategory: 'Course' } }),
+            ],
+          },
+        },
+        isLoading: false,
+        error: null,
+        refetch: vi.fn(),
+      };
+      renderPage();
+      expect(screen.queryByText('Inner Course')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByText('learningPaths'));
+      expect(screen.getByText('Test Path')).toBeInTheDocument();
+    });
+  });
 });

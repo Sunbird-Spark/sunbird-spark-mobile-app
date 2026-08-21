@@ -25,6 +25,11 @@ import ResourceCard from '../components/content/ResourceCard';
 import { getPlaceholderImage } from '../utils/placeholderImages';
 import './MyLearningPage.css';
 import useImpression from '../hooks/useImpression';
+import { parseCourseContextId } from '../services/viewer/summaryMapper';
+import { getContentDetailPath } from '../utils/getContentDetailPath';
+import { isLearningPathCategory } from '../utils/isLearningPath';
+import { applyLearningPathProgress } from '../utils/applyLearningPathProgress';
+import { useViewerSummary } from '../hooks/useViewerSummary';
 
 const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
@@ -110,7 +115,7 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
   const thumbnail = _.get(course, 'content.posterImage') || _.get(course, 'content.appIcon', '');
   const progress = _.clamp(Math.round(course.completionPercentage ?? 0), 0, 100);
 
-  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
+  const handleNavigate = () => collectionId && router.push(getContentDetailPath(collectionId, course.content?.primaryCategory));
 
   return (
     <div
@@ -200,11 +205,13 @@ const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolle
 
 // ── Types ──
 type Tab = 'activeCourses' | 'completed' | 'upcoming';
+type ContentType = 'courses' | 'learningPaths';
 
 // ── Page ──
 const MyLearningPage: React.FC = () => {
   useImpression({ pageid: 'MyLearningPage', env: 'profile' });
   const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
+  const [contentType, setContentType] = useState<ContentType>('courses');
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -221,39 +228,57 @@ const MyLearningPage: React.FC = () => {
     error,
     refetch,
   } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+  const { data: viewerSummaryRecords = [] } = useViewerSummary();
 
   useIonViewDidEnter(() => {
     refetch();
   });
 
-  const enrolledCourses: TrackableCollection[] = _.get(enrollmentData, 'data.courses', []);
-  const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
+  // A Learning Path enrolment fans out one record per inner course under a
+  // composite "<lpBatchId>:<courseId>" batchId (see services/viewer/summaryMapper.ts) —
+  // those must be excluded here or they'd surface as phantom enrolled courses.
+  const allEnrolledItems: TrackableCollection[] = _.filter(
+    _.get(enrollmentData, 'data.courses', []),
+    (c: TrackableCollection) => !parseCourseContextId(c.batchId)
+  );
+  const enrolledCourseIds = _.compact(_.map(allEnrolledItems, c => c.collectionId || c.courseId));
+
+  // Partition by content type for the Courses | Learning Paths switcher.
+  const enrolledCourses: TrackableCollection[] = _.filter(
+    allEnrolledItems,
+    (c) => !isLearningPathCategory(c.content?.primaryCategory)
+  );
+  const enrolledLearningPaths: TrackableCollection[] = applyLearningPathProgress(
+    _.filter(allEnrolledItems, (c) => isLearningPathCategory(c.content?.primaryCategory)),
+    viewerSummaryRecords
+  );
+  const itemsForActiveType = contentType === 'courses' ? enrolledCourses : enrolledLearningPaths;
 
   // Tab filtering
   const now = new Date();
-  const activeCourses = _.filter(enrolledCourses, c => {
+  const activeCourses = _.filter(itemsForActiveType, c => {
     if ((c.completionPercentage ?? 0) >= 100) return false;
     const startDate = _.get(c, 'batch.startDate');
     return !startDate || new Date(startDate) <= now;
   });
-  const completedCourses = _.filter(enrolledCourses, c => c.completionPercentage === 100);
-  const upcomingCourses = _.filter(enrolledCourses, c => {
+  const completedCourses = _.filter(itemsForActiveType, c => c.completionPercentage === 100);
+  const upcomingCourses = _.filter(itemsForActiveType, c => {
     if ((c.completionPercentage ?? 0) > 0) return false;
     const startDate = _.get(c, 'batch.startDate');
     return startDate && new Date(startDate) > now;
   });
 
-  // Progress metrics
+  // Progress metrics — reflect whichever type (Courses | Learning Paths) is currently selected.
   // c.progress is a raw server counter that can exceed leafNodesCount (counts interactions,
   // not unique content items). Derive visited count from completionPercentage × leafNodesCount
   // so it is always consistent and never exceeds the total.
-  const lessonsVisited = _.sumBy(enrolledCourses, c => {
+  const lessonsVisited = _.sumBy(itemsForActiveType, c => {
     const pct = _.clamp(c.completionPercentage ?? 0, 0, 100) / 100;
     return Math.round((c.leafNodesCount ?? 0) * pct);
   });
-  const totalLessons = _.sumBy(enrolledCourses, c => c.leafNodesCount ?? 0);
-  const coursesCompleted = _.filter(enrolledCourses, c => c.completionPercentage === 100).length;
-  const totalCourses = _.size(enrolledCourses);
+  const totalLessons = _.sumBy(itemsForActiveType, c => c.leafNodesCount ?? 0);
+  const coursesCompleted = _.filter(itemsForActiveType, c => c.completionPercentage === 100).length;
+  const totalCourses = _.size(itemsForActiveType);
 
   // Tab content
   const getTabCourses = (): TrackableCollection[] => {
@@ -322,10 +347,27 @@ const MyLearningPage: React.FC = () => {
         {/* Courses heading */}
         <div className="my-learning__heading-wrapper">
           <div className="my-learning__heading-btn" role="heading" aria-level={2}>
-            <span className="my-learning__heading-text">{t('courses')}</span>
+            <span className="my-learning__heading-text">{t(contentType === 'courses' ? 'courses' : 'learningPaths')}</span>
             <ChevronDownIcon />
           </div>
         </div>
+
+        {/* Content type switcher — only shown once the learner has at least one enrolled Learning Path */}
+        {enrolledLearningPaths.length > 0 && (
+          <div className="my-learning__tab-bar" role="tablist" aria-label={t('learningPaths')}>
+            {(['courses', 'learningPaths'] as ContentType[]).map((type) => (
+              <button
+                key={type}
+                onClick={() => { setContentType(type); setActiveTab('activeCourses'); }}
+                className={`my-learning__tab ${contentType === type ? 'my-learning__tab--active' : ''}`}
+                role="tab"
+                aria-selected={contentType === type}
+              >
+                {t(type === 'courses' ? 'courses' : 'learningPaths')}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Tab bar */}
         <div className="my-learning__tab-bar" role="tablist" aria-label={t('courses')}>

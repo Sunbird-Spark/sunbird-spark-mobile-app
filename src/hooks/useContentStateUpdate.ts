@@ -7,6 +7,8 @@ import {
 } from '../services/course/contentProgressCalculator';
 import type { ConsumptionSummary } from '../services/course/contentProgressCalculator';
 import { useAuth } from '../contexts/AuthContext';
+import { eventHasScore, extractSummary } from './contentStateTelemetryEvent';
+import type { TelemetryEvent } from './contentStateTelemetryEvent';
 
 interface UseContentStateUpdateParams {
   collectionId: string | undefined;
@@ -21,44 +23,6 @@ interface UseContentStateUpdateParams {
   /** When true (e.g. creator viewing own collection), no progress/state API calls are made. */
   skipContentStateUpdate?: boolean;
   contentType?: string;
-}
-
-type TelemetryEvent = {
-  eid?: string;
-  type?: string;
-  ets?: number;
-  edata?: { summary?: ConsumptionSummary[]; score?: number;[key: string]: unknown };
-  summary?: ConsumptionSummary | ConsumptionSummary[];
-  data?: string | {
-    eid?: string;
-    ets?: number;
-    edata?: { summary?: ConsumptionSummary[]; score?: number;[key: string]: unknown };
-    summary?: ConsumptionSummary | ConsumptionSummary[];
-    score?: number;
-    [key: string]: unknown;
-  };
-};
-
-function eventHasScore(event: TelemetryEvent | undefined): boolean {
-  if (!event) return false;
-  const raw = event?.data ?? event;
-  if (typeof raw === 'string') return false;
-  const rawData = raw as Record<string, unknown>;
-  if (typeof (rawData?.edata as { score?: number } | undefined)?.score === 'number') return true;
-  if (typeof (rawData as { score?: number })?.score === 'number') return true;
-  const summary = (rawData?.edata as any)?.summary ?? (rawData as any)?.summary;
-  const arr = Array.isArray(summary) ? summary : summary ? [summary] : [];
-  return arr.some(
-    (s: any) => typeof s?.score === 'number',
-  );
-}
-
-function extractSummary(event: TelemetryEvent): ConsumptionSummary[] {
-  const raw = event?.data ?? event;
-  if (typeof raw === 'string') return [];
-  const rawData = raw as any;
-  const rawSummary = rawData?.edata?.summary ?? rawData?.summary;
-  return Array.isArray(rawSummary) ? rawSummary : rawSummary ? [rawSummary] : [];
 }
 
 export function useContentStateUpdate({
@@ -221,8 +185,8 @@ export function useContentStateUpdate({
           );
           const endPageSeen = Boolean(mergedSummary.endpageseen || mergedSummary.visitedcontentend);
           const hasScore =
-            eventHasScore(event) ||
-            assessEventsRef.current.some((e) => eventHasScore(e as TelemetryEvent));
+            eventHasScore(event, false) ||
+            assessEventsRef.current.some((e) => eventHasScore(e as TelemetryEvent, false));
 
           if (
             hasScore &&

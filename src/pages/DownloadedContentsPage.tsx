@@ -19,6 +19,7 @@ import { downloadManager } from '../services/download_manager';
 import { deleteDownloadedContent } from '../services/content/contentDeleteHelper';
 import type { ContentEntry } from '../services/download_manager/types';
 import { getPlaceholderImage } from '../utils/placeholderImages';
+import { getContentDetailPath } from '../utils/getContentDetailPath';
 import './DownloadedContentsPage.css';
 import useImpression from '../hooks/useImpression';
 import { useHistory } from 'react-router';
@@ -258,7 +259,7 @@ const DownloadedContentsPage: React.FC = () => {
                 onDelete={handleDeleteRequest}
                 onNavigate={(e) => {
                   const path = e.mime_type?.includes('collection')
-                    ? `/collection/${e.identifier}`
+                    ? getContentDetailPath(e.identifier, e.primary_category)
                     : `/content/${e.identifier}`;
                   history.push(path, { parentRoute: '/profile/downloaded-contents' });
                 }}

@@ -99,10 +99,15 @@ async function readCachedHierarchy(collectionId: string): Promise<CollectionData
   }
 }
 
-export const useCollection = (
-  collectionId: string | undefined
-): UseQueryResult<CollectionData | null, Error> => {
-  return useQuery({
+/**
+ * The query options object `useCollection` builds, extracted so other hooks
+ * (`useMySkills`, `useSkillSuggestions`) can fan out `useQueries` over several
+ * collection ids while sharing the exact same `['collection-hierarchy', id]`
+ * cache entries `useCollection` itself populates — a collection opened via
+ * either path costs one fetch, not two.
+ */
+export function collectionHierarchyQueryOptions(collectionId: string | undefined) {
+  return {
     queryKey: ['collection-hierarchy', collectionId],
     queryFn: async (): Promise<CollectionData | null> => {
       if (!collectionId) return null;
@@ -152,6 +157,12 @@ export const useCollection = (
     // is false — the queryFn is never called and the page shows "not found" offline.
     // 'offlineFirst' runs the queryFn once regardless of network state, which lets
     // our internal fallback read the cached hierarchy from SQLite as intended.
-    networkMode: 'offlineFirst',
-  });
+    networkMode: 'offlineFirst' as const,
+  };
+}
+
+export const useCollection = (
+  collectionId: string | undefined
+): UseQueryResult<CollectionData | null, Error> => {
+  return useQuery(collectionHierarchyQueryOptions(collectionId));
 };

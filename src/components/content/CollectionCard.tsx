@@ -4,6 +4,7 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { ContentSearchItem } from '../../types/contentTypes';
 import { getPlaceholderImage } from '../../utils/placeholderImages';
+import { getContentDetailPath } from '../../utils/getContentDetailPath';
 import './ContentCards.css';
 
 interface CollectionCardProps {
@@ -30,7 +31,7 @@ const CollectionCard: React.FC<CollectionCardProps> = ({ item }) => {
     const handleNavigate = (e: React.MouseEvent | React.KeyboardEvent) => {
         e.stopPropagation();
         history.push({
-            pathname: `/collection/${item.identifier}`,
+            pathname: getContentDetailPath(item.identifier, item.primaryCategory),
             state: { parentRoute: location.state?.parentRoute || (['/explore', '/home', '/my-learning'].includes(location.pathname) ? location.pathname : undefined) }
         });
     };

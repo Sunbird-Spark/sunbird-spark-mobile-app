@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 import { getPlaceholderImage } from '../../../utils/placeholderImages';
+import { getContentDetailPath } from '../../../utils/getContentDetailPath';
 import './InProgressContents.css';
 
 interface InProgressContentsProps {
@@ -35,17 +36,18 @@ export const InProgressContents: React.FC<InProgressContentsProps> = ({ courses 
           const thumbnail = _.get(course, 'content.posterImage')
             || _.get(course, 'content.appIcon', '');
           const progress = course.completionPercentage ?? 0;
+          const detailPath = collectionId ? getContentDetailPath(collectionId, course.content?.primaryCategory) : null;
 
           return (
             <div
               key={collectionId || course.batchId}
-              {...(collectionId ? {
+              {...(detailPath ? {
                 role: 'button' as const,
                 tabIndex: 0,
-                onClick: () => router.push(`/collection/${collectionId}`, 'forward', 'push'),
+                onClick: () => router.push(detailPath, 'forward', 'push'),
                 onKeyDown: (e: React.KeyboardEvent) => {
-                  if (e.key === 'Enter') router.push(`/collection/${collectionId}`, 'forward', 'push');
-                  if (e.key === ' ') { e.preventDefault(); router.push(`/collection/${collectionId}`, 'forward', 'push'); }
+                  if (e.key === 'Enter') router.push(detailPath, 'forward', 'push');
+                  if (e.key === ' ') { e.preventDefault(); router.push(detailPath, 'forward', 'push'); }
                 },
               } : {})}
               className="in-progress__card"

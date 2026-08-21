@@ -188,6 +188,14 @@ describe('CollectionCard', () => {
       expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/collection/do_12345' }));
     });
 
+    it('routes a Learning Path item to /learning-path/:id instead of /collection/:id', () => {
+      const item = { ...mockItem, identifier: 'do_lp1', primaryCategory: 'Learning Path' };
+      render(<CollectionCard item={item} />);
+      const card = document.querySelector('.collection-card')!;
+      fireEvent.click(card);
+      expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/learning-path/do_lp1' }));
+    });
+
     it('does not navigate on other key press', () => {
       render(<CollectionCard item={mockItem} />);
       const card = document.querySelector('.collection-card')!;
