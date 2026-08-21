@@ -71,10 +71,10 @@ describe('isDownloadable', () => {
     ).toBe(false);
   });
 
-  it('returns false for questionset content', () => {
+  it('returns true for questionset content — the ecar carries the full hierarchy + questions', () => {
     expect(
       isDownloadable(makeLeaf('l1', { mimeType: 'application/vnd.sunbird.questionset' })),
-    ).toBe(false);
+    ).toBe(true);
   });
 });
 
