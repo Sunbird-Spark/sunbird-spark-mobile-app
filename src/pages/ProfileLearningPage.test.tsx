@@ -61,6 +61,10 @@ vi.mock('@capacitor/filesystem', () => ({
 }));
 
 vi.mock('../hooks/useImpression', () => ({ default: vi.fn() }));
+
+vi.mock('../hooks/useViewerSummary', () => ({
+  useViewerSummary: () => ({ data: [] }),
+}));
 vi.mock('./ProfileLearningPage.css', () => ({}));
 
 import { useAuth } from '../contexts/AuthContext';

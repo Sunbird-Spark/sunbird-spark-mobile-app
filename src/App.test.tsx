@@ -188,6 +188,34 @@ vi.mock('./pages/DeleteAccountPage', () => ({
   default: () => <div data-testid="delete-account-page">Delete Account Page</div>,
 }));
 
+vi.mock('./pages/MySkillsPage', () => ({
+  default: () => <div data-testid="my-skills-page">My Skills Page</div>,
+}));
+
+vi.mock('./pages/LearningPathPage', () => ({
+  default: () => <div data-testid="learning-path-page">Learning Path Page</div>,
+}));
+
+vi.mock('./pages/LearningPathLevelPage', () => ({
+  default: () => <div data-testid="learning-path-level-page">Learning Path Level Page</div>,
+}));
+
+vi.mock('./pages/LearningPathAssessmentPage', () => ({
+  default: () => <div data-testid="learning-path-assessment-page">Learning Path Assessment Page</div>,
+}));
+
+vi.mock('./pages/LearningPathPlayerPage', () => ({
+  default: () => <div data-testid="learning-path-player-page">Learning Path Player Page</div>,
+}));
+
+vi.mock('./pages/LearningPathStatusPage', () => ({
+  default: () => <div data-testid="learning-path-status-page">Learning Path Status Page</div>,
+}));
+
+vi.mock('./pages/LearningPathCompletePage', () => ({
+  default: () => <div data-testid="learning-path-complete-page">Learning Path Complete Page</div>,
+}));
+
 vi.mock('./components/common/BackButtonHandler', () => ({
   default: () => null,
 }));
