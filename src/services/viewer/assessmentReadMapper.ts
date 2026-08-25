@@ -1,6 +1,6 @@
 import type { AssessmentReadResponse } from '../../types/viewerServiceTypes';
 
-/** One normalised `/v1/assessment/read` entry, keyed by whichever id field the item carried. */
+/** One normalised `/assessment/v1/read` entry, keyed by whichever id field the item carried. */
 export interface AssessmentReadEntry {
   contentId: string;
   score: number;
@@ -20,7 +20,7 @@ export function getAssessmentReadItems(
 }
 
 /**
- * Normalise raw `/v1/assessment/read` items into a `contentId -> entry` map,
+ * Normalise raw `/assessment/v1/read` items into a `contentId -> entry` map,
  * dropping any item with no id or no numeric score (both fields are
  * unconfirmed on the live service, so either could be absent).
  */

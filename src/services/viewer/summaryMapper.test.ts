@@ -3,6 +3,7 @@ import {
   buildCourseContextId,
   buildCourseSummaryMapForContext,
   getCourseContextId,
+  getOptionalNodeIds,
   getPathSummary,
   indexSummaryByCollectionId,
   normaliseSummaryReadRecord,
@@ -50,6 +51,23 @@ describe('normaliseSummaryRecords', () => {
     expect(normaliseSummaryRecords(null)).toEqual([]);
     expect(normaliseSummaryRecords(undefined)).toEqual([]);
   });
+
+  it('defaults optionalNodes to [] when the record carries neither spelling', () => {
+    const recs = normaliseSummaryRecords({ summary: [record({ collectionId: 'lp1' })] });
+    expect(recs[0].optionalNodes).toEqual([]);
+  });
+
+  it('normalises the live snake_case optional_nodes', () => {
+    const recs = normaliseSummaryRecords({ response: [record({ optional_nodes: ['leaf_a', 'leaf_b'] })] });
+    expect(recs[0].optionalNodes).toEqual(['leaf_a', 'leaf_b']);
+  });
+
+  it('prefers an already-normalised optionalNodes over optional_nodes', () => {
+    const recs = normaliseSummaryRecords({
+      summary: [record({ optionalNodes: ['normalised'], optional_nodes: ['legacy'] })],
+    });
+    expect(recs[0].optionalNodes).toEqual(['normalised']);
+  });
 });
 
 describe('normaliseSummaryReadRecord', () => {
@@ -62,6 +80,34 @@ describe('normaliseSummaryReadRecord', () => {
   it('returns undefined when neither summary nor response is present', () => {
     expect(normaliseSummaryReadRecord({})).toBeUndefined();
     expect(normaliseSummaryReadRecord(null)).toBeUndefined();
+  });
+
+  it('normalises optional_nodes and defaults it to []', () => {
+    expect(normaliseSummaryReadRecord({ response: record({ optional_nodes: ['leaf_a'] })})?.optionalNodes).toEqual([
+      'leaf_a',
+    ]);
+    expect(normaliseSummaryReadRecord({ response: record({}) })?.optionalNodes).toEqual([]);
+  });
+});
+
+describe('getOptionalNodeIds', () => {
+  it('is empty for an undefined path record', () => {
+    expect(getOptionalNodeIds(undefined).size).toBe(0);
+  });
+
+  it('reads the path record alone', () => {
+    const ids = getOptionalNodeIds(record({ optionalNodes: ['a', 'b'] }));
+    expect([...ids].sort()).toEqual(['a', 'b']);
+  });
+
+  it('unions the path record with every per-course fan-out record', () => {
+    const courses = new Map<string, ViewerSummaryRecord>([
+      ['c1', record({ optionalNodes: ['b', 'c'] })],
+      ['c2', record({ optionalNodes: ['d'] })],
+      ['c3', record({})],
+    ]);
+    const ids = getOptionalNodeIds(record({ optionalNodes: ['a', 'b'] }), courses);
+    expect([...ids].sort()).toEqual(['a', 'b', 'c', 'd']);
   });
 });
 

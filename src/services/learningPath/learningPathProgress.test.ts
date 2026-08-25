@@ -66,7 +66,7 @@ describe('isLeafComplete', () => {
 describe('computeCourseProgress', () => {
   it('is notStarted with no records', () => {
     const progress = computeCourseProgress(course1, new Map());
-    expect(progress).toEqual({ pct: 0, completed: 0, total: 2, status: 'notStarted' });
+    expect(progress).toEqual({ pct: 0, completed: 0, total: 2, status: 'notStarted', optional: false });
   });
 
   it('derives pct from contentStatus when no aggregate percentage is present', () => {
@@ -74,7 +74,7 @@ describe('computeCourseProgress', () => {
       [course1.identifier, record({ contentStatus: { [course1.leafIds[0]]: 2 } })],
     ]);
     const progress = computeCourseProgress(course1, summaryByCollectionId);
-    expect(progress).toEqual({ pct: 50, completed: 1, total: 2, status: 'active' });
+    expect(progress).toEqual({ pct: 50, completed: 1, total: 2, status: 'active', optional: false });
   });
 
   it('takes the MAX of aggregatePct and contentStatusPct - stale 0% aggregate never masks a completed leaf', () => {

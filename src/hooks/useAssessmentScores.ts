@@ -12,7 +12,7 @@ import {
 import type { AssessmentSourceEntry } from '../services/learningPath/learningPathAssessment';
 
 /**
- * Reads back saved assessment scores via `POST /v1/assessment/read` - the one
+ * Reads back saved assessment scores via `POST /assessment/v1/read` - the one
  * Viewer Service endpoint that could return score/attempts (see
  * `assessmentReadMapper.ts` for why the other three can't). Kept under its own
  * query key so a `['viewerSummary']` refetch, which wipes the optimistic
@@ -41,7 +41,7 @@ export function useAssessmentReadMap(
         // The live wire shape for this endpoint is unconfirmed (it has never
         // been called in production before) - this is where that becomes visible.
         console.warn(
-          '[assessmentRead] /v1/assessment/read returned no score entries - falling back to the local score store.'
+          '[assessmentRead] /assessment/v1/read returned no score entries - falling back to the local score store.'
         );
       }
       return map;
@@ -69,7 +69,7 @@ export function useStoredAssessmentScores(collectionId: string | undefined): Rec
  * Persists a submitted score to the durable local store and refreshes both
  * caches that surface it - the `['assessmentScores']` cache (so components
  * re-render immediately) and `['assessmentRead']` (so a fresh
- * `/v1/assessment/read` is attempted in case the service now has the data).
+ * `/assessment/v1/read` is attempted in case the service now has the data).
  */
 export function useRecordAssessmentScore(): (
   userId: string,

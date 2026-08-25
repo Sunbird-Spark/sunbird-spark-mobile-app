@@ -37,6 +37,17 @@ describe('LPCourseRow', () => {
     expect(screen.getByText('learningPath.revisit')).toBeInTheDocument();
   });
 
+  it('shows the Optional badge only when isOptional is set, and keeps the row openable', () => {
+    const onClick = vi.fn();
+    const { rerender } = render(<LPCourseRow course={course} status="active" pct={40} onClick={onClick} t={t} />);
+    expect(screen.queryByText('learningPath.optional')).not.toBeInTheDocument();
+
+    rerender(<LPCourseRow course={course} status="active" pct={40} isOptional onClick={onClick} t={t} />);
+    expect(screen.getByText('learningPath.optional')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button'));
+    expect(onClick).toHaveBeenCalled();
+  });
+
   it('shows no CTA label when locked', () => {
     render(<LPCourseRow course={course} status="locked" pct={0} t={t} />);
     expect(screen.queryByText('learningPath.start')).not.toBeInTheDocument();

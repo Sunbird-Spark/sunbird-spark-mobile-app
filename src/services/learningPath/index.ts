@@ -5,12 +5,15 @@ export {
   computePathProgress,
   deriveLevelStatuses,
   isOutcomeUnlocked,
+  isCertificateUnlocked,
+  isLeafOptional,
   getAssessmentScore,
   getResumeTarget,
 } from './learningPathProgress';
 export { getAssessmentInfo, buildAssessmentInfoMap } from './learningPathAssessment';
 export type { LPAssessmentInfo } from './learningPathAssessment';
 export { getAttainedLevels, getGainedSkills, SKILL_GAINING_STATUSES } from './skillAttainment';
+export { deriveWaiversFromOptionalNodes } from './levelWaivers';
 export { buildPathSkillSummary, aggregateSkills, filterPathSummaries } from './skillAggregation';
 export type { PathSkillSummary, PathSkillStatus, SkillAggregate, PathSkillFilters, SkillSourceRef } from './skillAggregation';
 export { buildSkillIndex, getRecentlyGainedSkills, getMostReinforcedSkills, filterSkillEntries } from './skillIndex';

@@ -22,12 +22,13 @@ export function normaliseSummaryRecords(
     ...record,
     collectionId: record.collectionId ?? record.courseId,
     contextId: record.contextId ?? record.batchId,
+    optionalNodes: record.optionalNodes ?? record.optional_nodes ?? [],
   }));
 }
 
 /**
  * Same wire-shape normalisation as `normaliseSummaryRecords`, for the
- * single-record `/v1/summary/read` ("specific enrolment") response — spec:
+ * single-record `/summary/v1/read` ("specific enrolment") response — spec:
  * `result.summary`, live: `result.response`.
  */
 export function normaliseSummaryReadRecord(
@@ -39,6 +40,7 @@ export function normaliseSummaryReadRecord(
     ...record,
     collectionId: record.collectionId ?? record.courseId,
     contextId: record.contextId ?? record.batchId,
+    optionalNodes: record.optionalNodes ?? record.optional_nodes ?? [],
   };
 }
 
@@ -159,4 +161,24 @@ export function parseCourseContextId(
   const courseId = contextId.slice(idx + 1);
   if (!lpContextId || !courseId) return null;
   return { lpContextId, courseId };
+}
+
+/**
+ * The union of optional-node ids for a path: the path record's own
+ * `optional_nodes` plus any carried by the per-course fan-out records. An
+ * entry may be either a course id or a leaf content id, so callers must test
+ * both granularities (see `computeCourseProgress`, `isLeafOptional`).
+ *
+ * Reads only the normalised `optionalNodes`, so records built by hand (rather
+ * than through `normaliseSummaryRecords`) must set that key, not `optional_nodes`.
+ */
+export function getOptionalNodeIds(
+  pathSummary: ViewerSummaryRecord | undefined,
+  courseRecords?: Map<string, ViewerSummaryRecord>
+): Set<string> {
+  const ids = new Set<string>(pathSummary?.optionalNodes ?? []);
+  courseRecords?.forEach((record) => {
+    record.optionalNodes?.forEach((id) => ids.add(id));
+  });
+  return ids;
 }

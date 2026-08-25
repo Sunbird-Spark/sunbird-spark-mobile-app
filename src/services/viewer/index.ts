@@ -11,4 +11,5 @@ export {
   buildCourseContextId,
   getCourseContextId,
   parseCourseContextId,
+  getOptionalNodeIds,
 } from './summaryMapper';

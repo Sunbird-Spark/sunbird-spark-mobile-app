@@ -10,6 +10,13 @@ interface LPCourseRowProps {
   completed?: number;
   total?: number;
   pct: number;
+  /**
+   * Defaults to `false`. When `true` (the course was waived by a prior
+   * assessment — see `computeCourseProgress`'s `optional` flag), an "Optional"
+   * badge is shown beside the question-set-only badge. The row stays fully
+   * visible and openable either way — only progress denominators exclude it.
+   */
+  isOptional?: boolean;
   onClick?: () => void;
   t: LPTFunction;
 }
@@ -23,7 +30,16 @@ const CTA_KEY: Partial<Record<LevelStatusKey, string>> = {
 };
 
 /** A single course row inside a Level detail screen or the Overview ledger's expanded level body. */
-export const LPCourseRow: React.FC<LPCourseRowProps> = ({ course, status, completed, total, pct, onClick, t }) => {
+export const LPCourseRow: React.FC<LPCourseRowProps> = ({
+  course,
+  status,
+  completed,
+  total,
+  pct,
+  isOptional = false,
+  onClick,
+  t,
+}) => {
   const resolvedTotal = total ?? (course.leafIds.length || course.leafNodesCount || 0);
   const resolvedCompleted = completed ?? Math.round((pct / 100) * resolvedTotal);
   const disabled = status === 'locked';
@@ -46,6 +62,7 @@ export const LPCourseRow: React.FC<LPCourseRowProps> = ({ course, status, comple
           {course.isAssessmentCourse && (
             <span className="lp-course-row-badge">{t('learningPath.questionSetOnly')}</span>
           )}
+          {isOptional && <span className="lp-course-row-badge">{t('learningPath.optional')}</span>}
         </div>
         <span className="lp-course-row-meta">
           {resolvedTotal > 0 ? `${resolvedCompleted}/${resolvedTotal} · ${pct}%` : `${pct}%`}

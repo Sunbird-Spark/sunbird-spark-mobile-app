@@ -86,7 +86,7 @@ export function normalizeScormAssessEvent(event: unknown): unknown {
 /**
  * Sum an attempt's accumulated ASSESS events into attempt totals.
  *
- * The Viewer Service's `/v1/assessment/submit` receives the raw ASSESS events,
+ * The Viewer Service's `/assessment/v1/submit` receives the raw ASSESS events,
  * but sending explicit totals alongside them means neither the service nor the
  * UI has to re-derive them. Mirrors how the legacy course service aggregates
  * `content/state/update` assessments: total score is the sum of `edata.score`

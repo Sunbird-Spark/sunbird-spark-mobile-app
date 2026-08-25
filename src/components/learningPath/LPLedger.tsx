@@ -117,6 +117,7 @@ export const LPLedger: React.FC<LPLedgerProps> = ({
                         completed={courseProgress.completed}
                         total={courseProgress.total}
                         pct={courseProgress.pct}
+                        isOptional={courseProgress.optional}
                         onClick={() => onOpenCourse(course.identifier, course.leafIds[0] ?? '')}
                         t={t}
                       />

@@ -27,7 +27,9 @@ describe('useLearningPath', () => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({ isAuthenticated: true, userId: 'u1' });
     mockUseLevelWaivers.mockReturnValue({});
-    mockUseLearningPathEnrollment.mockReturnValue({ effectiveContextId: 'ctx1' });
+    // `isEnrolled` is explicit: `deriveLevelStatuses` defaults it to `true`, so
+    // leaving it undefined would silently never exercise the unenrolled guard.
+    mockUseLearningPathEnrollment.mockReturnValue({ effectiveContextId: 'ctx1', isEnrolled: true });
   });
 
   it('is loading while the hierarchy is fetching', () => {
@@ -72,6 +74,21 @@ describe('useLearningPath', () => {
     expect(result.current.levelStatuses[1]).toBe('locked');
     expect(result.current.isTrackable).toBe(true);
     expect(result.current.isCreatorViewingOwnPath).toBe(false);
+  });
+
+  it('locks every level for an unenrolled learner, regardless of policy', () => {
+    mockUseCollection.mockReturnValue({
+      data: { hierarchyRoot: LP_HIERARCHY_NO_ASSESSMENTS },
+      isLoading: false,
+      isError: false,
+    });
+    mockUseLearningPathEnrollment.mockReturnValue({ effectiveContextId: undefined, isEnrolled: false });
+    mockUseViewerSummary.mockReturnValue({ data: [], isLoading: false });
+
+    const { result } = renderHook(() => useLearningPath('do_2146317230884208641312', undefined));
+
+    expect(result.current.levelStatuses).toHaveLength(2);
+    expect(result.current.levelStatuses.every((s) => s === 'locked')).toBe(true);
   });
 
   it('marks isCreatorViewingOwnPath when the current user authored the path', () => {

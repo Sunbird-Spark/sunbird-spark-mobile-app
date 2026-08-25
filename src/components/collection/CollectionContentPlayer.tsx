@@ -269,8 +269,8 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     contentType: playerMetadata?.contentType
   });
 
-  // Viewer Service equivalent — bridges telemetry events to /v1/view/* +
-  // /v1/assessment/submit for Learning Path content. Called unconditionally
+  // Viewer Service equivalent — bridges telemetry events to /view/v1/* +
+  // /assessment/v1/submit for Learning Path content. Called unconditionally
   // (rules of hooks) even outside Learning Path mode, but disabled via
   // skipContentStateUpdate so it never writes when lpContext is unset.
   const handleContentViewUpdate = useContentView({

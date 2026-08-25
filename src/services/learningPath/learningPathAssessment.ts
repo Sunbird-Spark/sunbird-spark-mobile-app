@@ -81,7 +81,7 @@ export function buildAssessmentInfoMap(pathSummary: ViewerSummaryRecord | undefi
 
 /**
  * Merge every source of assessment score/attempts into one map, in order of
- * trust: `/v1/assessment/read` (server, if it ever returns data) overrides the
+ * trust: `/assessment/v1/read` (server, if it ever returns data) overrides the
  * durable local store (`assessmentScoreStore.ts`, which survives cache
  * invalidation and reloads), which overrides `pathSummary.assessmentStatus`
  * (in-memory only, wiped by the next `['viewerSummary']` refetch).

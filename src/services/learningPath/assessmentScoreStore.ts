@@ -2,8 +2,8 @@
  * Durable fallback for Learning Path assessment scores/attempts.
  *
  * The Viewer Service does not persist score/attempts anywhere the client can
- * read back: the live captures of `/v1/summary/list` and `/v1/view/read` carry
- * none, and `/v1/assessment/read` (the one endpoint that might) has never been
+ * read back: the live captures of `/summary/v1/list` and `/view/v1/read` carry
+ * none, and `/assessment/v1/read` (the one endpoint that might) has never been
  * called in production. Meanwhile the in-memory `['viewerSummary']` query cache
  * that DOES hold an optimistic score is wiped by the very next
  * `invalidateQueries` refetch, and by any page reload.

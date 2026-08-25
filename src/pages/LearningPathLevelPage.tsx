@@ -113,6 +113,7 @@ const LearningPathLevelPage: React.FC = () => {
                     completed={courseProgresses[i]?.completed}
                     total={courseProgresses[i]?.total}
                     pct={courseProgresses[i]?.pct ?? 0}
+                    isOptional={courseProgresses[i]?.optional}
                     onClick={status === 'locked' ? undefined : () => openCourse(i)}
                     t={t}
                   />

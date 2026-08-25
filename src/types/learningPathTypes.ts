@@ -95,7 +95,14 @@ export interface PathProgressInfo extends ProgressInfo {
   levelCount: number;
 }
 
-/** Placeholder shape for future waiver/credit data — no backend endpoint exists yet. */
+/**
+ * Per-Level waiver/credit state, derived from the Viewer Service's
+ * `optional_nodes` — see `deriveWaiversFromOptionalNodes`.
+ *
+ * MOBILE: `note` is an i18n KEY, not display text. It is resolved by the
+ * rendering component via its injected `t` (see `lpTFunction.ts`), unlike the
+ * portal, whose `useLevelWaivers` resolves it at the hook boundary.
+ */
 export interface WaiverInfo {
   status: 'waived' | 'credited' | 'creditedPending';
   note: string;

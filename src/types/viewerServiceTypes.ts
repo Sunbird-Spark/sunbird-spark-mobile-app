@@ -61,6 +61,14 @@ export interface ViewerSummaryRecord {
   lastReadContentId?: string | null;
   lastReadContentStatus?: number | null;
   lastContentAccessTime?: string | number | null;
+  /**
+   * Course/leaf ids waived by a prior assessment - e.g. under the Diagnostic
+   * policy, skills the learner already demonstrated. Live field name
+   * (snake_case, as returned by the Viewer Service).
+   */
+  optional_nodes?: string[];
+  /** Normalised alias, populated by summaryMapper - see `getOptionalNodeIds`. */
+  optionalNodes?: string[];
   [key: string]: unknown;
 }
 
@@ -89,7 +97,7 @@ export interface ViewUpdateRequest extends ViewRequest {
   timespent?: number;
 }
 
-/** Body for POST /v1/assessment/submit. */
+/** Body for POST /assessment/v1/submit. */
 export interface ViewAssessRequest extends ViewRequest {
   assessments: unknown[];
   /**
@@ -107,7 +115,7 @@ export interface ViewAssessRequest extends ViewRequest {
   maxScore?: number;
 }
 
-/** Params for DELETE /v1/summary/delete/:userId. Omit collectionId/contextId + all=true to delete every enrolment. */
+/** Params for DELETE /summary/v1/delete/:userId. Omit collectionId/contextId + all=true to delete every enrolment. */
 export interface SummaryDeleteParams {
   userId: string;
   all?: boolean;
@@ -176,11 +184,11 @@ export interface ViewReadResponse {
 }
 
 /**
- * Response for POST /v1/assessment/read.
+ * Response for POST /assessment/v1/read.
  *
  * The only Viewer Service endpoint that could return saved assessment scores:
- * the verbatim live captures of `/v1/summary/list` (`summaryMapper.test.ts`) and
- * `/v1/view/read` (`viewReadMapper.test.ts`) carry no score, max_score or
+ * the verbatim live captures of `/summary/v1/list` (`summaryMapper.test.ts`) and
+ * `/view/v1/read` (`viewReadMapper.test.ts`) carry no score, max_score or
  * attempts at all. Both shapes below are declared optional because the live
  * wire shape is still unconfirmed - `services/viewer/assessmentReadMapper.ts`
  * is the single place that normalises them.
@@ -189,7 +197,7 @@ export interface AssessmentReadResponse {
   userId?: string;
   collectionId?: string;
   contextId?: string;
-  /** Live field name (matches /v1/view/read's `response`, by analogy - unconfirmed). */
+  /** Live field name (matches /view/v1/read's `response`, by analogy - unconfirmed). */
   response?: ViewReadResponseContent[];
   /**
    * Spec field name. `contentId`/`identifier` are declared here because entries

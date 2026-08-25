@@ -7,7 +7,7 @@ import { normaliseSummaryRecords } from '../services/viewer/summaryMapper';
 import type { AssessmentScoreEntry, ViewerSummaryRecord } from '../types/viewerServiceTypes';
 
 /**
- * Fetches and normalises `GET /v1/summary/list/{userId}` — the Viewer
+ * Fetches and normalises `GET /summary/v1/list/{userId}` — the Viewer
  * Service's single source of truth for path, level and course progress. See
  * `services/viewer/summaryMapper.ts` for the wire-shape normalisation.
  */
@@ -37,7 +37,7 @@ export function useInvalidateViewerSummary(): () => Promise<void> {
 }
 
 /**
- * Swaps a single confirmed record (from `POST /v1/summary/read`, the
+ * Swaps a single confirmed record (from `POST /summary/v1/read`, the
  * "specific enrolment" API) into the `['viewerSummary', userId]` cache —
  * matched by `collectionId` + `contextId`. The summary API is synchronous, so
  * this is a precise correction of the optimistic patch rather than a guess;

@@ -35,15 +35,15 @@ interface UseContentViewParams {
 /**
  * Viewer Service equivalent of `useContentStateUpdate`, used only when the
  * player is opened in Learning Path context (see `CollectionContentPlayer`'s
- * `lpContext` prop). Writes go through `/v1/view/start|update|end` +
- * `/v1/assessment/submit` instead of the legacy `content/state/update`.
+ * `lpContext` prop). Writes go through `/view/v1/start|update|end` +
+ * `/assessment/v1/submit` instead of the legacy `content/state/update`.
  *
- * Display is NOT driven purely by an un-scoped `/v1/summary/list` refetch:
+ * Display is NOT driven purely by an un-scoped `/summary/v1/list` refetch:
  *  1. The `['viewerSummary']` cache is patched optimistically the instant a
  *     write succeeds (see `useOptimisticViewerSummaryPatch`) - this is what
  *     makes completion badges and level lock/unlock (`useLearningPath`
  *     derives both synchronously from that cache) update immediately.
- *  2. `POST /v1/summary/read` (the "specific enrolment" API, synchronous) is
+ *  2. `POST /summary/v1/read` (the "specific enrolment" API, synchronous) is
  *     then called with this exact `collectionId`/`contextId` to confirm/
  *     correct that optimistic guess with the server's own record for this
  *     enrolment - see `confirmEnrolment` below.
@@ -91,10 +91,10 @@ export function useContentView({
 
   /**
    * Confirms/corrects the optimistic patch with the server's own record for
-   * this exact enrolment (`POST /v1/summary/read`), called after both
+   * this exact enrolment (`POST /summary/v1/read`), called after both
    * `view/end` and `assessment/submit`. Synchronous and precisely scoped by
    * `collectionId`/`contextId`, so there's no "individual content" ambiguity
-   * the way there was reading back from `/v1/view/read`.
+   * the way there was reading back from `/view/v1/read`.
    */
   const confirmEnrolment = useCallback(async () => {
     if (!collectionId || !contentId || !contextId || !userId) return;

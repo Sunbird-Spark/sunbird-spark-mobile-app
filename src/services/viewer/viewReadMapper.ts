@@ -13,7 +13,7 @@ export function findViewReadItem(
 }
 
 /**
- * Resolves a completion status (0/1/2) from a `/v1/view/read` item. Prefers
+ * Resolves a completion status (0/1/2) from a `/view/v1/read` item. Prefers
  * the direct `status` field; falls back to parsing `progressdetails` (a
  * JSON-encoded string, e.g. `"{\"progress\":100}"`) since the live service
  * leaves the top-level `progress`/`completionPercentage` fields `null`.
@@ -41,7 +41,7 @@ export function extractProgressDetailsValue(item: ViewReadResponseContent | unde
 }
 
 /**
- * True when a `/v1/view/read` item was recorded under the design doc's
+ * True when a `/view/v1/read` item was recorded under the design doc's
  * "individual content, no collection context" scope (Scenario 1) - i.e. its
  * `courseId`/`batchId` both equal `contentId` - rather than the
  * collectionId/contextId that was actually requested. A record in this shape

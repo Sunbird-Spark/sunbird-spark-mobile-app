@@ -7,14 +7,26 @@ interface LPStatusBadgeProps {
   t: LPTFunction;
 }
 
-const STATUS_STYLE: Record<LevelStatusKey, { color: string; bg: string }> = {
-  completed: { color: 'var(--ion-color-success)', bg: 'var(--ion-color-success-tint, #e3f5e6)' },
-  active: { color: 'var(--ion-color-warning-shade, #b98f00)', bg: 'var(--ion-color-warning-tint, #fff4d6)' },
-  notStarted: { color: 'var(--color-757575, #757575)', bg: 'var(--color-e0e0e0, #e0e0e0)' },
-  locked: { color: 'var(--color-757575, #757575)', bg: 'var(--color-e0e0e0, #e0e0e0)' },
-  waived: { color: 'var(--ion-color-secondary)', bg: 'var(--ion-color-secondary-tint)' },
-  credited: { color: 'var(--ion-color-secondary)', bg: 'var(--ion-color-secondary-tint)' },
-  creditedPending: { color: 'var(--ion-color-primary-tint, #cc8545)', bg: 'var(--color-f4f4f4, #f4f4f4)' },
+/**
+ * Colours live in CSS (`.lp-status-badge--<status>` in `LearningPathPage.css`),
+ * not in an inline style map here.
+ *
+ * The map this replaced paired each status's base colour with its Ionic
+ * `-tint` as the background — but in this theme `-tint` is only ~10% lighter
+ * than the base (`--ion-color-success: #82a668` vs `-tint: #8faf77`), so every
+ * variant rendered same-hue-on-same-hue at ~1.1:1 contrast and was illegible.
+ * The pale hex fallbacks in that map (`#e3f5e6`, `#fff4d6`) show the intent was
+ * a pale wash, but the theme defines the real vars so the fallbacks never
+ * applied. See bug: "Completed" badge unreadable on the LP overview.
+ */
+const STATUS_MODIFIER: Record<LevelStatusKey, string> = {
+  completed: 'completed',
+  active: 'active',
+  notStarted: 'not-started',
+  locked: 'locked',
+  waived: 'waived',
+  credited: 'credited',
+  creditedPending: 'credited-pending',
 };
 
 const STATUS_LABEL_KEY: Record<LevelStatusKey, string> = {
@@ -28,16 +40,10 @@ const STATUS_LABEL_KEY: Record<LevelStatusKey, string> = {
 };
 
 /** Small pill badge for a Level/Course/Assessment status — shared across the Overview ledger and Level detail screens. */
-export const LPStatusBadge: React.FC<LPStatusBadgeProps> = ({ status, t }) => {
-  const style = STATUS_STYLE[status];
-  return (
-    <span
-      className="lp-status-badge"
-      style={{ color: style.color, backgroundColor: style.bg }}
-    >
-      {t(STATUS_LABEL_KEY[status])}
-    </span>
-  );
-};
+export const LPStatusBadge: React.FC<LPStatusBadgeProps> = ({ status, t }) => (
+  <span className={`lp-status-badge lp-status-badge--${STATUS_MODIFIER[status]}`}>
+    {t(STATUS_LABEL_KEY[status])}
+  </span>
+);
 
 export default LPStatusBadge;

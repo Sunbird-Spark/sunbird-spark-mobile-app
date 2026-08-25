@@ -287,7 +287,8 @@
   padding: 0.0625rem 0.5rem;
   border-radius: 999px;
   background: var(--color-f4f4f4, #f4f4f4);
-  color: var(--color-757575, #757575);
+  /* #757575 was 4.19:1 here — just under AA for this 11px text. */
+  color: #5c5c5c;
 }
 
 .lp-course-row-meta {
@@ -331,6 +332,41 @@
   white-space: nowrap;
 }
 
+/* Status badge colours.
+ *
+ * Backgrounds are a 15% wash of the status hue over the card (via `-rgb`), NOT
+ * the Ionic `-tint` variant: in this theme `-tint` is only ~10% lighter than
+ * the base, so tint-as-background under base-as-text gave ~1.1:1 contrast and
+ * was unreadable. Text colours are hand-picked (rather than `-shade`, which is
+ * likewise only ~10% darker and reaches just ~3:1) so every variant clears
+ * WCAG AA 4.5:1 for small text on its own wash. Measured ratios in comments. */
+.lp-status-badge--completed {
+  background: rgba(var(--ion-color-success-rgb), 0.15);
+  color: #3f5730; /* 7.04:1 */
+}
+
+.lp-status-badge--active {
+  background: rgba(var(--ion-color-warning-rgb), 0.15);
+  color: #6b5310; /* 7.01:1 */
+}
+
+.lp-status-badge--waived,
+.lp-status-badge--credited {
+  background: rgba(var(--ion-color-secondary-rgb), 0.15);
+  color: #305a65; /* 6.71:1 */
+}
+
+.lp-status-badge--credited-pending {
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+  color: var(--ion-color-primary-shade, #8f4630); /* 5.53:1 */
+}
+
+.lp-status-badge--not-started,
+.lp-status-badge--locked {
+  background: var(--color-e0e0e0, #e0e0e0);
+  color: #545454; /* 5.74:1 — #757575 was only 3.49:1 */
+}
+
 /* ── Certificate card ── */
 .lp-cert-card {
   display: flex;
@@ -342,8 +378,12 @@
   border-radius: 0.75rem;
 }
 
+/* An 18% wash, not `--ion-color-success-tint`: the tint (#8faf77) is a
+ * saturated mid-green, which dropped the brick "View certificate" button to
+ * 2.18:1 and the subtitle to 1.88:1 against it. The wash keeps the celebratory
+ * green while leaving every foreground legible. */
 .lp-cert-card--unlocked {
-  background: linear-gradient(135deg, var(--color-white), var(--ion-color-success-tint, #e3f5e6));
+  background: linear-gradient(135deg, var(--color-white), rgba(var(--ion-color-success-rgb), 0.18));
 }
 
 .lp-cert-card-body {
@@ -361,7 +401,9 @@
 
 .lp-cert-card-subtitle {
   font-size: 0.8125rem;
-  color: var(--color-757575, #757575);
+  /* #757575 fell to 3.93:1 on the unlocked card's green wash — under AA for
+   * small text. #5c5c5c clears it on both the white and washed backgrounds. */
+  color: #5c5c5c;
 }
 
 .lp-cert-card-view-btn {
@@ -510,4 +552,37 @@
 .lp-cert-preview-img {
   width: 100%;
   border-radius: 0.5rem;
+}
+
+/* ── Bottom back bar (LPBackFooter) ──
+ * Shared by every Learning Path screen. Replaces the top-header back chevron:
+ * on gesture-navigation phones there is no system back button drawn, so this
+ * is the primary way back. The z-index mirrors `.lp-player-footer` — the app's
+ * bottom tab bar stays mounted under these pages and would otherwise swallow
+ * the taps. `safe-area-inset-bottom` keeps it clear of the home-gesture pill.
+ */
+.lp-back-footer {
+  position: relative;
+  z-index: 20;
+}
+
+.lp-back-footer-toolbar {
+  --background: var(--color-white);
+  --border-color: var(--color-e0e0e0, #e0e0e0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.lp-back-footer-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ion-color-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  /* Full-height hit area — a 44px-tall target per the platform minimum. */
+  min-height: 44px;
+  padding: 0.5rem 1rem;
 }

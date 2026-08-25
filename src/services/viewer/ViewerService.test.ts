@@ -26,7 +26,7 @@ describe('ViewerService', () => {
         contextId: 'ctx1',
       });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/view/start', {
+      expect(mockClient.post).toHaveBeenCalledWith('/view/v1/start', {
         request: { userId: 'u1', contentId: 'c1', courseId: 'lp1', batchId: 'ctx1' },
       });
       const [, body] = mockClient.post.mock.calls[0];
@@ -38,7 +38,7 @@ describe('ViewerService', () => {
       mockClient.post.mockResolvedValue({ data: {} });
       await viewerService.viewStart({ userId: 'u1', contentId: 'c1' });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/view/start', {
+      expect(mockClient.post).toHaveBeenCalledWith('/view/v1/start', {
         request: { userId: 'u1', contentId: 'c1' },
       });
     });
@@ -54,7 +54,7 @@ describe('ViewerService', () => {
         timespent: 30,
       });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/view/update', {
+      expect(mockClient.post).toHaveBeenCalledWith('/view/v1/update', {
         request: {
           userId: 'u1',
           contentId: 'c1',
@@ -66,7 +66,7 @@ describe('ViewerService', () => {
       });
     });
 
-    it('viewAssess posts to /v1/assessment/submit (NOT /v1/view/assess) with wire ids', async () => {
+    it('viewAssess posts to /assessment/v1/submit (NOT /view/v1/assess) with wire ids', async () => {
       mockClient.post.mockResolvedValue({ data: {} });
       await viewerService.viewAssess({
         userId: 'u1',
@@ -80,7 +80,7 @@ describe('ViewerService', () => {
         maxScore: 10,
       });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/assessment/submit', {
+      expect(mockClient.post).toHaveBeenCalledWith('/assessment/v1/submit', {
         request: expect.objectContaining({
           courseId: 'lp1',
           batchId: 'ctx1',
@@ -96,16 +96,16 @@ describe('ViewerService', () => {
       expect(body.request).not.toHaveProperty('contextId');
     });
 
-    it('viewEnd posts to /v1/view/end with wire ids', async () => {
+    it('viewEnd posts to /view/v1/end with wire ids', async () => {
       mockClient.post.mockResolvedValue({ data: {} });
       await viewerService.viewEnd({ userId: 'u1', contentId: 'c1', collectionId: 'lp1', contextId: 'ctx1' });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/view/end', {
+      expect(mockClient.post).toHaveBeenCalledWith('/view/v1/end', {
         request: { userId: 'u1', contentId: 'c1', courseId: 'lp1', batchId: 'ctx1' },
       });
     });
 
-    it('viewRead posts to /v1/view/read with wire ids and a contentId array', async () => {
+    it('viewRead posts to /view/v1/read with wire ids and a contentId array', async () => {
       mockClient.post.mockResolvedValue({ data: {} });
       await viewerService.viewRead({
         userId: 'u1',
@@ -114,12 +114,12 @@ describe('ViewerService', () => {
         contextId: 'ctx1',
       });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/view/read', {
+      expect(mockClient.post).toHaveBeenCalledWith('/view/v1/read', {
         request: { userId: 'u1', contentId: ['c1', 'c2'], courseId: 'lp1', batchId: 'ctx1' },
       });
     });
 
-    it('assessmentRead posts to /v1/assessment/read with wire ids', async () => {
+    it('assessmentRead posts to /assessment/v1/read with wire ids', async () => {
       mockClient.post.mockResolvedValue({ data: {} });
       await viewerService.assessmentRead({
         userId: 'u1',
@@ -128,26 +128,26 @@ describe('ViewerService', () => {
         contextId: 'ctx1',
       });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/assessment/read', {
+      expect(mockClient.post).toHaveBeenCalledWith('/assessment/v1/read', {
         request: { userId: 'u1', contentId: ['qs1'], courseId: 'lp1', batchId: 'ctx1' },
       });
     });
 
-    it('summaryRead posts to /v1/summary/read with wire ids', async () => {
+    it('summaryRead posts to /summary/v1/read with wire ids', async () => {
       mockClient.post.mockResolvedValue({ data: {} });
       await viewerService.summaryRead({ userId: 'u1', collectionId: 'lp1', contextId: 'ctx1' });
 
-      expect(mockClient.post).toHaveBeenCalledWith('/v1/summary/read', {
+      expect(mockClient.post).toHaveBeenCalledWith('/summary/v1/read', {
         request: { userId: 'u1', courseId: 'lp1', batchId: 'ctx1' },
       });
     });
   });
 
   describe('summaryList', () => {
-    it('GETs /v1/summary/list/:userId', async () => {
+    it('GETs /summary/v1/list/:userId', async () => {
       mockClient.get.mockResolvedValue({ data: {} });
       await viewerService.summaryList('u1');
-      expect(mockClient.get).toHaveBeenCalledWith('/v1/summary/list/u1');
+      expect(mockClient.get).toHaveBeenCalledWith('/summary/v1/list/u1');
     });
   });
 
@@ -155,33 +155,33 @@ describe('ViewerService', () => {
     it('DELETEs with no query when neither all nor ids are given', async () => {
       mockClient.delete.mockResolvedValue({ data: {} });
       await viewerService.summaryDelete({ userId: 'u1' });
-      expect(mockClient.delete).toHaveBeenCalledWith('/v1/summary/delete/u1');
+      expect(mockClient.delete).toHaveBeenCalledWith('/summary/v1/delete/u1');
     });
 
     it('DELETEs with ?all=true for every enrolment', async () => {
       mockClient.delete.mockResolvedValue({ data: {} });
       await viewerService.summaryDelete({ userId: 'u1', all: true });
-      expect(mockClient.delete).toHaveBeenCalledWith('/v1/summary/delete/u1?all=true');
+      expect(mockClient.delete).toHaveBeenCalledWith('/summary/v1/delete/u1?all=true');
     });
 
     it('DELETEs a specific enrolment using wire query params courseId/batchId', async () => {
       mockClient.delete.mockResolvedValue({ data: {} });
       await viewerService.summaryDelete({ userId: 'u1', collectionId: 'lp1', contextId: 'ctx1' });
-      expect(mockClient.delete).toHaveBeenCalledWith('/v1/summary/delete/u1?courseId=lp1&batchId=ctx1');
+      expect(mockClient.delete).toHaveBeenCalledWith('/summary/v1/delete/u1?courseId=lp1&batchId=ctx1');
     });
   });
 
   describe('summaryDownload', () => {
-    it('GETs /v1/summary/download/:userId without a query by default', async () => {
+    it('GETs /summary/v1/download/:userId without a query by default', async () => {
       mockClient.get.mockResolvedValue({ data: {} });
       await viewerService.summaryDownload('u1');
-      expect(mockClient.get).toHaveBeenCalledWith('/v1/summary/download/u1');
+      expect(mockClient.get).toHaveBeenCalledWith('/summary/v1/download/u1');
     });
 
     it('GETs with ?format=csv when a format is given', async () => {
       mockClient.get.mockResolvedValue({ data: {} });
       await viewerService.summaryDownload('u1', 'csv');
-      expect(mockClient.get).toHaveBeenCalledWith('/v1/summary/download/u1?format=csv');
+      expect(mockClient.get).toHaveBeenCalledWith('/summary/v1/download/u1?format=csv');
     });
   });
 });
