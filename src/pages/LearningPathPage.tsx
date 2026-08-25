@@ -4,7 +4,6 @@ import {
   IonHeader,
   IonModal,
   IonPage,
-  IonSpinner,
   IonToolbar,
   useIonRouter,
   useIonViewDidEnter,
@@ -15,6 +14,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useLearningPath } from '../hooks/useLearningPath';
 import { BackIcon } from '../components/icons/CollectionIcons';
 import PageLoader from '../components/common/PageLoader';
+import BatchSelectSheet from '../components/common/BatchSelectSheet';
 import LPProgressCard from '../components/learningPath/LPProgressCard';
 import LPLedger from '../components/learningPath/LPLedger';
 import LPCertificateCard from '../components/learningPath/LPCertificateCard';
@@ -217,74 +217,19 @@ const LearningPathPage: React.FC = () => {
                         <span className="lp-bottom-cta-text">{t('learningPath.joinThePath')}</span>
                       </div>
 
-                      <IonModal
+                      <BatchSelectSheet
                         isOpen={isBatchModalOpen}
-                        onDidDismiss={() => setIsBatchModalOpen(false)}
-                        initialBreakpoint={0.35}
-                        breakpoints={[0, 0.35]}
-                        className="lp-batch-modal"
-                      >
-                        <div className="lp-batch-modal-inner">
-                          <div className="lp-batch-modal-header">
-                            <h2>{t('collection.availableBatches')}</h2>
-                            <button type="button" className="lp-batch-modal-close" onClick={() => setIsBatchModalOpen(false)} aria-label={t('close')}>
-                              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                                <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="var(--ion-color-primary)" />
-                              </svg>
-                            </button>
-                          </div>
-                          <div className="lp-batch-modal-content">
-                            {lp.enrollment.batchListLoading ? (
-                              <div className="lp-batch-modal-spinner"><IonSpinner name="crescent" /></div>
-                            ) : lp.enrollment.batchListError ? (
-                              <p className="lp-batch-modal-error">{lp.enrollment.batchListError}</p>
-                            ) : lp.enrollment.enrollableBatches.length === 0 ? (
-                              <p className="lp-batch-modal-empty">{t('collection.noBatchesAvailable')}</p>
-                            ) : (
-                              <>
-                                <p className="lp-batch-modal-subtitle">{t('collection.selectBatchToStart')}</p>
-                                <div className="lp-batch-select-container">
-                                  <select
-                                    className="lp-batch-select"
-                                    value={selectedBatchId}
-                                    onChange={(e) => setSelectedBatchId(e.target.value)}
-                                  >
-                                    <option value="" disabled>{t('collection.selectBatch')}</option>
-                                    {lp.enrollment.enrollableBatches.map((batch) => (
-                                      <option key={batch.identifier} value={batch.identifier}>
-                                        {batch.name ?? batch.identifier}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              </>
-                            )}
-                            {lp.enrollment.enrol.error && (
-                              <p className="lp-batch-modal-error">{lp.enrollment.enrol.error.message}</p>
-                            )}
-                          </div>
-                          <div className="lp-batch-modal-cta-wrap">
-                            <div
-                              role="button"
-                              tabIndex={(!selectedBatchId || lp.enrollment.enrol.isPending) ? -1 : 0}
-                              aria-disabled={!selectedBatchId || lp.enrollment.enrol.isPending}
-                              className="lp-batch-modal-cta"
-                              onClick={() => { if (!selectedBatchId || lp.enrollment.enrol.isPending) { return; } void handleJoin(); }}
-                              onKeyDown={(e) => {
-                                if (!selectedBatchId || lp.enrollment.enrol.isPending) return;
-                                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void handleJoin(); }
-                              }}
-                              style={{ opacity: (!selectedBatchId || lp.enrollment.enrol.isPending) ? 0.5 : 1 }}
-                            >
-                              {lp.enrollment.enrol.isPending ? (
-                                <IonSpinner name="crescent" style={{ width: 18, height: 18, color: 'white' }} />
-                              ) : (
-                                <span className="lp-bottom-cta-text">{t('learningPath.joinTheBatch')}</span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </IonModal>
+                        onClose={() => { setIsBatchModalOpen(false); setSelectedBatchId(''); }}
+                        batches={lp.enrollment.enrollableBatches}
+                        loading={lp.enrollment.batchListLoading}
+                        error={lp.enrollment.batchListError}
+                        selectedBatchId={selectedBatchId}
+                        onSelect={setSelectedBatchId}
+                        onConfirm={handleJoin}
+                        confirming={lp.enrollment.enrol.isPending}
+                        confirmError={lp.enrollment.enrol.error?.message}
+                        ctaLabel={t('learningPath.joinTheBatch')}
+                      />
                     </div>
                   ) : (
                     <div className="lp-anonymous-cta">

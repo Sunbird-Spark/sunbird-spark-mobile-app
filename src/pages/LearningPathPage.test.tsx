@@ -187,6 +187,37 @@ describe('LearningPathPage', () => {
     fireEvent.click(screen.getByText('learningPath.joinThePath'));
     expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
     expect(screen.getByText('Batch 1')).toBeInTheDocument();
+    // The confirm CTA must be present — it was rendered off-screen before.
+    expect(screen.getByRole('button', { name: 'learningPath.joinTheBatch' })).toBeInTheDocument();
+  });
+
+  it('enrols into the batch the learner picks in the sheet', () => {
+    const mutateAsync = vi.fn().mockResolvedValue({});
+    mockUseLearningPath.mockReturnValue(
+      baseLp({
+        model: { name: 'Path A', description: '', levels: [{ identifier: 'l1', name: 'L1', index: 0, skills: [], courses: [] }], allSkills: [], courseTotal: 1 },
+        enrollment: {
+          ...baseLp().enrollment,
+          enrollableBatches: [
+            { identifier: 'b1', name: 'Batch 1' },
+            { identifier: 'b2', name: 'Batch 2' },
+          ],
+          enrol: { mutateAsync, isPending: false },
+        },
+      })
+    );
+    render(<LearningPathPage />);
+    fireEvent.click(screen.getByText('learningPath.joinThePath'));
+
+    expect(screen.getByRole('button', { name: 'learningPath.joinTheBatch' })).toBeDisabled();
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'b2' } });
+    fireEvent.click(screen.getByRole('button', { name: 'learningPath.joinTheBatch' }));
+
+    expect(mutateAsync).toHaveBeenCalledWith({
+      courseId: 'lp1',
+      userId: 'u1',
+      batchId: 'b2',
+    });
   });
 
   it('navigates back via the parent route stored in location.state, or goBack otherwise', () => {
