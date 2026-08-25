@@ -126,17 +126,17 @@ const LearningPathPlayerPage: React.FC = () => {
       <IonFooter className="lp-player-footer">
         <IonToolbar className="lp-player-footer-toolbar">
           <div className="lp-player-footer-inner">
-            <button
+            <button type="button"
               className="lp-player-nav-btn"
               disabled={!prevLeaf}
               onClick={() => prevLeaf && goToLeaf(prevLeaf)}
             >
               {t('learningPath.previous')}
             </button>
-            <button className="lp-player-crumb" onClick={() => setIsRailOpen(true)}>
+            <button type="button" className="lp-player-crumb" onClick={() => setIsRailOpen(true)}>
               {crumb}
             </button>
-            <button
+            <button type="button"
               className="lp-player-nav-btn"
               disabled={!nextLeaf}
               onClick={() => nextLeaf && goToLeaf(nextLeaf)}

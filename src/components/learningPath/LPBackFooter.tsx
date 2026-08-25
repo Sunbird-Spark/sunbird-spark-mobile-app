@@ -25,7 +25,7 @@ interface LPBackFooterProps {
 export const LPBackFooter: React.FC<LPBackFooterProps> = ({ onBack, t }) => (
   <IonFooter className="lp-back-footer">
     <IonToolbar className="lp-back-footer-toolbar">
-      <button onClick={onBack} className="lp-back-footer-btn" aria-label={t('back')}>
+      <button type="button" onClick={onBack} className="lp-back-footer-btn" aria-label={t('back')}>
         <BackIcon />
         <span>{t('back')}</span>
       </button>

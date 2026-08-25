@@ -62,6 +62,14 @@ function normaliseOutcomeDeclaration(node: any): Record<string, any> {
  * Resolve a node's max score using the SAME precedence as the player's own
  * normaliser (top-level `maxScore`, then `outcomeDeclaration.maxScore.defaultValue`,
  * then 1), so filling these in can never change the value it would have computed.
+ *
+ * The `> 0` tests are deliberate, and a considered change from the older
+ * `ensureMaxScore` (which only filled in a MISSING value and so preserved an
+ * explicit `0`): a declared max score of `0` makes the player's score-fraction
+ * a division by zero, so it is treated as unset rather than honoured. The tests
+ * below pin this down (`resolveMaxScore({ maxScore: 0 }) === 1`). If authored
+ * `0` ever needs to survive, the score-fraction consumers need a
+ * divide-by-zero guard first.
  */
 export function resolveMaxScore(node: any): number {
   const top = _.get(node, 'maxScore');
@@ -91,7 +99,7 @@ export function applyMaxScore(node: any): any {
   node.outcomeDeclaration.maxScore = {
     cardinality: 'single',
     type: 'integer',
-    ...(outcome.maxScore ?? {}),
+    ...outcome.maxScore,
     defaultValue: maxScore,
   };
   node.maxScore = maxScore;

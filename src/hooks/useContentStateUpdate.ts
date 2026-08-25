@@ -7,7 +7,7 @@ import {
 } from '../services/course/contentProgressCalculator';
 import type { ConsumptionSummary } from '../services/course/contentProgressCalculator';
 import { useAuth } from '../contexts/AuthContext';
-import { eventHasScore, extractSummary } from './contentStateTelemetryEvent';
+import { eventHasScore, extractSummary, isScormMimeType } from './contentStateTelemetryEvent';
 import type { TelemetryEvent } from './contentStateTelemetryEvent';
 
 interface UseContentStateUpdateParams {
@@ -184,9 +184,10 @@ export function useContentStateUpdate({
             (acc, s) => ({ ...acc, ...s }), {},
           );
           const endPageSeen = Boolean(mergedSummary.endpageseen || mergedSummary.visitedcontentend);
+          const isScorm = isScormMimeType(mimeType);
           const hasScore =
-            eventHasScore(event, false) ||
-            assessEventsRef.current.some((e) => eventHasScore(e as TelemetryEvent, false));
+            eventHasScore(event, isScorm) ||
+            assessEventsRef.current.some((e) => eventHasScore(e as TelemetryEvent, isScorm));
 
           if (
             hasScore &&

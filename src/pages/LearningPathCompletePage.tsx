@@ -47,7 +47,7 @@ const LearningPathCompletePage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="lp-page-header">
           <div className="lp-page-header-inner">
-            <button onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
+            <button type="button" onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
               <BackIcon />
             </button>
           </div>
@@ -100,7 +100,7 @@ const LearningPathCompletePage: React.FC = () => {
         <div className="lp-cert-preview-content">
           <div className="lp-cert-preview-header">
             <h2>{t('download.previewCertificate')}</h2>
-            <button className="lp-cert-preview-close" onClick={() => setIsCertPreviewOpen(false)} aria-label={t('close')}>
+            <button type="button" className="lp-cert-preview-close" onClick={() => setIsCertPreviewOpen(false)} aria-label={t('close')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="var(--ion-color-dark, #333)" />
               </svg>

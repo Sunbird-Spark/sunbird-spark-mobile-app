@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { collectionHierarchyQueryOptions } from './useCollection';
 import { useUserEnrollmentList } from './useUserEnrollment';
 import { useViewerSummary } from './useViewerSummary';
-import { getPathSummary, indexSummaryByCollectionId, parseCourseContextId } from '../services/viewer/summaryMapper';
+import { buildCourseSummaryMapForContext, getPathSummary, parseCourseContextId } from '../services/viewer/summaryMapper';
 import { parseLearningPath } from '../services/learningPath/learningPathMapper';
 import { aggregateSkills, buildPathSkillSummary } from '../services/learningPath/skillAggregation';
 import { isLearningPathCategory } from '../utils/isLearningPath';
@@ -81,8 +81,6 @@ export function useMySkills(options?: { enabled?: boolean }): UseMySkillsResult 
     queries: paths.map((path) => ({ ...collectionHierarchyQueryOptions(path.pathId), enabled })),
   });
 
-  const summaryByCollectionId = useMemo(() => indexSummaryByCollectionId(summaryRecords), [summaryRecords]);
-
   const entries = useMemo<MySkillsEntry[]>(
     () =>
       paths.map((path, i) => {
@@ -96,10 +94,16 @@ export function useMySkills(options?: { enabled?: boolean }): UseMySkillsResult 
 
         const model = parseLearningPath(hierarchyRoot);
         const pathSummary = getPathSummary(summaryRecords, path.pathId, path.contextId);
+        // Scoped per path, NOT a single shared `indexSummaryByCollectionId` map:
+        // that one is unscoped ("later records win on duplicate keys"), so when
+        // two enrolled paths share a course, one path's progress leaked into the
+        // other's skill summary. Matches what `useLearningPath` does for the
+        // equivalent single-path computation.
+        const summaryByCollectionId = buildCourseSummaryMapForContext(summaryRecords, path.contextId);
         const summary = buildPathSkillSummary(model, pathSummary, summaryByCollectionId, path.contextId);
         return { path, summary, isLoading: false, isError: false };
       }),
-    [paths, hierarchyQueries, summaryRecords, summaryByCollectionId, summaryLoading]
+    [paths, hierarchyQueries, summaryRecords, summaryLoading]
   );
 
   const summaries = useMemo(

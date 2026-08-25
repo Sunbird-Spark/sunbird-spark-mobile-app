@@ -6,7 +6,7 @@ import { calculateContentProgress, progressToStatus } from '../services/course/c
 import type { ConsumptionSummary } from '../services/course/contentProgressCalculator';
 import { useInvalidateViewerSummary, useOptimisticViewerSummaryPatch, useMergeViewerSummaryRecord } from './useViewerSummary';
 import { useRecordAssessmentScore } from './useAssessmentScores';
-import { eventHasScore, extractSummary, sumAssessEventTotals } from './contentStateTelemetryEvent';
+import { eventHasScore, extractSummary, isScormMimeType, sumAssessEventTotals } from './contentStateTelemetryEvent';
 import type { TelemetryEvent } from './contentStateTelemetryEvent';
 
 const ContentStatus = {
@@ -122,12 +122,10 @@ export function useContentView({
     const score = summaryScoreRef.current ?? totals.score;
     const maxScore = totals.maxScore;
     // One id per attempt, generated lazily so a play that never submits doesn't burn one.
-    if (attemptIdRef.current == null) {
-      attemptIdRef.current =
-        typeof crypto !== 'undefined' && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${collectionId}-${contextId}-${contentId}-${userId}-${Date.now()}`;
-    }
+    attemptIdRef.current ??=
+      typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${collectionId}-${contextId}-${contentId}-${userId}-${Date.now()}`;
     // START may have been missed (e.g. resumed player); the attempt still needs a timestamp.
     const assessmentTs = assessmentTsRef.current ?? Date.now();
 
@@ -222,9 +220,10 @@ export function useContentView({
         // a self-assessment).
         let selfAssessCompletedViaScore = false;
         if (isSelfAssess) {
+          const isScorm = isScormMimeType(mimeType);
           const hasScore =
-            eventHasScore(event, false) ||
-            assessEventsRef.current.some((e) => eventHasScore(e as TelemetryEvent, false));
+            eventHasScore(event, isScorm) ||
+            assessEventsRef.current.some((e) => eventHasScore(e as TelemetryEvent, isScorm));
           if (hasScore) {
             selfAssessCompletedViaScore = true;
             void sendAssess();

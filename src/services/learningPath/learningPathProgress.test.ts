@@ -230,6 +230,23 @@ describe('isCertificateUnlocked', () => {
     expect(isCertificateUnlocked(true, notAllLevelsDone, { pct: 100, completed: 1, total: 1 })).toBe(false);
   });
 
+  // An assessment-only path (root unwraps entirely into prior + outcome) has no
+  // content Levels, and `isOutcomeUnlocked([])` is false — which used to lock
+  // the certificate forever. Mirrors useLearningPath's own special case.
+  describe('assessment-only path (no content Levels)', () => {
+    it('unlocks once the outcome assessment is done', () => {
+      expect(isCertificateUnlocked(true, [], { pct: 100, completed: 1, total: 1 })).toBe(true);
+    });
+
+    it('stays locked while the outcome assessment is incomplete', () => {
+      expect(isCertificateUnlocked(true, [], { pct: 40, completed: 0, total: 1 })).toBe(false);
+    });
+
+    it('stays locked when there is no outcome assessment either (degenerate path)', () => {
+      expect(isCertificateUnlocked(false, [], null)).toBe(false);
+    });
+  });
+
   it('unlocks on levels alone when there is no outcome assessment', () => {
     expect(isCertificateUnlocked(false, allLevelsDone, null)).toBe(true);
   });

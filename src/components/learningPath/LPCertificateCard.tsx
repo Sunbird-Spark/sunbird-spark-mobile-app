@@ -36,12 +36,12 @@ export const LPCertificateCard: React.FC<LPCertificateCardProps> = ({ unlocked, 
       {unlocked && (
         <div className="lp-cert-card-actions">
           {certPreviewUrl && (
-            <button className="lp-cert-card-view-btn" onClick={onView}>
+            <button type="button" className="lp-cert-card-view-btn" onClick={onView}>
               {t('learningPath.viewCertificate')}
             </button>
           )}
           {onViewSummary && (
-            <button className="lp-cert-card-summary-btn" onClick={onViewSummary}>
+            <button type="button" className="lp-cert-card-summary-btn" onClick={onViewSummary}>
               {t('learningPath.viewCompletionSummary')}
             </button>
           )}

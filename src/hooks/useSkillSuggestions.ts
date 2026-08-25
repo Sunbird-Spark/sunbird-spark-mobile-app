@@ -109,14 +109,16 @@ export function useSkillSuggestions(
   }, [candidates, hierarchyQueries, gainedSkills]);
 
   const suggestions = useMemo(() => {
+    // `combined` is already a fresh array, so sorting it in place is safe — but
+    // keep the sort as its own statement rather than chaining off the spread,
+    // so it never reads as sorting someone else's array.
     const combined = [...enrolledSuggestions, ...discoverSuggestions];
-    return combined
-      .sort((a, b) => {
-        if (b.newSkills.length !== a.newSkills.length) return b.newSkills.length - a.newSkills.length;
-        if (a.source !== b.source) return a.source === 'enrolled' ? -1 : 1;
-        return a.pathName.localeCompare(b.pathName);
-      })
-      .slice(0, SUGGESTION_LIMIT);
+    combined.sort((a, b) => {
+      if (b.newSkills.length !== a.newSkills.length) return b.newSkills.length - a.newSkills.length;
+      if (a.source !== b.source) return a.source === 'enrolled' ? -1 : 1;
+      return a.pathName.localeCompare(b.pathName);
+    });
+    return combined.slice(0, SUGGESTION_LIMIT);
   }, [enrolledSuggestions, discoverSuggestions]);
 
   const isDiscoverHierarchyLoading = candidates.length > 0 && hierarchyQueries.some((q) => q.isLoading);

@@ -199,7 +199,7 @@ const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolle
       <div className="content-carousel-header">
         <h2 className="content-carousel-title">
           {t('recommendedContent')}
-          <button
+          <button type="button"
             className="content-carousel-arrow-inline"
             onClick={() => router.push('/explore', 'forward', 'push')}
             aria-label={t('viewAll')}
@@ -345,7 +345,7 @@ const MyLearningPage: React.FC = () => {
           <main id="main-content">
           <div className="my-learning__sign-in">
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
-            <button
+            <button type="button"
               className="my-learning__sign-in-button"
               onClick={() => { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); }}
             >
@@ -382,7 +382,7 @@ const MyLearningPage: React.FC = () => {
         {enrolledLearningPaths.length > 0 && (
           <div className="my-learning__tab-bar" role="tablist" aria-label={t('learningPaths')}>
             {(['courses', 'learningPaths'] as ContentType[]).map((type) => (
-              <button
+              <button type="button"
                 key={type}
                 onClick={() => { setContentType(type); setActiveTab('activeCourses'); }}
                 className={`my-learning__tab ${contentType === type ? 'my-learning__tab--active' : ''}`}
@@ -398,7 +398,7 @@ const MyLearningPage: React.FC = () => {
         {/* Tab bar */}
         <div className="my-learning__tab-bar" role="tablist" aria-label={t(isLearningPathType ? 'learningPaths' : 'courses')}>
           {tabs.map(tab => (
-            <button
+            <button type="button"
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`my-learning__tab ${activeTab === tab ? 'my-learning__tab--active' : ''}`}
@@ -439,7 +439,7 @@ const MyLearningPage: React.FC = () => {
             {/* View more link */}
             {activeTab === 'activeCourses' && !_.isEmpty(tabCourses) && (
               <div className="my-learning__view-more">
-                <button
+                <button type="button"
                   className="my-learning__view-more-link"
                   onClick={() => router.push('/explore', 'forward', 'push')}
                 >

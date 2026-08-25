@@ -71,7 +71,7 @@ const LearningPathAssessmentPage: React.FC<LearningPathAssessmentPageProps> = ({
       <IonHeader className="ion-no-border">
         <IonToolbar className="lp-page-header">
           <div className="lp-page-header-inner">
-            <button onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
+            <button type="button" onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
               <BackIcon />
             </button>
           </div>
@@ -132,11 +132,11 @@ const LearningPathAssessmentPage: React.FC<LearningPathAssessmentPageProps> = ({
               ) : (
                 <div className="lp-bottom-cta-wrap">
                   {canSkip && (
-                    <button className="lp-assessment-skip-link" onClick={handleSkipToLevel1}>
+                    <button type="button" className="lp-assessment-skip-link" onClick={handleSkipToLevel1}>
                       {t('learningPath.skipToLevel1')}
                     </button>
                   )}
-                  <button className="lp-bottom-cta" onClick={handleStart}>
+                  <button type="button" className="lp-bottom-cta" onClick={handleStart}>
                     <span className="lp-bottom-cta-text">{t('learningPath.startAssessment')}</span>
                   </button>
                 </div>

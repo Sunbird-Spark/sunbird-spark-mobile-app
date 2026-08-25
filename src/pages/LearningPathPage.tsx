@@ -1,6 +1,14 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { IonContent, IonHeader, IonModal, IonPage, IonSpinner, IonToolbar } from '@ionic/react';
-import { useIonRouter, useIonViewDidEnter } from '@ionic/react';
+import React, { useEffect, useState } from 'react';
+import {
+  IonContent,
+  IonHeader,
+  IonModal,
+  IonPage,
+  IonSpinner,
+  IonToolbar,
+  useIonRouter,
+  useIonViewDidEnter,
+} from '@ionic/react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -102,7 +110,7 @@ const LearningPathPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="lp-page-header">
           <div className="lp-page-header-inner">
-            <button onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
+            <button type="button" onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
               <BackIcon />
             </button>
           </div>
@@ -219,7 +227,7 @@ const LearningPathPage: React.FC = () => {
                         <div className="lp-batch-modal-inner">
                           <div className="lp-batch-modal-header">
                             <h2>{t('collection.availableBatches')}</h2>
-                            <button className="lp-batch-modal-close" onClick={() => setIsBatchModalOpen(false)} aria-label={t('close')}>
+                            <button type="button" className="lp-batch-modal-close" onClick={() => setIsBatchModalOpen(false)} aria-label={t('close')}>
                               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                                 <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="var(--ion-color-primary)" />
                               </svg>
@@ -261,7 +269,7 @@ const LearningPathPage: React.FC = () => {
                               tabIndex={(!selectedBatchId || lp.enrollment.enrol.isPending) ? -1 : 0}
                               aria-disabled={!selectedBatchId || lp.enrollment.enrol.isPending}
                               className="lp-batch-modal-cta"
-                              onClick={() => { if (!selectedBatchId || lp.enrollment.enrol.isPending) return; void handleJoin(); }}
+                              onClick={() => { if (!selectedBatchId || lp.enrollment.enrol.isPending) { return; } void handleJoin(); }}
                               onKeyDown={(e) => {
                                 if (!selectedBatchId || lp.enrollment.enrol.isPending) return;
                                 if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); void handleJoin(); }
@@ -281,7 +289,7 @@ const LearningPathPage: React.FC = () => {
                   ) : (
                     <div className="lp-anonymous-cta">
                       <p>{t('collection.unlockYourLearning')}</p>
-                      <button className="lp-bottom-cta" onClick={() => router.push('/sign-in', 'forward', 'push')}>
+                      <button type="button" className="lp-bottom-cta" onClick={() => router.push('/sign-in', 'forward', 'push')}>
                         <span className="lp-bottom-cta-text">{t('collection.loginToBeginJourney')}</span>
                       </button>
                     </div>
@@ -297,7 +305,7 @@ const LearningPathPage: React.FC = () => {
         <div className="lp-cert-preview-content">
           <div className="lp-cert-preview-header">
             <h2>{t('download.previewCertificate')}</h2>
-            <button className="lp-cert-preview-close" onClick={() => setIsCertPreviewOpen(false)} aria-label={t('close')}>
+            <button type="button" className="lp-cert-preview-close" onClick={() => setIsCertPreviewOpen(false)} aria-label={t('close')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M19 6.41L17.59 5L12 10.59L6.41 5L5 6.41L10.59 12L5 17.59L6.41 19L12 13.41L17.59 19L19 17.59L13.41 12L19 6.41Z" fill="var(--ion-color-dark, #333)" />
               </svg>

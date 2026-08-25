@@ -12,7 +12,7 @@ import type {
   WaiverInfo,
 } from '../../types/learningPathTypes';
 import { getCourseContextId, getOptionalNodeIds } from '../viewer/summaryMapper';
-import { getAssessmentInfo } from './learningPathAssessment';
+import { buildAssessmentInfoMap, resolveAssessmentInfo } from './learningPathAssessment';
 import { SKILL_GAINING_STATUSES } from './skillAttainment';
 
 const COMPLETE_STATUS = 2;
@@ -48,7 +48,7 @@ export function getCourseContentStatus(
 ): Record<string, number> | undefined {
   const courseRecord = summaryByCollectionId.get(course.identifier);
   if (!pathSummary?.contentStatus && !courseRecord?.contentStatus) return undefined;
-  return { ...(pathSummary?.contentStatus ?? {}), ...(courseRecord?.contentStatus ?? {}) };
+  return { ...pathSummary?.contentStatus, ...courseRecord?.contentStatus };
 }
 
 /** True when a leaf is recorded complete on either the course's or the path's summary record. */
@@ -64,7 +64,13 @@ export function isLeafOptional(optional: Set<string>, leafId: string): boolean {
 export function computeCourseProgress(
   course: LPCourseNode,
   summaryByCollectionId: Map<string, ViewerSummaryRecord>,
-  pathSummary?: ViewerSummaryRecord
+  pathSummary?: ViewerSummaryRecord,
+  /**
+   * Pre-built optional-node set, so a caller looping over N courses can build it
+   * once instead of N times (see `computeLevelProgress`). Optional — omit it and
+   * this derives its own, keeping every existing call site working unchanged.
+   */
+  optionalNodesOverride?: Set<string>
 ): ProgressInfo & { status: 'completed' | 'active' | 'notStarted'; optional: boolean } {
   const total = course.leafIds.length || course.leafNodesCount || 0;
   const courseRecord = summaryByCollectionId.get(course.identifier);
@@ -92,7 +98,7 @@ export function computeCourseProgress(
   // The `leafIds.length > 0` guard matters: `total` falls back to
   // `leafNodesCount`, so a course with a non-zero `total` but an empty
   // `leafIds` would otherwise be marked optional by a vacuously-true `every`.
-  const optionalNodes = getOptionalNodeIds(pathSummary, summaryByCollectionId);
+  const optionalNodes = optionalNodesOverride ?? getOptionalNodeIds(pathSummary, summaryByCollectionId);
   const optional =
     optionalNodes.has(course.identifier) ||
     (course.leafIds.length > 0 && course.leafIds.every((id) => optionalNodes.has(id)));
@@ -117,7 +123,12 @@ export function computeLevelProgress(
   summaryByCollectionId: Map<string, ViewerSummaryRecord>,
   pathSummary?: ViewerSummaryRecord
 ): LevelProgressInfo {
-  const courseProgresses = level.courses.map((c) => computeCourseProgress(c, summaryByCollectionId, pathSummary));
+  // Built once per level rather than once per course — `getOptionalNodeIds`
+  // walks the whole summary map on every call.
+  const optionalNodes = getOptionalNodeIds(pathSummary, summaryByCollectionId);
+  const courseProgresses = level.courses.map((c) =>
+    computeCourseProgress(c, summaryByCollectionId, pathSummary, optionalNodes)
+  );
   const requiredProgresses = courseProgresses.filter((p) => !p.optional);
   const total = requiredProgresses.length;
   const doneCourses = requiredProgresses.filter((p) => p.status === 'completed').length;
@@ -243,14 +254,21 @@ export function isCertificateUnlocked(
   outcomeProgress: ProgressInfo | null,
   levelStatuses?: LevelStatusKey[]
 ): boolean {
-  if (!isOutcomeUnlocked(progressList, levelStatuses)) return false;
+  // A path whose root unwraps entirely into prior + outcome assessments has no
+  // content Levels at all, and `isOutcomeUnlocked([])` is false — which would
+  // lock the certificate forever. `useLearningPath` already special-cases this
+  // shape for `outcomeState.unlocked`; mirror it here so the two agree.
+  // See bug: certificate never unlocks on an assessment-only Learning Path.
+  const outcomeUnlocked =
+    progressList.length === 0 ? hasOutcomeAssessment : isOutcomeUnlocked(progressList, levelStatuses);
+  if (!outcomeUnlocked) return false;
   if (!hasOutcomeAssessment) return true;
   return (outcomeProgress?.pct ?? 0) >= 100;
 }
 
 /**
  * Best score for an assessment course/content id, from the path record's
- * `assessmentStatus`. Kept as a thin wrapper over `getAssessmentInfo` so
+ * `assessmentStatus`. Kept as a thin wrapper over `resolveAssessmentInfo` so
  * existing callers that only need the score are unaffected by the id-convention
  * resolution and attempt count that helper adds.
  */
@@ -259,7 +277,7 @@ export function getAssessmentScore(
   pathSummary: ViewerSummaryRecord | undefined,
   leafIds?: string[]
 ): AssessmentScore | null {
-  return getAssessmentInfo(identifier, leafIds, pathSummary);
+  return resolveAssessmentInfo(identifier, leafIds, buildAssessmentInfoMap(pathSummary));
 }
 
 function findOwningCourse(model: LearningPathModel, contentId: string): LPCourseNode | undefined {

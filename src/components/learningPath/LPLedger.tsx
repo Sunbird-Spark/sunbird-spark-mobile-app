@@ -1,8 +1,7 @@
 import React from 'react';
 import { IonAccordion, IonAccordionGroup, IonItem, IonLabel } from '@ionic/react';
 import type { LPTFunction } from './lpTFunction';
-import type { LearningPathModel, LevelProgressInfo, LevelStatusKey } from '../../types/learningPathTypes';
-import type { ProgressInfo } from '../../types/learningPathTypes';
+import type { LearningPathModel, LevelProgressInfo, LevelStatusKey, ProgressInfo } from '../../types/learningPathTypes';
 import type { ViewerSummaryRecord } from '../../types/viewerServiceTypes';
 import { computeCourseProgress } from '../../services/learningPath/learningPathProgress';
 import LPStatusBadge from './LPStatusBadge';

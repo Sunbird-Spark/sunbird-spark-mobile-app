@@ -126,7 +126,7 @@ export function useOptimisticViewerSummaryPatch(): (
           ...(assessmentScore
             ? {
                 assessmentStatus: {
-                  ...(record.assessmentStatus ?? {}),
+                  ...record.assessmentStatus,
                   [contentId]: mergeAssessment(record.assessmentStatus?.[contentId], assessmentScore),
                 },
               }

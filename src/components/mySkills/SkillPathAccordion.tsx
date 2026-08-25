@@ -44,7 +44,7 @@ export const SkillPathAccordion: React.FC<SkillPathAccordionProps> = ({ summarie
                 </span>
               ))}
             </div>
-            <button className="ms-path-accordion-view-btn" onClick={() => onOpenPath(summary)}>
+            <button type="button" className="ms-path-accordion-view-btn" onClick={() => onOpenPath(summary)}>
               {t('mySkills.viewPath')}
             </button>
           </div>

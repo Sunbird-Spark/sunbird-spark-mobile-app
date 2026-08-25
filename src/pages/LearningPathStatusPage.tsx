@@ -44,7 +44,7 @@ const LearningPathStatusPage: React.FC = () => {
       <IonHeader className="ion-no-border">
         <IonToolbar className="lp-page-header">
           <div className="lp-page-header-inner">
-            <button onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
+            <button type="button" onClick={handleBack} className="lp-page-icon-btn" aria-label={t('back')}>
               <BackIcon />
             </button>
           </div>

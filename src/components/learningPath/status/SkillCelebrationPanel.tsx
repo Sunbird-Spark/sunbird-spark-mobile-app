@@ -31,7 +31,7 @@ export const SkillCelebrationPanel: React.FC<SkillCelebrationPanelProps> = ({
           const gained = gainedSkills.has(skill);
           const isSelected = selectedSkill === skill;
           return (
-            <button
+            <button type="button"
               key={skill}
               className={`lp-skill-chip lp-skill-chip--tappable${gained ? ' lp-skill-chip--gained' : ''}${isSelected ? ' lp-skill-chip--selected' : ''}`}
               onClick={() => onSelectSkill(isSelected ? null : skill)}

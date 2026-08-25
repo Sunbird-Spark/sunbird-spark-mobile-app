@@ -19,10 +19,21 @@ export type TelemetryEvent = {
   };
 };
 
+export const SCORM_MIME_TYPE = 'application/vnd.ekstep.scorm-archive';
+
+/**
+ * True for SCORM content, which reports scores as strings — the flag
+ * `eventHasScore`/`normalizeScormAssessEvent` need. Call sites previously
+ * hardcoded `false`, so the string-score path was never reachable.
+ */
+export function isScormMimeType(mimeType: string | undefined): boolean {
+  return (mimeType ?? '').toLowerCase() === SCORM_MIME_TYPE;
+}
+
 /** True when a value is a real numeric score, coercing SCORM's string-typed API values (e.g. "95"). */
 function isNumericScore(value: unknown): boolean {
   if (typeof value === 'number') return !Number.isNaN(value);
-  if (typeof value === 'string' && value.trim() !== '') return !Number.isNaN(parseFloat(value));
+  if (typeof value === 'string' && value.trim() !== '') return !Number.isNaN(Number.parseFloat(value));
   return false;
 }
 
@@ -60,7 +71,7 @@ export function extractSummary(event: TelemetryEvent): ConsumptionSummary[] {
 function toNumber(value: unknown): unknown {
   if (typeof value === 'number') return value;
   if (typeof value === 'string' && value.trim() !== '') {
-    const parsed = parseFloat(value);
+    const parsed = Number.parseFloat(value);
     if (!Number.isNaN(parsed)) return parsed;
   }
   return value;

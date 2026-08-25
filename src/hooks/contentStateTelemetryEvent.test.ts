@@ -2,9 +2,31 @@ import { describe, expect, it } from 'vitest';
 import {
   eventHasScore,
   extractSummary,
+  isScormMimeType,
   normalizeScormAssessEvent,
   sumAssessEventTotals,
 } from './contentStateTelemetryEvent';
+
+describe('isScormMimeType', () => {
+  it('identifies SCORM content, case-insensitively', () => {
+    expect(isScormMimeType('application/vnd.ekstep.scorm-archive')).toBe(true);
+    expect(isScormMimeType('APPLICATION/VND.EKSTEP.SCORM-ARCHIVE')).toBe(true);
+  });
+
+  it('is false for other mime types and for undefined', () => {
+    expect(isScormMimeType('application/vnd.ekstep.html-archive')).toBe(false);
+    expect(isScormMimeType('application/vnd.sunbird.questionset')).toBe(false);
+    expect(isScormMimeType(undefined)).toBe(false);
+  });
+
+  it('feeds eventHasScore the flag that makes a SCORM string score count', () => {
+    const event = { eid: 'ASSESS', edata: { score: '95' } };
+    // The bug this guards: both call sites passed `false` unconditionally, so a
+    // SCORM string-typed score was never recognised as a score at all.
+    expect(eventHasScore(event, isScormMimeType('application/vnd.ekstep.scorm-archive'))).toBe(true);
+    expect(eventHasScore(event, isScormMimeType('application/vnd.ekstep.html-archive'))).toBe(false);
+  });
+});
 
 describe('eventHasScore', () => {
   it('is true for a numeric edata.score (non-SCORM)', () => {

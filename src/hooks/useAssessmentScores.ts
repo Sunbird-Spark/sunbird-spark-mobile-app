@@ -84,7 +84,7 @@ export function useRecordAssessmentScore(): (
       const merged = recordAssessmentScore(userId, collectionId, contentId, next);
       queryClient.setQueryData<Record<string, StoredAssessmentScore>>(
         ['assessmentScores', userId, collectionId],
-        (old) => ({ ...(old ?? {}), [contentId]: merged })
+        (old) => ({ ...old, [contentId]: merged })
       );
       void queryClient.invalidateQueries({ queryKey: ['assessmentRead', userId, collectionId, contextId] });
     },

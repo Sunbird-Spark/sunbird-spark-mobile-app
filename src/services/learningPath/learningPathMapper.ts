@@ -8,7 +8,7 @@ import type {
 } from '../../types/learningPathTypes';
 import { getLeafContentIds as getLeafContentIdsFromHierarchy } from '../course/enrollmentMapper';
 
-const QUESTIONSET_MIME_TYPES = ['application/vnd.sunbird.questionset', 'application/vnd.sunbird.question'];
+const QUESTIONSET_MIME_TYPES = new Set(['application/vnd.sunbird.questionset', 'application/vnd.sunbird.question']);
 
 /**
  * Maps every observed spelling of the root `policy` field to its canonical
@@ -33,7 +33,7 @@ const POLICY_ALIASES: Record<string, LearningPathPolicy> = {
  */
 function isQuestionSetNode(node: HierarchyContentNode): boolean {
   if (node.objectType === 'QuestionSet') return true;
-  return QUESTIONSET_MIME_TYPES.includes((node.mimeType ?? '').toLowerCase());
+  return QUESTIONSET_MIME_TYPES.has((node.mimeType ?? '').toLowerCase());
 }
 
 /** A Course qualifies as an assessment course iff every one of its leaves is a QuML question set. */
@@ -147,14 +147,14 @@ export function parseLearningPath(root: HierarchyContentNode | null | undefined)
 
   let priorAssessment: LPCourseNode | undefined;
   const first = levels[0];
-  if (first && first.courses.length === 1 && first.courses[0]?.isAssessmentCourse) {
+  if (first?.courses.length === 1 && first.courses[0]?.isAssessmentCourse) {
     priorAssessment = first.courses[0];
     levels = levels.slice(1);
   }
 
   let outcomeAssessment: LPCourseNode | undefined;
   const last = levels[levels.length - 1];
-  if (levels.length > 0 && last && last.courses.length === 1 && last.courses[0]?.isAssessmentCourse) {
+  if (levels.length > 0 && last?.courses.length === 1 && last.courses[0]?.isAssessmentCourse) {
     outcomeAssessment = last.courses[0];
     levels = levels.slice(0, -1);
   }

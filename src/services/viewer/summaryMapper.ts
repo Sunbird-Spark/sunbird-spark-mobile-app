@@ -155,7 +155,7 @@ export function getCourseContextId(
 export function parseCourseContextId(
   contextId: string | undefined | null
 ): { lpContextId: string; courseId: string } | null {
-  if (!contextId || !contextId.includes(':')) return null;
+  if (!contextId?.includes(':')) return null;
   const idx = contextId.indexOf(':');
   const lpContextId = contextId.slice(0, idx);
   const courseId = contextId.slice(idx + 1);
