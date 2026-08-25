@@ -46,6 +46,13 @@ vi.mock('react-i18next', () => ({
         recommendedContent: 'Recommended Content',
         viewAll: 'View All',
         viewMoreCourses: 'View More Courses',
+        activeLearningPaths: 'Active Learning Paths',
+        noActiveLearningPaths: 'No active learning paths',
+        noCompletedLearningPaths: 'No completed learning paths yet.',
+        noUpcomingLearningPaths: 'No upcoming learning paths yet.',
+        viewMoreLearningPaths: 'View More Learning Paths',
+        skillsGained: 'Skills gained',
+        learningPathsCompleted: 'Learning Paths completed',
         completedPercent: `Completed: ${opts?.percent ?? 0}%`,
         error: 'Error',
       };
@@ -91,6 +98,19 @@ vi.mock('../hooks/useUserEnrollment', () => ({
 vi.mock('../hooks/useContentSearch', () => ({
   useContentSearch: () => ({ data: undefined, isLoading: false }),
 }));
+
+let mockMySkills: any = {
+  entries: [],
+  summaries: [],
+  aggregate: { totalSkills: 0, gainedSkills: 0, pendingSkills: 0, pathsCompleted: 0, pathsOngoing: 0 },
+  analyzedCount: 0,
+  totalCount: 0,
+  isLoading: false,
+  isError: false,
+  refetch: vi.fn(),
+};
+const mockUseMySkills = vi.fn(() => mockMySkills);
+vi.mock('../hooks/useMySkills', () => ({ useMySkills: (o?: any) => mockUseMySkills(o) }));
 
 const mockAuthContext = {
   isAuthenticated: false,
@@ -401,6 +421,89 @@ describe('MyLearningPage', () => {
       expect(screen.getByText('Test Path')).toBeInTheDocument();
       fireEvent.click(screen.getByText('Test Path'));
       expect(mockPush).toHaveBeenCalledWith('/learning-path/lp-1');
+    });
+
+    it('swaps the Learning Progress metrics to skills / paths completed on the Learning Paths tab', () => {
+      mockMySkills = {
+        ...mockMySkills,
+        aggregate: { totalSkills: 3, gainedSkills: 3, pendingSkills: 0, pathsCompleted: 5, pathsOngoing: 0 },
+        totalCount: 5,
+      };
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ leafNodesCount: 30, completionPercentage: 50, content: { primaryCategory: 'Course' } }),
+              makeCourse({ courseId: 'lp-1', collectionId: 'lp-1', courseName: 'Test Path', content: { primaryCategory: 'Learning Path' } }),
+            ],
+          },
+        },
+        isLoading: false, error: null, refetch: vi.fn(),
+      };
+      renderPage();
+
+      // Courses tab: course-shaped metrics, and the skills fan-out stays off.
+      expect(screen.getByText('Lessons visited')).toBeInTheDocument();
+      expect(mockUseMySkills).toHaveBeenCalledWith({ enabled: false });
+
+      fireEvent.click(screen.getByText('learningPaths'));
+
+      expect(screen.getByText('Skills gained')).toBeInTheDocument();
+      expect(screen.getByText('3/3')).toBeInTheDocument();
+      expect(screen.getByText('Learning Paths completed')).toBeInTheDocument();
+      expect(screen.getByText('5/5')).toBeInTheDocument();
+      expect(screen.queryByText('Lessons visited')).not.toBeInTheDocument();
+      expect(screen.queryByText('Courses completed')).not.toBeInTheDocument();
+      expect(mockUseMySkills).toHaveBeenCalledWith({ enabled: true });
+    });
+
+    it('uses Learning Path wording for the empty-state placeholders', () => {
+      // A future batch start date puts the only LP on the Upcoming tab, leaving
+      // Active and Completed empty. Note `applyLearningPathProgress` recomputes
+      // completionPercentage from the viewer summaries, so seeding a "100%" LP
+      // here would NOT land it on the Completed tab.
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({
+                courseId: 'lp-1', collectionId: 'lp-1', courseName: 'Test Path',
+                completionPercentage: 0,
+                batch: { startDate: '2099-01-01' },
+                content: { primaryCategory: 'Learning Path' },
+              }),
+            ],
+          },
+        },
+        isLoading: false, error: null, refetch: vi.fn(),
+      };
+      renderPage();
+      fireEvent.click(screen.getByText('learningPaths'));
+
+      expect(screen.getByText('Active Learning Paths')).toBeInTheDocument();
+      expect(screen.getByText('No active learning paths')).toBeInTheDocument();
+      expect(screen.queryByText('No active courses')).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByText('Completed'));
+      expect(screen.getByText('No completed learning paths yet.')).toBeInTheDocument();
+    });
+
+    it('uses Learning Path wording for the view-more link', () => {
+      mockEnrollmentData = {
+        data: {
+          data: {
+            courses: [
+              makeCourse({ courseId: 'lp-1', collectionId: 'lp-1', courseName: 'Test Path', content: { primaryCategory: 'Learning Path' } }),
+            ],
+          },
+        },
+        isLoading: false, error: null, refetch: vi.fn(),
+      };
+      renderPage();
+      fireEvent.click(screen.getByText('learningPaths'));
+
+      expect(screen.getByText('View More Learning Paths')).toBeInTheDocument();
+      expect(screen.queryByText('View More Courses')).not.toBeInTheDocument();
     });
 
     it('filters phantom Learning Path fan-out rows out of both lists', () => {

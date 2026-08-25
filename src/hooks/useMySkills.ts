@@ -54,9 +54,14 @@ export interface UseMySkillsResult {
  * already opened elsewhere costs nothing, and results stream in individually —
  * the page renders each card as its query lands rather than blocking on all N.
  */
-export function useMySkills(): UseMySkillsResult {
+export function useMySkills(options?: { enabled?: boolean }): UseMySkillsResult {
+  // Defaults to true so existing callers (MySkillsPage) are unaffected. The
+  // Learning Progress card on My Learning passes `false` while the Courses tab
+  // is selected — this hook fans out one hierarchy query PER enrolled path, so
+  // running it for a screen that isn't showing skills is pure waste.
+  const enabled = options?.enabled ?? true;
   const { userId, isAuthenticated } = useAuth();
-  const enrolments = useUserEnrollmentList(userId, { enabled: isAuthenticated && !!userId });
+  const enrolments = useUserEnrollmentList(userId, { enabled: enabled && isAuthenticated && !!userId });
   const { data: summaryRecords = [], isLoading: summaryLoading } = useViewerSummary();
 
   const paths = useMemo<EnrolledPath[]>(() => {
@@ -73,7 +78,7 @@ export function useMySkills(): UseMySkillsResult {
   }, [enrolments.data]);
 
   const hierarchyQueries = useQueries({
-    queries: paths.map((path) => collectionHierarchyQueryOptions(path.pathId)),
+    queries: paths.map((path) => ({ ...collectionHierarchyQueryOptions(path.pathId), enabled })),
   });
 
   const summaryByCollectionId = useMemo(() => indexSummaryByCollectionId(summaryRecords), [summaryRecords]);
