@@ -129,6 +129,16 @@ describe('InProgressContents', () => {
     expect(mockRouterPush).toHaveBeenCalledWith('/collection/col-1', 'forward', 'push');
   });
 
+  it('navigates to /learning-path/:id for a Learning Path card', () => {
+    render(
+      <InProgressContents
+        courses={[makeCourse({ collectionId: 'lp-1', content: { primaryCategory: 'Learning Path' } })]}
+      />
+    );
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockRouterPush).toHaveBeenCalledWith('/learning-path/lp-1', 'forward', 'push');
+  });
+
   it('does not have role="button" when collectionId and courseId are missing', () => {
     const { container } = render(<InProgressContents courses={[makeCourse({ collectionId: undefined, courseId: undefined })]} />);
     expect(container.querySelector('.in-progress__card')).not.toHaveAttribute('role', 'button');

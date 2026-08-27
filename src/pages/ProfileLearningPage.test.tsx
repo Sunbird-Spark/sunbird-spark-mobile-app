@@ -2,6 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import ProfileLearningPage from './ProfileLearningPage';
 
+const { mockRouterPush } = vi.hoisted(() => ({ mockRouterPush: vi.fn() }));
+
 vi.mock('@ionic/react', () => ({
   IonPage: ({ children, className }: any) => <div data-testid="ion-page" className={className}>{children}</div>,
   IonHeader: ({ children, className }: any) => <div>{children}</div>,
@@ -15,7 +17,7 @@ vi.mock('@ionic/react', () => ({
   IonSpinner: ({ name, style }: any) => <span data-testid="ion-spinner" data-name={name} />,
   IonActionSheet: ({ isOpen, onDidDismiss, buttons }: any) => null,
   IonToast: ({ isOpen, message }: any) => null,
-  useIonRouter: () => ({ push: vi.fn(), goBack: vi.fn() }),
+  useIonRouter: () => ({ push: mockRouterPush, goBack: vi.fn() }),
   useIonViewDidEnter: (cb: () => void) => {},
 }));
 
@@ -59,6 +61,10 @@ vi.mock('@capacitor/filesystem', () => ({
 }));
 
 vi.mock('../hooks/useImpression', () => ({ default: vi.fn() }));
+
+vi.mock('../hooks/useViewerSummary', () => ({
+  useViewerSummary: () => ({ data: [] }),
+}));
 vi.mock('./ProfileLearningPage.css', () => ({}));
 
 import { useAuth } from '../contexts/AuthContext';
@@ -322,5 +328,33 @@ describe('ProfileLearningPage — accessibility', () => {
     const card = container.querySelector('.pl-card');
     if (card) fireEvent.click(card);
     expect(card).toBeInTheDocument();
+  });
+
+  it('routes a Course card to /collection/:id', () => {
+    (useUserEnrollmentList as any).mockReturnValue({
+      data: { data: { courses: [{ ...sampleCourse, content: { name: 'Test Course', primaryCategory: 'Course' } }] } },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    const { container } = render(<ProfileLearningPage />);
+    fireEvent.click(container.querySelector('.pl-card')!);
+    expect(mockRouterPush).toHaveBeenCalledWith('/collection/do_123');
+  });
+
+  it('routes a Learning Path card to the Status screen, not /collection/:id', () => {
+    (useUserEnrollmentList as any).mockReturnValue({
+      data: {
+        data: {
+          courses: [{ ...sampleCourse, content: { name: 'Test Path', primaryCategory: 'Learning Path' }, batchId: 'ctx1' }],
+        },
+      },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+    const { container } = render(<ProfileLearningPage />);
+    fireEvent.click(container.querySelector('.pl-card')!);
+    expect(mockRouterPush).toHaveBeenCalledWith('/learning-path/do_123/batch/ctx1/status');
   });
 });

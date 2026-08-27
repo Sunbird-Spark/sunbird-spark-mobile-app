@@ -74,7 +74,7 @@ export interface RelatedContentItem {
   posterImage: string;
   mimeType?: string;
   primaryCategory?: string;
-  cardType: 'collection' | 'resource';
+  cardType: 'collection' | 'learningPath' | 'resource';
   leafNodesCount?: number;
   creator: string;
 }

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useIonRouter } from '@ionic/react';
 import type { TrackableCollection } from '../../../types/collectionTypes';
 import { getPlaceholderImage } from '../../../utils/placeholderImages';
+import { getContentDetailPath } from '../../../utils/getContentDetailPath';
 import './ContinueLearningCard.css';
 
 interface ContinueLearningCardProps {
@@ -64,7 +65,11 @@ export const ContinueLearningCard: React.FC<ContinueLearningCardProps> = ({ cour
 
   const handleContinue = () => {
     if (collectionId && lastAccessedCourse.batchId) {
-      router.push(`/collection/${collectionId}`, 'forward', 'push');
+      router.push(
+        getContentDetailPath(collectionId, lastAccessedCourse.content?.primaryCategory),
+        'forward',
+        'push'
+      );
     }
   };
 

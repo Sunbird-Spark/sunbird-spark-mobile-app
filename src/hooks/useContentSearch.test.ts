@@ -46,6 +46,7 @@ const DEFAULT_PRIMARY_CATEGORIES = [
   'Digital Textbook',
   'eTextbook',
   'Explanation Content',
+  'Learning Path',
   'Learning Resource',
   'Lesson Plan Unit',
   'Practice Question Set',

@@ -71,10 +71,7 @@ describe('isDownloadable', () => {
     ).toBe(false);
   });
 
-  // Questionsets are played offline from downloaded content (see
-  // localQumlLoader), so they are downloadable — unlike the YouTube and
-  // external-URL types above, which only ever stream.
-  it('returns true for questionset content', () => {
+  it('returns true for questionset content — the ecar carries the full hierarchy + questions', () => {
     expect(
       isDownloadable(makeLeaf('l1', { mimeType: 'application/vnd.sunbird.questionset' })),
     ).toBe(true);
