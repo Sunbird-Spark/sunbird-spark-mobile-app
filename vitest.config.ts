@@ -20,6 +20,11 @@ export default defineConfig({
       provider: 'v8',
       // lcov is what SonarCloud consumes (sonar.javascript.lcov.reportPaths).
       reporter: ['text', 'json', 'html', 'lcov'],
+      // Report on every source file, not just the ones a test happened to
+      // import. Without this the percentage flatters itself locally while
+      // SonarCloud, which sees the untested files too, reports far lower.
+      all: true,
+      include: ['src/**/*.{ts,tsx}'],
       exclude: [
         'node_modules/',
         'src/setupTests.ts',
@@ -27,6 +32,11 @@ export default defineConfig({
         '**/*.config.*',
         '**/mockData',
         'src/main.tsx',
+        // Type-only modules: interfaces and unions compile away, so there is
+        // no executable code to cover.
+        'src/types/**',
+        'src/**/__mocks__/**',
+        'src/vite-env.d.ts',
       ],
       thresholds: {
         branches: 70,
