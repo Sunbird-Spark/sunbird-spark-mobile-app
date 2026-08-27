@@ -29,7 +29,7 @@ class SocialLoginService {
   async initGoogle(webClientId: string) {
     if (this.initialized) return;
 
-    if (this.initializationPromise) {
+    if (this.initializationPromise !== null) {
       return this.initializationPromise;
     }
 

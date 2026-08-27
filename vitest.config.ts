@@ -18,7 +18,8 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      // lcov is what SonarCloud consumes (sonar.javascript.lcov.reportPaths).
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'src/setupTests.ts',

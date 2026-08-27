@@ -2,7 +2,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -17,6 +17,12 @@ const FILES = {
   stringsXml: path.join(ROOT, 'android/app/src/main/res/values/strings.xml'),
   javaRoot: path.join(ROOT, 'android/app/src/main/java'),
 };
+
+// Absolute path to the locally installed Capacitor CLI entry point. Resolved
+// explicitly (rather than via `npx cap`, which searches PATH and may fetch a
+// package on demand) so the binary that runs is always the version pinned in
+// this project's lockfile.
+const CAPACITOR_CLI = path.join(ROOT, 'node_modules/@capacitor/cli/bin/capacitor');
 
 function validateAppId(id) {
   const segments = id.split('.');
@@ -40,6 +46,20 @@ function detectCurrentAppId() {
 
 function idToPath(id) {
   return id.split('.').join('/');
+}
+
+/**
+ * Resolves a package directory under the Java source root and refuses anything
+ * that escapes it. validateAppId already rejects the characters needed to climb
+ * out, so this is a second, explicit barrier in front of the rmdir/unlink calls.
+ */
+function javaDirFor(id) {
+  const root = path.resolve(FILES.javaRoot);
+  const dir = path.resolve(root, idToPath(id));
+  if (dir !== root && !dir.startsWith(root + path.sep)) {
+    throw new Error(`Refusing to operate outside the Java source root: ${dir}`);
+  }
+  return dir;
 }
 
 function collectJavaFiles(dir) {
@@ -69,7 +89,7 @@ function snapshotFiles(oldId) {
     }
   }
 
-  const oldJavaDir = path.join(FILES.javaRoot, idToPath(oldId));
+  const oldJavaDir = javaDirFor(oldId);
   if (fs.existsSync(oldJavaDir)) {
     for (const filePath of collectJavaFiles(oldJavaDir)) {
       snapshot.java.push({ path: filePath, content: fs.readFileSync(filePath, 'utf8') });
@@ -91,13 +111,14 @@ function restoreFiles(snapshot, newId) {
   }
 
   // Delete any Java files that were written to the new location
-  const newJavaDir = path.join(FILES.javaRoot, idToPath(newId));
+  const newJavaDir = javaDirFor(newId);
   if (fs.existsSync(newJavaDir)) {
     for (const file of collectJavaFiles(newJavaDir)) {
       fs.unlinkSync(file);
     }
     let dir = newJavaDir;
-    while (dir !== FILES.javaRoot) {
+    const javaRoot = path.resolve(FILES.javaRoot);
+    while (dir !== javaRoot && dir.startsWith(javaRoot + path.sep)) {
       if (fs.existsSync(dir) && fs.readdirSync(dir).length === 0) {
         fs.rmdirSync(dir);
         dir = path.dirname(dir);
@@ -126,8 +147,8 @@ function updateFile(filePath, replacements) {
 }
 
 function updateJavaFiles(oldId, newId) {
-  const oldDir = path.join(FILES.javaRoot, idToPath(oldId));
-  const newDir = path.join(FILES.javaRoot, idToPath(newId));
+  const oldDir = javaDirFor(oldId);
+  const newDir = javaDirFor(newId);
 
   if (!fs.existsSync(oldDir)) {
     console.log(`  (not found)  android/.../java/${idToPath(oldId)}/`);
@@ -154,7 +175,8 @@ function updateJavaFiles(oldId, newId) {
 
   // Remove old empty directories bottom-up
   let dir = oldDir;
-  while (dir !== FILES.javaRoot) {
+  const javaRoot = path.resolve(FILES.javaRoot);
+  while (dir !== javaRoot && dir.startsWith(javaRoot + path.sep)) {
     if (fs.readdirSync(dir).length === 0) {
       fs.rmdirSync(dir);
       dir = path.dirname(dir);
@@ -233,9 +255,19 @@ function main() {
     process.exit(1);
   }
 
-  console.log('\nRunning npx cap sync android...\n');
+  console.log('\nRunning cap sync android...\n');
   try {
-    execSync('npx cap sync android', { cwd: ROOT, stdio: 'inherit' });
+    if (!fs.existsSync(CAPACITOR_CLI)) {
+      throw new Error(
+        `Capacitor CLI not found at ${CAPACITOR_CLI}. Run your package manager's install first.`,
+      );
+    }
+    // process.execPath is the absolute path of the running Node binary, so
+    // neither the interpreter nor the CLI is resolved through PATH.
+    execFileSync(process.execPath, [CAPACITOR_CLI, 'sync', 'android'], {
+      cwd: ROOT,
+      stdio: 'inherit',
+    });
   } catch (err) {
     console.error(`\nError during cap sync: ${err.message}`);
     console.error('Rolling back all file changes...');
