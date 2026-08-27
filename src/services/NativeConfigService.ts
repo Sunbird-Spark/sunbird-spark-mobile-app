@@ -32,7 +32,7 @@ class NativeConfigService {
 
   async load(): Promise<NativeConfig> {
     if (this.config) return this.config;
-    if (this.loadPromise) return this.loadPromise;
+    if (this.loadPromise !== null) return this.loadPromise;
 
     this.loadPromise = this.doLoad();
     return this.loadPromise;

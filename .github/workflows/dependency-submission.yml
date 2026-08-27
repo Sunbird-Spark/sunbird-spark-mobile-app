@@ -7,12 +7,15 @@ on:
     branches: ["main"]
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   dependency-submission-npm:
     name: Submit npm Dependencies
     runs-on: ubuntu-latest
+    # Needed to submit the dependency snapshot to the Dependency Graph API.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -22,16 +25,16 @@ jobs:
           node-version: '24'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
       - name: Generate SPDX SBOM
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
         with:
           format: spdx-json
           output-file: sbom.spdx.json
 
       - name: Submit npm Dependencies
-        uses: advanced-security/spdx-dependency-submission-action@v0.2.0
+        uses: advanced-security/spdx-dependency-submission-action@169d22427d74f3faf93504e70b03eede8dab272a # v0.2.0
         with:
           filePath: .
           filePattern: sbom.spdx.json
@@ -39,6 +42,9 @@ jobs:
   dependency-submission-gradle:
     name: Submit Gradle Dependencies
     runs-on: ubuntu-latest
+    # Needed to submit the dependency snapshot to the Dependency Graph API.
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -52,7 +58,7 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Submit Gradle Dependencies
-        uses: gradle/actions/dependency-submission@v4
+        uses: gradle/actions/dependency-submission@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
         with:
           build-scan-publish: false
           build-root-directory: android

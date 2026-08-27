@@ -189,7 +189,7 @@ export class DatabaseService {
     if (this.initialized) return;
     // Concurrent callers share one in-flight promise instead of each racing
     // through the connection-creation logic simultaneously.
-    if (this.initPromise) return this.initPromise;
+    if (this.initPromise !== null) return this.initPromise;
 
     this.initPromise = this._doInitialize().finally(() => {
       this.initPromise = null;

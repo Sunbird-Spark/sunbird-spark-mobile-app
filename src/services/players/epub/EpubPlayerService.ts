@@ -14,7 +14,7 @@ export class EpubPlayerService {
       EpubPlayerService.scriptLoaded = true;
       return Promise.resolve();
     }
-    if (EpubPlayerService.scriptLoading) {
+    if (EpubPlayerService.scriptLoading !== undefined) {
       return EpubPlayerService.scriptLoading;
     }
     EpubPlayerService.scriptLoading = new Promise<void>((resolve, reject) => {
@@ -53,7 +53,7 @@ export class EpubPlayerService {
     if (EpubPlayerService.cachedCss !== null) {
       return EpubPlayerService.cachedCss;
     }
-    if (EpubPlayerService.cssLoading) {
+    if (EpubPlayerService.cssLoading !== undefined) {
       return EpubPlayerService.cssLoading;
     }
     EpubPlayerService.cssLoading = fetch('/assets/epub-player/styles.css')

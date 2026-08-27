@@ -56,8 +56,10 @@ const CATEGORY_GRADIENTS = [
   'var(--category-gradient-4)',
 ];
 
-const renderSection = (section: any) => {
-  const key = section.id || section.index?.toString() || Math.random().toString();
+const renderSection = (section: any, position: number) => {
+  // Falls back to the list position rather than a random value: a fresh random
+  // key on every render would force React to remount the whole section.
+  const key = section.id || section.index?.toString() || `section-${position}`;
 
   switch (section.type) {
     case 'content':
@@ -238,7 +240,7 @@ const HomePage: React.FC = () => {
                     <IonSpinner name="crescent" />
                   </div>
                 ) : (
-                  homeSections.map(renderSection)
+                  homeSections.map((section, position) => renderSection(section, position))
                 )}
                 <FAQSection />
               </>
@@ -269,7 +271,7 @@ const HomePage: React.FC = () => {
                 <IonSpinner name="crescent" />
               </div>
             ) : (
-              landingSections.map(renderSection)
+              landingSections.map((section, position) => renderSection(section, position))
             )}
             <FAQSection />
           </>

@@ -3,6 +3,7 @@ import { decodeJwt, SignJWT } from 'jose';
 import { getClient, IHttpClient } from '../lib/http-client';
 import { deviceService } from './device/deviceService';
 import { NativeConfigServiceInstance } from './NativeConfigService';
+import { randomUUID } from '../utils/random';
 
 export class AppConsumerAuthService {
   private static instance: AppConsumerAuthService;
@@ -155,7 +156,7 @@ export class AppConsumerAuthService {
       ver: '1.0',
       ts: new Date().toISOString(),
       params: {
-        msgid: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        msgid: randomUUID(),
       },
       request: {
         key: deviceId,
