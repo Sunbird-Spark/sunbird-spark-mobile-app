@@ -48,7 +48,7 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
-        classpath 'com.google.gms:google-services:4.4.2'
+        classpath 'com.google.gms:google-services:4.4.4'
 
         // Direct classpath pins for Dependabot. Top-level entries ensure the
         // submitted dependency graph reports patched versions, not the older
