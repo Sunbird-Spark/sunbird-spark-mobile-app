@@ -30,7 +30,7 @@ def buildClasspathPins = [
     'org.bouncycastle:bcutil-jdk18on:1.84',
     'org.jdom:jdom2:2.0.6.1',
     'org.bitbucket.b_c:jose4j:0.9.6',
-    'org.apache.commons:commons-compress:1.27.1',
+    'org.apache.commons:commons-compress:1.28.0',
     'org.apache.commons:commons-lang3:3.18.0',
 ] + nettyPins
 
@@ -59,7 +59,7 @@ buildscript {
         classpath 'org.bouncycastle:bcutil-jdk18on:1.84'
         classpath 'org.jdom:jdom2:2.0.6.1'
         classpath 'org.bitbucket.b_c:jose4j:0.9.6'
-        classpath 'org.apache.commons:commons-compress:1.27.1'
+        classpath 'org.apache.commons:commons-compress:1.28.0'
         classpath 'org.apache.commons:commons-lang3:3.18.0'
         classpath 'io.netty:netty-common:4.1.133.Final'
         classpath 'io.netty:netty-buffer:4.1.133.Final'
