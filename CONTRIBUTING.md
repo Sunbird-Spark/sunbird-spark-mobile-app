@@ -1,5 +1,5 @@
 <!-- omit in toc -->
-# Sunbird Spark Mobile Contributing Guide
+# Spark Mobile Contributing Guide
 
 First off, thanks for taking the time to contribute! ❤️
 
