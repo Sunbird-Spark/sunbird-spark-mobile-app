@@ -3,7 +3,7 @@
 
 First off, thanks for taking the time to contribute! ❤️
 
-This repository is the **Sunbird Spark mobile app** — React 19 + Ionic 8 with Capacitor 8 as the native bridge, built with Vite 7. It runs natively on **Android only** (minSdkVersion 26); the `ios/` platform has not been added.
+This repository is the **Sunbird Spark mobile app** — React 19 + Ionic 8 with Capacitor 8 as the native bridge, built with Vite 7. It runs natively on **Android only**
 
 It's an offline-first app: content downloads as `.ecar` packages to device storage with metadata in SQLite, players render from local files without a network, and telemetry is staged offline and synced in batches. That shapes most of what's below.
 
@@ -12,6 +12,7 @@ The general contribution process is the same across the [Sunbird Spark organisat
 <!-- omit in toc -->
 ## Table of Contents
 
+<!-- - [Code of Conduct](#code-of-conduct) -->
 - [I Have a Question](#i-have-a-question)
 - [I Want To Contribute](#i-want-to-contribute)
   - [Before You Start](#before-you-start)
@@ -24,6 +25,12 @@ The general contribution process is the same across the [Sunbird Spark organisat
 - [Styleguides](#styleguides)
 - [Submitting a Pull Request](#submitting-a-pull-request)
 - [What Happens After You Submit](#what-happens-after-you-submit)
+
+<!-- ## Code of Conduct
+
+This project and everyone participating in it is governed by the [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold it. Report unacceptable behaviour to TODO_CONTACT_EMAIL.
+
+Before uncommenting: add CODE_OF_CONDUCT.md to this repository and replace TODO_CONTACT_EMAIL. -->
 
 ## I Have a Question
 
