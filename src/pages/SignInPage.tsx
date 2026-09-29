@@ -17,6 +17,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { authWebviewService } from '../services/AuthWebviewService';
 import './SignInPage.css';
 import useImpression from '../hooks/useImpression';
+import { useSsoProviderEnabled } from '../hooks/useSsoProviderEnabled';
 import { useTranslation } from 'react-i18next';
 
 const GoogleIcon: React.FC = () => (
@@ -77,6 +78,7 @@ const SignInPage: React.FC = () => {
   const { isOffline } = useNetwork();
   const { loginWithCredentials, loginWithGoogle } = useAuth();
   const wasOffline = useRef(false);
+  const googleEnabled = useSsoProviderEnabled('google');
 
   useEffect(() => {
     if (isOffline) {
@@ -250,28 +252,32 @@ const SignInPage: React.FC = () => {
             <div id="signin-error" className="sign-in-error" role="alert" aria-live="assertive">{error}</div>
           )}
 
-          {/* Google Sign In Button */}
-          <button
-            onClick={handleGoogleSignIn}
-            disabled={loading}
-            className="sign-in-google-btn"
-          >
-            {loading ? (
-              <IonSpinner name="crescent" />
-            ) : (
-              <>
-                <GoogleIcon />
-                <span>{t('signInPage.signInWithGoogle')}</span>
-              </>
-            )}
-          </button>
+          {googleEnabled && (
+            <>
+              {/* Google Sign In Button */}
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="sign-in-google-btn"
+              >
+                {loading ? (
+                  <IonSpinner name="crescent" />
+                ) : (
+                  <>
+                    <GoogleIcon />
+                    <span>{t('signInPage.signInWithGoogle')}</span>
+                  </>
+                )}
+              </button>
 
-          {/* OR Divider */}
-          <div className="sign-in-divider">
-            <div className="sign-in-divider-line" />
-            <span className="sign-in-divider-text">{t('signInPage.or')}</span>
-            <div className="sign-in-divider-line" />
-          </div>
+              {/* OR Divider */}
+              <div className="sign-in-divider">
+                <div className="sign-in-divider-line" />
+                <span className="sign-in-divider-text">{t('signInPage.or')}</span>
+                <div className="sign-in-divider-line" />
+              </div>
+            </>
+          )}
 
           {/* Form */}
           <form
