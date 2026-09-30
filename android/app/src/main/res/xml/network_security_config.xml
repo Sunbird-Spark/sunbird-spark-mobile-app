@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network security policy for the app.
+
+  All backend traffic goes to the Kong gateway over https (see `base_url` in
+  gradle.properties / strings.xml), and offline content is served by Capacitor's
+  built-in https://localhost/_capacitor_file_/ scheme, so no cleartext (http) is
+  required at runtime. Cleartext is therefore denied everywhere.
+
+  If a developer needs the Ionic live-reload workflow (`npm run livereload`),
+  which serves the dev bundle over http on the LAN address, add a temporary,
+  NON-COMMITTED domain-config here permitting cleartext for `localhost` and
+  `10.0.2.2` (and the LAN IP), then remove it before committing.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+</network-security-config>

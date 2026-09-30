@@ -57,7 +57,12 @@ vi.mock('../hooks/useImpression', () => ({
   default: vi.fn(),
 }));
 
+vi.mock('../hooks/useSsoProviderEnabled', () => ({
+  useSsoProviderEnabled: vi.fn(),
+}));
+
 import { useNetwork } from '../providers/NetworkProvider';
+import { useSsoProviderEnabled } from '../hooks/useSsoProviderEnabled';
 import { useAuth } from '../contexts/AuthContext';
 
 describe('SignInPage — accessibility', () => {
@@ -66,6 +71,7 @@ describe('SignInPage — accessibility', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    (useSsoProviderEnabled as any).mockReturnValue(true);
     (useNetwork as any).mockReturnValue({ isOffline: false });
     (useAuth as any).mockReturnValue({
       loginWithCredentials: mockLoginWithCredentials,
@@ -269,5 +275,17 @@ describe('SignInPage — accessibility', () => {
     });
   });
 
-});
+  it('shows the Google button and "or" divider when Google SSO is enabled', () => {
+    render(<SignInPage />);
+    expect(screen.getByText('signInPage.signInWithGoogle')).toBeInTheDocument();
+    expect(screen.getByText('signInPage.or')).toBeInTheDocument();
+  });
 
+  it('hides the Google button and "or" divider when Google SSO is disabled', () => {
+    (useSsoProviderEnabled as any).mockReturnValue(false);
+    render(<SignInPage />);
+    expect(screen.queryByText('signInPage.signInWithGoogle')).not.toBeInTheDocument();
+    expect(screen.queryByText('signInPage.or')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('signInPage.emailOrMobile')).toBeInTheDocument();
+  });
+});
