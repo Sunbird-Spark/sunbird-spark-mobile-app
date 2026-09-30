@@ -68,7 +68,18 @@ Check the [README](README.md) first, and bear in mind that anything touching con
 
 **2. Fork, clone and run it.**
 
-Install **Node 24.12.0** — that's what CI runs, and nothing in the repo enforces a version locally, so matching CI avoids failures you can't reproduce. For Android builds you also need Android Studio, the Android SDK at compileSdk 36, and JDK 17 or later — Gradle 8.13 comes from the wrapper, so don't install it separately.
+Install **Node 24.12.0** — that's what CI runs, and nothing in the repo enforces a version locally, so matching CI avoids failures you can't reproduce.
+
+For Android builds you also need:
+
+| Tool | Version | Notes |
+|---|---|---|
+| JDK | 21 | CI builds on 21. AGP 8.13 accepts 17 as a floor, but 17 isn't exercised by CI — use 21 unless you have a reason not to |
+| Gradle | 8.13 | **Comes from the wrapper — don't install it.** Always run `./gradlew`, never a system `gradle` |
+| Android Gradle Plugin | 8.13.0 | Pinned in `android/build.gradle`; nothing to install |
+| Android SDK | compileSdk 36, minSdk 26 | Install via Android Studio's SDK Manager |
+
+**On Gradle specifically.** The wrapper (`./gradlew`) downloads and uses exactly 8.13 on first run, so a locally installed Gradle is never needed — and using one is the most common cause of confusing build failures here. Run bare `gradle assembleDebug` with, say, Gradle 7.x on your PATH and you'll get errors about unsupported plugin or API versions that look like code problems but aren't. Check with `./gradlew --version`: it should report Gradle 8.13 and your JDK. If it reports anything else, you're not using the wrapper.
 
 ```bash
 # Fork on GitHub, then:
@@ -110,7 +121,7 @@ The debug APK lands in `android/app/build/outputs/apk/debug/`. `npx cap open and
 
 For web-only UI work, `npm run dev` is much faster — but anything touching filesystem storage, SQLite or native plugins has to be tested on a device or emulator.
 
-If setup fails, it's usually a JDK below 17, a postinstall script that didn't complete, unfilled `gradle.properties` values, or stale build artifacts — `./gradlew clean assembleDebug` clears the last of those. **If the README didn't work as written, open an issue** with your versions and the exact error, then consider fixing it.
+If setup fails, it's usually the wrong JDK, a system Gradle being used instead of the wrapper, a postinstall script that didn't complete, unfilled `gradle.properties` values, or stale build artifacts — `./gradlew clean assembleDebug` clears the last of those. **If the README didn't work as written, open an issue** with your versions and the exact error, then consider fixing it.
 
 **3. Branch and build.** Branch from the latest release branch — check the branch list for the current one; don't branch from `main`. Keep the change to one logical unit.
 
