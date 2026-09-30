@@ -26,7 +26,7 @@ export function useLocalContentSet(
   // Join identifiers to create a stable dependency for the effect.
   // This prevents infinite loops if the caller passes a new array literal on every render.
   const idString = useMemo(() => {
-    return [...identifiers].sort().join(',');
+    return [...identifiers].sort((a, b) => a.localeCompare(b)).join(',');
   }, [identifiers]);
 
   // Create a stable array reference that only changes when the contents change.

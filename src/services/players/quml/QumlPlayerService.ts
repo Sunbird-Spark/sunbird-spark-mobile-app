@@ -12,7 +12,7 @@ export class QumlPlayerService {
       QumlPlayerService.scriptLoaded = true;
       return Promise.resolve();
     }
-    if (QumlPlayerService.scriptLoading) {
+    if (QumlPlayerService.scriptLoading !== undefined) {
       return QumlPlayerService.scriptLoading;
     }
     QumlPlayerService.scriptLoading = new Promise<void>((resolve, reject) => {
