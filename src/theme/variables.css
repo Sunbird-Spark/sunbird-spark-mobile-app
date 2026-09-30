@@ -82,6 +82,11 @@
 
   /** warm yellow — resource center background, badge fills **/
   --color-warm-yellow: #FFF1C7;
+  /* Gold accent for the skills ring/indicator on the Learning Progress card.
+   * Deliberately darker than --ion-color-warning (#ffdb73), which sits at only
+   * 1.3:1 against the card's --color-warm-yellow background; this clears the
+   * 3:1 guideline for meaningful non-text graphics. */
+  --color-gold: #8f6b12;
 
   /** input / card border **/
   --color-input-border: #D4D4D4;

@@ -20,6 +20,15 @@ export interface HierarchyContentNode {
   size?: number;
   /** Package version — used to build the ECAR filename. */
   pkgVersion?: number;
+  /** Sunbird objectType, e.g. 'QuestionSet' — used to detect QuML assessment leaves. */
+  objectType?: string;
+  /** Learning Path root policy, e.g. 'Fixed' | 'Diagnostic' | 'PriorLearning' (also seen lowercased). */
+  policy?: string;
+  /** Ordering index for Level nodes under a Learning Path root. */
+  index?: number;
+  skill?: string[];
+  se_skills?: string[];
+  competencies?: string[];
 }
 
 /** Root-level response from /course/v1/hierarchy/:id */
@@ -215,6 +224,12 @@ export interface TrackableCollection {
     templateUrl?: string;
   }[];
   contentStatus?: Record<string, number>;
+  /** Denormalized content summary — used to distinguish Learning Path enrolments from Courses. */
+  content?: {
+    identifier?: string;
+    name?: string;
+    primaryCategory?: string;
+  };
 }
 
 export interface CourseEnrollmentResponse {

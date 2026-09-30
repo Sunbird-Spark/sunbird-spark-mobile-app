@@ -25,6 +25,12 @@ import ResourceCard from '../components/content/ResourceCard';
 import { getPlaceholderImage } from '../utils/placeholderImages';
 import './MyLearningPage.css';
 import useImpression from '../hooks/useImpression';
+import { parseCourseContextId } from '../services/viewer/summaryMapper';
+import { getContentDetailPath } from '../utils/getContentDetailPath';
+import { isLearningPathCategory } from '../utils/isLearningPath';
+import { applyLearningPathProgress } from '../utils/applyLearningPathProgress';
+import { useViewerSummary } from '../hooks/useViewerSummary';
+import { useMySkills } from '../hooks/useMySkills';
 
 const COLLECTION_MIME_TYPE = 'application/vnd.ekstep.content-collection';
 
@@ -36,38 +42,53 @@ const ChevronDownIcon = () => (
 );
 
 // ── Donut chart ──
+/**
+ * Two concentric progress rings with a count in the middle. Deliberately
+ * metric-agnostic: the Courses tab feeds it lessons/courses, the Learning Paths
+ * tab feeds it paths/skills (see `LEARNING_PROGRESS_METRICS` below), so the
+ * same chart serves both without a second copy.
+ */
 interface DonutChartProps {
-  lessonsVisited: number;
-  totalLessons: number;
-  coursesCompleted: number;
-  totalCourses: number;
+  outerValue: number;
+  outerTotal: number;
+  innerValue: number;
+  innerTotal: number;
+  /** Number shown in the middle. */
+  centerValue: number;
+  innerColor: string;
+  ariaLabel: string;
 }
 
-const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, coursesCompleted, totalCourses }) => {
-  const { t } = useTranslation();
+const DonutChart: React.FC<DonutChartProps> = ({
+  outerValue,
+  outerTotal,
+  innerValue,
+  innerTotal,
+  centerValue,
+  innerColor,
+  ariaLabel,
+}) => {
   const size = 133;
   const cx = size / 2;
   const cy = size / 2;
 
-  // Outer ring — lessons visited
   const outerR = 52;
   const outerStroke = 10;
   const outerCirc = 2 * Math.PI * outerR;
-  const outerRatio = _.clamp(totalLessons > 0 ? lessonsVisited / totalLessons : 0, 0, 1);
+  const outerRatio = _.clamp(outerTotal > 0 ? outerValue / outerTotal : 0, 0, 1);
   const outerOffset = outerCirc * (1 - outerRatio);
 
-  // Inner ring — courses completed
   const innerR = 32;
   const innerStroke = 10;
   const innerCirc = 2 * Math.PI * innerR;
-  const innerRatio = _.clamp(totalCourses > 0 ? coursesCompleted / totalCourses : 0, 0, 1);
+  const innerRatio = _.clamp(innerTotal > 0 ? innerValue / innerTotal : 0, 0, 1);
   const innerOffset = innerCirc * (1 - innerRatio);
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }} role="img" aria-label={t('donutChartLabel', { visited: lessonsVisited, total: totalLessons })}>
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink: 0 }} role="img" aria-label={ariaLabel}>
       {/* Outer track */}
       <circle cx={cx} cy={cy} r={outerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={outerStroke} />
-      {/* Outer fill — lessons */}
+      {/* Outer fill */}
       <circle
         cx={cx} cy={cy} r={outerR}
         fill="none" stroke="var(--ion-color-primary)" strokeWidth={outerStroke}
@@ -78,10 +99,10 @@ const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, c
       />
       {/* Inner track */}
       <circle cx={cx} cy={cy} r={innerR} fill="none" stroke="rgba(0,0,0,0.1)" strokeWidth={innerStroke} />
-      {/* Inner fill — courses completed */}
+      {/* Inner fill */}
       <circle
         cx={cx} cy={cy} r={innerR}
-        fill="none" stroke="var(--ion-color-primary-tint)" strokeWidth={innerStroke}
+        fill="none" stroke={innerColor} strokeWidth={innerStroke}
         strokeDasharray={innerCirc}
         strokeDashoffset={innerOffset}
         strokeLinecap="round"
@@ -90,7 +111,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ lessonsVisited, totalLessons, c
       {/* Center text */}
       <text x={cx} y={cx + 5} textAnchor="middle" fill="var(--ion-color-dark, #222222)"
         style={{ fontFamily: 'var(--ion-font-family)' }} fontSize="20" fontWeight="700">
-        {lessonsVisited}
+        {centerValue}
       </text>
     </svg>
   );
@@ -110,7 +131,7 @@ const CourseCardItem: React.FC<CourseCardItemProps> = ({ course }) => {
   const thumbnail = _.get(course, 'content.posterImage') || _.get(course, 'content.appIcon', '');
   const progress = _.clamp(Math.round(course.completionPercentage ?? 0), 0, 100);
 
-  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
+  const handleNavigate = () => collectionId && router.push(getContentDetailPath(collectionId, course.content?.primaryCategory));
 
   return (
     <div
@@ -178,7 +199,7 @@ const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolle
       <div className="content-carousel-header">
         <h2 className="content-carousel-title">
           {t('recommendedContent')}
-          <button
+          <button type="button"
             className="content-carousel-arrow-inline"
             onClick={() => router.push('/explore', 'forward', 'push')}
             aria-label={t('viewAll')}
@@ -200,11 +221,13 @@ const RecommendedSection: React.FC<{ enrolledCourseIds: string[] }> = ({ enrolle
 
 // ── Types ──
 type Tab = 'activeCourses' | 'completed' | 'upcoming';
+type ContentType = 'courses' | 'learningPaths';
 
 // ── Page ──
 const MyLearningPage: React.FC = () => {
   useImpression({ pageid: 'MyLearningPage', env: 'profile' });
   const [activeTab, setActiveTab] = useState<Tab>('activeCourses');
+  const [contentType, setContentType] = useState<ContentType>('courses');
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -221,39 +244,67 @@ const MyLearningPage: React.FC = () => {
     error,
     refetch,
   } = useUserEnrollmentList(userId, { enabled: isAuthenticated });
+  const { data: viewerSummaryRecords = [] } = useViewerSummary();
 
   useIonViewDidEnter(() => {
     refetch();
   });
 
-  const enrolledCourses: TrackableCollection[] = _.get(enrollmentData, 'data.courses', []);
-  const enrolledCourseIds = _.compact(_.map(enrolledCourses, c => c.collectionId || c.courseId));
+  // A Learning Path enrolment fans out one record per inner course under a
+  // composite "<lpBatchId>:<courseId>" batchId (see services/viewer/summaryMapper.ts) —
+  // those must be excluded here or they'd surface as phantom enrolled courses.
+  const allEnrolledItems: TrackableCollection[] = _.filter(
+    _.get(enrollmentData, 'data.courses', []),
+    (c: TrackableCollection) => !parseCourseContextId(c.batchId)
+  );
+  const enrolledCourseIds = _.compact(_.map(allEnrolledItems, c => c.collectionId || c.courseId));
+
+  // Partition by content type for the Courses | Learning Paths switcher.
+  const enrolledCourses: TrackableCollection[] = _.filter(
+    allEnrolledItems,
+    (c) => !isLearningPathCategory(c.content?.primaryCategory)
+  );
+  const enrolledLearningPaths: TrackableCollection[] = applyLearningPathProgress(
+    _.filter(allEnrolledItems, (c) => isLearningPathCategory(c.content?.primaryCategory)),
+    viewerSummaryRecords
+  );
+  const itemsForActiveType = contentType === 'courses' ? enrolledCourses : enrolledLearningPaths;
 
   // Tab filtering
   const now = new Date();
-  const activeCourses = _.filter(enrolledCourses, c => {
+  const activeCourses = _.filter(itemsForActiveType, c => {
     if ((c.completionPercentage ?? 0) >= 100) return false;
     const startDate = _.get(c, 'batch.startDate');
     return !startDate || new Date(startDate) <= now;
   });
-  const completedCourses = _.filter(enrolledCourses, c => c.completionPercentage === 100);
-  const upcomingCourses = _.filter(enrolledCourses, c => {
+  const completedCourses = _.filter(itemsForActiveType, c => c.completionPercentage === 100);
+  const upcomingCourses = _.filter(itemsForActiveType, c => {
     if ((c.completionPercentage ?? 0) > 0) return false;
     const startDate = _.get(c, 'batch.startDate');
     return startDate && new Date(startDate) > now;
   });
 
-  // Progress metrics
+  // Progress metrics — reflect whichever type (Courses | Learning Paths) is currently selected.
   // c.progress is a raw server counter that can exceed leafNodesCount (counts interactions,
   // not unique content items). Derive visited count from completionPercentage × leafNodesCount
   // so it is always consistent and never exceeds the total.
-  const lessonsVisited = _.sumBy(enrolledCourses, c => {
+  const lessonsVisited = _.sumBy(itemsForActiveType, c => {
     const pct = _.clamp(c.completionPercentage ?? 0, 0, 100) / 100;
     return Math.round((c.leafNodesCount ?? 0) * pct);
   });
-  const totalLessons = _.sumBy(enrolledCourses, c => c.leafNodesCount ?? 0);
-  const coursesCompleted = _.filter(enrolledCourses, c => c.completionPercentage === 100).length;
-  const totalCourses = _.size(enrolledCourses);
+  const totalLessons = _.sumBy(itemsForActiveType, c => c.leafNodesCount ?? 0);
+  const coursesCompleted = _.filter(itemsForActiveType, c => c.completionPercentage === 100).length;
+  const totalCourses = _.size(itemsForActiveType);
+
+  // Learning Paths get their own pair of metrics: skills gained and paths
+  // completed. Skills live only in each path's hierarchy, so this is gated to
+  // the Learning Paths tab — see the `enabled` note in `useMySkills`.
+  const isLearningPathType = contentType === 'learningPaths';
+  const mySkills = useMySkills({ enabled: isLearningPathType });
+  const pathsCompleted = mySkills.aggregate.pathsCompleted;
+  const totalPaths = mySkills.totalCount;
+  const skillsGained = mySkills.aggregate.gainedSkills;
+  const totalSkills = mySkills.aggregate.totalSkills;
 
   // Tab content
   const getTabCourses = (): TrackableCollection[] => {
@@ -267,9 +318,9 @@ const MyLearningPage: React.FC = () => {
 
   const getEmptyMessage = (): string => {
     switch (activeTab) {
-      case 'activeCourses': return t('noActiveCourses');
-      case 'completed': return t('noCompletedCourses');
-      case 'upcoming': return t('noUpcomingCourses');
+      case 'activeCourses': return t(isLearningPathType ? 'noActiveLearningPaths' : 'noActiveCourses');
+      case 'completed': return t(isLearningPathType ? 'noCompletedLearningPaths' : 'noCompletedCourses');
+      case 'upcoming': return t(isLearningPathType ? 'noUpcomingLearningPaths' : 'noUpcomingCourses');
       default: return '';
     }
   };
@@ -294,7 +345,7 @@ const MyLearningPage: React.FC = () => {
           <main id="main-content">
           <div className="my-learning__sign-in">
             <p className="my-learning__sign-in-message">{t('signInToAccess')}</p>
-            <button
+            <button type="button"
               className="my-learning__sign-in-button"
               onClick={() => { saveReturnTo(location.pathname + location.search); router.push('/sign-in', 'forward', 'push'); }}
             >
@@ -322,22 +373,41 @@ const MyLearningPage: React.FC = () => {
         {/* Courses heading */}
         <div className="my-learning__heading-wrapper">
           <div className="my-learning__heading-btn" role="heading" aria-level={2}>
-            <span className="my-learning__heading-text">{t('courses')}</span>
+            <span className="my-learning__heading-text">{t(contentType === 'courses' ? 'courses' : 'learningPaths')}</span>
             <ChevronDownIcon />
           </div>
         </div>
 
+        {/* Content type switcher — only shown once the learner has at least one enrolled Learning Path */}
+        {enrolledLearningPaths.length > 0 && (
+          <div className="my-learning__tab-bar" role="tablist" aria-label={t('learningPaths')}>
+            {(['courses', 'learningPaths'] as ContentType[]).map((type) => (
+              <button type="button"
+                key={type}
+                onClick={() => { setContentType(type); setActiveTab('activeCourses'); }}
+                className={`my-learning__tab ${contentType === type ? 'my-learning__tab--active' : ''}`}
+                role="tab"
+                aria-selected={contentType === type}
+              >
+                {t(type === 'courses' ? 'courses' : 'learningPaths')}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Tab bar */}
-        <div className="my-learning__tab-bar" role="tablist" aria-label={t('courses')}>
+        <div className="my-learning__tab-bar" role="tablist" aria-label={t(isLearningPathType ? 'learningPaths' : 'courses')}>
           {tabs.map(tab => (
-            <button
+            <button type="button"
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`my-learning__tab ${activeTab === tab ? 'my-learning__tab--active' : ''}`}
               role="tab"
               aria-selected={activeTab === tab}
             >
-              {t(tab)}
+              {/* Only the first tab names the content type ("Active Courses" vs
+                  "Active Learning Paths"); Completed/Upcoming read the same for both. */}
+              {t(tab === 'activeCourses' && isLearningPathType ? 'activeLearningPaths' : tab)}
             </button>
           ))}
         </div>
@@ -369,11 +439,11 @@ const MyLearningPage: React.FC = () => {
             {/* View more link */}
             {activeTab === 'activeCourses' && !_.isEmpty(tabCourses) && (
               <div className="my-learning__view-more">
-                <button
+                <button type="button"
                   className="my-learning__view-more-link"
                   onClick={() => router.push('/explore', 'forward', 'push')}
                 >
-                  {t('viewMoreCourses')}
+                  {t(isLearningPathType ? 'viewMoreLearningPaths' : 'viewMoreCourses')}
                 </button>
               </div>
             )}
@@ -384,22 +454,51 @@ const MyLearningPage: React.FC = () => {
                 <h3 className="my-learning__progress-title">{t('learningProgress')}</h3>
                 <div className="my-learning__progress-body">
                   <DonutChart
-                    lessonsVisited={lessonsVisited}
-                    totalLessons={totalLessons}
-                    coursesCompleted={coursesCompleted}
-                    totalCourses={totalCourses}
+                    outerValue={isLearningPathType ? pathsCompleted : lessonsVisited}
+                    outerTotal={isLearningPathType ? totalPaths : totalLessons}
+                    innerValue={isLearningPathType ? skillsGained : coursesCompleted}
+                    innerTotal={isLearningPathType ? totalSkills : totalCourses}
+                    centerValue={isLearningPathType ? skillsGained : lessonsVisited}
+                    innerColor={isLearningPathType ? 'var(--color-gold)' : 'var(--ion-color-primary-tint)'}
+                    ariaLabel={
+                      isLearningPathType
+                        ? t('skillsRingLabel', {
+                            gained: skillsGained,
+                            total: totalSkills,
+                            completed: pathsCompleted,
+                            totalPaths,
+                          })
+                        : t('donutChartLabel', { visited: lessonsVisited, total: totalLessons })
+                    }
                   />
                   <div className="my-learning__progress-metrics">
-                    <div className="my-learning__metric-row">
-                      <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary)' }} />
-                      <span className="my-learning__metric-value">{lessonsVisited}/{totalLessons}</span>
-                      <span className="my-learning__metric-label">{t('lessonsVisited')}</span>
-                    </div>
-                    <div className="my-learning__metric-row">
-                      <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary-tint)' }} />
-                      <span className="my-learning__metric-value">{coursesCompleted}/{totalCourses}</span>
-                      <span className="my-learning__metric-label">{t('coursesCompleted')}</span>
-                    </div>
+                    {isLearningPathType ? (
+                      <>
+                        <div className="my-learning__metric-row">
+                          <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--color-gold)' }} />
+                          <span className="my-learning__metric-value">{skillsGained}/{totalSkills}</span>
+                          <span className="my-learning__metric-label">{t('skillsGained')}</span>
+                        </div>
+                        <div className="my-learning__metric-row">
+                          <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary)' }} />
+                          <span className="my-learning__metric-value">{pathsCompleted}/{totalPaths}</span>
+                          <span className="my-learning__metric-label">{t('learningPathsCompleted')}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="my-learning__metric-row">
+                          <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary)' }} />
+                          <span className="my-learning__metric-value">{lessonsVisited}/{totalLessons}</span>
+                          <span className="my-learning__metric-label">{t('lessonsVisited')}</span>
+                        </div>
+                        <div className="my-learning__metric-row">
+                          <div className="my-learning__metric-indicator" style={{ backgroundColor: 'var(--ion-color-primary-tint)' }} />
+                          <span className="my-learning__metric-value">{coursesCompleted}/{totalCourses}</span>
+                          <span className="my-learning__metric-label">{t('coursesCompleted')}</span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

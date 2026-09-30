@@ -233,6 +233,11 @@ const ProfilePage: React.FC = () => {
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
             </IonItem>
 
+            <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/skills', 'forward', 'push')}>
+              <IonLabel className="profile-action-label">{t('profileSkills.title')}</IonLabel>
+              <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />
+            </IonItem>
+
             <IonItem className="profile-action-item" button detail={false} onClick={() => router.push('/profile/downloaded-contents', 'forward', 'push')}>
               <IonLabel className="profile-action-label">{t('downloadedContents')}</IonLabel>
               <IonIcon icon={chevronForwardOutline} slot="end" className="profile-action-chevron" />

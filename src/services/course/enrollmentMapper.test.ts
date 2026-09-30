@@ -237,18 +237,40 @@ describe('enrollmentMapper', () => {
   });
 
   describe('getEnrollableBatches', () => {
-    it('should return only ongoing batches with open enrollment', () => {
+    it('should return ongoing and upcoming batches with open enrollment', () => {
       const batches: BatchListItem[] = [
         { identifier: 'b1', status: 1, enrollmentEndDate: '2099-12-31' },
-        { identifier: 'b2', status: 0, enrollmentEndDate: '2099-12-31' }, // upcoming
+        { identifier: 'b2', status: 0, enrollmentEndDate: '2099-12-31' }, // upcoming — still enrollable
         { identifier: 'b3', status: 2 }, // expired
         { identifier: 'b4', status: 1, enrollmentEndDate: '2020-01-01' }, // enrollment closed
       ];
 
       const result = getEnrollableBatches(batches);
 
-      expect(result).toHaveLength(1);
-      expect(result[0].identifier).toBe('b1');
+      expect(result.map((b) => b.identifier)).toEqual(['b1', 'b2']);
+    });
+
+    it('should include an upcoming batch as the only option', () => {
+      // Regression: a course whose sole batch starts next week previously
+      // reported "No batches available" and could not be joined at all.
+      const batches: BatchListItem[] = [
+        { identifier: 'b1', status: 0, startDate: '2099-01-01' },
+      ];
+
+      expect(getEnrollableBatches(batches).map((b) => b.identifier)).toEqual(['b1']);
+    });
+
+    it('should exclude invite-only batches the enrol API would reject', () => {
+      const batches: BatchListItem[] = [
+        { identifier: 'b1', status: 1, enrollmentType: 'open' },
+        { identifier: 'b2', status: 1, enrollmentType: 'invite-only' },
+        { identifier: 'b3', status: 1, enrollmentType: 'Invite-Only' }, // case-insensitive
+        { identifier: 'b4', status: 1 }, // absent — treated as open
+      ];
+
+      const result = getEnrollableBatches(batches);
+
+      expect(result.map((b) => b.identifier)).toEqual(['b1', 'b4']);
     });
 
     it('should include ongoing batches with null enrollmentEndDate', () => {

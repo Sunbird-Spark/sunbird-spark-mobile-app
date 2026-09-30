@@ -42,6 +42,7 @@ import CollectionContentPlayer from '../components/collection/CollectionContentP
 import CourseCompletionDialog from '../components/collection/CourseCompletionDialog';
 import FAQSection from '../components/home/FAQSection';
 import PageLoader from '../components/common/PageLoader';
+import BatchSelectSheet from '../components/common/BatchSelectSheet';
 import { saveReturnTo } from '../utils/returnTo';
 import './CollectionPage.css';
 import useImpression from '../hooks/useImpression';
@@ -1130,85 +1131,18 @@ const CollectionPage: React.FC = () => {
             <span className="cp-bottom-cta-text">{t('collection.joinTheCourse')}</span>
           </div>
 
-          <IonModal
+          <BatchSelectSheet
             isOpen={isBatchModalOpen}
-            onDidDismiss={() => setIsBatchModalOpen(false)}
-            initialBreakpoint={0.35}
-            breakpoints={[0, 0.35]}
-            className="cp-batch-modal"
-          >
-            <div className="cp-batch-modal-inner">
-              <div className="cp-batch-modal-header">
-                <h2>{t('collection.availableBatches')}</h2>
-                <button className="cp-batch-modal-close" onClick={() => setIsBatchModalOpen(false)}>
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                    <path d="M14 1.41L12.59 0L7 5.59L1.41 0L0 1.41L5.59 7L0 12.59L1.41 14L7 8.41L12.59 14L14 12.59L8.41 7L14 1.41Z" fill="var(--ion-color-primary)" />
-                  </svg>
-                </button>
-              </div>
-              <div className="cp-batch-modal-content">
-                {enrollment.batchListLoading ? (
-                  <div style={{ textAlign: 'center', padding: '1rem' }}><IonSpinner name="crescent" /></div>
-                ) : enrollment.batchListError ? (
-                  <p style={{ color: 'var(--ion-color-danger)', textAlign: 'center' }}>
-                    {enrollment.batchListError}
-                  </p>
-                ) : enrollment.enrollableBatches.length === 0 ? (
-                  <p style={{ textAlign: 'center', color: 'var(--ion-color-medium)' }}>
-                    {t('collection.noBatchesAvailable')}
-                  </p>
-                ) : (
-                  <>
-                    <p className="cp-batch-modal-subtitle">{t('collection.selectBatchToStart')}</p>
-                    <div className="cp-batch-select-container">
-                      <select
-                        className="cp-batch-select"
-                        value={selectedBatchId}
-                        onChange={(e) => setSelectedBatchId(e.target.value)}
-                      >
-                        <option value="" disabled>{t('collection.selectBatch')}</option>
-                        {enrollment.enrollableBatches.map((batch) => (
-                          <option key={batch.identifier} value={batch.identifier}>
-                            {batch.name ?? batch.identifier}
-                          </option>
-                        ))}
-                      </select>
-                      <svg className="cp-batch-select-icon" width="14" height="8" viewBox="0 0 14 8" fill="none">
-                        <path d="M1 1L7 7L13 1" stroke="var(--ion-color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  </>
-                )}
-
-                {enrollment.joinError && (
-                  <p style={{ color: 'var(--ion-color-danger)', fontSize: '13px', textAlign: 'center', marginTop: '8px' }}>
-                    {enrollment.joinError}
-                  </p>
-                )}
-              </div>
-              <div className="cp-batch-modal-cta-wrap">
-                <div
-                  role="button"
-                  tabIndex={(!selectedBatchId || enrollment.joinLoading) ? -1 : 0}
-                  aria-disabled={!selectedBatchId || enrollment.joinLoading}
-                  className="cp-batch-modal-cta"
-                  onClick={() => { if (!selectedBatchId || enrollment.joinLoading) return; handleJoinCourse(); }}
-                  onKeyDown={(e) => {
-                    if (!selectedBatchId || enrollment.joinLoading) return;
-                    if (e.key === 'Enter') handleJoinCourse();
-                    if (e.key === ' ') { e.preventDefault(); handleJoinCourse(); }
-                  }}
-                  style={{ opacity: (!selectedBatchId || enrollment.joinLoading) ? 0.5 : 1 }}
-                >
-                  {enrollment.joinLoading ? (
-                    <IonSpinner name="crescent" style={{ width: 18, height: 18, color: 'white' }} />
-                  ) : (
-                    <span className="cp-bottom-cta-text">{t('collection.joinTheBatch')}</span>
-                  )}
-                </div>
-              </div>
-            </div>
-          </IonModal>
+            onClose={() => { setIsBatchModalOpen(false); setSelectedBatchId(''); }}
+            batches={enrollment.enrollableBatches}
+            loading={enrollment.batchListLoading}
+            error={enrollment.batchListError}
+            selectedBatchId={selectedBatchId}
+            onSelect={setSelectedBatchId}
+            onConfirm={handleJoinCourse}
+            confirming={enrollment.joinLoading}
+            confirmError={enrollment.joinError}
+          />
         </>
       )}
 

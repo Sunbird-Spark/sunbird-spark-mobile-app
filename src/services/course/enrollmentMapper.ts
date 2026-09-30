@@ -4,6 +4,7 @@ import type {
   ContentStateItem,
   BatchListItem,
 } from '../../types/collectionTypes';
+import { BATCH_STATUS } from '../../types/collectionTypes';
 
 const COLLECTION_MIME = 'application/vnd.ekstep.content-collection';
 
@@ -66,12 +67,26 @@ export function getCourseProgressProps(
   return { total, completed, percentage };
 }
 
-/** Filter batches that are still enrollable (ongoing + enrollment window open). */
+/** Batch enrollmentType values a learner cannot self-enrol into. */
+const CLOSED_ENROLLMENT_TYPES = ['invite-only', 'inviteonly'];
+
+/** Filter batches a learner can still self-enrol into.
+ *
+ *  Upcoming batches count: a batch that starts next week is open for enrolment
+ *  now, and excluding it made courses whose only batch was upcoming report
+ *  "No batches available".
+ *
+ *  invite-only batches are excluded because `POST /course/v1/enrol` rejects
+ *  them, which previously surfaced as a raw backend error after the learner had
+ *  already picked the batch. A missing enrollmentType is treated as open so
+ *  existing content keeps working. */
 export function getEnrollableBatches(batches: BatchListItem[]): BatchListItem[] {
   const now = new Date();
   return batches.filter((b) => {
-    if (b.status !== 1) return false; // only ongoing
+    if (b.status !== BATCH_STATUS.Upcoming && b.status !== BATCH_STATUS.Ongoing) return false;
     if (b.enrollmentEndDate && new Date(b.enrollmentEndDate) < now) return false;
+    const enrollmentType = b.enrollmentType?.trim().toLowerCase();
+    if (enrollmentType && CLOSED_ENROLLMENT_TYPES.includes(enrollmentType)) return false;
     return true;
   });
 }

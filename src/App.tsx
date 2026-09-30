@@ -61,6 +61,13 @@ import TermsOfUsePage from './pages/TermsOfUsePage';
 import ProfileLearningPage from './pages/ProfileLearningPage';
 import SettingsPage from './pages/SettingsPage';
 import DeleteAccountPage from './pages/DeleteAccountPage';
+import LearningPathPage from './pages/LearningPathPage';
+import LearningPathLevelPage from './pages/LearningPathLevelPage';
+import LearningPathAssessmentPage from './pages/LearningPathAssessmentPage';
+import LearningPathPlayerPage from './pages/LearningPathPlayerPage';
+import LearningPathStatusPage from './pages/LearningPathStatusPage';
+import LearningPathCompletePage from './pages/LearningPathCompletePage';
+import MySkillsPage from './pages/MySkillsPage';
 import BackButtonHandler from './components/common/BackButtonHandler';
 
 setupIonicReact();
@@ -316,6 +323,9 @@ const App: React.FC = () => {
           <Route exact path="/profile/learning">
             <ProfileLearningPage />
           </Route>
+          <Route exact path="/profile/skills">
+            <MySkillsPage />
+          </Route>
           <Route exact path="/profile/downloaded-contents">
             <DownloadedContentsPage />
           </Route>
@@ -342,6 +352,48 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/collection/:collectionId">
             <CollectionPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId">
+            <LearningPathPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId">
+            <LearningPathPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/level/:levelId">
+            <LearningPathLevelPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId/level/:levelId">
+            <LearningPathLevelPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/prior">
+            <LearningPathAssessmentPage variant="prior" />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId/prior">
+            <LearningPathAssessmentPage variant="prior" />
+          </Route>
+          <Route exact path="/learning-path/:pathId/outcome">
+            <LearningPathAssessmentPage variant="outcome" />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId/outcome">
+            <LearningPathAssessmentPage variant="outcome" />
+          </Route>
+          <Route exact path="/learning-path/:pathId/course/:courseId/content/:contentId">
+            <LearningPathPlayerPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId/course/:courseId/content/:contentId">
+            <LearningPathPlayerPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/status">
+            <LearningPathStatusPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId/status">
+            <LearningPathStatusPage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/complete">
+            <LearningPathCompletePage />
+          </Route>
+          <Route exact path="/learning-path/:pathId/batch/:contextId/complete">
+            <LearningPathCompletePage />
           </Route>
           <Route exact path="/content/:contentId">
             <ContentPlayerPage />

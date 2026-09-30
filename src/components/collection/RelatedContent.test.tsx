@@ -101,6 +101,23 @@ describe('RelatedContent', () => {
     expect(mockPush).toHaveBeenCalledWith('/collection/do_1', 'forward', 'push');
   });
 
+  it('routes a learningPath card to /learning-path/:id, not /collection/:id', () => {
+    const item: RelatedContentItem[] = [
+      {
+        identifier: 'do_lp1',
+        name: 'Path A',
+        appIcon: '',
+        posterImage: '',
+        cardType: 'learningPath',
+        primaryCategory: 'Learning Path',
+        creator: 'X',
+      },
+    ];
+    render(<RelatedContent items={item} t={mockT} />);
+    fireEvent.click(screen.getByRole('button'));
+    expect(mockPush).toHaveBeenCalledWith('/learning-path/do_lp1', 'forward', 'push');
+  });
+
   it('navigates to content path on click for resource', () => {
     const item: RelatedContentItem[] = [
       { identifier: 'do_2', name: 'PDF', appIcon: '', posterImage: '', cardType: 'resource', creator: 'X' },

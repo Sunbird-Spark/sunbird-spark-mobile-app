@@ -25,6 +25,11 @@ import type { TrackableCollection } from '../types/collectionTypes';
 import { getPlaceholderImage } from '../utils/placeholderImages';
 import './ProfileLearningPage.css';
 import useImpression from '../hooks/useImpression';
+import { parseCourseContextId } from '../services/viewer/summaryMapper';
+import { getContentDetailPath, getLearningPathStatusPath } from '../utils/getContentDetailPath';
+import { isLearningPathCategory } from '../utils/isLearningPath';
+import { applyLearningPathProgress } from '../utils/applyLearningPathProgress';
+import { useViewerSummary } from '../hooks/useViewerSummary';
 
 type FilterOption = 'all' | 'ongoing' | 'completed' | 'not-started';
 
@@ -102,7 +107,13 @@ const CourseCard: React.FC<CourseCardProps> = ({ course, downloadingId, onDownlo
     ? new Date(course.batch.endDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
     : null;
 
-  const handleNavigate = () => collectionId && router.push(`/collection/${collectionId}`);
+  const handleNavigate = () => {
+    if (!collectionId) return;
+    const path = isLearningPathCategory(course.content?.primaryCategory)
+      ? getLearningPathStatusPath(collectionId, course.batchId)
+      : getContentDetailPath(collectionId, course.content?.primaryCategory);
+    router.push(path);
+  };
 
   return (
     <div
@@ -188,12 +199,22 @@ const ProfileLearningPage: React.FC = () => {
   const [pendingCourse, setPendingCourse] = useState<TrackableCollection | null>(null);
 
   const { data: enrollmentResponse, isLoading, isError, refetch } = useUserEnrollmentList(userId);
+  const { data: viewerSummaryRecords = [] } = useViewerSummary();
 
   useIonViewDidEnter(() => {
     refetch();
   });
 
-  const courses = useMemo(() => enrollmentResponse?.data?.courses ?? [], [enrollmentResponse]);
+  // A Learning Path enrolment fans out one record per inner course under a
+  // composite "<lpBatchId>:<courseId>" batchId (see services/viewer/summaryMapper.ts) —
+  // those must be excluded here or they'd surface as phantom enrolled courses.
+  const courses = useMemo(
+    () => applyLearningPathProgress(
+      (enrollmentResponse?.data?.courses ?? []).filter((c) => !parseCourseContextId(c.batchId)),
+      viewerSummaryRecords
+    ),
+    [enrollmentResponse, viewerSummaryRecords]
+  );
 
   const filteredCourses = useMemo(() => {
     if (filter === 'ongoing') return courses.filter(c => c.status === 1 && (c.completionPercentage ?? 0) < 100);

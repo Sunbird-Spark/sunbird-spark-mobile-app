@@ -1,4 +1,5 @@
 import type { ContentSearchItem, RelatedContentItem } from '../types/contentTypes';
+import { isLearningPathCategory } from '../utils/isLearningPath';
 
 const RELATED_CONTENT_LIMIT = 3;
 const COLLECTION_MIME = 'application/vnd.ekstep.content-collection';
@@ -32,7 +33,11 @@ export function mapSearchContentToRelatedContentItems(
     posterImage: item.posterImage ?? item.appIcon ?? item.thumbnail ?? '',
     mimeType: item.mimeType,
     primaryCategory: item.primaryCategory,
-    cardType: (item.mimeType ?? '').toLowerCase() === COLLECTION_MIME ? 'collection' : 'resource',
+    cardType: isLearningPathCategory(item.primaryCategory)
+      ? 'learningPath'
+      : (item.mimeType ?? '').toLowerCase() === COLLECTION_MIME
+        ? 'collection'
+        : 'resource',
     leafNodesCount: item.leafNodesCount,
     creator: item.creator ?? item.createdBy ?? 'Unknown',
   }));

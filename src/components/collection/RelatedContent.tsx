@@ -5,6 +5,7 @@ import type { RelatedContentItem } from '../../types/contentTypes';
 import CollectionCard from '../content/CollectionCard';
 import ResourceCard from '../content/ResourceCard';
 import { RightArrowIcon } from '../icons/CollectionIcons';
+import { getContentDetailPath } from '../../utils/getContentDetailPath';
 
 interface RelatedContentProps {
   items: RelatedContentItem[];
@@ -30,14 +31,17 @@ const RelatedContent: React.FC<RelatedContentProps> = ({ items, t }) => {
       </div>
       <div className="cp-related-scroll">
         {items.map((item) =>
-          item.cardType === 'collection' ? (
+          item.cardType === 'collection' || item.cardType === 'learningPath' ? (
             <div
               key={item.identifier}
               role="button"
               tabIndex={0}
               className="cp-related-card-wrapper"
-              onClick={() => navigateTo(`/collection/${item.identifier}`)}
-              onKeyDown={(e) => { if (e.key === 'Enter') navigateTo(`/collection/${item.identifier}`); if (e.key === ' ') { e.preventDefault(); navigateTo(`/collection/${item.identifier}`); } }}
+              onClick={() => navigateTo(getContentDetailPath(item.identifier, item.primaryCategory))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') navigateTo(getContentDetailPath(item.identifier, item.primaryCategory));
+                if (e.key === ' ') { e.preventDefault(); navigateTo(getContentDetailPath(item.identifier, item.primaryCategory)); }
+              }}
             >
               <CollectionCard item={item} />
             </div>

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { ContinueLearningCard } from './ContinueLearningCard';
 import type { TrackableCollection } from '../../../types/collectionTypes';
@@ -63,5 +63,17 @@ describe('ContinueLearningCard', () => {
   it('renders section heading', () => {
     render(<ContinueLearningCard courses={[makeCourse()]} />);
     expect(screen.getByText('Continue from where you left')).toBeInTheDocument();
+  });
+
+  it('routes to /collection/:id for a regular Course', () => {
+    render(<ContinueLearningCard courses={[makeCourse({ content: { primaryCategory: 'Course' } })]} />);
+    fireEvent.click(screen.getByText('Continue Learning'));
+    expect(mockPush).toHaveBeenCalledWith('/collection/collection-1', 'forward', 'push');
+  });
+
+  it('routes to /learning-path/:id for a Learning Path', () => {
+    render(<ContinueLearningCard courses={[makeCourse({ content: { primaryCategory: 'Learning Path' } })]} />);
+    fireEvent.click(screen.getByText('Continue Learning'));
+    expect(mockPush).toHaveBeenCalledWith('/learning-path/collection-1', 'forward', 'push');
   });
 });

@@ -1,0 +1,524 @@
+/* ── Page Background ── */
+.lp-page {
+  --background: var(--color-f4f4f4, #f4f4f4);
+}
+
+.lp-page ion-content {
+  --background: var(--color-f4f4f4, #f4f4f4);
+}
+
+/* ── Header ── */
+.lp-page-header {
+  --background: var(--color-white);
+  --color: var(--ion-color-dark, #222222);
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.12);
+}
+
+.lp-page-header-inner {
+  display: flex;
+  align-items: center;
+}
+
+.lp-page-icon-btn {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Title ── */
+.lp-title-section {
+  background: var(--color-white);
+  padding: 1.5rem 1rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.lp-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0 0 0.5rem 0;
+  line-height: 1.4;
+}
+
+.lp-description {
+  font-size: 0.875rem;
+  color: var(--color-757575, #757575);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.lp-creator-note {
+  margin: 0 1rem;
+  padding: 0.75rem 1rem;
+  background: var(--color-white);
+  border-radius: 0.75rem;
+  color: var(--color-757575, #757575);
+  font-size: 0.875rem;
+}
+
+/* ── Progress card ── */
+.lp-progress-card {
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+.lp-progress-card-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.lp-progress-card-pct {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ion-color-tertiary, #376673);
+}
+
+.lp-progress-card-levels {
+  font-size: 0.8125rem;
+  color: var(--color-757575, #757575);
+}
+
+.lp-progress-bar-track,
+.lp-ledger-level-progress-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-e0e0e0, #e0e0e0);
+  overflow: hidden;
+}
+
+.lp-progress-bar-fill,
+.lp-ledger-level-progress-fill {
+  height: 100%;
+  background: var(--ion-color-primary);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.lp-progress-stat-grid,
+.lp-static-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.lp-static-stat-grid {
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.lp-progress-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.lp-progress-stat-label {
+  font-size: 0.75rem;
+  color: var(--color-757575, #757575);
+}
+
+.lp-progress-stat-value {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+}
+
+.lp-progress-batch-end {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--color-757575, #757575);
+}
+
+/* ── Ledger ── */
+.lp-ledger {
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  padding: 1rem 0;
+  border-radius: 0.75rem;
+}
+
+.lp-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0 1rem 0.75rem;
+}
+
+.lp-ledger-gate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--color-e0e0e0, #e0e0e0);
+  border-bottom: 1px solid var(--color-e0e0e0, #e0e0e0);
+  background: var(--color-f4f4f4, #f4f4f4);
+}
+
+.lp-ledger-gate-row--clickable {
+  cursor: pointer;
+}
+
+.lp-ledger-gate-row--disabled {
+  opacity: 0.55;
+}
+
+.lp-ledger-gate-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.lp-ledger-gate-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-757575, #757575);
+}
+
+.lp-ledger-gate-name {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ion-color-dark, #222222);
+}
+
+.lp-ledger-accordion-group {
+  background: transparent;
+}
+
+.lp-ledger-level-header {
+  --background: transparent;
+  --padding-start: 1rem;
+  --inner-padding-end: 1rem;
+}
+
+.lp-ledger-level-header--locked {
+  opacity: 0.65;
+}
+
+.lp-ledger-level-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lp-ledger-level-title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--ion-color-dark, #222222);
+}
+
+.lp-ledger-level-progress-track {
+  margin-top: 0.5rem;
+}
+
+.lp-ledger-level-body {
+  padding: 0 1rem 0.75rem;
+}
+
+.lp-ledger-level-courses {
+  border: 1px solid var(--color-e0e0e0, #e0e0e0);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.lp-ledger-open-level-btn {
+  display: block;
+  background: none;
+  border: none;
+  padding: 0.5rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+/* ── Shared course row (Overview ledger's expanded level body + Level detail page) ── */
+.lp-course-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--color-e0e0e0, #e0e0e0);
+}
+
+.lp-course-row:last-child {
+  border-bottom: none;
+}
+
+.lp-course-row--locked {
+  opacity: 0.5;
+}
+
+.lp-course-row-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.lp-course-row-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lp-course-row-name {
+  font-size: 0.9375rem;
+  color: var(--ion-color-dark, #222222);
+}
+
+.lp-course-row-badge {
+  font-size: 0.6875rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  background: var(--color-f4f4f4, #f4f4f4);
+  /* #757575 was 4.19:1 here — just under AA for this 11px text. */
+  color: #5c5c5c;
+}
+
+.lp-course-row-meta {
+  font-size: 0.75rem;
+  color: var(--color-757575, #757575);
+}
+
+.lp-course-row-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.lp-course-row-cta {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ion-color-primary);
+}
+
+.lp-ledger-level-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin-top: 0.5rem;
+}
+
+.lp-skill-chip {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 999px;
+  background: var(--color-f4f4f4, #f4f4f4);
+  color: var(--ion-color-tertiary, #376673);
+}
+
+/* ── Status badge ── */
+.lp-status-badge {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* Status badge colours.
+ *
+ * Backgrounds are a 15% wash of the status hue over the card (via `-rgb`), NOT
+ * the Ionic `-tint` variant: in this theme `-tint` is only ~10% lighter than
+ * the base, so tint-as-background under base-as-text gave ~1.1:1 contrast and
+ * was unreadable. Text colours are hand-picked (rather than `-shade`, which is
+ * likewise only ~10% darker and reaches just ~3:1) so every variant clears
+ * WCAG AA 4.5:1 for small text on its own wash. Measured ratios in comments. */
+.lp-status-badge--completed {
+  background: rgba(var(--ion-color-success-rgb), 0.15);
+  color: #3f5730; /* 7.04:1 */
+}
+
+.lp-status-badge--active {
+  background: rgba(var(--ion-color-warning-rgb), 0.15);
+  color: #6b5310; /* 7.01:1 */
+}
+
+.lp-status-badge--waived,
+.lp-status-badge--credited {
+  background: rgba(var(--ion-color-secondary-rgb), 0.15);
+  color: #305a65; /* 6.71:1 */
+}
+
+.lp-status-badge--credited-pending {
+  background: rgba(var(--ion-color-primary-rgb), 0.12);
+  color: var(--ion-color-primary-shade, #8f4630); /* 5.53:1 */
+}
+
+.lp-status-badge--not-started,
+.lp-status-badge--locked {
+  background: var(--color-e0e0e0, #e0e0e0);
+  color: #545454; /* 5.74:1 — #757575 was only 3.49:1 */
+}
+
+/* ── Certificate card ── */
+.lp-cert-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+/* An 18% wash, not `--ion-color-success-tint`: the tint (#8faf77) is a
+ * saturated mid-green, which dropped the brick "View certificate" button to
+ * 2.18:1 and the subtitle to 1.88:1 against it. The wash keeps the celebratory
+ * green while leaving every foreground legible. */
+.lp-cert-card--unlocked {
+  background: linear-gradient(135deg, var(--color-white), rgba(var(--ion-color-success-rgb), 0.18));
+}
+
+.lp-cert-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  flex: 1;
+}
+
+.lp-cert-card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+}
+
+.lp-cert-card-subtitle {
+  font-size: 0.8125rem;
+  /* #757575 fell to 3.93:1 on the unlocked card's green wash — under AA for
+   * small text. #5c5c5c clears it on both the white and washed backgrounds. */
+  color: #5c5c5c;
+}
+
+.lp-cert-card-view-btn {
+  border: 1px solid var(--ion-color-primary);
+  color: var(--ion-color-primary);
+  background: none;
+  border-radius: 999px;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.lp-cert-card-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.lp-cert-card-summary-btn {
+  border: none;
+  color: var(--ion-color-primary);
+  background: none;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* ── Bottom CTA (batch selection lives in components/common/BatchSelectSheet.css) ── */
+.lp-bottom-cta-wrap {
+  position: sticky;
+  bottom: 0;
+  padding: 0.75rem 1rem calc(0.75rem + var(--safe-area-bottom, 0px));
+  background: var(--color-white);
+  box-shadow: 0 -2px 12px 0 rgba(0, 0, 0, 0.08);
+}
+
+.lp-bottom-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--ion-color-primary);
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 0.875rem;
+  cursor: pointer;
+}
+
+.lp-bottom-cta-text {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: white;
+}
+
+.lp-anonymous-cta {
+  padding: 1rem;
+  text-align: center;
+  color: var(--color-757575, #757575);
+}
+
+/* ── Certificate preview modal (mirrors CollectionPage's cp-cert-preview-modal) ── */
+.lp-cert-preview-content {
+  padding: 1rem;
+}
+
+.lp-cert-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.lp-cert-preview-close {
+  background: none;
+  border: none;
+  padding: 4px;
+}
+
+.lp-cert-preview-img {
+  width: 100%;
+  border-radius: 0.5rem;
+}
+
+/* ── Bottom back bar (LPBackFooter) ──
+ * Shared by every Learning Path screen. Replaces the top-header back chevron:
+ * on gesture-navigation phones there is no system back button drawn, so this
+ * is the primary way back. The z-index mirrors `.lp-player-footer` — the app's
+ * bottom tab bar stays mounted under these pages and would otherwise swallow
+ * the taps. `safe-area-inset-bottom` keeps it clear of the home-gesture pill.
+ */
+.lp-back-footer {
+  position: relative;
+  z-index: 20;
+}
+
+.lp-back-footer-toolbar {
+  --background: var(--color-white);
+  --border-color: var(--color-e0e0e0, #e0e0e0);
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.lp-back-footer-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ion-color-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  /* Full-height hit area — a 44px-tall target per the platform minimum. */
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+}

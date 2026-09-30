@@ -22,9 +22,11 @@ vi.mock('@capacitor/screen-orientation', () => ({
 
 // Mock ContentPlayer
 let capturedOnPlayerEvent: ((event: any) => void) | undefined;
+let capturedOnTelemetryEvent: ((event: any) => void) | undefined;
 vi.mock('../players/ContentPlayer', () => ({
   ContentPlayer: ({ mimeType, metadata, onPlayerEvent, onTelemetryEvent }: any) => {
     capturedOnPlayerEvent = onPlayerEvent;
+    capturedOnTelemetryEvent = onTelemetryEvent;
     return (
       <div
         data-testid="content-player"
@@ -78,8 +80,16 @@ vi.mock('../../hooks/useQumlContent', () => ({
 }));
 
 // Mock useContentStateUpdate hook (uses useQueryClient internally)
+const mockContentStateUpdateHandler = vi.fn();
 vi.mock('../../hooks/useContentStateUpdate', () => ({
-  useContentStateUpdate: () => vi.fn(),
+  useContentStateUpdate: () => mockContentStateUpdateHandler,
+}));
+
+// Mock useContentView hook (Viewer Service equivalent, also uses useQueryClient internally) —
+// called unconditionally by CollectionContentPlayer regardless of lpContext (rules of hooks).
+const mockContentViewHandler = vi.fn();
+vi.mock('../../hooks/useContentView', () => ({
+  useContentView: () => mockContentViewHandler,
 }));
 
 // Mock useIsContentLocal
@@ -110,6 +120,17 @@ vi.mock('../../services/download_manager', () => ({
 
 // Mock CSS import
 vi.mock('../../pages/ContentPlayerPage.css', () => ({}));
+
+// Mock telemetryService.save (called unconditionally on every telemetry event)
+vi.mock('../../services/TelemetryService', () => ({
+  telemetryService: { save: vi.fn().mockResolvedValue(undefined) },
+}));
+
+// Mock syncService.captureAssessmentEvent (the legacy offline ASSESS staging path)
+const mockCaptureAssessmentEvent = vi.fn().mockResolvedValue(undefined);
+vi.mock('../../services/sync/SyncService', () => ({
+  syncService: { captureAssessmentEvent: (...args: any[]) => mockCaptureAssessmentEvent(...args) },
+}));
 
 // Mock useAuth — component needs userId for telemetry/sync calls
 vi.mock('../../contexts/AuthContext', () => ({
@@ -581,6 +602,95 @@ describe('CollectionContentPlayer', () => {
       await act(async () => { });
 
       expect(importService.downloadTranscripts).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Learning Path mode (lpContext)', () => {
+    beforeEach(() => {
+      mockUseContentReadReturn = {
+        data: { data: { content: defaultContentData } },
+        isLoading: false,
+        error: null,
+        refetch: mockRefetch,
+      };
+    });
+
+    it('routes telemetry events to useContentView instead of useContentStateUpdate when lpContext is set', () => {
+      render(
+        <CollectionContentPlayer
+          contentId="do_1"
+          onClose={mockOnClose}
+          collectionId="course1"
+          batchId="legacyBatch"
+          lpContext={{ pathId: 'lp1', contextId: 'ctxPlain' }}
+        />
+      );
+
+      expect(capturedOnTelemetryEvent).toBeDefined();
+      act(() => {
+        capturedOnTelemetryEvent!({ eid: 'START', ets: 1000 });
+      });
+
+      expect(mockContentViewHandler).toHaveBeenCalledWith({ eid: 'START', ets: 1000 });
+      expect(mockContentStateUpdateHandler).not.toHaveBeenCalled();
+    });
+
+    it('routes telemetry events to useContentStateUpdate (not useContentView) when lpContext is absent', () => {
+      render(
+        <CollectionContentPlayer
+          contentId="do_1"
+          onClose={mockOnClose}
+          collectionId="course1"
+          batchId="legacyBatch"
+        />
+      );
+
+      act(() => {
+        capturedOnTelemetryEvent!({ eid: 'START', ets: 1000 });
+      });
+
+      expect(mockContentStateUpdateHandler).toHaveBeenCalledWith({ eid: 'START', ets: 1000 });
+      expect(mockContentViewHandler).not.toHaveBeenCalled();
+    });
+
+    it('does not stage ASSESS events to the legacy offline sync table when in Learning Path mode', () => {
+      render(
+        <CollectionContentPlayer
+          contentId="do_1"
+          onClose={mockOnClose}
+          collectionId="course1"
+          batchId="legacyBatch"
+          lpContext={{ pathId: 'lp1', contextId: 'ctxPlain' }}
+        />
+      );
+
+      act(() => {
+        capturedOnTelemetryEvent!({ eid: 'ASSESS', data: { edata: { score: 1 } } });
+      });
+
+      expect(mockContentViewHandler).toHaveBeenCalledWith({ eid: 'ASSESS', data: { edata: { score: 1 } } });
+      expect(mockCaptureAssessmentEvent).not.toHaveBeenCalled();
+    });
+
+    it('still stages ASSESS events to the legacy offline sync table outside Learning Path mode', () => {
+      render(
+        <CollectionContentPlayer
+          contentId="do_1"
+          onClose={mockOnClose}
+          collectionId="course1"
+          batchId="legacyBatch"
+        />
+      );
+
+      act(() => {
+        capturedOnTelemetryEvent!({ eid: 'ASSESS', data: { edata: { score: 1 } } });
+      });
+
+      expect(mockCaptureAssessmentEvent).toHaveBeenCalledWith(
+        { eid: 'ASSESS', data: { edata: { score: 1 } } },
+        { userId: 'test-user', courseId: 'course1', batchId: 'legacyBatch' },
+        expect.any(String)
+      );
     });
   });
 });
