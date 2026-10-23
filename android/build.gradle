@@ -5,7 +5,7 @@
 // Bump nettyVersion / protobufVersion there to roll out a fix across both classpaths.
 
 def nettyV = project.findProperty('nettyVersion') ?: '4.1.133.Final'
-def protobufV = project.findProperty('protobufVersion') ?: '3.25.5'
+def protobufV = project.findProperty('protobufVersion') ?: '4.35.0'
 
 def nettyModules = [
     'netty-common',
