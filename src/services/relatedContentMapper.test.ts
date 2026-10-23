@@ -79,6 +79,12 @@ describe('mapSearchContentToRelatedContentItems', () => {
     expect(result[0].cardType).toBe('resource');
   });
 
+  it('sets cardType to "learningPath" for a Learning Path item, even though its mimeType is a collection', () => {
+    const items = [makeItem({ mimeType: COLLECTION_MIME, primaryCategory: 'Learning Path' })];
+    const result = mapSearchContentToRelatedContentItems(items);
+    expect(result[0].cardType).toBe('learningPath');
+  });
+
   it('maps name with fallback to "Untitled"', () => {
     const items = [makeItem({ name: undefined })];
     const result = mapSearchContentToRelatedContentItems(items);

@@ -1,0 +1,51 @@
+@import './LearningPathPage.css';
+
+.lp-level-header-section {
+  background: var(--color-white);
+  padding: 1.5rem 1rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.lp-level-header-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lp-level-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--ion-color-dark, #222222);
+  margin: 0;
+}
+
+.lp-level-description {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: var(--color-757575, #757575);
+}
+
+.lp-level-stat-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+.lp-level-courses {
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.lp-level-skills-card {
+  background: var(--color-white);
+  margin: 0 0 0.5rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}

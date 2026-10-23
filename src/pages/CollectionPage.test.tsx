@@ -200,6 +200,7 @@ import { useContentSearch } from '../hooks/useContentSearch';
 import { useAuth } from '../contexts/AuthContext';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { userService } from '../services/UserService';
+import { useCollectionEnrollment } from '../hooks/useCollectionEnrollment';
 
 const mockCollectionData = {
   id: 'do_test_123',
@@ -461,6 +462,43 @@ describe('CollectionPage', () => {
       fireEvent.click(screen.getByText('collection.joinTheCourse'));
       expect(screen.getByTestId('ion-modal')).toBeInTheDocument();
       expect(screen.getByText('collection.availableBatches')).toBeInTheDocument();
+    });
+
+    it('enrols into the batch the learner picks in the sheet', () => {
+      vi.mocked(userService.isLoggedIn).mockReturnValue(true);
+      (useCollection as any).mockReturnValue({
+        data: { ...mockCollectionData, trackable: { enabled: 'Yes' } },
+        isLoading: false,
+        isError: false,
+        fetchStatus: 'idle',
+      });
+      const mutateAsync = vi.fn().mockResolvedValue({});
+      const enrollmentState = (useCollectionEnrollment as any).getMockImplementation()();
+      (useCollectionEnrollment as any).mockReturnValue({
+        ...enrollmentState,
+        enrollableBatches: [
+          { identifier: 'batch-1', name: 'Batch One' },
+          { identifier: 'batch-2', name: 'Batch Two' },
+        ],
+        enrol: { mutateAsync, isPending: false },
+      });
+
+      render(<CollectionPage />);
+      fireEvent.click(screen.getByText('collection.joinTheCourse'));
+
+      // The confirm CTA must be present and reachable — it was rendered
+      // off-screen before, which is the bug this test guards.
+      const confirm = screen.getByRole('button', { name: 'collection.joinTheBatch' });
+      expect(confirm).toBeDisabled();
+
+      fireEvent.change(screen.getByRole('combobox'), { target: { value: 'batch-2' } });
+      fireEvent.click(screen.getByRole('button', { name: 'collection.joinTheBatch' }));
+
+      expect(mutateAsync).toHaveBeenCalledWith({
+        courseId: 'do_test_123',
+        userId: 'mock-user-id',
+        batchId: 'batch-2',
+      });
     });
   });
 });
