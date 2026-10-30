@@ -1,5 +1,9 @@
 # Sunbird Spark Mobile App
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Sunbird-Spark/sunbird-spark-mobile-app/badge)](https://scorecard.dev/viewer/?uri=github.com/Sunbird-Spark/sunbird-spark-mobile-app)
+
+Security posture is tracked with [OpenSSF Scorecard](https://github.com/ossf/scorecard), which runs on every push to `main` and weekly. See [docs/openssf-scorecard.md](docs/openssf-scorecard.md) for the latest assessment and the improvement plan.
+
 ## Maintainer
 
 [@pallakartheekreddy](https://github.com/pallakartheekreddy)
