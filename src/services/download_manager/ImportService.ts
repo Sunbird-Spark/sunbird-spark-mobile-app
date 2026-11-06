@@ -5,7 +5,7 @@ import { DatabaseService, databaseService } from '../db/DatabaseService';
 import { ContentDbService, contentDbService } from '../db/ContentDbService';
 import { ContentService } from '../ContentService';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
-import type { ImportResult, ImportPhase, ContentEntry } from './types';
+import type { ImportResult, ImportPhase, ContentEntry, DownloadRequest } from './types';
 
 type ProgressCallback = (phase: ImportPhase, percent: number) => void;
 type CancelChecker = () => Promise<boolean>;
@@ -29,6 +29,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promi
   });
   return Promise.race([promise, timeout]);
 }
+
+const QUESTION_MIME_TYPE = 'application/vnd.sunbird.question';
 
 const ecmlMimeTypes = [
   'application/vnd.ekstep.ecml-archive',
@@ -129,12 +131,14 @@ export class ImportService {
       const rootItem = allItems.find((i) => i.identifier === identifier);
       const isCollectionImport = !!rootItem?.mimeType?.includes('collection');
       const isEnqueuedAsChild = !!parentIdentifier;
+      const isQuestionSetImport = !!rootItem?.mimeType?.toLowerCase().includes('questionset');
 
       // ══ STAGE 2: Extract payloads + write to content DB ══
       await this.checkCancelled(isCancelled);
       onProgress?.('IMPORTING_CONTENT', 40);
 
       const importedIds: string[] = [];
+      const pendingChildren: DownloadRequest[] = [];
 
       for (const item of itemsToImport) {
         await this.checkCancelled(isCancelled);
@@ -160,9 +164,10 @@ export class ImportService {
         // Build content DB row + upsert
         // For spine ECARs: all non-root items are children.
         // For leaf ECARs with parentIdentifier: all items are children.
+        // For question sets: their questions are children too, so reused Live questions don't list on their own in Downloads.
         const isChildOfCollection = isCollectionImport
           ? item.identifier !== identifier
-          : isEnqueuedAsChild;
+          : isEnqueuedAsChild || (isQuestionSetImport && item.identifier !== identifier);
         const row = this.constructContentRow(
           item,
           contentUri,
@@ -173,6 +178,23 @@ export class ImportService {
         );
         await this.contentDb.upsert(row);
         importedIds.push(item.identifier);
+
+        // A question set publishes only the questions it created as bundled zips; reused Live questions carry no artifact here, so fetch each one's own ECAR.
+        // The stored state (not this ECAR's) decides, so re-downloading a set doesn't re-request questions already on the device.
+        if (isQuestionSetImport && item.identifier !== identifier && row.content_state < 2 && item.mimeType === QUESTION_MIME_TYPE && typeof item.downloadUrl === 'string' && item.downloadUrl) {
+          pendingChildren.push({
+            identifier: item.identifier,
+            downloadUrl: item.downloadUrl,
+            filename: `${item.identifier}_${item.pkgVersion ?? 1}.ecar`,
+            mimeType: QUESTION_MIME_TYPE,
+            contentMeta: { identifier: item.identifier, name: item.name, mimeType: item.mimeType, pkgVersion: item.pkgVersion, downloadUrl: item.downloadUrl },
+          });
+        }
+      }
+
+      // Until those questions arrive the set isn't playable offline, so it stays out of local playback; the last question's import raises it to 2.
+      if (pendingChildren.length > 0) {
+        await this.contentDb.update(identifier, { content_state: 0 });
       }
 
       await this.checkCancelled(isCancelled);
@@ -227,7 +249,7 @@ export class ImportService {
       setTimeout(() => this.updateSizesOnDevice(importedIds), 5000);
 
       onProgress?.('COMPLETED', 100);
-      return { status: 'SUCCESS', identifiers: importedIds };
+      return { status: 'SUCCESS', identifiers: importedIds, ...(pendingChildren.length > 0 ? { pendingChildren } : {}) };
     } catch (err) {
       if ((err as Error).message === 'IMPORT_CANCELLED') {
         return { status: 'CANCELLED', identifiers: [] };
@@ -270,6 +292,12 @@ export class ImportService {
 
     // Online-only content (YouTube, external URLs) → metadata only, no artifact
     if (isNonDownloadable || disposition === 'online') return 0;
+
+    // A question's own ECAR has no artifact zip: its body is inline in manifest.json (copied in by copyManifestToContentDir) and its media sits under <identifier>/.
+    if (mimeType === QUESTION_MIME_TYPE && !artifactUrl && item.body) {
+      await this.copyDirectory(`${tmpDir}/${item.identifier}`, `${destDir}/${item.identifier}`);
+      return 2;
+    }
 
     // No artifact URL, or artifact URL is a remote server path (https://...).
     // This happens in spine ECARs where leaf items list the CDN URL but the
@@ -356,6 +384,24 @@ export class ImportService {
       to: destPath,
       directory: Directory.Data
     });
+  }
+
+  /** Recursively copies a directory under Directory.Data; a missing source (e.g. a question without media) is a no-op. */
+  private async copyDirectory(source: string, dest: string): Promise<void> {
+    let files: { name: string; type: string }[];
+    try {
+      ({ files } = await Filesystem.readdir({ path: source, directory: Directory.Data }));
+    } catch {
+      return;
+    }
+    await Filesystem.mkdir({ path: dest, directory: Directory.Data, recursive: true }).catch(() => { });
+    for (const file of files) {
+      if (file.type === 'directory') {
+        await this.copyDirectory(`${source}/${file.name}`, `${dest}/${file.name}`);
+      } else {
+        await Filesystem.copy({ from: `${source}/${file.name}`, to: `${dest}/${file.name}`, directory: Directory.Data });
+      }
+    }
   }
 
   /**

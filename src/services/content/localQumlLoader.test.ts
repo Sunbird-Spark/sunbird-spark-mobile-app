@@ -267,4 +267,47 @@ describe('loadLocalQumlContent — questionset', () => {
     expect(child.body).toContain(child.media[0].src);
     expect(child.body).not.toContain('/old.png');
   });
+
+  it("reads a reused Live question from its own ECAR's manifest.json when no index.json is bundled (positive)", async () => {
+    mockGetByIdentifier.mockImplementation(async (id: string) => {
+      if (id === 'do_qs') return { content_state: 2, path: 'file:///c/do_qs/', mime_type: 'application/vnd.sunbird.questionset' } as any;
+      if (id === 'q2') return { content_state: 2, path: 'file:///c/q2' } as any;
+      return null as any;
+    });
+    mockReadFile.mockImplementation(
+      readFileByPath({
+        'do_qs/hierarchy.json': {
+          questionset: { identifier: 'do_qs', mimeType: 'application/vnd.sunbird.questionset', children: [{ identifier: 'q2', mimeType: 'application/vnd.sunbird.question' }] },
+        },
+        'q2/manifest.json': {
+          archive: { items: [{ identifier: 'q2', mimeType: 'application/vnd.sunbird.question', body: '<img data-asset-variable="m2" src="/old.png" />', media: [{ id: 'm2', type: 'image', src: 'q2/m2.png' }] }] },
+        },
+      }),
+    );
+    mockReaddir.mockResolvedValue({ files: [{ name: 'm2.png' }] } as any);
+
+    const child = (await loadLocalQumlContent('do_qs')).children[0];
+
+    expect(child.body).toContain('_capacitor_file_');
+    expect(child.media[0].src).toContain('q2/q2/m2.png');
+  });
+
+  it('keeps the stub when neither index.json nor a manifest body is on disk (negative)', async () => {
+    mockGetByIdentifier.mockImplementation(async (id: string) => {
+      if (id === 'do_qs') return { content_state: 2, path: 'file:///c/do_qs/', mime_type: 'application/vnd.sunbird.questionset' } as any;
+      if (id === 'q3') return { content_state: 0, path: 'file:///c/q3' } as any;
+      return null as any;
+    });
+    mockReadFile.mockImplementation(
+      readFileByPath({
+        'do_qs/hierarchy.json': {
+          questionset: { identifier: 'do_qs', mimeType: 'application/vnd.sunbird.questionset', children: [{ identifier: 'q3', mimeType: 'application/vnd.sunbird.question' }] },
+        },
+      }),
+    );
+
+    const child = (await loadLocalQumlContent('do_qs')).children[0];
+
+    expect(child).toEqual({ identifier: 'q3', mimeType: 'application/vnd.sunbird.question' });
+  });
 });

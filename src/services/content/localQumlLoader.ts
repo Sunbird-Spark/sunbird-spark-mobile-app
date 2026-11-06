@@ -209,6 +209,9 @@ async function resolveQuestionMedia(question: any, baseDir: string): Promise<any
  * Each question's ecar artifact zip is extracted to its own content dir, giving:
  *   content/{qid}/index.json          (full question: body, interactions, answer)
  *   content/{qid}/{qid}/<image files> (referenced by media[].src)
+ *
+ * A reused Live question isn't bundled in the set's ECAR; its own ECAR is downloaded
+ * instead, which carries the full question inline in content/{qid}/manifest.json.
  */
 async function loadLocalQuestion(questionId: string): Promise<any | null> {
   const entry = await contentDbService.getByIdentifier(questionId);
@@ -216,7 +219,11 @@ async function loadLocalQuestion(questionId: string): Promise<any | null> {
 
   const qDir = entry.path.replace(/\/$/, '');
   const indexJson = await readLocalJson(qDir, 'index.json');
-  const question = _.get(indexJson, 'archive.items[0]');
+  let question = _.get(indexJson, 'archive.items[0]');
+  if (!question) {
+    const manifestItems: any[] = _.get(await readLocalJson(qDir, 'manifest.json'), 'archive.items', []);
+    question = manifestItems.find((it) => it?.identifier === questionId && it?.body);
+  }
   if (!question) return null;
 
   return resolveQuestionMedia(question, qDir);

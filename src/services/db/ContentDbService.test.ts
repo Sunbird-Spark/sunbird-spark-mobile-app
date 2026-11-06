@@ -96,4 +96,12 @@ describe('ContentDbService', () => {
     const result = await service.getCollectionsContainingChild('child_1');
     expect(result).toEqual([]);
   });
+
+  it('finds question sets containing a question', async () => {
+    const mockDb = db.getDb();
+    vi.mocked(mockDb.query).mockResolvedValue({ values: [{ identifier: 'do_qs' }] } as any);
+    const result = await service.getQuestionSetsContainingChild('q1');
+    expect(mockDb.query).toHaveBeenCalledWith(expect.stringContaining("mime_type LIKE '%questionset%'"), ['%q1%']);
+    expect(result).toEqual([{ identifier: 'do_qs' }]);
+  });
 });

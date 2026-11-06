@@ -11,6 +11,8 @@ import { buildCollectionCdata, buildObjectRollup } from '../../services/course/c
 import { resolveContentForPlayer } from '../../services/content/contentPlaybackResolver';
 import { contentDbService } from '../../services/db/ContentDbService';
 import { mergeTranscriptsFromServerData } from '../../services/ContentService';
+import { useTranslation } from 'react-i18next';
+import { dynamicAssessForLearner, isDynamicAssessUnavailable } from '../../services/players/dynamicAssessSubset';
 import { importService } from '../../services/download_manager';
 import type { HierarchyContentNode } from '../../types/collectionTypes';
 import PageLoader from '../common/PageLoader';
@@ -47,6 +49,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   currentContentStatus,
   skipContentStateUpdate = false,
 }) => {
+  const { t } = useTranslation();
   const { userId } = useAuth();
   const { data, isLoading, error, refetch, fetchStatus } = useContentRead(contentId);
   const contentData = data?.data?.content;
@@ -192,6 +195,13 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
   const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier)
     ? resolvedMetadata.data
     : rawPlayerMetadata;
+  // Dynamic Assess ECML: trim the pool to this learner's draw after resolving, since offline bodies are only loaded there (QuML draws in useQumlContent).
+  const playableMetadata = useMemo(
+    () => (isQumlContent ? playerMetadata : dynamicAssessForLearner(playerMetadata, userId)),
+    [isQumlContent, playerMetadata, userId],
+  );
+  // Dynamic content with nothing to draw shows an error instead of a player that could fall back to the full pool.
+  const dynamicAssessNotReady = isDynamicAssessUnavailable(playableMetadata);
 
   // Lock to landscape on mount
   useEffect(() => {
@@ -321,7 +331,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
     );
   }
 
-  if (playerError || !playerMetadata || !mimeType) {
+  if (playerError || !playerMetadata || !mimeType || dynamicAssessNotReady) {
     return (
       <IonPage className="cp-fullscreen">
         <div
@@ -340,7 +350,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
         </div>
         <IonContent scrollY={false}>
           <PageLoader
-            error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}
+            error={playerError ? `Failed to load content: ${playerError.message}` : (dynamicAssessNotReady ? t('dynamicAssessNotReady') : 'No content data available.')}
             onRetry={handleRetry}
           />
         </IonContent>
@@ -354,7 +364,7 @@ const CollectionContentPlayer: React.FC<CollectionContentPlayerProps> = ({
         <div className="cp-player-fullscreen-container">
           <ContentPlayer
             mimeType={mimeType}
-            metadata={playerMetadata}
+            metadata={playableMetadata}
             cdata={cdata}
             objectRollup={objectRollup}
             onPlayerEvent={handlePlayerEvent}

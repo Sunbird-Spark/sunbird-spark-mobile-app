@@ -26,6 +26,7 @@
   "downloadToPlayOfflineHint": "ऑफलाइन चलाने के लिए डाउनलोड करें",
   "bestScore": "सर्वश्रेष्ठ अंक",
   "playItem": "{{name}} चलाएं",
+  "dynamicAssessNotReady": "यह मूल्यांकन अभी तैयार नहीं है। कृपया बाद में पुनः प्रयास करें।",
   "deleteItem": "{{name}} हटाएं",
   "openItem": "{{name}} खोलें",
   "digit": "अंक",

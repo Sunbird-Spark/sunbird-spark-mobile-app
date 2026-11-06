@@ -37,6 +37,8 @@ const mockContentDbService = vi.hoisted(() => ({
   getByIdentifier: vi.fn().mockResolvedValue(null),
   update: vi.fn().mockResolvedValue(undefined),
   upsert: vi.fn().mockResolvedValue(undefined),
+  getByIdentifiers: vi.fn().mockResolvedValue([]),
+  getQuestionSetsContainingChild: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: mockContentDbService,
@@ -1163,6 +1165,62 @@ describe('DownloadManager', () => {
         ([id]: [string]) => id === 'do_collection'
       );
       expect(parentUpgradeCalls).toHaveLength(0);
+    });
+  });
+
+  describe('processDownloadedEntries — question set questions not bundled in its ECAR', () => {
+    const runImportOf = async (entry: DownloadQueueEntry, importResult: any) => {
+      const states: Record<string, DownloadState> = { [entry.identifier]: entry.state };
+      vi.mocked(dlDb.getByIdentifier).mockImplementation(async (id: string) => (states[id] ? { ...entry, identifier: id, state: states[id] } : null));
+      vi.mocked(dlDb.update).mockImplementation(async (id: string, fields: any) => { if (fields.state) states[id] = fields.state; });
+      let served = false;
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        if (state !== DownloadState.DOWNLOADED || served) return [];
+        served = true;
+        return [entry];
+      });
+      vi.mocked(importSvc.import).mockResolvedValue(importResult);
+      await manager.init();
+    };
+
+    it("queues the set's unbundled questions as its children (positive)", async () => {
+      const qs = makeEntry({ identifier: 'do_qs', state: DownloadState.DOWNLOADED, file_path: '/path/qs.ecar', priority: 10 });
+      await runImportOf(qs, {
+        status: 'SUCCESS',
+        identifiers: ['do_qs'],
+        pendingChildren: [{ identifier: 'do_q1', downloadUrl: 'https://cdn/question/do_q1.ecar', filename: 'do_q1_1.ecar', mimeType: 'application/vnd.sunbird.question' }],
+      });
+
+      expect(dlDb.insert).toHaveBeenCalledWith(expect.objectContaining({
+        identifier: 'do_q1', parent_identifier: 'do_qs', download_url: 'https://cdn/question/do_q1.ecar', priority: 10,
+      }));
+    });
+
+    it('marks every set reusing a downloaded question as downloaded once all its questions are on the device (positive)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qsA', mime_type: 'application/vnd.sunbird.question', state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      mockContentDbService.getQuestionSetsContainingChild.mockResolvedValue([{ identifier: 'do_qsB', content_state: 0, child_nodes: 'q1,q2' }]);
+      mockContentDbService.getByIdentifiers.mockResolvedValue([{ identifier: 'q1', content_state: 2 }, { identifier: 'q2', content_state: 2 }]);
+
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] });
+
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_qsB', { content_state: 2 });
+    });
+
+    it('leaves a set not downloaded while any of its questions is still missing (negative)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qsA', mime_type: 'application/vnd.sunbird.question', state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      mockContentDbService.getQuestionSetsContainingChild.mockResolvedValue([{ identifier: 'do_qsB', content_state: 0, child_nodes: 'q1,q2' }]);
+      mockContentDbService.getByIdentifiers.mockResolvedValue([{ identifier: 'q1', content_state: 2 }, { identifier: 'q2', content_state: 0 }]);
+
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] });
+
+      expect(mockContentDbService.update).not.toHaveBeenCalledWith('do_qsB', { content_state: 2 });
+    });
+
+    it('queues nothing extra when the import has no pending children (negative)', async () => {
+      const qs = makeEntry({ identifier: 'do_qs', state: DownloadState.DOWNLOADED, file_path: '/path/qs.ecar' });
+      await runImportOf(qs, { status: 'SUCCESS', identifiers: ['do_qs'] });
+
+      expect(dlDb.insert).not.toHaveBeenCalled();
     });
   });
 });

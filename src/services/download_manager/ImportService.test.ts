@@ -1000,4 +1000,106 @@ describe('ImportService', () => {
       expect(upserted.audience).toBe('Instructor');
     });
   });
+
+  // ── import — question sets reusing Live questions ──
+
+  describe('import — question set questions not bundled in its ECAR', () => {
+    const QS = 'application/vnd.sunbird.questionset';
+    const Q = 'application/vnd.sunbird.question';
+    const manifestWith = async (items: Record<string, unknown>[]) => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      vi.mocked(Filesystem.readFile).mockResolvedValue({ data: JSON.stringify({ ver: '1.1', archive: { items } }) } as any);
+    };
+
+    it('returns unbundled questions as pending children and keeps the set out of local playback (positive)', async () => {
+      await manifestWith([
+        { identifier: 'do_qs', mimeType: QS },
+        { identifier: 'do_q1', mimeType: Q, pkgVersion: 2, name: 'Q1', downloadUrl: 'https://cdn/question/do_q1.ecar' },
+        { identifier: 'do_q2', mimeType: Q, artifactUrl: 'do_q2/do_q2.zip' },
+      ]);
+
+      const result = await svc.import('do_qs', '/p.ecar');
+
+      expect(result.status).toBe('SUCCESS');
+      expect(result.pendingChildren).toEqual([
+        expect.objectContaining({ identifier: 'do_q1', downloadUrl: 'https://cdn/question/do_q1.ecar', filename: 'do_q1_2.ecar', mimeType: Q }),
+      ]);
+      expect(contentDb.update).toHaveBeenCalledWith('do_qs', { content_state: 0 });
+    });
+
+    it('does not re-request questions already on the device when the set is downloaded again (negative)', async () => {
+      await manifestWith([
+        { identifier: 'do_qs', mimeType: QS },
+        { identifier: 'do_q1', mimeType: Q, pkgVersion: 1, downloadUrl: 'https://cdn/question/do_q1.ecar' },
+      ]);
+      vi.mocked(contentDb.getByIdentifiers).mockResolvedValue([
+        { identifier: 'do_qs', content_state: 0, ref_count: 1, visibility: 'Default', local_data: JSON.stringify({ pkgVersion: 1 }), path: 'p' } as ContentEntry,
+        { identifier: 'do_q1', content_state: 2, ref_count: 1, visibility: 'Parent', local_data: JSON.stringify({ pkgVersion: 1 }), path: 'p' } as ContentEntry,
+      ]);
+
+      const result = await svc.import('do_qs', '/p.ecar');
+
+      expect(result.pendingChildren).toBeUndefined();
+      expect(contentDb.update).not.toHaveBeenCalledWith('do_qs', { content_state: 0 });
+    });
+
+    it("hides a set's questions from Downloads while the set itself stays listed (positive)", async () => {
+      await manifestWith([
+        { identifier: 'do_qs', mimeType: QS, visibility: 'Default' },
+        { identifier: 'do_q1', mimeType: Q, visibility: 'Default', downloadUrl: 'https://cdn/question/do_q1.ecar' },
+      ]);
+
+      await svc.import('do_qs', '/p.ecar');
+
+      const rows = vi.mocked(contentDb.upsert).mock.calls.map(([row]) => row as ContentEntry);
+      expect(rows.find((r) => r.identifier === 'do_qs')?.visibility).toBe('Default');
+      expect(rows.find((r) => r.identifier === 'do_q1')?.visibility).toBe('Parent');
+    });
+
+    it('keeps a set downloaded inside a course hidden, as before (negative)', async () => {
+      await manifestWith([{ identifier: 'do_qs', mimeType: QS, visibility: 'Default' }]);
+
+      await svc.import('do_qs', '/p.ecar', undefined, undefined, undefined, 'do_course');
+
+      const row = vi.mocked(contentDb.upsert).mock.calls[0][0] as ContentEntry;
+      expect(row.visibility).toBe('Parent');
+    });
+
+    it('returns no pending children when every question is bundled (negative)', async () => {
+      await manifestWith([
+        { identifier: 'do_qs', mimeType: QS },
+        { identifier: 'do_q2', mimeType: Q, artifactUrl: 'do_q2/do_q2.zip', downloadUrl: 'https://cdn/question/do_q2.ecar' },
+      ]);
+
+      const result = await svc.import('do_qs', '/p.ecar');
+
+      expect(result.pendingChildren).toBeUndefined();
+      expect(contentDb.update).not.toHaveBeenCalledWith('do_qs', { content_state: 0 });
+    });
+
+    it("imports a question's own ECAR from its inline body and copies its media (positive)", async () => {
+      const { Filesystem } = await import('@capacitor/filesystem');
+      await manifestWith([{ identifier: 'do_q1', mimeType: Q, body: '<p>Q</p>', media: [{ src: 'do_q1/img.png' }] }]);
+      vi.mocked(Filesystem.readdir).mockImplementation(async (opts: any) => ({ files: opts.path.endsWith('/do_q1') ? [{ name: 'img.png', type: 'file' }] : [] }) as any);
+
+      const result = await svc.import('do_q1', '/p.ecar', undefined, undefined, undefined, 'do_qs');
+
+      expect(result.status).toBe('SUCCESS');
+      const row = vi.mocked(contentDb.upsert).mock.calls[0][0] as ContentEntry;
+      expect(row.content_state).toBe(2);
+      expect(row.visibility).toBe('Parent');
+      expect(Filesystem.copy).toHaveBeenCalledWith(expect.objectContaining({ from: expect.stringMatching(/\/do_q1\/img\.png$/), to: 'content/do_q1/do_q1/img.png' }));
+    });
+
+    it('does not request downloads for questions of non-question-set imports (negative)', async () => {
+      await manifestWith([
+        { identifier: 'do_course', mimeType: 'application/vnd.ekstep.content-collection' },
+        { identifier: 'do_q1', mimeType: Q, downloadUrl: 'https://cdn/question/do_q1.ecar' },
+      ]);
+
+      const result = await svc.import('do_course', '/p.ecar');
+
+      expect(result.pendingChildren).toBeUndefined();
+    });
+  });
 });

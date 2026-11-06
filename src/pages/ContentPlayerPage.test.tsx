@@ -160,6 +160,10 @@ vi.mock('../components/telemetry/TelemetryTracker', () => ({
   TelemetryTracker: () => null,
 }));
 
+vi.mock('../services/UserService', () => ({
+  userService: { getUserId: () => 'u1' },
+}));
+
 vi.mock('../hooks/useImpression', () => ({ default: vi.fn() }));
 vi.mock('./ContentPlayerPage.css', () => ({}));
 
@@ -562,5 +566,62 @@ describe('ContentPlayerPage — offline local_data fallback merges transcripts f
     expect(metadata.transcripts).toEqual([
       { language: 'English', identifier: 'c_en', languageCode: 'en', artifactUrl: 'https://x/en.vtt' },
     ]);
+  });
+});
+
+describe('ContentPlayerPage — Dynamic Assess ECML', () => {
+  const levels: Record<string, string> = { a1: 'EASY', a2: 'EASY', a3: 'EASY', b1: 'MEDIUM', b2: 'MEDIUM', b3: 'MEDIUM' };
+  const ecmlContent = (primaryCategory: string) => ({
+    name: 'Quiz', appIcon: '', identifier: 'do_dyn', contentType: 'SelfAssess', primaryCategory,
+    mimeType: 'application/vnd.ekstep.ecml-archive',
+    body: JSON.stringify({ theme: { stage: [{ 'org.ekstep.questionset': [{
+      config: { __cdata: JSON.stringify({ total_items: 6, max_score: 6, dynamic_assess: { target: { E: 1, M: 1, D: 0 }, levels } }) },
+      data: { __cdata: JSON.stringify(Object.keys(levels).map((id) => ({ identifier: id, max_score: 1 }))) },
+      'org.ekstep.question': Object.keys(levels).map((id) => ({ id })),
+    }] }] } }),
+  });
+  const playedQuestions = () => {
+    const metadata = JSON.parse(screen.getByTestId('content-player-metadata').textContent || '{}');
+    return JSON.parse(metadata.body).theme.stage[0]['org.ekstep.questionset'][0]['org.ekstep.question'];
+  };
+  const renderWith = (content: Record<string, unknown>) => {
+    (useContentRead as any).mockReturnValue({ data: { data: { content } }, isLoading: false, error: null, refetch: vi.fn(), fetchStatus: 'idle' });
+    render(<ContentPlayerPage />);
+    fireEvent.click(screen.getByRole('button', { name: 'playItem' }));
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    (useNetwork as any).mockReturnValue({ isOffline: false });
+    (useQumlContent as any).mockReturnValue({ data: null, isLoading: false, error: null, refetch: vi.fn() });
+    (useContentSearch as any).mockReturnValue({ data: null, isLoading: false });
+    (useDownloadState as any).mockReturnValue(null);
+    (useIsContentLocal as any).mockReturnValue({ isLocal: false, isCheckPending: false });
+  });
+
+  it("plays only the learner's draw from a Dynamic Course Assessment pool (positive)", () => {
+    renderWith(ecmlContent('Dynamic Course Assessment'));
+    const ids = playedQuestions().map((q: any) => q.id);
+    expect(ids).toHaveLength(2);
+    expect(ids.map((id: string) => levels[id]).sort()).toEqual(['EASY', 'MEDIUM']);
+  });
+
+  it('plays other ECML content whole (negative)', () => {
+    renderWith(ecmlContent('Course Assessment'));
+    expect(playedQuestions()).toHaveLength(6);
+  });
+
+  it('shows the not-ready message instead of a player for Dynamic ECML without a body (positive)', () => {
+    (useContentRead as any).mockReturnValue({ data: { data: { content: { ...ecmlContent('Dynamic Course Assessment'), body: undefined } } }, isLoading: false, error: null, refetch: vi.fn(), fetchStatus: 'idle' });
+    render(<ContentPlayerPage />);
+    expect(screen.getByRole('alert')).toHaveTextContent('dynamicAssessNotReady');
+    expect(screen.queryByRole('button', { name: 'playItem' })).not.toBeInTheDocument();
+  });
+
+  it('shows the not-ready message for a Dynamic QuestionSet with an empty draw (positive)', () => {
+    (useContentRead as any).mockReturnValue({ data: { data: { content: { identifier: 'do_qs', name: 'QS', mimeType: 'application/vnd.sunbird.questionset' } } }, isLoading: false, error: null, refetch: vi.fn(), fetchStatus: 'idle' });
+    (useQumlContent as any).mockReturnValue({ data: { identifier: 'do_qs', name: 'QS', mimeType: 'application/vnd.sunbird.questionset', primaryCategory: 'Dynamic QuestionSet', children: [], dynamicAssessUnavailable: true }, isLoading: false, error: null, refetch: vi.fn() });
+    render(<ContentPlayerPage />);
+    expect(screen.getByRole('alert')).toHaveTextContent('dynamicAssessNotReady');
   });
 });

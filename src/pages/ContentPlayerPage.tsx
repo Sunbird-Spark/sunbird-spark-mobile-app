@@ -29,6 +29,8 @@ import { NON_DOWNLOADABLE_MIME_TYPES } from '../services/content/hierarchyUtils'
 import { resolveContentForPlayer } from '../services/content/contentPlaybackResolver';
 import { contentDbService } from '../services/db/ContentDbService';
 import { mergeTranscriptsFromServerData } from '../services/ContentService';
+import { userService } from '../services/UserService';
+import { dynamicAssessForLearner, isDynamicAssessUnavailable } from '../services/players/dynamicAssessSubset';
 import { mapSearchContentToRelatedContentItems } from '../services/relatedContentMapper';
 import { downloadManager, DownloadState, importService } from '../services/download_manager';
 import { BackIcon } from '../components/icons/CollectionIcons';
@@ -227,6 +229,14 @@ const ContentPlayerPage: React.FC = () => {
   }, [rawPlayerMetadata, isLocal, isQumlContent]);
 
   const playerMetadata = (isLocal && resolvedMetadata != null && resolvedMetadata.id === rawPlayerMetadata?.identifier) ? resolvedMetadata.data : rawPlayerMetadata;
+  // Dynamic Assess ECML: trim the pool to this learner's draw after resolving, since offline bodies are only loaded there (QuML draws in useQumlContent).
+  const learnerId = userService.getUserId();
+  const playableMetadata = useMemo(
+    () => (isQumlContent ? playerMetadata : dynamicAssessForLearner(playerMetadata, learnerId)),
+    [isQumlContent, playerMetadata, learnerId],
+  );
+  // Dynamic content with nothing to draw shows an error instead of a player that could fall back to the full pool.
+  const dynamicAssessNotReady = isDynamicAssessUnavailable(playableMetadata);
 
   // Loading guards for offline fallback pipeline
   const isLocalFallbackPending = isLocal && isApiUnavailable && !contentData && !localFallbackMeta;
@@ -474,7 +484,7 @@ const ContentPlayerPage: React.FC = () => {
             )}
             <ContentPlayer
               mimeType={mimeType}
-              metadata={playerMetadata}
+              metadata={playableMetadata}
               onPlayerEvent={handlePlayerEvent}
               onTelemetryEvent={handleTelemetryEvent}
               contentMeta={telemetryObject}
@@ -532,6 +542,8 @@ const ContentPlayerPage: React.FC = () => {
             error={playerError ? `Failed to load content: ${playerError.message}` : 'No content data available.'}
             onRetry={handleRetry}
           />
+        ) : dynamicAssessNotReady ? (
+          <PageLoader error={t('dynamicAssessNotReady')} onRetry={handleRetry} />
         ) : (
           <div className="cp-container">
             {/* Hero Section */}

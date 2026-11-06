@@ -68,6 +68,16 @@ export class ContentDbService {
     );
     return (result.values ?? []) as ContentEntry[];
   }
+
+  /** Question sets listing this question in child_nodes; a question reused by several sets is downloaded once but completes all of them. */
+  async getQuestionSetsContainingChild(childIdentifier: string): Promise<ContentEntry[]> {
+    const db = this.db.getDb();
+    const result = await db.query(
+      `SELECT * FROM ${TABLE} WHERE mime_type LIKE '%questionset%' AND child_nodes LIKE ?`,
+      [`%${childIdentifier}%`],
+    );
+    return (result.values ?? []) as ContentEntry[];
+  }
 }
 
 export const contentDbService = new ContentDbService(databaseService);

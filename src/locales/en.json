@@ -34,6 +34,7 @@
   "downloadToPlayOfflineHint": "Download to play offline",
   "bestScore": "Best score",
   "playItem": "Play {{name}}",
+  "dynamicAssessNotReady": "This assessment isn’t ready yet. Please try again later.",
   "deleteItem": "Delete {{name}}",
   "openItem": "Open {{name}}",
   "digit": "Digit",

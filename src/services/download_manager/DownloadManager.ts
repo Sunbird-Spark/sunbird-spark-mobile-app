@@ -17,6 +17,7 @@ import {
 } from './types';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
 
+const QUESTION_MIME_TYPE = 'application/vnd.sunbird.question';
 const MAX_RETRIES_DEFAULT = 3;
 const BACKOFF_BASE_MS = 2000;
 const BACKOFF_MAX_MS = 30000;
@@ -676,6 +677,16 @@ export class DownloadManager {
             if (entry.parent_identifier) {
               await this.handleCollectionChildComplete(entry);
             }
+
+            // A question queued by one set may also complete other sets that reuse it.
+            if (entry.parent_identifier && entry.mime_type === QUESTION_MIME_TYPE) {
+              await this.markQuestionSetsReady(entry.identifier);
+            }
+
+            // Questions a question set doesn't bundle are downloaded as its children; once all are on the device the set is marked downloaded.
+            if (result.pendingChildren?.length) {
+              await this.enqueue(result.pendingChildren.map((child) => ({ ...child, parentIdentifier: entry.identifier, priority: entry.priority })));
+            }
             break;
 
           case 'CANCELLED':
@@ -752,6 +763,20 @@ export class DownloadManager {
         console.debug('[DownloadManager] Created parent entry with content_state=2:', parentId);
       }
       this.emit({ type: 'state_change', identifier: parentId });
+    }
+  }
+
+  /** Marks each not-yet-downloaded question set containing this question as downloaded once every child it lists is on the device. */
+  private async markQuestionSetsReady(questionId: string): Promise<void> {
+    const sets = await contentDbService.getQuestionSetsContainingChild(questionId);
+    for (const set of sets) {
+      const childIds = (set.child_nodes || '').split(',').filter(Boolean);
+      if (set.content_state >= 2 || childIds.length === 0) continue;
+      const children = await contentDbService.getByIdentifiers(childIds);
+      if (children.length === childIds.length && children.every((c) => c.content_state === 2)) {
+        await contentDbService.update(set.identifier, { content_state: 2 });
+        this.emit({ type: 'state_change', identifier: set.identifier });
+      }
     }
   }
 

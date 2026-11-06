@@ -6,6 +6,8 @@ import {
   replaceQuestionsInHierarchy,
   ensureMaxScore,
 } from '../services/content/qumlHierarchyUtils';
+import { userService } from '../services/UserService';
+import { dynamicAssessForLearner } from '../services/players/dynamicAssessSubset';
 import _ from 'lodash';
 
 interface UseQumlContentOptions {
@@ -29,9 +31,10 @@ export const useQumlContent = (
   options?: UseQumlContentOptions
 ): UseQueryResult<any, Error> => {
   const enabled = options?.enabled ?? true;
+  const learnerId = userService.getUserId();
 
   return useQuery({
-    queryKey: ['quml', 'questionset', questionSetId],
+    queryKey: ['quml', 'questionset', questionSetId, learnerId],
     enabled: enabled && Boolean(questionSetId),
     // staleTime 0 so the queryFn re-runs on every mount. This is essential for the
     // local-first behaviour: a questionset opened while online caches the API
@@ -47,7 +50,8 @@ export const useQumlContent = (
       // Local-first: if downloaded, rebuild the merged hierarchy from stored files.
       const local = await loadLocalQumlContent(questionSetId);
       if (local) {
-        return local;
+        // A downloaded Dynamic QuestionSet holds the whole pool, so draw the learner's questions here too.
+        return dynamicAssessForLearner(local, learnerId);
       }
 
       const hierarchyResp = await questionSetService.getHierarchy<any>(questionSetId);
@@ -57,6 +61,9 @@ export const useQumlContent = (
       if (!metadata) {
         throw new Error(`Hierarchy payload missing questionset for ID: ${questionSetId}`);
       }
+
+      // Dynamic Assess: draw the learner's questions before fetching, so question/list only returns the drawn questions.
+      metadata = dynamicAssessForLearner(metadata, learnerId);
 
       const questionIds = collectQuestionIds(metadata);
 
