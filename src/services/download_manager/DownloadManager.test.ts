@@ -37,6 +37,8 @@ const mockContentDbService = vi.hoisted(() => ({
   getByIdentifier: vi.fn().mockResolvedValue(null),
   update: vi.fn().mockResolvedValue(undefined),
   upsert: vi.fn().mockResolvedValue(undefined),
+  getByIdentifiers: vi.fn().mockResolvedValue([]),
+  getQuestionSetsContainingChild: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('../db/ContentDbService', () => ({
   contentDbService: mockContentDbService,
@@ -1163,6 +1165,156 @@ describe('DownloadManager', () => {
         ([id]: [string]) => id === 'do_collection'
       );
       expect(parentUpgradeCalls).toHaveLength(0);
+    });
+  });
+
+  describe('processDownloadedEntries — question set questions not bundled in its ECAR', () => {
+    const QUESTION = 'application/vnd.sunbird.question';
+    const QS = 'application/vnd.sunbird.questionset';
+    let states: Record<string, DownloadState>;
+    let rows: Record<string, any>;
+    let entries: Record<string, DownloadQueueEntry>;
+
+    // `queue` seeds other queue entries (id → state); `contentRows` seeds content DB rows (sets and questions).
+    const runImportOf = async (entry: DownloadQueueEntry, importResult: any, queue: Record<string, Partial<DownloadQueueEntry>> = {}, contentRows: any[] = []) => {
+      entries = { [entry.identifier]: entry };
+      for (const [id, e] of Object.entries(queue)) entries[id] = makeEntry({ identifier: id, ...e });
+      states = Object.fromEntries(Object.values(entries).map((e) => [e.identifier, e.state]));
+      rows = Object.fromEntries(contentRows.map((r) => [r.identifier, r]));
+      const current = (id: string) => (entries[id] ? { ...entries[id], state: states[id] } : null);
+      vi.mocked(dlDb.getByIdentifier).mockImplementation(async (id: string) => current(id));
+      vi.mocked(dlDb.getByIdentifiers).mockImplementation(async (ids: string[]) => ids.map(current).filter(Boolean) as DownloadQueueEntry[]);
+      vi.mocked(dlDb.update).mockImplementation(async (id: string, fields: any) => { if (fields.state) states[id] = fields.state; });
+      mockContentDbService.getByIdentifier.mockImplementation(async (id: string) => rows[id] ?? null);
+      mockContentDbService.getByIdentifiers.mockImplementation(async (ids: string[]) => ids.map((id) => rows[id]).filter(Boolean));
+      mockContentDbService.getQuestionSetsContainingChild.mockImplementation(async (id: string) =>
+        Object.values(rows).filter((r) => r.mime_type === QS && String(r.child_nodes).split(',').includes(id)));
+      let served = false;
+      vi.mocked(dlDb.getByState).mockImplementation(async (state: any) => {
+        if (state !== DownloadState.DOWNLOADED || served) return [];
+        served = true;
+        return [entry];
+      });
+      vi.mocked(importSvc.import).mockResolvedValue(importResult);
+      await manager.init();
+    };
+    const pending = [{ identifier: 'q1', downloadUrl: 'https://cdn/question/q1.ecar', filename: 'q1_1.ecar', mimeType: QUESTION }];
+
+    it("queues the set's unbundled questions as its children and keeps the set in progress until they arrive (positive)", async () => {
+      const qs = makeEntry({ identifier: 'do_qs', mime_type: QS, state: DownloadState.DOWNLOADED, file_path: '/path/qs.ecar', priority: 10 });
+      vi.mocked(dlDb.insert).mockImplementation(async (e: any) => { entries[e.identifier] = e; states[e.identifier] = e.state; });
+      await runImportOf(qs, { status: 'SUCCESS', identifiers: ['do_qs'], pendingChildren: pending }, {},
+        [{ identifier: 'do_qs', mime_type: QS, content_state: 0, child_nodes: 'q1' }]);
+
+      expect(dlDb.insert).toHaveBeenCalledWith(expect.objectContaining({
+        identifier: 'q1', parent_identifier: 'do_qs', download_url: 'https://cdn/question/q1.ecar', priority: 10,
+      }));
+      expect(states.do_qs).toBe(DownloadState.IMPORTING);
+    });
+
+    it('completes a set as soon as its own import leaves no question missing (negative)', async () => {
+      const qs = makeEntry({ identifier: 'do_qs', mime_type: QS, state: DownloadState.DOWNLOADED, file_path: '/path/qs.ecar' });
+      await runImportOf(qs, { status: 'SUCCESS', identifiers: ['do_qs'] });
+
+      expect(dlDb.insert).not.toHaveBeenCalled();
+      expect(states.do_qs).toBe(DownloadState.COMPLETED);
+    });
+
+    it('completes every set waiting on a downloaded question once all its questions are on the device (positive)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qsA', mime_type: QUESTION, state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] }, { do_qsB: { mime_type: QS, state: DownloadState.IMPORTING } }, [
+        { identifier: 'do_qsB', mime_type: QS, content_state: 0, child_nodes: 'q1,q2' },
+        { identifier: 'q1', content_state: 2 }, { identifier: 'q2', content_state: 2 },
+      ]);
+
+      expect(mockContentDbService.update).toHaveBeenCalledWith('do_qsB', { content_state: 2 });
+      expect(states.do_qsB).toBe(DownloadState.COMPLETED);
+    });
+
+    it('settles sets for a question that was queued on its own, without a parent (positive)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: null, mime_type: QUESTION, state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] }, { do_qs: { mime_type: QS, state: DownloadState.IMPORTING } }, [
+        { identifier: 'do_qs', mime_type: QS, content_state: 0, child_nodes: 'q1' }, { identifier: 'q1', content_state: 2 },
+      ]);
+
+      expect(states.do_qs).toBe(DownloadState.COMPLETED);
+    });
+
+    it('keeps a set waiting while a missing question is still on its way (negative)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qsA', mime_type: QUESTION, state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] },
+        { do_qsB: { mime_type: QS, state: DownloadState.IMPORTING }, q2: { mime_type: QUESTION, state: DownloadState.DOWNLOADING } }, [
+          { identifier: 'do_qsB', mime_type: QS, content_state: 0, child_nodes: 'q1,q2' },
+          { identifier: 'q1', content_state: 2 }, { identifier: 'q2', content_state: 0 },
+        ]);
+
+      expect(mockContentDbService.update).not.toHaveBeenCalledWith('do_qsB', { content_state: 2 });
+      expect(states.do_qsB).toBe(DownloadState.IMPORTING);
+    });
+
+    it("fails a waiting set when one of its missing questions can no longer arrive, so it offers Retry (positive)", async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qs', mime_type: QUESTION, state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] },
+        { do_qs: { mime_type: QS, state: DownloadState.IMPORTING }, q2: { mime_type: QUESTION, state: DownloadState.FAILED } }, [
+          { identifier: 'do_qs', mime_type: QS, content_state: 0, child_nodes: 'q1,q2' },
+          { identifier: 'q1', content_state: 2 }, { identifier: 'q2', content_state: 0 },
+        ]);
+
+      expect(states.do_qs).toBe(DownloadState.FAILED);
+    });
+
+    it("does not mark a set downloaded just because its own queued children finished, when a shared question is queued under another set (negative)", async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qsB', mime_type: QUESTION, state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      vi.mocked(dlDb.getByParent).mockResolvedValue([makeEntry({ identifier: 'q1', parent_identifier: 'do_qsB', state: DownloadState.COMPLETED })]);
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] },
+        { do_qsB: { mime_type: QS, state: DownloadState.IMPORTING }, q2: { mime_type: QUESTION, parent_identifier: 'do_qsA', state: DownloadState.DOWNLOADING } }, [
+          { identifier: 'do_qsB', mime_type: QS, content_state: 0, child_nodes: 'q1,q2' },
+          { identifier: 'q1', content_state: 2, ref_count: 1, visibility: 'Parent' }, { identifier: 'q2', content_state: 0 },
+        ]);
+
+      expect(mockContentDbService.update).not.toHaveBeenCalledWith('do_qsB', { content_state: 2 });
+      expect(states.do_qsB).toBe(DownloadState.IMPORTING);
+    });
+
+    it("fails a waiting set when one of its questions fails its last download retry (positive)", async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qs', mime_type: QUESTION, state: DownloadState.DOWNLOADING, retry_count: 3, max_retries: 3 });
+      // Nothing to import; this only wires up the queue and content rows.
+      await runImportOf(makeEntry({ identifier: 'other', state: DownloadState.DOWNLOADED }), { status: 'CANCELLED', identifiers: [] },
+        { q1: q, do_qs: { mime_type: QS, state: DownloadState.IMPORTING } }, [
+          { identifier: 'do_qs', mime_type: QS, content_state: 0, child_nodes: 'q1' }, { identifier: 'q1', content_state: 0 },
+        ]);
+
+      await (manager as any).handleDownloadFailure('q1', new Error('network'));
+
+      expect(states.q1).toBe(DownloadState.FAILED);
+      expect(states.do_qs).toBe(DownloadState.FAILED);
+    });
+
+    it('keeps a waiting set in progress while its question is only retrying (negative)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qs', mime_type: QUESTION, state: DownloadState.DOWNLOADING, retry_count: 0, max_retries: 3 });
+      await runImportOf(makeEntry({ identifier: 'other', state: DownloadState.DOWNLOADED }), { status: 'CANCELLED', identifiers: [] },
+        { q1: q, do_qs: { mime_type: QS, state: DownloadState.IMPORTING } }, [
+          { identifier: 'do_qs', mime_type: QS, content_state: 0, child_nodes: 'q1' }, { identifier: 'q1', content_state: 0 },
+        ]);
+
+      vi.useFakeTimers();
+      try {
+        await (manager as any).handleDownloadFailure('q1', new Error('network'));
+      } finally {
+        vi.useRealTimers();
+      }
+
+      expect(states.q1).toBe(DownloadState.RETRY_WAIT);
+      expect(states.do_qs).toBe(DownloadState.IMPORTING);
+    });
+
+    it('leaves a cancelled set out of Downloads even when its questions arrive later (negative)', async () => {
+      const q = makeEntry({ identifier: 'q1', parent_identifier: 'do_qs', mime_type: QUESTION, state: DownloadState.DOWNLOADED, file_path: '/path/q1.ecar' });
+      await runImportOf(q, { status: 'SUCCESS', identifiers: ['q1'] }, { do_qs: { mime_type: QS, state: DownloadState.CANCELLED } }, [
+        { identifier: 'do_qs', mime_type: QS, content_state: 0, child_nodes: 'q1' }, { identifier: 'q1', content_state: 2 },
+      ]);
+
+      expect(mockContentDbService.update).not.toHaveBeenCalledWith('do_qs', { content_state: 2 });
     });
   });
 });

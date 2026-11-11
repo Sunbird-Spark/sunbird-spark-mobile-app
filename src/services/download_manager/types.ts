@@ -111,6 +111,8 @@ export interface ImportResult {
   status: 'SUCCESS' | 'ALREADY_EXIST' | 'CANCELLED' | 'FAILED';
   identifiers: string[];
   errors?: string[];
+  /** Questions of an imported question set whose content isn't bundled in its ECAR, so each must be downloaded from its own ECAR. */
+  pendingChildren?: DownloadRequest[];
 }
 
 export type ImportPhase =

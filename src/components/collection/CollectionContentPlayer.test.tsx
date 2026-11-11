@@ -31,6 +31,7 @@ vi.mock('../players/ContentPlayer', () => ({
         data-mimetype={mimeType}
         data-name={metadata?.name}
         data-transcripts={metadata?.transcripts ? JSON.stringify(metadata.transcripts) : undefined}
+        data-body={typeof metadata?.body === 'string' ? metadata.body : undefined}
       >
         ContentPlayer
       </div>
@@ -148,6 +149,32 @@ describe('CollectionContentPlayer', () => {
       error: null,
       refetch: mockRefetchQuml,
     };
+  });
+
+  it("plays only the learner's draw from a Dynamic Course Assessment pool in a course (positive)", () => {
+    const levels: Record<string, string> = { a1: 'EASY', a2: 'EASY', a3: 'EASY', b1: 'MEDIUM', b2: 'MEDIUM', b3: 'MEDIUM' };
+    const body = JSON.stringify({ theme: { stage: [{ 'org.ekstep.questionset': [{
+      config: { __cdata: JSON.stringify({ total_items: 6, dynamic_assess: { target: { E: 1, M: 1, D: 0 }, levels } }) },
+      data: { __cdata: JSON.stringify(Object.keys(levels).map((id) => ({ identifier: id, max_score: 1 }))) },
+      'org.ekstep.question': Object.keys(levels).map((id) => ({ id })),
+    }] }] } });
+    mockUseContentReadReturn = {
+      data: { data: { content: { identifier: 'do_dyn', name: 'Quiz', mimeType: 'application/vnd.ekstep.ecml-archive', primaryCategory: 'Dynamic Course Assessment', body } } },
+      isLoading: false, error: null, refetch: mockRefetch,
+    };
+    render(<CollectionContentPlayer contentId="do_dyn" onClose={mockOnClose} />);
+    const played = JSON.parse(screen.getByTestId('content-player').getAttribute('data-body') || '{}');
+    expect(played.theme.stage[0]['org.ekstep.questionset'][0]['org.ekstep.question']).toHaveLength(2);
+  });
+
+  it('shows the not-ready message instead of a player for Dynamic ECML without a body in a course (positive)', () => {
+    mockUseContentReadReturn = {
+      data: { data: { content: { identifier: 'do_dyn', name: 'Quiz', mimeType: 'application/vnd.ekstep.ecml-archive', primaryCategory: 'Dynamic Course Assessment' } } },
+      isLoading: false, error: null, refetch: mockRefetch,
+    };
+    render(<CollectionContentPlayer contentId="do_dyn" onClose={mockOnClose} />);
+    expect(screen.getByTestId('page-loader')).toHaveAttribute('data-error', 'dynamicAssessNotReady');
+    expect(screen.queryByTestId('content-player')).not.toBeInTheDocument();
   });
 
   it('locks screen orientation to landscape on mount', () => {

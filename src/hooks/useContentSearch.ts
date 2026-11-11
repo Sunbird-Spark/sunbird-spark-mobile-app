@@ -27,6 +27,8 @@ const DEFAULT_PRIMARY_CATEGORIES = [
   'Course Unit',
   'Exam Question',
   'Question paper',
+  'Dynamic Course Assessment',
+  'Dynamic QuestionSet',
 ];
 
 export const useContentSearch = (

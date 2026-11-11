@@ -81,7 +81,10 @@ const SearchPage: React.FC = () => {
         enabled: !!debouncedQuery,
     });
 
-    const results = data?.data?.content || [];
+    const results: ContentSearchItem[] = [
+        ...(data?.data?.content ?? []),
+        ...(data?.data?.QuestionSet ?? []),
+    ];
     const totalCount = data?.data?.count || 0;
 
     const handleCancel = () => {

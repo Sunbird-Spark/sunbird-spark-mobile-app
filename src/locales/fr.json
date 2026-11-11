@@ -34,6 +34,7 @@
   "downloadToPlayOfflineHint": "Télécharger pour lire hors ligne",
   "bestScore": "Meilleur score",
   "playItem": "Lire {{name}}",
+  "dynamicAssessNotReady": "Cette évaluation n’est pas encore prête. Veuillez réessayer plus tard.",
   "deleteItem": "Supprimer {{name}}",
   "openItem": "Ouvrir {{name}}",
   "digit": "Chiffre",

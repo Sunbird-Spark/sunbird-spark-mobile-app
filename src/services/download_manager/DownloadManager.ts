@@ -17,6 +17,7 @@ import {
 } from './types';
 import { NON_DOWNLOADABLE_MIME_TYPES } from '../content/hierarchyUtils';
 
+const QUESTION_MIME_TYPE = 'application/vnd.sunbird.question';
 const MAX_RETRIES_DEFAULT = 3;
 const BACKOFF_BASE_MS = 2000;
 const BACKOFF_MAX_MS = 30000;
@@ -260,6 +261,7 @@ export class DownloadManager {
 
     await this.downloadDb.update(identifier, { cancelled_by_user: 1 });
     this.emit({ type: 'state_change', identifier });
+    if (entry.mime_type === QUESTION_MIME_TYPE) await this.settleQuestionSetsContaining(identifier);
     await this.processQueue();
   }
 
@@ -612,6 +614,8 @@ export class DownloadManager {
           maxRetries: entry.max_retries,
         },
       });
+      // A set waiting on this question can no longer complete, so it fails and offers Retry.
+      if (entry.mime_type === QUESTION_MIME_TYPE) await this.settleQuestionSetsContaining(identifier);
     }
   }
 
@@ -659,9 +663,13 @@ export class DownloadManager {
 
         switch (result.status) {
           case 'SUCCESS':
-          case 'ALREADY_EXIST':
-            await this.transition(entry.identifier, DownloadState.COMPLETED);
-            await this.downloadDb.update(entry.identifier, { progress: 100 });
+          case 'ALREADY_EXIST': {
+            // A question set with questions still to fetch stays IMPORTING until settleQuestionSet completes or fails it, so it never reports done before it can play offline.
+            const waitsForQuestions = !!result.pendingChildren?.length;
+            if (!waitsForQuestions) {
+              await this.transition(entry.identifier, DownloadState.COMPLETED);
+              await this.downloadDb.update(entry.identifier, { progress: 100 });
+            }
 
             // Persist the actual download size (ECAR file bytes) as size_on_device.
             // This is the value shown during download and is more accurate than
@@ -673,10 +681,26 @@ export class DownloadManager {
             // If this leaf belongs to a collection, mark it as 'Parent' visibility
             // so it doesn't appear individually in Downloaded Contents page.
             // Then check if all siblings are done → upgrade parent content_state to 2.
-            if (entry.parent_identifier) {
+            if (entry.parent_identifier && !waitsForQuestions) {
               await this.handleCollectionChildComplete(entry);
             }
+
+            // A question, however it was queued, may complete any set that lists it.
+            if (entry.mime_type === QUESTION_MIME_TYPE) {
+              await this.settleQuestionSetsContaining(entry.identifier);
+            }
+
+            if (waitsForQuestions) {
+              const children = result.pendingChildren!;
+              // The user asked for the whole set, so questions they cancelled earlier are fetched again.
+              for (const queued of await this.downloadDb.getByIdentifiers(children.map((c) => c.identifier))) {
+                if (queued.cancelled_by_user) await this.downloadDb.update(queued.identifier, { cancelled_by_user: 0 });
+              }
+              await this.enqueue(children.map((child) => ({ ...child, parentIdentifier: entry.identifier, priority: entry.priority })));
+              await this.settleQuestionSet(entry.identifier);
+            }
             break;
+          }
 
           case 'CANCELLED':
             // Already in CANCELLED state via cooperative check
@@ -711,6 +735,10 @@ export class DownloadManager {
       console.debug('[DownloadManager] Set visibility=Parent for child:', entry.identifier);
     }
 
+    // A question set is ready only when every question it lists is on the device (settleQuestionSet); its own queue children don't cover a question shared with, and queued under, another set.
+    const parentRow = await contentDbService.getByIdentifier(parentId);
+    if (parentRow?.mime_type?.toLowerCase().includes('questionset')) return;
+
     // 2. Check if all downloads with this parent are COMPLETED
     const siblings = await this.downloadDb.getByParent(parentId);
     const allDone = siblings.length > 0 && siblings.every(
@@ -719,7 +747,7 @@ export class DownloadManager {
 
     if (allDone) {
       // Upgrade the parent collection's content_state to 2 so it shows in Downloads
-      const parentEntry = await contentDbService.getByIdentifier(parentId);
+      const parentEntry = parentRow;
       if (parentEntry) {
         if (parentEntry.content_state < 2) {
           await contentDbService.update(parentId, { content_state: 2 });
@@ -752,6 +780,48 @@ export class DownloadManager {
         console.debug('[DownloadManager] Created parent entry with content_state=2:', parentId);
       }
       this.emit({ type: 'state_change', identifier: parentId });
+    }
+  }
+
+  /** Settles every question set listing this question; a question reused by several sets is downloaded once but completes or fails all of them. */
+  private async settleQuestionSetsContaining(questionId: string): Promise<void> {
+    const sets = await contentDbService.getQuestionSetsContainingChild(questionId);
+    for (const set of sets) {
+      await this.settleQuestionSet(set.identifier);
+    }
+  }
+
+  /** Completes a question set once every child it lists is on the device, or fails its download when a missing question is no longer on its way. */
+  private async settleQuestionSet(setId: string): Promise<void> {
+    const set = await contentDbService.getByIdentifier(setId);
+    if (!set) return;
+    const setEntry = await this.downloadDb.getByIdentifier(setId);
+    // A set the user cancelled or whose download failed stays out of Downloads even if its questions arrive later.
+    if (setEntry && setEntry.state !== DownloadState.IMPORTING && setEntry.state !== DownloadState.COMPLETED) return;
+    const waiting = setEntry?.state === DownloadState.IMPORTING;
+
+    const childIds = (set.child_nodes || '').split(',').filter(Boolean);
+    const ready = new Set((await contentDbService.getByIdentifiers(childIds)).filter((c) => c.content_state === 2).map((c) => c.identifier));
+    const missing = childIds.filter((id) => !ready.has(id));
+
+    if (missing.length === 0) {
+      if (set.content_state < 2) {
+        await contentDbService.update(setId, { content_state: 2 });
+        this.emit({ type: 'state_change', identifier: setId });
+      }
+      if (waiting) {
+        await this.transition(setId, DownloadState.COMPLETED, { progress: 100 });
+        if (setEntry.parent_identifier) await this.handleCollectionChildComplete(setEntry);
+      }
+      return;
+    }
+
+    if (!waiting) return;
+    const queued = await this.downloadDb.getByIdentifiers(missing);
+    const onItsWay = (id: string) => queued.some((q) => q.identifier === id
+      && q.state !== DownloadState.FAILED && q.state !== DownloadState.CANCELLED && q.state !== DownloadState.COMPLETED);
+    if (!missing.every(onItsWay)) {
+      await this.transition(setId, DownloadState.FAILED, { last_error: 'Some questions of this question set could not be downloaded' });
     }
   }
 
@@ -817,6 +887,8 @@ export class DownloadManager {
           maxRetries: entry.max_retries,
         },
       });
+      // A set waiting on this question can no longer complete, so it fails and offers Retry.
+      if (entry.mime_type === QUESTION_MIME_TYPE) await this.settleQuestionSetsContaining(entry.identifier);
     }
   }
 

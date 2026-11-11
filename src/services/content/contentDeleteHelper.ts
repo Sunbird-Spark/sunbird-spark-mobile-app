@@ -50,6 +50,12 @@ export async function deleteDownloadedContent(identifier: string): Promise<Delet
       }
     }
 
+    // A question set's questions are their own rows, hidden from Downloads, so they go with the set unless something else still needs them.
+    const isQuestionSet = !!entry.mime_type?.toLowerCase().includes('questionset');
+    if (isQuestionSet && entry.child_nodes && entry.ref_count <= 1) {
+      await deleteUnsharedQuestionSetChildren(identifier, entry.child_nodes.split(',').filter(Boolean));
+    }
+
     // 3. Hard delete or soft delete based on ref_count
     if (entry.ref_count <= 1) {
       // No other references — remove artifacts and DB row entirely
@@ -155,5 +161,27 @@ async function decrementChildrenRefCounts(childIds: string[]): Promise<void> {
       console.debug(TAG, child.identifier, 'child decrement ref_count:', child.ref_count, '→', child.ref_count - 1);
       await contentDbService.decrementRefCount(child.identifier);
     }
+  }
+}
+
+/** Removes a deleted set's questions and sections unless downloaded on their own or still listed elsewhere; checked by membership since ref_count isn't raised when a second set reuses a question. */
+async function deleteUnsharedQuestionSetChildren(setId: string, childIds: string[]): Promise<void> {
+  const ownIds = new Set([setId, ...childIds]);
+  const children = await contentDbService.getByIdentifiers(childIds);
+  for (const child of children) {
+    if (child.visibility === 'Default') continue;
+    const holders = [
+      ...(await contentDbService.getQuestionSetsContainingChild(child.identifier)),
+      ...(await contentDbService.getCollectionsContainingChild(child.identifier)),
+    ].filter((holder) => !ownIds.has(holder.identifier));
+    if (holders.length > 0) {
+      console.debug(TAG, child.identifier, 'kept — still listed by', holders.map((h) => h.identifier).join(','));
+      continue;
+    }
+    if (child.path) {
+      await Filesystem.rmdir({ path: child.path, recursive: true }).catch(() => {});
+    }
+    await contentDbService.delete(child.identifier);
+    await downloadDbService.delete(child.identifier);
   }
 }

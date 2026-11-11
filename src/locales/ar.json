@@ -26,6 +26,7 @@
   "downloadToPlayOfflineHint": "نزّل للتشغيل بدون إنترنت",
   "bestScore": "أفضل نتيجة",
   "playItem": "تشغيل {{name}}",
+  "dynamicAssessNotReady": "هذا التقييم غير جاهز بعد. يرجى المحاولة مرة أخرى لاحقًا.",
   "deleteItem": "حذف {{name}}",
   "openItem": "فتح {{name}}",
   "digit": "رقم",

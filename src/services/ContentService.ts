@@ -52,7 +52,9 @@ const DEFAULT_CONTENT_FIELDS = [
   'questions', 'resourceType', 'scoreDisplayConfig', 'status', 'streamingUrl',
   'template', 'templateId', 'totalQuestions', 'totalScore', 'versionKey', 'visibility',
   'year', 'primaryCategory', 'additionalCategories', 'interceptionPoints', 'interceptionType', 'downloadUrl',
-  'launchFile','scoList'
+  'launchFile','scoList',
+  // Dynamic Assess pool multiplier; without it the online draw falls back to the default cap.
+  'multiplier'
 ];
 
 export class ContentService {

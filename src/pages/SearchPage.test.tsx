@@ -196,6 +196,25 @@ describe('SearchPage', () => {
     expect(screen.getByText(/Results for/)).toBeInTheDocument();
   });
 
+  it('renders QuestionSet results returned under the QuestionSet key', () => {
+    (useContentSearch as any).mockReturnValue({
+      ...defaultSearchReturn,
+      data: {
+        data: {
+          content: [{ identifier: 'do_c', name: 'Content item', mimeType: 'application/pdf' }],
+          QuestionSet: [{ identifier: 'do_qs', name: 'QS item', mimeType: 'application/vnd.sunbird.questionset' }],
+          count: 2,
+        },
+      },
+    });
+
+    render(<SearchPage />);
+    fireEvent.change(screen.getByPlaceholderText('Search courses, textbooks...'), { target: { value: 'item' } });
+
+    expect(screen.getByText('Content item')).toBeInTheDocument();
+    expect(screen.getByText('QS item')).toBeInTheDocument();
+  });
+
   it('renders CollectionCard for collection mimeType and ResourceCard for others', () => {
     const items = makeItems(3);
     (useContentSearch as any).mockReturnValue({

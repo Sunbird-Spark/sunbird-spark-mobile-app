@@ -34,6 +34,7 @@
   "downloadToPlayOfflineHint": "Baixe para jogar offline",
   "bestScore": "Melhor pontuação",
   "playItem": "Reproduzir {{name}}",
+  "dynamicAssessNotReady": "Esta avaliação ainda não está pronta. Tente novamente mais tarde.",
   "deleteItem": "Excluir {{name}}",
   "openItem": "Abrir {{name}}",
   "digit": "Dígito",

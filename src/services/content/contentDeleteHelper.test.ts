@@ -15,6 +15,7 @@ vi.mock('../db/ContentDbService', () => ({
     getByIdentifier: vi.fn(),
     getByIdentifiers: vi.fn().mockResolvedValue([]),
     getCollectionsContainingChild: vi.fn().mockResolvedValue([]),
+    getQuestionSetsContainingChild: vi.fn().mockResolvedValue([]),
     delete: vi.fn().mockResolvedValue(undefined),
     decrementRefCount: vi.fn().mockResolvedValue(undefined),
     update: vi.fn().mockResolvedValue(undefined),
@@ -233,5 +234,58 @@ describe('deleteDownloadedContent', () => {
 
     // Collection should NOT be cleaned up
     expect(contentDbService.delete).not.toHaveBeenCalledWith('do_collection');
+  });
+
+  describe('question sets', () => {
+    const QS = 'application/vnd.sunbird.questionset';
+    const set = (ref_count = 1) => ({ identifier: 'do_qs', mime_type: QS, content_state: 2, ref_count, path: '/content/do_qs', child_nodes: 'do_sec,q1,q2,q3' });
+    const children = [
+      { identifier: 'do_sec', mime_type: QS, visibility: 'Parent', path: '/content/do_sec', child_nodes: 'q1' },
+      { identifier: 'q1', visibility: 'Parent', path: '/content/q1' },
+      { identifier: 'q2', visibility: 'Parent', path: '/content/q2' },
+      { identifier: 'q3', visibility: 'Default', path: '/content/q3' },
+    ];
+
+    beforeEach(() => {
+      vi.mocked(contentDbService.getCollectionsContainingChild).mockResolvedValue([]);
+    });
+
+    it("removes the set's questions and sections that nothing else on the device lists (positive)", async () => {
+      vi.mocked(contentDbService.getByIdentifier).mockResolvedValue(set() as any);
+      vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue(children as any);
+      // q1 is listed by the set's own section, which is going too.
+      vi.mocked(contentDbService.getQuestionSetsContainingChild).mockImplementation(async (id: string) =>
+        (id === 'q1' ? [{ identifier: 'do_sec' }, { identifier: 'do_qs' }] : [{ identifier: 'do_qs' }]) as any);
+
+      await deleteDownloadedContent('do_qs');
+
+      for (const id of ['do_sec', 'q1', 'q2']) {
+        expect(contentDbService.delete).toHaveBeenCalledWith(id);
+        expect(Filesystem.rmdir).toHaveBeenCalledWith({ path: `/content/${id}`, recursive: true });
+      }
+      expect(contentDbService.delete).toHaveBeenCalledWith('do_qs');
+    });
+
+    it('keeps questions downloaded on their own or still listed by another set or collection (negative)', async () => {
+      vi.mocked(contentDbService.getByIdentifier).mockResolvedValue(set() as any);
+      vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue(children as any);
+      vi.mocked(contentDbService.getQuestionSetsContainingChild).mockImplementation(async (id: string) =>
+        (id === 'q1' ? [{ identifier: 'do_qs' }, { identifier: 'do_otherQs' }] : [{ identifier: 'do_qs' }]) as any);
+      vi.mocked(contentDbService.getCollectionsContainingChild).mockImplementation(async (id: string) =>
+        (id === 'q2' ? [{ identifier: 'do_course' }] : []) as any);
+
+      await deleteDownloadedContent('do_qs');
+
+      for (const id of ['q1', 'q2', 'q3']) expect(contentDbService.delete).not.toHaveBeenCalledWith(id);
+    });
+
+    it('keeps every question when the set itself is only soft-deleted (negative)', async () => {
+      vi.mocked(contentDbService.getByIdentifier).mockResolvedValue(set(2) as any);
+      vi.mocked(contentDbService.getByIdentifiers).mockResolvedValue(children as any);
+
+      await deleteDownloadedContent('do_qs');
+
+      expect(contentDbService.delete).not.toHaveBeenCalled();
+    });
   });
 });
