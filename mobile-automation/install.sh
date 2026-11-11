@@ -98,7 +98,7 @@ echo "--- Installing dependencies ---"
 
 if [ -f "$CONFIG_DIR/package.json" ]; then
     cd "$CONFIG_DIR"
-    npm install
+    npm ci
     echo "  [OK] npm dependencies installed"
     pass
 else
