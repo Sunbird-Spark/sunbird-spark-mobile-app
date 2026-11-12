@@ -16,9 +16,13 @@ const sanitizeSvg = (svgContent: string): string => {
       )
     : svgContent;
 
+  // The built-in SVG profiles already allow every element this renderer needs
+  // (svg, path, rect, circle, text, g, defs, image, filters, …). Re-adding them
+  // through ADD_TAGS would bypass DOMPurify's own SVG hardening (S8479).
+  // Note: the SVG profile deliberately drops <use>, which DOMPurify treats as an
+  // XSS/SSRF vector — certificate templates relying on <use> will lose it.
   template = DOMPurify.sanitize(template, {
     USE_PROFILES: { svg: true, svgFilters: true },
-    ADD_TAGS: ['svg', 'path', 'rect', 'circle', 'text', 'g', 'defs', 'image', 'use'],
     FORBID_TAGS: ['script', 'iframe', 'object', 'embed'],
     FORBID_ATTR: ['onerror', 'onload', 'onclick', 'onmouseover'],
   });

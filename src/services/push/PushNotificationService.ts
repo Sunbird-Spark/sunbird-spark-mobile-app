@@ -102,7 +102,7 @@ class PushNotificationService {
    * The user's auth token in the HTTP headers identifies the user — no userId param needed.
    */
   async registerDevice(): Promise<void> {
-    if (this.inFlightRegistration) return this.inFlightRegistration;
+    if (this.inFlightRegistration !== null) return this.inFlightRegistration;
 
     this.inFlightRegistration = this.doRegisterDevice().finally(() => {
       this.inFlightRegistration = null;

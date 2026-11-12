@@ -74,7 +74,7 @@ jobs:
           distribution: 'zulu'
 
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
 
       - name: Install Android platform and accept licenses
         run: |
@@ -83,7 +83,7 @@ jobs:
           yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/gradle-build-action@ac2d340dc04d9e1113182899e983b5400c17cda1 # v3
 
       - name: Install Node.js
         uses: actions/setup-node@v4
@@ -91,7 +91,10 @@ jobs:
           node-version: '24.12.0'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci --ignore-scripts
+
+      - name: Copy player assets (postinstall equivalent)
+        run: node copy-assets.js && node scripts/copyContentPlayer.js
 
       - name: Build web assets
         run: npm run build
@@ -104,7 +107,7 @@ jobs:
 
       - name: Decode google-services.json
         id: decode_google_services
-        uses: timheuer/base64-to-file@v1.2
+        uses: timheuer/base64-to-file@adaa40c0c581f276132199d4cf60afa07ce60eac # v1.2
         with:
           fileName: 'google-services.json'
           fileDir: '${{ github.workspace }}/android/app/'
@@ -171,19 +174,21 @@ jobs:
 
       - name: Decode keystore
         id: decode_keystore
-        uses: timheuer/base64-to-file@v1.2
+        uses: timheuer/base64-to-file@adaa40c0c581f276132199d4cf60afa07ce60eac # v1.2
         with:
           fileName: 'android_keystore.jks'
           fileDir: '${{ github.workspace }}/android/app/keystore/'
           encodedString: ${{ secrets.KEYSTORE }}
 
       - name: Create signing.properties from JSON secret
+        env:
+          SIGNING_KEYS: ${{ secrets.SIGNING_KEYS }}
         run: |
           mkdir -p ${{ github.workspace }}/android/app/keystore
 
           trap 'rm -f signing.json' EXIT
 
-          echo "${{ secrets.SIGNING_KEYS }}" | base64 --decode > signing.json
+          echo "$SIGNING_KEYS" | base64 --decode > signing.json
 
           SIGNING_STORE_PASSWORD=$(jq -r '.SIGNING_STORE_PASSWORD' signing.json)
           SIGNING_KEY_ALIAS=$(jq -r '.SIGNING_KEY_ALIAS' signing.json)
@@ -196,7 +201,7 @@ jobs:
           echo "SIGNING_KEY_PASSWORD=$SIGNING_KEY_PASSWORD" >> ${{ github.workspace }}/android/signing.properties
 
       - name: Capacitor sync
-        run: npx cap sync android
+        run: ./node_modules/.bin/cap sync android
 
       - name: Build release AAB
         run: cd android && ./gradlew bundleRelease --stacktrace
@@ -220,7 +225,7 @@ jobs:
           path: android/app/build/outputs/bundle/release/*.aab
 
       - name: Upload AAB to Azure Blob Storage
-        uses: azure/CLI@v2
+        uses: azure/CLI@9f7ce6f37c31b777ec6c6b6d1dfe7db79f497956 # v2
         with:
           azcliversion: latest
           inlineScript: |

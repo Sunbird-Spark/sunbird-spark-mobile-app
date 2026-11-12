@@ -13,7 +13,7 @@ export class PdfPlayerService {
       PdfPlayerService.scriptLoaded = true;
       return Promise.resolve();
     }
-    if (PdfPlayerService.scriptLoading) {
+    if (PdfPlayerService.scriptLoading !== undefined) {
       return PdfPlayerService.scriptLoading;
     }
     PdfPlayerService.scriptLoading = new Promise<void>((resolve, reject) => {
@@ -55,7 +55,7 @@ export class PdfPlayerService {
     if (PdfPlayerService.cachedCss !== null) {
       return PdfPlayerService.cachedCss;
     }
-    if (PdfPlayerService.cssLoading) {
+    if (PdfPlayerService.cssLoading !== undefined) {
       return PdfPlayerService.cssLoading;
     }
     PdfPlayerService.cssLoading = fetch('/assets/pdf-player/styles.css')

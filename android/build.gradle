@@ -46,6 +46,12 @@ buildscript {
         google()
         mavenCentral()
     }
+    // Lock the build classpath itself, so the AGP/plugin versions that build
+    // this app are reproducible too. Regenerate together with the module
+    // lockfiles via: ./gradlew dependencies --write-locks
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.13.0'
         classpath 'com.google.gms:google-services:4.4.2'
@@ -84,6 +90,24 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+
+    // Dependency locking: makes resolved versions reproducible and auditable so a
+    // compromised/re-published upstream version cannot silently enter a build.
+    //
+    // Two mechanisms are in play, and BOTH must be refreshed whenever a
+    // dependency or plugin version changes (including Dependabot bumps —
+    // otherwise the build fails with a verification error):
+    //
+    //   ./gradlew dependencies --write-locks                     # *.lockfile
+    //   ./gradlew --write-verification-metadata sha256 \
+    //       :app:dependencies :capacitor-cordova-android-plugins:dependencies
+    //                                          # gradle/verification-metadata.xml
+    //
+    // Both commands need JDK 17+ (the wrapper fails on JDK 11).
+    // To relax enforcement temporarily, run with --dependency-verification=lenient.
+    dependencyLocking {
+        lockAllConfigurations()
     }
 
     configurations.configureEach {

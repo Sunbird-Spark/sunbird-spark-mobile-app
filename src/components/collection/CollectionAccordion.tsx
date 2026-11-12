@@ -175,7 +175,7 @@ const CurriculumLeafItem: React.FC<CurriculumLeafItemProps> = ({
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
             <span className="cp-curriculum-item-title" style={{ flex: 1 }}>{node.name}</span>
-            {effectiveMaxAttempts && (
+            {effectiveMaxAttempts !== null && (
               <span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--ion-color-medium)', flexShrink: 0, marginTop: '2px' }}>
                 {attemptInfo?.attemptCount ?? 0}/{effectiveMaxAttempts}
               </span>

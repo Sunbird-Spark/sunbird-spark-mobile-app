@@ -14,7 +14,7 @@ export class VideoPlayerService {
       VideoPlayerService.scriptLoaded = true;
       return Promise.resolve();
     }
-    if (VideoPlayerService.scriptLoading) {
+    if (VideoPlayerService.scriptLoading !== undefined) {
       return VideoPlayerService.scriptLoading;
     }
     VideoPlayerService.scriptLoading = new Promise<void>((resolve, reject) => {
@@ -60,7 +60,7 @@ export class VideoPlayerService {
     if (VideoPlayerService.cachedCss !== null) {
       return VideoPlayerService.cachedCss;
     }
-    if (VideoPlayerService.cssLoading) {
+    if (VideoPlayerService.cssLoading !== undefined) {
       return VideoPlayerService.cssLoading;
     }
     VideoPlayerService.cssLoading = fetch('/assets/video-player/styles.css')

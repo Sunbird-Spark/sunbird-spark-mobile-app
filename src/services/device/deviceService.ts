@@ -3,6 +3,7 @@ import { Device } from '@capacitor/device';
 import { Capacitor } from '@capacitor/core';
 import { Preferences } from '@capacitor/preferences';
 import SHA1 from 'crypto-js/sha1';
+import { randomHex } from '../../utils/random';
 
 /**
  * This is the shape your app will use everywhere.
@@ -50,7 +51,7 @@ class DeviceService {
       }
       
       // Generate new web device ID
-      const newWebDeviceId = 'web-device-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+      const newWebDeviceId = 'web-device-' + Date.now() + '-' + randomHex(16);
       
       // Persist it
       await Preferences.set({ 
@@ -62,7 +63,7 @@ class DeviceService {
     } catch (error) {
       // If preferences fail, generate a session-only ID
       console.warn('Failed to persist web device ID, using session-only ID:', error);
-      return 'web-device-session-' + Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+      return 'web-device-session-' + Date.now() + '-' + randomHex(16);
     }
   }
 

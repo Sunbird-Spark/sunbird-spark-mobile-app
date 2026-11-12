@@ -1,5 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { applyLogoState, spawnParticles, drawParticles, Particle } from './dissolveParticles';
+
+// Deterministic secure-random stub: mirrors the previous `Math.random() === 0`
+// behaviour so spawn thresholds always pass and ranges collapse to their minimum.
+vi.mock('../../utils/random', () => ({
+  randomFloat: () => 0,
+  randomBetween: (min: number) => min,
+  randomInt: (min: number) => min,
+}));
 
 // ─── applyLogoState ───────────────────────────────────────────────────────────
 
@@ -133,14 +141,6 @@ describe('applyLogoState — ashes', () => {
 // ─── spawnParticles ───────────────────────────────────────────────────────────
 
 describe('spawnParticles', () => {
-  beforeEach(() => {
-    vi.spyOn(Math, 'random').mockReturnValue(0); // always below spawn threshold
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
-
   it('does nothing when particle count already exceeds 200', () => {
     const particles: Particle[] = Array.from({ length: 201 }, () => ({
       x: 0, y: 0, vx: 0, vy: 0, size: 1, alpha: 1, decay: 0.01, life: 1, color: '#fff', type: 'circle',

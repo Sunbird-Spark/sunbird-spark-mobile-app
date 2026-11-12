@@ -111,7 +111,7 @@ const responseInterceptor: ResponseInterceptor = async (response, retry, url) =>
   }
 
   // If already refreshing, wait for the existing refresh to complete
-  if (refreshPromise) {
+  if (refreshPromise !== null) {
     const success = await refreshPromise;
     return success ? retry() : response;
   }
