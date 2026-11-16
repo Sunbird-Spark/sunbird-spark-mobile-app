@@ -1,5 +1,8 @@
 # Sunbird Spark Mobile App
 
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/akshitha-1210/sunbird-spark-mobile-app/badge)](https://scorecard.dev/viewer/?uri=github.com/akshitha-1210/sunbird-spark-mobile-app)
+
+
 ## Maintainer
 
 [@pallakartheekreddy](https://github.com/pallakartheekreddy)
