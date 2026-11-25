@@ -17,7 +17,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4 # v4.4.0
+      - uses: actions/checkout@v7 # v4.4.0
 
       - name: Set up Node.js
         uses: actions/setup-node@v4 # v4.4.0
@@ -46,7 +46,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Set up JDK
         uses: actions/setup-java@v4 # v4.9.1
