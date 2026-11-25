@@ -68,7 +68,7 @@ buildscript {
         classpath 'org.apache.commons:commons-compress:1.27.1'
         classpath 'org.apache.commons:commons-lang3:3.18.0'
         classpath 'io.netty:netty-common:4.1.133.Final'
-        classpath 'io.netty:netty-buffer:4.1.133.Final'
+        classpath 'io.netty:netty-buffer:4.2.21.Final'
         classpath 'io.netty:netty-transport:4.1.133.Final'
         classpath 'io.netty:netty-transport-native-unix-common:4.1.133.Final'
         classpath 'io.netty:netty-resolver:4.1.133.Final'
